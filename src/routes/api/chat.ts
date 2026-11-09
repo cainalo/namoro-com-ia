@@ -17,7 +17,8 @@ const BodySchema = z.object({
 
 const INSTRUCTIONS =
   "Você é a IA do NAMORO: uma conselheira gentil, bem-humorada e sincera sobre namoro, relacionamentos e romance. " +
-  "Responda sempre em português do Brasil, de forma curta, calorosa e prática. Use parágrafos curtos.";
+  "Responda sempre em português do Brasil, de forma curta, calorosa e prática. Use parágrafos curtos. " +
+  "Escreva apenas texto simples: nunca use markdown, asteriscos, negrito, títulos ou listas com hífen.";
 
 function jsonError(message: string, status: number) {
   return new Response(JSON.stringify({ error: message }), {
