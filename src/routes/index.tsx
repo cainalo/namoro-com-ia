@@ -32,35 +32,19 @@ const emptyStates: Record<
   Exclude<SectionId, "home">,
   { title: string; message: string; icon: LucideIcon }
 > = {
-  messages: {
-    title: "Conversas",
-    message: "As mensagens de vocês aparecerão aqui.",
-    icon: MessageCircle,
-  },
-  memories: {
-    title: "Memórias",
-    message: "As lembranças que vocês guardarem ficarão aqui.",
-    icon: Images,
-  },
-  organize: {
-    title: "Planos",
-    message: "Datas, tarefas e projetos aparecerão aqui.",
-    icon: CalendarDays,
-  },
-  universe: {
-    title: "Casa",
-    message: "A casa de vocês começa a ganhar forma aqui.",
-    icon: Compass,
-  },
+  messages: { title: "Conversas", message: "As mensagens de vocês aparecerão aqui.", icon: MessageCircle },
+  memories: { title: "Memórias", message: "As lembranças que vocês guardarem ficarão aqui.", icon: Images },
+  organize: { title: "Planos", message: "Datas, tarefas e projetos aparecerão aqui.", icon: CalendarDays },
+  universe: { title: "Casa", message: "A casa de vocês começa a ganhar forma aqui.", icon: Compass },
 };
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Namoro" },
-      { name: "description", content: "Um espaço privado para duas pessoas." },
+      { name: "description", content: "Um espaço para duas pessoas." },
       { property: "og:title", content: "Namoro" },
-      { property: "og:description", content: "Um espaço privado para duas pessoas." },
+      { property: "og:description", content: "Um espaço para duas pessoas." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -112,10 +96,6 @@ function Index() {
           </div>
           <p className="topbar-date">{date}</p>
           <span className="topbar-space" />
-          <span className="private-indicator">
-            <span className="private-dot" />
-            Privado
-          </span>
         </header>
 
         <div className="page-frame">
@@ -213,11 +193,7 @@ function HomeScreen({
         <section className="home-primary" aria-labelledby="wall-title">
           <div className="section-heading">
             <h2 id="wall-title">Mural</h2>
-            <button
-              type="button"
-              className="subtle-action"
-              onClick={() => onNavigate("memories")}
-            >
+            <button type="button" className="subtle-action" onClick={() => onNavigate("memories")}>
               Memórias <ChevronRight aria-hidden="true" />
             </button>
           </div>

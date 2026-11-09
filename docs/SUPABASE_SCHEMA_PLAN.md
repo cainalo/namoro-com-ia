@@ -4,7 +4,7 @@ Este documento é uma especificação de implementação. Não aplicar como migr
 
 ## Antes de criar tabelas
 
-1. Confirmar que o projeto Supabase externo conectado ao Lovable é o projeto pretendido.
+1. Confirmar que o projeto Supabase externo conectado ao Lovable é o pretendido.
 2. Consultar auth.users, extensões, tabelas, buckets, políticas RLS e funções existentes.
 3. Não apagar nem recriar objetos existentes sem comparação.
 4. Fazer a mudança inicial de forma aditiva e idempotente sempre que possível.
@@ -71,16 +71,20 @@ O significado de cada estado deve ser implementado em uma função de autorizaç
 
 A administração do casal não concede acesso a conteúdo privado.
 
-## Segurança
+## Segurança e desempenho
 
-- RLS habilitada em todas as tabelas acessíveis pelo cliente.
+- RLS habilitada em todas as tabelas expostas pelo Data API.
+- As políticas devem especificar o papel, por exemplo TO authenticated.
+- Usar (select auth.uid()) nas políticas quando adequado, para evitar avaliação repetida por linha.
+- Indexar colunas usadas por políticas, em especial user_id e couple_id.
 - Nunca confiar em user_id, couple_id, role ou visibility enviados pelo cliente sem validar a relação com auth.uid().
-- Funções SECURITY DEFINER somente quando necessárias, com search_path fixo, privilégios mínimos e revisão de owner/grants.
+- SECURITY DEFINER somente quando necessário. Fixar search_path, qualificar objetos com schema, revogar EXECUTE de PUBLIC e anon quando apropriado e conceder somente aos papéis necessários.
 - Sem políticas amplas USING (true) para conteúdo privado.
 - Convites, vínculos e desvinculação implementados no servidor em transações atômicas.
 - Não expor service role key no navegador.
 - Logs de auditoria não devem armazenar texto de mensagens, conteúdo de diários ou tokens.
-- Buckets privados. Paths e policies devem verificar a identidade e a permissão na tabela proprietária do objeto.
+- Buckets privados. As operações de arquivos devem usar a API do Storage; não alterar diretamente storage.objects.
+- Policies de storage.objects devem consultar a permissão do objeto proprietário; não tornar o bucket público por conveniência.
 - Realtime habilitado somente para tabelas que precisam de sincronização e com políticas RLS correspondentes.
 
 ## Ordem de implantação
@@ -105,6 +109,13 @@ A administração do casal não concede acesso a conteúdo privado.
 - Após desvinculação confirmada pelos dois, o casal fica archived e o conteúdo compartilhado vira somente leitura.
 - Conteúdos individuais permanecem com seus criadores.
 - Remoção de conta e recuperação seguem regra documentada, sem cascade destrutivo inadvertido.
+
+## Referências Supabase
+
+- RLS: https://supabase.com/docs/guides/database/postgres/row-level-security
+- Database functions: https://supabase.com/docs/guides/database/functions
+- Storage access control: https://supabase.com/docs/guides/storage/security/access-control
+- Buckets: https://supabase.com/docs/guides/storage/buckets/fundamentals
 
 ## Estado
 

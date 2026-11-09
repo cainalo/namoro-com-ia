@@ -43,14 +43,13 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Substituir a tela branca inicial.
 - [x] Navegação principal responsiva.
 - [x] Chat de IA preservado.
-- [x] Tokens claro/escuro.
-- [x] Refinar o shell para remover linguagem e padrões de landing page genérica.
+- [x] Refinar o shell para reduzir linguagem de marketing e padrões genéricos.
 - [ ] Validar preview, build e lint.
 
 ### Ciclo 2 — base de dados e vínculo
 - [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
-- [ ] Confirmar o conector Supabase no ChatGPT para administração direta.
-- [ ] Criar perfis, casal, membros e convites por execução controlada do schema no Supabase/Lovable.
+- [ ] Conectar o app Supabase ao ChatGPT para administração direta.
+- [ ] Criar perfis, casal, membros e convites por execução controlada do schema.
 - [ ] Implementar vínculo atômico limitado a duas contas.
 - [ ] Implementar RLS e testar com duas contas.
 
@@ -66,7 +65,7 @@ Consultar AGENTS.md antes de cada ciclo.
 
 ## Qualidade visual
 Consultar docs/DESIGN_PRINCIPLES.md.
-Não adicionar headings e descrições por padrão. Cada tela deve ser orientada à tarefa e usar ajuda contextual somente quando necessária.
+Não adicionar títulos e descrições por padrão. Cada tela deve ser orientada à tarefa e usar ajuda contextual somente quando necessária.
 
 ## Supabase
 Consultar docs/SUPABASE_SCHEMA_PLAN.md.
