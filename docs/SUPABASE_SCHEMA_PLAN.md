@@ -2,6 +2,14 @@
 
 Este documento é uma especificação de implementação. Não aplicar como migração manual. O repositório está conectado ao Lovable e AGENTS.md determina que alterações no esquema sejam executadas pelo Lovable.
 
+## Autenticação antes das tabelas
+
+O cliente Supabase e a tela de entrada usam o Supabase Auth com e-mail e senha. Antes de testar cadastro:
+- Confirmar se a confirmação de e-mail está habilitada.
+- Definir Site URL e Redirect URLs para os domínios reais do Lovable Preview e da futura hospedagem.
+- Nunca desabilitar confirmação de e-mail em produção apenas para contornar uma falha de redirecionamento.
+- Não confundir a existência de usuários em auth.users com perfis da aplicação; profiles será criado depois por trigger ou função segura.
+
 ## Antes de criar tabelas
 
 1. Confirmar que o projeto Supabase externo conectado ao Lovable é o pretendido.

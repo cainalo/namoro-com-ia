@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AiChat } from "@/components/AiChat";
+import { AuthGate, SignOutButton } from "@/components/AuthGate";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe";
 
@@ -65,7 +66,9 @@ function Index() {
   );
 
   return (
-    <div className="app-shell min-h-dvh bg-background text-foreground">
+    <AuthGate>
+      {() => (
+        <div className="app-shell min-h-dvh bg-background text-foreground">
       <aside className="app-sidebar">
         <Brand />
         <nav aria-label="Principal" className="app-nav">
@@ -78,6 +81,7 @@ function Index() {
             />
           ))}
         </nav>
+        <div className="sidebar-account"><SignOutButton /></div>
       </aside>
 
       <main className="app-main">
@@ -86,6 +90,7 @@ function Index() {
             <Brand compact />
           </div>
           <span className="topbar-space" />
+          <SignOutButton compact />
         </header>
 
         <div className="page-frame">
@@ -110,7 +115,9 @@ function Index() {
       </nav>
 
       <AiChat />
-    </div>
+        </div>
+      )}
+    </AuthGate>
   );
 }
 

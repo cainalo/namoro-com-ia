@@ -46,12 +46,16 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Refinar o shell para reduzir linguagem de marketing e padrões genéricos.
 - [ ] Validar preview, build e lint.
 
-### Ciclo 2 — base de dados e vínculo
+### Ciclo 2 — autenticação, dados e vínculo
+- [x] Adicionar tela de cadastro e login por e-mail/senha usando o Supabase Auth existente.
+- [x] Restaurar sessão no carregamento e ouvir alterações de autenticação.
+- [x] Adicionar encerramento de sessão.
+- [ ] Validar cadastro, confirmação de e-mail, login e logout no Preview.
 - [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
-- [ ] Conectar o app Supabase ao ChatGPT para administração direta.
-- [ ] Criar perfis, casal, membros e convites por execução controlada do schema.
+- [ ] Aplicar estrutura de perfis, casal, membros e convites pelo fluxo Lovable/Supabase autorizado.
 - [ ] Implementar vínculo atômico limitado a duas contas.
 - [ ] Implementar RLS e testar com duas contas.
+- [ ] Bloquear acesso ao backend fora de sessão quando o endpoint passar a lidar com dados privados.
 
 ### Ciclos seguintes
 1. Conversas e feed.
@@ -70,3 +74,5 @@ Não adicionar títulos e descrições por padrão. Cada tela deve ser orientada
 ## Supabase
 Consultar docs/SUPABASE_SCHEMA_PLAN.md.
 Esse documento não é uma migration e não foi aplicado ao banco.
+A autenticação visual usa signUp/signInWithPassword/signOut do SDK Supabase já presente no projeto.
+A autenticação ainda não foi validada ao vivo; cadastro pode exigir confirmação de e-mail e URL de redirecionamento permitida no painel Supabase.
