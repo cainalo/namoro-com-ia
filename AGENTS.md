@@ -28,3 +28,8 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- AI chat streams plain text from the server route `src/routes/api/chat.ts` (SDK `streamResponse`), consumed by `src/components/AiChat.tsx` via fetch reader — keeps the prompt and key server-side with simple incremental rendering.
+- Backend must be the user's own external Supabase project, never Lovable Cloud — the user requested it explicitly.
