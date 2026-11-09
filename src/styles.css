@@ -266,6 +266,7 @@
 }
 
 .app-topbar {
+  display: none;
   position: sticky;
   top: 0;
   z-index: 30;
@@ -276,7 +277,6 @@
   border-bottom: 1px solid var(--color-border);
   background: color-mix(in oklab, var(--color-background) 94%, transparent);
   padding: 0 34px;
-  backdrop-filter: blur(10px);
 }
 
 .mobile-brand {
@@ -655,6 +655,7 @@
   }
 
   .app-topbar {
+    display: flex;
     height: 58px;
     padding: 0 17px;
   }

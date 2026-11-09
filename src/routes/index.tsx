@@ -78,15 +78,6 @@ function Index() {
             />
           ))}
         </nav>
-        <div className="sidebar-bottom">
-          <div className="sidebar-note">
-            <span className="pair-mark pair-mark-small" aria-hidden="true">
-              <span />
-              <span />
-            </span>
-            <span>Um espaço de vocês dois</span>
-          </div>
-        </div>
       </aside>
 
       <main className="app-main">
@@ -94,7 +85,6 @@ function Index() {
           <div className="mobile-brand">
             <Brand compact />
           </div>
-          <p className="topbar-date">{date}</p>
           <span className="topbar-space" />
         </header>
 
@@ -202,7 +192,6 @@ function HomeScreen({
               <Images />
             </div>
             <p className="empty-title">Ainda não há lembranças.</p>
-            <p className="empty-copy">A primeira pode ser uma foto, uma frase ou um momento.</p>
             <button
               type="button"
               className="primary-action"
