@@ -3,6 +3,7 @@ import { ArrowUp, Heart, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -30,9 +31,21 @@ export function AiChat() {
     setLoading(true);
 
     try {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        throw new Error("Sua sessão expirou. Entre novamente.");
+      }
+
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${session.access_token}`,
+        },
         body: JSON.stringify({ messages: history }),
       });
       if (!res.ok || !res.body) {

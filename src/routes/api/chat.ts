@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { streamResponse, GatewayError, PaymentRequiredError, RateLimitError } from "@lovable.dev/ai-gateway";
 import type { ResponsesInputItem } from "@lovable.dev/ai-gateway";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const BodySchema = z.object({
   messages: z
@@ -31,6 +32,22 @@ export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const authorization = request.headers.get("authorization");
+        const accessToken = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
+
+        if (!accessToken) {
+          return jsonError("Autenticação necessária.", 401);
+        }
+
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser(accessToken);
+
+        if (authError || !user) {
+          return jsonError("Sessão inválida. Entre novamente.", 401);
+        }
+
         const parsed = BodySchema.safeParse(await request.json().catch(() => null));
         if (!parsed.success) return jsonError("Mensagem inválida.", 400);
 

@@ -50,6 +50,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Adicionar tela de cadastro e login por e-mail/senha usando o Supabase Auth existente.
 - [x] Restaurar sessão no carregamento e ouvir alterações de autenticação.
 - [x] Adicionar encerramento de sessão.
+- [x] Exigir token Supabase válido no endpoint de IA.
 - [ ] Validar cadastro, confirmação de e-mail, login e logout no Preview.
 - [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
 - [ ] Aplicar estrutura de perfis, casal, membros e convites pelo fluxo Lovable/Supabase autorizado.
@@ -75,4 +76,4 @@ Não adicionar títulos e descrições por padrão. Cada tela deve ser orientada
 Consultar docs/SUPABASE_SCHEMA_PLAN.md.
 Esse documento não é uma migration e não foi aplicado ao banco.
 A autenticação visual usa signUp/signInWithPassword/signOut do SDK Supabase já presente no projeto.
-A autenticação ainda não foi validada ao vivo; cadastro pode exigir confirmação de e-mail e URL de redirecionamento permitida no painel Supabase.
+A autenticação ainda não foi validada ao vivo; cadastro pode exigir confirmação de e-mail e URL de redirecionamento permitida no painel Supabase. O endpoint /api/chat agora exige e valida um access token Supabase antes de consumir o gateway.
