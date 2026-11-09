@@ -76,7 +76,7 @@ export function AiChat() {
         <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
           <SheetHeader className="border-b px-6 py-5 text-left">
             <SheetTitle className="font-display text-2xl tracking-[0.2em]">NAMORO · IA</SheetTitle>
-            <SheetDescription>Pergunte qualquer coisa sobre amor e relacionamentos.</SheetDescription>
+            <SheetDescription>Pergunte quando quiser uma ajuda para pensar, planejar ou conversar.</SheetDescription>
           </SheetHeader>
 
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
