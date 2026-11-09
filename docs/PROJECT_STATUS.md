@@ -44,19 +44,34 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Navegação principal responsiva.
 - [x] Chat de IA preservado.
 - [x] Refinar o shell para reduzir linguagem de marketing e padrões genéricos.
-- [ ] Validar preview, build e lint.
+- [ ] Validar preview, build e lint. Build e testes passaram; lint falhou (ver Validação local).
 
 ### Ciclo 2 — autenticação, dados e vínculo
 - [x] Adicionar tela de cadastro e login por e-mail/senha usando o Supabase Auth existente.
 - [x] Restaurar sessão no carregamento e ouvir alterações de autenticação.
 - [x] Adicionar encerramento de sessão.
 - [x] Exigir token Supabase válido no endpoint de IA.
-- [ ] Validar cadastro, confirmação de e-mail, login e logout no Preview.
+- [x] Cadastro, confirmação de e-mail e login no Preview (confirmado pelo usuário, com URL de redirecionamento configurada por ele).
+- [ ] Validar logout no Preview.
 - [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
-- [ ] Aplicar estrutura de perfis, casal, membros e convites pelo fluxo Lovable/Supabase autorizado.
+- [x] Etapa 1 — profiles aplicada no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
+- [ ] Aplicar casal, membros e convites pelo fluxo Lovable/Supabase autorizado.
 - [ ] Implementar vínculo atômico limitado a duas contas.
-- [ ] Implementar RLS e testar com duas contas.
+- [ ] Implementar RLS e testar com duas contas. RLS de profiles aplicada; teste com duas contas não feito.
 - [ ] Bloquear acesso ao backend fora de sessão quando o endpoint passar a lidar com dados privados.
+
+### Validação local (código atual, sem correções)
+- bun run build: passou.
+- bun run test: 1 arquivo, 1 teste passou.
+- bun run lint: falhou — 226 erros prettier/prettier e 6 avisos react-refresh/only-export-components.
+- Checagem isolada de tipos: não executada.
+
+### Pendências
+- [ ] Cadastrar uma segunda conta para provar o trigger de criação de perfil.
+- [ ] Testar isolamento de profiles entre duas contas.
+- [ ] Testar atualização de perfil no Preview.
+- [ ] Revisar formatação do lint sem editar arquivos gerados automaticamente.
+- Não iniciar conversas nem memórias antes dessas pendências.
 
 ### Ciclos seguintes
 1. Conversas e feed.
@@ -74,6 +89,6 @@ Não adicionar títulos e descrições por padrão. Cada tela deve ser orientada
 
 ## Supabase
 Consultar docs/SUPABASE_SCHEMA_PLAN.md.
-Esse documento não é uma migration e não foi aplicado ao banco.
+Esse documento não é uma migration; somente a etapa 1 (profiles) foi aplicada, pela migration registrada nele.
 A autenticação visual usa signUp/signInWithPassword/signOut do SDK Supabase já presente no projeto.
-A autenticação ainda não foi validada ao vivo; cadastro pode exigir confirmação de e-mail e URL de redirecionamento permitida no painel Supabase. O endpoint /api/chat agora exige e valida um access token Supabase antes de consumir o gateway.
+O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmação de e-mail e login no Preview. Logout não foi confirmado. O endpoint /api/chat exige e valida um access token Supabase antes de consumir o gateway.

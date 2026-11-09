@@ -127,6 +127,10 @@ A administração do casal não concede acesso a conteúdo privado.
 
 ## Estado
 
-- O esquema observado em src/integrations/supabase/types.ts não declarava tabelas da aplicação.
-- Nenhum SQL ou migration foi aplicado por este documento.
-- Antes de aplicar, é necessária inspeção ao vivo do projeto Supabase conectado.
+- Etapa 1 (profiles) aplicada no Supabase externo jffryzeelzxjqbeagecb. Etapas 2 em diante não aplicadas.
+  - Migration: supabase/migrations/20261109234320_16e8a6fb-466e-49d4-bda3-7f087ee51be8.sql
+  - SHA256: 932ca0891763b547c8ec5187a917fa73fa3c2b550b96341c5256de622fc5639b
+  - Commit com migration e tipos regenerados: 8575c81c63a89a8302050bdd2e4e461e5f6b26f2
+- Aplicado: public.profiles com FK id → auth.users(id) ON DELETE CASCADE; RLS ligada; policies TO authenticated de SELECT e UPDATE somente do próprio id; sem policy de INSERT/DELETE; anon sem privilégios; authenticated com SELECT e UPDATE apenas em display_name e avatar_path; trigger AFTER INSERT em auth.users criando o perfil (SECURITY DEFINER, search_path vazio, EXECUTE revogado de PUBLIC/anon/authenticated); trigger de updated_at; backfill idempotente só de ids.
+- Verificação após aplicação (somente leitura): 1 auth user, 1 profile, 0 usuários sem perfil.
+- Não testado: trigger com um novo cadastro, isolamento entre duas contas, atualização de perfil pelo cliente.
