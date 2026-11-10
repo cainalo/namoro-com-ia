@@ -212,12 +212,6 @@ export function CoupleGame({ userId }: CoupleGameProps) {
               return current;
             }
 
-            const exists = current.choices.some(
-              (item) =>
-                item.question_id === incoming.question_id &&
-                item.user_id === incoming.user_id,
-            );
-
             return {
               ...current,
               choices: [
