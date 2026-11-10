@@ -266,3 +266,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Estilos das divisórias foram adicionados em `src/styles.css`.
 - Commits: componente `5bb53a6cb7af586ac69012ba4c6b1411a1444822`, estilos `cd7234cdd7b7556c1ab2cfd7821fbc6b78245610`.
 - Não foi executado build, teste automatizado ou validação visual.
+
+
+### Memórias — edição pelo autor
+- O adapter `src/lib/couple-memories.ts` agora expõe atualização por ID, sem permitir alteração de `owner_id`, `couple_id` ou `visibility` pela interface.
+- `src/components/CoupleMemories.tsx` permite editar título, texto e data apenas nos registros cujo `owner_id` corresponde à sessão atual.
+- Registros criados pela outra pessoa permanecem somente para leitura; a autorização final continua sendo aplicada pela policy RLS de UPDATE.
+- A edição ocorre no próprio item, com salvar/cancelar e estados de erro/carregamento.
+- Commits: adapter `eb3ac396dcc41ef4b4f6de8f43f1ffa0f88ec57f`, interface `0613f86a95355eab6f7c9a26b0e758aa97fe6c73`, estilos `d4869bbc1bbf75768c829cb0ff69eaca8ebbd3af`.
+- Não foi executado build, teste automatizado ou validação visual. A aplicação da migration e o teste de RLS com duas contas seguem pendentes.
