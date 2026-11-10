@@ -283,3 +283,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - A confirmação pode ser cancelada; a outra pessoa não recebe controles de edição ou exclusão para registros alheios.
 - Commits: adapter `9e70b8ed9c5b64ace291edb2651acca704950e58`, interface `b2645a78c7fe4b3b5cc0e1f163d4c9cd5b3f3f11`, estilos `f6fc522f5019792fd2ae3512d4469bbfdfe60499`.
 - Não foi executado build, teste automatizado ou validação visual. A aplicação da migration e o teste de RLS com duas contas seguem pendentes.
+
+
+## Qualidade — verificação contínua no GitHub Actions (2026-11-10)
+- Criado `.github/workflows/verify.yml`, executado em pushes para `main` e pull requests direcionados à `main`.
+- O job usa `actions/checkout@v7` e `oven-sh/setup-bun@v2`, instala dependências com lockfile congelado, executa `bun run test` e `bun run build`.
+- Permissões do token limitadas a `contents: read`; execuções anteriores são canceladas quando uma nova atualização chega à mesma referência.
+- `bun run lint` ainda não foi incluído porque a última validação conhecida reportou problemas existentes de Prettier; será integrado após a revisão de formatação.
+- O workflow foi adicionado na `main`; os checks do commit inicial ainda não apareceram na consulta imediatamente após o commit. O resultado do primeiro build/teste precisa ser conferido quando a execução terminar.
+- Commit: `58136cb20510234cd9fdf6e5963b4fa1ce6f50d7`.
