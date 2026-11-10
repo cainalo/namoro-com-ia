@@ -4905,3 +4905,104 @@
     width: 100%;
   }
 }
+
+
+/* Planos — confirmação de exclusão */
+.plans-event-owner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plans-event-delete-action {
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  color: var(--color-destructive);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.plans-event-delete-action:hover {
+  text-decoration: underline;
+}
+
+.plans-event-delete-action:focus-visible,
+.plans-event-delete-confirm button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.plans-event-delete-confirm {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border: 1px solid color-mix(in oklab, var(--color-destructive) 42%, var(--color-border));
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--color-destructive) 7%, var(--color-background));
+  padding: 10px 12px;
+}
+
+.plans-event-delete-confirm > p:first-child {
+  margin: 0;
+  color: var(--color-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.plans-event-delete-confirm > div {
+  display: inline-flex;
+  gap: 7px;
+}
+
+.plans-event-delete-confirm button {
+  min-height: 31px;
+  margin: 0;
+  padding: 0 10px;
+  font-size: 10px;
+}
+
+.plans-event-delete-confirm-action {
+  border: 1px solid color-mix(in oklab, var(--color-destructive) 60%, var(--color-border));
+  border-radius: 3px;
+  background: var(--color-destructive);
+  color: white;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.plans-event-delete-confirm-action:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.plans-event-delete-confirm button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.plans-event-delete-confirm .plans-feedback {
+  flex-basis: 100%;
+}
+
+@media (max-width: 680px) {
+  .plans-event-owner-actions {
+    gap: 5px;
+  }
+
+  .plans-event-delete-confirm {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .plans-event-delete-confirm > div {
+    width: 100%;
+  }
+
+  .plans-event-delete-confirm > div button {
+    flex: 1;
+  }
+}
