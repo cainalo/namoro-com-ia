@@ -1,12 +1,12 @@
 import { useState } from "react";
+import { CheckersGame } from "@/components/CheckersGame";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
 import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
 import { CoupleGame } from "@/components/CoupleGame";
 
-type GameId = "connect-four" | "this-or-that" | "daily-challenge";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge";
 
 const plannedGames = [
-  { name: "Damas", type: "Estratégia", detail: "Captura de peças e coroação." },
   { name: "Xadrez", type: "Estratégia", detail: "Partidas completas com relógio e histórico de lances." },
   { name: "Batalha naval", type: "Dedução", detail: "Frotas escondidas e tiros alternados." },
   { name: "Dominó", type: "Mesa", detail: "Compra, bloqueio e contagem de pontos." },
@@ -21,7 +21,7 @@ export function CoupleGames({ userId }: { userId: string }) {
     <section className="games-hub" aria-labelledby="games-hub-title">
       <header className="games-hub-heading">
         <div>
-          <p className="date-kicker">Partidas online · 2 jogadores</p>
+          <p className="date-kicker">Jogos para dois · online e local</p>
           <h1 id="games-hub-title">Jogos</h1>
         </div>
       </header>
@@ -38,6 +38,14 @@ export function CoupleGames({ userId }: { userId: string }) {
               onClick={() => setActiveGame("connect-four")}
             >
               Lig 4
+            </button>
+            <button
+              type="button"
+              className={activeGame === "checkers" ? "is-active" : ""}
+              aria-pressed={activeGame === "checkers"}
+              onClick={() => setActiveGame("checkers")}
+            >
+              Damas
             </button>
           </div>
         </section>
@@ -69,6 +77,8 @@ export function CoupleGames({ userId }: { userId: string }) {
       <div className="games-hub-active" aria-live="polite">
         {activeGame === "connect-four" ? (
           <ConnectFourGame userId={userId} />
+        ) : activeGame === "checkers" ? (
+          <CheckersGame />
         ) : activeGame === "this-or-that" ? (
           <CoupleGame userId={userId} />
         ) : (
