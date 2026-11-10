@@ -1,4 +1,4 @@
-import { ArrowLeft, Flame, Moon, Sun, Sunset } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Sunset } from "lucide-react";
 import { useState } from "react";
 
 type HouseLighting = "day" | "dusk" | "night";
@@ -50,6 +50,10 @@ export function HouseInterior({
   onReturn: () => void;
   onLightingChange: (lighting: HouseLighting) => void;
 }) {
+  const [selectedFeature, setSelectedFeature] = useState<HallFeatureId>("fireplace");
+  const currentFeature =
+    hallFeatures.find((feature) => feature.id === selectedFeature) ?? hallFeatures[0];
+
   return (
     <section className={`house-interior is-${lighting}`} aria-labelledby="house-interior-title">
       <header className="house-interior-heading">
@@ -248,7 +252,6 @@ export function HouseInterior({
       <p className="house-interior-explore-hint">
         Toque nos pontos luminosos para explorar os detalhes do salão.
       </p>
-      </div>
     </section>
   );
 }
