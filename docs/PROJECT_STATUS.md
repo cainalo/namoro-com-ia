@@ -382,3 +382,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - A visibilidade é preservada e não pode ser alterada no formulário de edição. O RLS continua validando a propriedade na atualização.
 - Commits: adapter `6def4c324a05bf6ddf7a6e5056d7745cd023d010`, componente `e74dce1ebd2b1c5b4cb05c495472634835c5e372`, estilos `333909e99f06daef38633f8a2081fcad5f610797`.
 - Não foi executado build, teste automatizado ou validação visual; aplicação da migration e testes com duas contas permanecem pendentes.
+
+
+### Planos — exclusão pelo autor
+- `src/lib/couple-plan-events.ts` agora expõe exclusão por ID; a autorização final continua na policy RLS, que exige `owner_id = auth.uid()`.
+- `src/components/CouplePlans.tsx` mostra Excluir somente para o autor e exige confirmação explícita antes de apagar o compromisso.
+- A confirmação oferece cancelar e informa falhas sem remover o item da tela. A exclusão de eventos do parceiro não é oferecida.
+- Commits: adapter `7d2df50340e9cd6bc2e7fe57a55aed5d6d48767c`, componente `1d00caff0a2d98d061bd691238d9770ae8363085`, estilos `f8a535192ae9efe15e70c2f88f1002ddd6381ee2`.
+- Não foi executado build, teste automatizado ou validação visual.
