@@ -179,6 +179,34 @@ export function CoupleGame({ userId }: CoupleGameProps) {
         ).size
       : 0;
 
+  const pairedResults =
+    state.status === "active"
+      ? questions.flatMap((item, index) => {
+          const own = state.choices.find(
+            (choice) =>
+              choice.question_id === item.id && choice.user_id === userId,
+          );
+          const partner = state.choices.find(
+            (choice) =>
+              choice.question_id === item.id && choice.user_id !== userId,
+          );
+
+          if (!own || !partner) return [];
+
+          return [{
+            question: item,
+            index,
+            ownChoice: own.choice,
+            partnerChoice: partner.choice,
+          }];
+        })
+      : [];
+  const sameCount = pairedResults.filter(
+    (result) => result.ownChoice === result.partnerChoice,
+  ).length;
+  const differentCount = pairedResults.length - sameCount;
+  const gameComplete = pairedResults.length === questions.length;
+
   const activeCoupleId = state.status === "active" ? state.coupleId : null;
 
   useEffect(() => {
@@ -467,6 +495,77 @@ export function CoupleGame({ userId }: CoupleGameProps) {
               Próxima
             </button>
           </footer>
+
+          <section
+            className="couple-game-summary"
+            aria-labelledby="couple-game-summary-title"
+          >
+            <div className="couple-game-summary-heading">
+              <div>
+                <p className="couple-game-count">
+                  {gameComplete ? "Fim de jogo" : "Resumo até agora"}
+                </p>
+                <h2 id="couple-game-summary-title">
+                  {gameComplete ? "Como vocês combinaram?" : "Comparações concluídas"}
+                </h2>
+              </div>
+              <span className="couple-game-summary-progress">
+                {pairedResults.length}/{questions.length}
+              </span>
+            </div>
+
+            {pairedResults.length === 0 ? (
+              <p className="couple-game-summary-note">
+                O resumo aparece quando vocês dois responderem à mesma pergunta.
+              </p>
+            ) : (
+              <>
+                <div className="couple-game-summary-totals" aria-label="Resultado geral">
+                  <p><strong>{sameCount}</strong><span>iguais</span></p>
+                  <p><strong>{differentCount}</strong><span>diferentes</span></p>
+                </div>
+
+                <ol className="couple-game-summary-list">
+                  {pairedResults.map((result) => (
+                    <li key={result.question.id}>
+                      <div>
+                        <p className="couple-game-summary-question">
+                          {result.index + 1}. {result.question.prompt}
+                        </p>
+                        <p className="couple-game-summary-choices">
+                          <span>
+                            Você: <strong>
+                              {result.ownChoice === "a"
+                                ? result.question.optionA
+                                : result.question.optionB}
+                            </strong>
+                          </span>
+                          <span>
+                            Outra pessoa: <strong>
+                              {result.partnerChoice === "a"
+                                ? result.question.optionA
+                                : result.question.optionB}
+                            </strong>
+                          </span>
+                        </p>
+                      </div>
+                      <span
+                        className="couple-game-summary-verdict"
+                        data-result={result.ownChoice === result.partnerChoice ? "same" : "different"}
+                      >
+                        {result.ownChoice === result.partnerChoice ? "Iguais" : "Diferentes"}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="couple-game-summary-note">
+                  {gameComplete
+                    ? "Vocês responderam às seis perguntas. O resultado considera apenas as respostas dos dois."
+                    : "As perguntas ainda sem duas respostas não entram nesta contagem."}
+                </p>
+              </>
+            )}
+          </section>
         </>
       )}
     </section>
