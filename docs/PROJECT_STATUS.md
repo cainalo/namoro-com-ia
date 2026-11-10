@@ -211,3 +211,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 ### Validação
 - O Lovable ainda precisa confirmar sincronização desta sequência.
 - Não foram executados build, lint, testes automatizados ou validação visual. A prévia permanece desatualizada.
+
+
+## Planos — primeiro calendário interativo (2026-11-10)
+- Criado `src/components/CouplePlans.tsx` e conectado à seção **Planos** em `src/routes/index.tsx`.
+- O calendário permite navegar entre meses, selecionar dias, voltar para Hoje e destaca a data atual. A semana começa na segunda-feira e os rótulos usam pt-BR.
+- A seleção é local à tela nesta etapa. Ainda não há criação, edição, sincronização ou persistência de compromissos; nenhum evento fictício é exibido.
+- Estilos responsivos adicionados a `src/styles.css`, incluindo foco visível e respeito a `prefers-reduced-motion`.
+- Commits: componente `73a8ff850e17f890ead095334bbb24413453b8cb`, integração e semântica `ca5e694aeef3ea8088f6c5f5e29cb7984b8e6928` e `ff65d979637e83cfff0de8022e424071f88725f9`, estilos `4f714fc823e2ab28046a97975526adcd82d25fca`.
+- Não foram executados build, lint, testes automatizados ou teste visual; a prévia permanece desatualizada.
