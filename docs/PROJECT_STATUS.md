@@ -173,3 +173,21 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Adicionados estilos responsivos em `src/styles.css`, compatíveis com os temas claro e escuro.
 - Não foram executados build, testes automatizados ou teste visual no Preview nesta etapa.
 - Commits: componente `9147c52415eab7b6bd4fb2dbc36a3d7aafcb8b9f`, ajuste do componente `3c37895e9704c649f5bfdf5a80195e2da6a0f801`, integração à biblioteca `1b0ab4f09f6e8be3fcb8ac31c2d00c9fa00be879`, estilos `6c6142ac9b01839809ccc67c4bd3bd674a34c338`.
+
+
+## Evolução geral da experiência — Casa e Conversas (2026-11-10)
+
+### Casa — primeira cena isométrica
+- Criado `src/components/CoupleHouse.tsx` com uma primeira cena isométrica em SVG: residência medieval de pedra, telhado escuro, pátio, caminhos, árvores e pontos de iluminação.
+- A tela foi conectada à navegação **Casa** em `src/routes/index.tsx`; o estado vazio anterior foi removido para essa seção.
+- A cena é somente visual nesta etapa. Cômodos, navegação espacial, zoom, seleção de locais, mudanças de estação e persistência ainda não existem.
+
+### Conversas — legibilidade dos balões
+- Ajustado `src/styles.css` para que mensagens recebidas usem texto escuro sobre pergaminho claro e mensagens enviadas usem texto claro sobre verde profundo.
+- Metadados e horários receberam contraste próprio; a largura dos balões foi refinada para telas pequenas.
+- Nenhuma alteração foi feita no envio, no Supabase ou no Realtime.
+
+### Validação
+- Os arquivos foram versionados na `main`; a sincronização do último commit deve ser confirmada no projeto Lovable.
+- Não foram executados build, lint, testes automatizados ou validação visual. A prévia do Lovable permanece conhecida como desatualizada.
+- Commits: cena `5713d3a0e385ab4f69c58744adf7b05f7b9da4e9`, integração à navegação `1ddd876b41b81181a354175bbc24b9e47e946367`, estilos da Casa `6e50c58e0c741aaaad914ff472c2a81bb7fb7b7d`, contraste das Conversas `d2549832941fee502a9239a7644943924ebfbc4a`.
