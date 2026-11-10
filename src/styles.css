@@ -2709,3 +2709,27 @@
     border-radius: 4px;
   }
 }
+
+
+/* Tipografia editorial: títulos expressivos, leitura funcional */
+.home-heading h1,
+.module-empty h1,
+.games-hub-heading h1,
+.auth-panel h1 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.home-heading h1,
+.module-empty h1,
+.games-hub-heading h1 {
+  text-wrap: balance;
+}
+
+@media (max-width: 680px) {
+  .home-heading h1,
+  .module-empty h1 {
+    letter-spacing: -0.015em;
+  }
+}
