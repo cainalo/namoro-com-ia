@@ -170,6 +170,32 @@ export function CouplePlans({ userId }: { userId: string }) {
     };
   }, [userId, monthStart, monthEnd, refreshKey]);
 
+  useEffect(() => {
+    if (!coupleId) return;
+
+    let mounted = true;
+    const channel = supabase
+      .channel(`couple-plan-events:${coupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "couple_plan_events",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          if (mounted) setRefreshKey((current) => current + 1);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [coupleId]);
+
   const eventCounts = new Map<string, number>();
   for (const event of events) {
     eventCounts.set(event.event_date, (eventCounts.get(event.event_date) ?? 0) + 1);
