@@ -492,3 +492,31 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - O resumo do Mural passa a recarregar quando o parceiro cria ou edita uma lembrança compartilhada; conteúdo privado não é transmitido pelo canal.
 - Commit: `0c794e9d4079d9184127e0a9cbc83f80e6fd1965`.
 - Depende da migration de Realtime de Memórias estar aplicada. Não foi validado entre dois aparelhos.
+
+
+## Cobertura geral — exploração, histórico e portabilidade (2026-11-10)
+
+### Casa — pontos exploráveis no Salão de entrada
+- `src/components/HouseInterior.tsx` oferece quatro pontos interativos sobre a ilustração: lareira, vitral, tapeçaria e escadaria.
+- Cada ponto selecionado atualiza o painel descritivo abaixo da cena; controles têm nomes acessíveis, estado pressionado, foco visível e áreas de toque adaptadas ao celular.
+- Os pontos são elementos HTML sobrepostos à arte, sem bloquear a ilustração ou capturar gestos do mapa.
+- Commits: pontos e descrições `fa966f24397ac9a5847596c7b81ef9997ac11daa`, correção do estado e estrutura `0dd79ff99f7c9ef6482b9d4675de932ffbe0ef8b`, estilos `15812d3d3ce455d1eb984749836c6cdf22b189f9`.
+
+### Conversas — histórico paginado
+- `src/lib/couple-messages.ts` agora aceita cursor `before` e consulta mensagens anteriores por `created_at`, em blocos de 100.
+- `src/components/CoupleConversation.tsx` inclui **Carregar mensagens anteriores**, preservando a posição visual da leitura ao inserir mensagens antigas.
+- A busca foi renomeada para indicar que atua sobre o histórico já carregado. O Realtime não descarta páginas anteriores abertas pelo usuário.
+- Commits: adapter `5ce88f575bcf6f2655a156144e36e04451d04612`, componente `6debc1958e0e3bede48b6f43041810ff8e1f6420`, ajuste de borda/estado vazio `a20a47cb4a6e326f056ebce65b6d746cd8ce4258`, estilos `b7e91c8fc9d9059af8b87d2ffceec84782065ef0`.
+
+### Memórias — exportação local
+- `src/components/CoupleMemories.tsx` agora exporta a seleção visível (após busca e filtros) para um arquivo TXT no próprio dispositivo.
+- A exportação é explícita, não envia conteúdo a serviços externos e identifica data, título e privacidade de cada registro.
+- Commits: componente `7d22647c4cf042b66d8842e2cb9ec13cfda0e4a3`, estilos `6114014d1f05951aba7476ea7a450523a6484128`.
+
+### Jogos — retomar Lig 4
+- `src/components/ConnectFourGame.tsx` separa partidas encerradas da partida ativa. Ao consultar um jogo antigo, aparece ação para voltar à partida em andamento, quando houver.
+- Commits: componente `da644e70958be8464c5967ea1afb59a7eccbf2e7`, estilos `0bf4e362d976d6cf06364fc1f24b15550588e613`.
+
+### Validação
+- As alterações desta seção foram versionadas na `main`. O build e os testes correspondentes serão considerados aprovados somente após a execução mais recente do GitHub Actions concluir com sucesso.
+- Não foi realizada validação visual em dispositivo nem teste de duas contas nesta etapa.
