@@ -1,0 +1,384 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  listCoupleGameChoices,
+  saveCoupleGameChoice,
+  type CoupleGameChoice,
+} from "@/lib/couple-game";
+
+type GameQuestion = {
+  id: string;
+  prompt: string;
+  optionA: string;
+  optionB: string;
+};
+
+const questions: GameQuestion[] = [
+  {
+    id: "viagem",
+    prompt: "Para viajar juntos, vocês preferem…",
+    optionA: "Praia e mar",
+    optionB: "Montanhas e frio",
+  },
+  {
+    id: "dia-livre",
+    prompt: "Em um dia livre, combina mais…",
+    optionA: "Sair para conhecer um lugar",
+    optionB: "Ficar em casa sem pressa",
+  },
+  {
+    id: "noite-a-dois",
+    prompt: "Para uma noite a dois…",
+    optionA: "Filme e cobertor",
+    optionB: "Jogo e brincadeira",
+  },
+  {
+    id: "cozinha",
+    prompt: "Na cozinha, vocês escolheriam…",
+    optionA: "Preparar uma receita juntos",
+    optionB: "Experimentar um restaurante novo",
+  },
+  {
+    id: "lembranca",
+    prompt: "Para guardar uma lembrança especial…",
+    optionA: "Fotos e vídeos",
+    optionB: "Cartas e bilhetes",
+  },
+  {
+    id: "surpresa",
+    prompt: "Uma surpresa gostosa seria…",
+    optionA: "Um passeio inesperado",
+    optionB: "Um presente escolhido com carinho",
+  },
+];
+
+type GameState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "no-couple" }
+  | { status: "pending" }
+  | { status: "active"; coupleId: string; choices: CoupleGameChoice[] };
+
+type CoupleGameProps = {
+  userId: string;
+};
+
+export function CoupleGame({ userId }: CoupleGameProps) {
+  const [state, setState] = useState<GameState>({ status: "loading" });
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadGame() {
+      setState({ status: "loading" });
+      setError(null);
+
+      try {
+        const { data: membership, error: membershipError } = await supabase
+          .from("couple_members")
+          .select("couple_id")
+          .eq("user_id", userId)
+          .is("ended_at", null)
+          .maybeSingle();
+
+        if (membershipError) throw membershipError;
+        if (!active) return;
+
+        if (!membership) {
+          setState({ status: "no-couple" });
+          return;
+        }
+
+        const { data: couple, error: coupleError } = await supabase
+          .from("couples")
+          .select("id, status")
+          .eq("id", membership.couple_id)
+          .maybeSingle();
+
+        if (coupleError) throw coupleError;
+        if (!active) return;
+
+        if (!couple) {
+          setState({ status: "no-couple" });
+          return;
+        }
+
+        if (couple.status !== "active") {
+          setState({ status: "pending" });
+          return;
+        }
+
+        const result = await listCoupleGameChoices(couple.id);
+        if (result.error) throw result.error;
+        if (!active) return;
+
+        setState({
+          status: "active",
+          coupleId: couple.id,
+          choices: result.data ?? [],
+        });
+      } catch {
+        if (active) setState({ status: "error" });
+      }
+    }
+
+    void loadGame();
+
+    return () => {
+      active = false;
+    };
+  }, [userId, refreshKey]);
+
+  const question = questions[questionIndex];
+  const ownChoice =
+    state.status === "active"
+      ? state.choices.find(
+          (item) =>
+            item.question_id === question.id && item.user_id === userId,
+        )?.choice
+      : undefined;
+  const partnerChoice =
+    state.status === "active"
+      ? state.choices.find(
+          (item) =>
+            item.question_id === question.id && item.user_id !== userId,
+        )?.choice
+      : undefined;
+
+  const ownProgress =
+    state.status === "active"
+      ? new Set(
+          state.choices
+            .filter((item) => item.user_id === userId)
+            .map((item) => item.question_id),
+        ).size
+      : 0;
+  const partnerProgress =
+    state.status === "active"
+      ? new Set(
+          state.choices
+            .filter((item) => item.user_id !== userId)
+            .map((item) => item.question_id),
+        ).size
+      : 0;
+
+  async function choose(choice: "a" | "b") {
+    if (state.status !== "active" || busy) return;
+
+    setBusy(true);
+    setError(null);
+
+    try {
+      const result = await saveCoupleGameChoice({
+        coupleId: state.coupleId,
+        questionId: question.id,
+        userId,
+        choice,
+      });
+
+      if (result.error) throw result.error;
+
+      const saved: CoupleGameChoice = {
+        couple_id: state.coupleId,
+        question_id: question.id,
+        user_id: userId,
+        choice,
+        answered_at: new Date().toISOString(),
+      };
+
+      setState((current) => {
+        if (current.status !== "active") return current;
+        return {
+          ...current,
+          choices: [
+            ...current.choices.filter(
+              (item) =>
+                !(
+                  item.question_id === question.id &&
+                  item.user_id === userId
+                ),
+            ),
+            saved,
+          ],
+        };
+      });
+    } catch {
+      setError("Não foi possível salvar sua escolha. Tente novamente.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function choiceLabel(choice: "a" | "b") {
+    return choice === "a" ? question.optionA : question.optionB;
+  }
+
+  return (
+    <section className="couple-game-screen" aria-labelledby="couple-game-title">
+      <header className="couple-game-heading">
+        <div>
+          <p className="date-kicker">Jogo para duas pessoas</p>
+          <h1 id="couple-game-title">Isto ou aquilo?</h1>
+        </div>
+        {state.status === "active" && (
+          <button
+            type="button"
+            className="inline-action"
+            onClick={() => setRefreshKey((key) => key + 1)}
+            disabled={busy}
+          >
+            Atualizar
+          </button>
+        )}
+      </header>
+
+      {state.status === "loading" && (
+        <p className="couple-game-state" role="status">Carregando jogo…</p>
+      )}
+
+      {state.status === "error" && (
+        <div className="couple-game-state">
+          <p role="alert">Não foi possível carregar o jogo.</p>
+          <button
+            type="button"
+            className="inline-action"
+            onClick={() => setRefreshKey((key) => key + 1)}
+          >
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {state.status === "no-couple" && (
+        <p className="couple-game-state">
+          Criem o espaço de vocês em Hoje e convidem a outra pessoa para jogar.
+        </p>
+      )}
+
+      {state.status === "pending" && (
+        <p className="couple-game-state">
+          O jogo será liberado quando a outra pessoa aceitar o convite.
+        </p>
+      )}
+
+      {state.status === "active" && (
+        <>
+          <div className="couple-game-progress" aria-label="Progresso das respostas">
+            <span>Você: {ownProgress}/{questions.length}</span>
+            <span>Outra pessoa: {partnerProgress}/{questions.length}</span>
+          </div>
+
+          <nav className="couple-game-question-nav" aria-label="Perguntas do jogo">
+            {questions.map((item, index) => {
+              const answeredByMe = state.choices.some(
+                (choice) =>
+                  choice.question_id === item.id && choice.user_id === userId,
+              );
+              const answeredByPartner = state.choices.some(
+                (choice) =>
+                  choice.question_id === item.id && choice.user_id !== userId,
+              );
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={[
+                    "couple-game-question-number",
+                    index === questionIndex ? "is-current" : "",
+                    answeredByMe ? "is-answered" : "",
+                    answeredByMe && answeredByPartner ? "is-paired" : "",
+                  ].join(" ")}
+                  onClick={() => setQuestionIndex(index)}
+                  aria-current={index === questionIndex ? "step" : undefined}
+                  aria-label={`Pergunta ${index + 1}${answeredByMe ? ", você respondeu" : ""}${answeredByPartner ? ", outra pessoa respondeu" : ""}`}
+                >
+                  {index + 1}
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="couple-game-question">
+            <p className="couple-game-count">Pergunta {questionIndex + 1} de {questions.length}</p>
+            <h2>{question.prompt}</h2>
+
+            <div className="couple-game-options">
+              <button
+                type="button"
+                className={ownChoice === "a" ? "couple-game-option is-selected" : "couple-game-option"}
+                onClick={() => void choose("a")}
+                disabled={busy}
+                aria-pressed={ownChoice === "a"}
+              >
+                <span>A</span>
+                <strong>{question.optionA}</strong>
+                <small>{ownChoice === "a" ? "Sua escolha" : "Escolher"}</small>
+              </button>
+              <button
+                type="button"
+                className={ownChoice === "b" ? "couple-game-option is-selected" : "couple-game-option"}
+                onClick={() => void choose("b")}
+                disabled={busy}
+                aria-pressed={ownChoice === "b"}
+              >
+                <span>B</span>
+                <strong>{question.optionB}</strong>
+                <small>{ownChoice === "b" ? "Sua escolha" : "Escolher"}</small>
+              </button>
+            </div>
+
+            <div className="couple-game-result" aria-live="polite">
+              {ownChoice && partnerChoice ? (
+                <>
+                  <p>Você: <strong>{choiceLabel(ownChoice)}</strong></p>
+                  <p>Outra pessoa: <strong>{choiceLabel(partnerChoice)}</strong></p>
+                  <p className="couple-game-match">
+                    {ownChoice === partnerChoice
+                      ? "Vocês escolheram a mesma opção."
+                      : "Desta vez, vocês escolheram opções diferentes."}
+                  </p>
+                </>
+              ) : ownChoice ? (
+                <p>Sua escolha foi salva. Aguardando a outra pessoa responder.</p>
+              ) : partnerChoice ? (
+                <p>A outra pessoa já respondeu. Escolha a sua para comparar.</p>
+              ) : (
+                <p>Escolham uma opção cada um para comparar as respostas.</p>
+              )}
+            </div>
+          </div>
+
+          {error && <p className="couple-game-error" role="alert">{error}</p>}
+
+          <footer className="couple-game-footer">
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => setQuestionIndex((index) => Math.max(0, index - 1))}
+              disabled={questionIndex === 0 || busy}
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() =>
+                setQuestionIndex((index) =>
+                  Math.min(questions.length - 1, index + 1),
+                )
+              }
+              disabled={questionIndex === questions.length - 1 || busy}
+            >
+              Próxima
+            </button>
+          </footer>
+        </>
+      )}
+    </section>
+  );
+}
