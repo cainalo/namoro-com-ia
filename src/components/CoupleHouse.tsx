@@ -188,6 +188,7 @@ export function CoupleHouse() {
             </button>
           ))}
           </div>
+          </div>
         </div>
 
         <div className="house-map-zoom-controls" role="group" aria-label="Controles de aproximação do mapa">
