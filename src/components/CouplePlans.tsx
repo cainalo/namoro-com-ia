@@ -3,6 +3,7 @@ import { CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, Users } from "luc
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCouplePlanEvent,
+  deleteCouplePlanEvent,
   listCouplePlanEvents,
   updateCouplePlanEvent,
   type CouplePlanEvent,
@@ -87,6 +88,9 @@ export function CouplePlans({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [editingEventId, setEditingEventId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const today = new Date();
@@ -270,6 +274,8 @@ export function CouplePlans({ userId }: { userId: string }) {
     if (planEvent.owner_id !== userId || busy) return;
 
     setEditingEventId(planEvent.id);
+    setDeleteConfirmId(null);
+    setDeleteError(null);
     setEventTitle(planEvent.title);
     setDescription(planEvent.description ?? "");
     setPlace(planEvent.place ?? "");
@@ -373,6 +379,43 @@ export function CouplePlans({ userId }: { userId: string }) {
       }
     } finally {
       setBusy(false);
+    }
+  }
+
+  function requestDeleteEvent(planEvent: CouplePlanEvent) {
+    if (planEvent.owner_id !== userId || deleteBusy) return;
+    if (editingEventId) cancelEditingEvent();
+    setDeleteConfirmId(planEvent.id);
+    setDeleteError(null);
+    setError(null);
+    setNotice(null);
+  }
+
+  function cancelDeleteEvent() {
+    if (deleteBusy) return;
+    setDeleteConfirmId(null);
+    setDeleteError(null);
+  }
+
+  async function handleDeleteEvent(eventId: string) {
+    if (eventLoadStatus !== "ready" || deleteConfirmId !== eventId || deleteBusy) return;
+    const planEvent = events.find((item) => item.id === eventId);
+    if (!planEvent || planEvent.owner_id !== userId) return;
+
+    setDeleteBusy(true);
+    setDeleteError(null);
+    setNotice(null);
+
+    try {
+      const result = await deleteCouplePlanEvent(eventId);
+      if (result.error) throw result.error;
+      setDeleteConfirmId(null);
+      setNotice("Compromisso excluído.");
+      setRefreshKey((current) => current + 1);
+    } catch {
+      setDeleteError("Não foi possível excluir este compromisso.");
+    } finally {
+      setDeleteBusy(false);
     }
   }
 
@@ -518,15 +561,48 @@ export function CouplePlans({ userId }: { userId: string }) {
                     {planEvent.visibility === "shared" ? "A dois" : "Privado"}
                   </span>
                   {planEvent.owner_id === userId && (
-                    <button
-                      type="button"
-                      className="plans-event-edit-action"
-                      onClick={() => startEditingEvent(planEvent)}
-                    >
-                      Editar
-                    </button>
+                    <div className="plans-event-owner-actions">
+                      <button
+                        type="button"
+                        className="plans-event-edit-action"
+                        onClick={() => startEditingEvent(planEvent)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        type="button"
+                        className="plans-event-delete-action"
+                        onClick={() => requestDeleteEvent(planEvent)}
+                      >
+                        Excluir
+                      </button>
+                    </div>
                   )}
                 </div>
+                {deleteConfirmId === planEvent.id && (
+                  <div className="plans-event-delete-confirm" role="alert">
+                    <p>Excluir este compromisso definitivamente?</p>
+                    <div>
+                      <button
+                        type="button"
+                        className="secondary-action"
+                        onClick={cancelDeleteEvent}
+                        disabled={deleteBusy}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        className="plans-event-delete-confirm-action"
+                        onClick={() => void handleDeleteEvent(planEvent.id)}
+                        disabled={deleteBusy}
+                      >
+                        {deleteBusy ? "Excluindo…" : "Sim, excluir"}
+                      </button>
+                    </div>
+                    {deleteError && <p className="plans-feedback is-error" role="alert">{deleteError}</p>}
+                  </div>
+                )}
               </article>
             ))}
           </div>
