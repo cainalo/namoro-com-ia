@@ -5,6 +5,7 @@ import {
   Compass,
   Heart,
   Home,
+  Gamepad2,
   Images,
   MessageCircle,
   type LucideIcon,
@@ -14,8 +15,9 @@ import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
+import { CoupleGame } from "@/components/CoupleGame";
 
-type SectionId = "home" | "messages" | "memories" | "organize" | "universe";
+type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
 type NavigationItem = {
   id: SectionId;
@@ -32,7 +34,7 @@ const navigation: NavigationItem[] = [
 ];
 
 const emptyStates: Record<
-  Exclude<SectionId, "home">,
+  Exclude<SectionId, "home" | "games">,
   { title: string; message: string; icon: LucideIcon }
 > = {
   messages: { title: "Conversas", message: "As mensagens de vocês aparecerão aqui.", icon: MessageCircle },
@@ -101,6 +103,8 @@ function Index() {
           </div>
           {activeSection === "messages" ? (
             <CoupleConversation userId={session.user.id} />
+          ) : activeSection === "games" ? (
+            <CoupleGame userId={session.user.id} />
           ) : activeSection !== "home" ? (
             <EmptySection section={activeSection} />
           ) : null}
@@ -257,6 +261,11 @@ function HomeScreen({
               <button type="button" onClick={() => onNavigate("universe")}>
                 <Compass aria-hidden="true" />
                 <span>Visitar a casa</span>
+                <ChevronRight aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => onNavigate("games")}>
+                <Gamepad2 aria-hidden="true" />
+                <span>Jogar a dois</span>
                 <ChevronRight aria-hidden="true" />
               </button>
             </div>
