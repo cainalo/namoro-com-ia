@@ -278,7 +278,7 @@ function HomeScreen({
   );
 }
 
-function EmptySection({ section }: { section: Exclude<SectionId, "home"> }) {
+function EmptySection({ section }: { section: Exclude<SectionId, "home" | "games" | "universe"> }) {
   const detail = emptyStates[section];
   const Icon = detail.icon;
 
