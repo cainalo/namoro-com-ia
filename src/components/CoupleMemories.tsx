@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   createCoupleMemory,
   listCoupleMemories,
+  updateCoupleMemory,
   type CoupleMemory,
   type MemoryVisibility,
 } from "@/lib/couple-memories";
@@ -47,6 +48,12 @@ export function CoupleMemories({ userId }: { userId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editBody, setEditBody] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -149,6 +156,55 @@ export function CoupleMemories({ userId }: { userId: string }) {
       }
     } finally {
       setBusy(false);
+    }
+  }
+
+  function startEditing(memory: CoupleMemory) {
+    if (memory.owner_id !== userId || editBusy) return;
+    setEditingId(memory.id);
+    setEditTitle(memory.title ?? "");
+    setEditBody(memory.body);
+    setEditDate(memory.memory_date);
+    setEditError(null);
+    setError(null);
+  }
+
+  function cancelEditing() {
+    if (editBusy) return;
+    setEditingId(null);
+    setEditError(null);
+  }
+
+  async function handleUpdate(event: FormEvent<HTMLFormElement>, memoryId: string) {
+    event.preventDefault();
+    if (editingId !== memoryId || editBusy) return;
+
+    const normalizedBody = editBody.trim();
+    if (!normalizedBody) {
+      setEditError("O conteúdo da lembrança não pode ficar vazio.");
+      return;
+    }
+
+    setEditBusy(true);
+    setEditError(null);
+    setNotice(null);
+
+    try {
+      const result = await updateCoupleMemory({
+        id: memoryId,
+        title: editTitle.trim() || null,
+        body: normalizedBody,
+        memoryDate: editDate,
+      });
+
+      if (result.error) throw result.error;
+      setEditingId(null);
+      setNotice("Lembrança atualizada.");
+      setRefreshKey((current) => current + 1);
+    } catch {
+      setEditError("Não foi possível atualizar esta lembrança.");
+    } finally {
+      setEditBusy(false);
     }
   }
 
@@ -292,20 +348,91 @@ export function CoupleMemories({ userId }: { userId: string }) {
             {state.memories.length === 0 ? (
               <p className="memories-state">Nenhuma lembrança guardada ainda.</p>
             ) : (
-              state.memories.map((memory) => (
-                <article className="memory-entry" key={memory.id}>
-                  <div className="memory-entry-meta">
-                    <time dateTime={memory.memory_date}>
-                      {formatMemoryDate(memory.memory_date)}
-                    </time>
-                    <span className={memory.visibility === "shared" ? "is-shared" : "is-private"}>
-                      {memory.visibility === "shared" ? "Compartilhada" : "Privada"}
-                    </span>
-                  </div>
-                  <h3>{memory.title || "Lembrança sem título"}</h3>
-                  <p>{memory.body}</p>
-                </article>
-              ))
+              state.memories.map((memory) =>
+                editingId === memory.id ? (
+                  <form
+                    className="memory-edit-form"
+                    key={memory.id}
+                    onSubmit={(event) => void handleUpdate(event, memory.id)}
+                  >
+                    <div className="memory-edit-heading">
+                      <strong>Editar lembrança</strong>
+                      <span>{memory.visibility === "shared" ? "Compartilhada" : "Privada"}</span>
+                    </div>
+                    <input
+                      className="memory-title-input"
+                      type="text"
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                      placeholder="Título (opcional)"
+                      maxLength={120}
+                      aria-label="Título da lembrança"
+                      disabled={editBusy}
+                    />
+                    <textarea
+                      className="memory-body-input"
+                      value={editBody}
+                      onChange={(event) => setEditBody(event.target.value)}
+                      maxLength={5000}
+                      rows={4}
+                      required
+                      aria-label="Conteúdo da lembrança"
+                      disabled={editBusy}
+                    />
+                    <div className="memory-edit-footer">
+                      <label className="memory-date-field">
+                        <span>Data</span>
+                        <input
+                          type="date"
+                          value={editDate}
+                          onChange={(event) => setEditDate(event.target.value)}
+                          required
+                          disabled={editBusy}
+                        />
+                      </label>
+                      <span className="memory-character-count">{editBody.length}/5000</span>
+                      <button
+                        type="button"
+                        className="secondary-action"
+                        onClick={cancelEditing}
+                        disabled={editBusy}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        className="primary-action"
+                        disabled={editBusy || !editBody.trim()}
+                      >
+                        {editBusy ? "Salvando…" : "Salvar"}
+                      </button>
+                    </div>
+                    {editError && <p className="memory-feedback is-error" role="alert">{editError}</p>}
+                  </form>
+                ) : (
+                  <article className="memory-entry" key={memory.id}>
+                    <div className="memory-entry-meta">
+                      <time dateTime={memory.memory_date}>
+                        {formatMemoryDate(memory.memory_date)}
+                      </time>
+                      <span className={memory.visibility === "shared" ? "is-shared" : "is-private"}>
+                        {memory.visibility === "shared" ? "Compartilhada" : "Privada"}
+                      </span>
+                      {memory.owner_id === userId && (
+                        <button
+                          type="button"
+                          className="memory-edit-action"
+                          onClick={() => startEditing(memory)}
+                        >
+                          Editar
+                        </button>
+                      )}
+                    </div>
+                    <h3>{memory.title || "Lembrança sem título"}</h3>
+                    <p>{memory.body}</p>
+                  </article>
+                )
+              )
             )}
           </div>
         </>
