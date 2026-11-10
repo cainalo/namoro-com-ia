@@ -45,6 +45,15 @@ Consultar AGENTS.md antes de cada ciclo.
 - Migration ainda aguarda confirmação de aplicação no banco. Não inserir dados fictícios.
 - Código inicial: commit 5c287bf82880e3dff29732f225737d17343bd0d7. Realtime: commit 7051c8baccc47dd80cac054d6ed644a10626e7bd. Migration da publicação Realtime: commit eea6e69b7583b69a20393bfb8cdc52b24e52721a.
 
+## Entrega recente — primeiro jogo (2026-11-10)
+- Criada a migration `20261110134500_create_couple_game_choices.sql` para guardar as escolhas individuais do jogo Isto ou Aquilo.
+- RLS: integrantes atuais e antigos consultam o histórico do próprio casal; somente integrantes atuais de casal ativo podem inserir/alterar a própria escolha. Não há exclusão pelo cliente.
+- Criado `src/lib/couple-game.ts` como adapter tipado temporário até a regeneração oficial dos tipos Supabase.
+- Criado `src/components/CoupleGame.tsx` com seis perguntas, seleção entre duas opções, progresso individual e comparação das respostas.
+- O jogo foi ligado ao atalho “Jogar a dois” na área Hoje. Atualização é manual nesta primeira versão; realtime fica para uma etapa posterior.
+- A migration ainda não teve a aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
+- Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`.
+
 ## Ciclos
 
 ### Ciclo 1 — shell visual
@@ -66,7 +75,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo, com os dois membros como admin (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [x] Especificar fluxo seguro de convites e aceite em docs/INVITATION_FLOW_PLAN.md.
 - [x] Migration de convites `20261110021500_create_couple_invitations.sql` aplicada e confirmada pelo usuário via histórico de migrations.
-- [ ] Implementar a interface para criar o casal, gerar/renovar/revogar link e aceitar convite.
+- [x] Implementar a interface para criar o casal, gerar/renovar/revogar link e aceitar convite. A rota de convite ainda depende da regeneração oficial de src/routeTree.gen.ts.
 - [ ] Testar create_couple, concorrência e isolamento de casais com duas contas.
 - [x] Implementar vínculo atômico limitado a duas contas: RPC de aceite transacional e trigger de limite de membros estão versionados e a migration de convites foi confirmada como aplicada.
 - [ ] Implementar RLS e testar com duas contas. RLS de profiles, couples e couple_members aplicada; testes com duas contas não feitos.
@@ -92,13 +101,13 @@ Consultar AGENTS.md antes de cada ciclo.
 - O fluxo de convites tem componentes de criação/gerenciamento e uma página de aceite. Atenção: src/routeTree.gen.ts ainda não registra /invite/$token e só pode ser atualizado pelo gerador oficial.
 - O workspace Lovable recusou uma mensagem de edição por falta de créditos. Não pedir ao usuário tokens, Secrets ou compra de créditos como requisito; usar o GitHub conectado para tarefas que possam ser feitas com segurança.
 - A migration de mensagens 20261110131600_create_couple_messages.sql e a migration 20261110132200_enable_realtime_for_couple_messages.sql foram adicionadas à main. A aplicação de ambas no Supabase ainda não foi confirmada.
-- O Lovable reconhece o commit de implementação das conversas e reporta o projeto como ready. Não há checks de CI no commit e os comandos de testes/build não foram executados nesta etapa.
+- O Lovable reconhece a branch main e reporta o projeto como ready. Não há checks de CI nos commits recentes e os comandos de testes/build não foram executados nesta etapa.
 
 ### Ciclos seguintes
 1. Conversas e feed.
 2. Memórias e biblioteca.
 3. Organização e vida emocional.
-4. Jogos e desafios.
+4. Jogos e desafios — primeiro jogo Isto ou Aquilo iniciado; ampliar catálogo, atualização em tempo real e novos formatos.
 5. Casa isométrica, avatares e mascotes.
 6. Cinema, música, livros, culinária, viagens, natureza e projetos.
 7. Eventos, surpresas e notificações.
