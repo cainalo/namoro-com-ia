@@ -45,16 +45,16 @@ Consultar AGENTS.md antes de cada ciclo.
 - Migration ainda aguarda confirmação de aplicação no banco. Não inserir dados fictícios.
 - Código inicial: commit 5c287bf82880e3dff29732f225737d17343bd0d7. Realtime: commit 7051c8baccc47dd80cac054d6ed644a10626e7bd. Migration da publicação Realtime: commit eea6e69b7583b69a20393bfb8cdc52b24e52721a.
 
-## Entrega recente — primeiro jogo (2026-11-10)
+## Jogos antigos retirados da biblioteca ativa (2026-11-10)
 - Criada a migration `20261110134500_create_couple_game_choices.sql` para guardar as escolhas individuais do jogo Isto ou Aquilo.
 - RLS: integrantes atuais e antigos consultam o histórico do próprio casal; somente integrantes atuais de casal ativo podem inserir/alterar a própria escolha. Não há exclusão pelo cliente.
 - Criado `src/lib/couple-game.ts` como adapter tipado temporário até a regeneração oficial dos tipos Supabase.
-- Criado `src/components/CoupleGame.tsx` com seis perguntas, seleção entre duas opções, progresso individual e comparação das respostas. O encerramento agora apresenta um resumo compartilhado: perguntas respondidas pelos dois, escolhas iguais/diferentes e as opções escolhidas em cada pergunta concluída. Perguntas sem duas respostas ficam fora da contagem.
+- Os protótipos Isto ou Aquilo e Desafio do dia foram retirados da biblioteca ativa por serem perguntas/dinâmicas sobre a relação, e não jogos de competição ou cooperação com regras próprias. Os arquivos e migrations históricos foram preservados, mas não são mais exibidos em Jogos.
 - O jogo foi ligado ao atalho “Jogar a dois” na área Hoje. As escolhas agora sincronizam por Supabase Realtime para eventos INSERT e UPDATE, com status de conexão e atualização manual como alternativa.
 - As migrations da tabela e da publicação Realtime ainda não tiveram aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
 - Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`; resumo de resultados `e7fae96bb7bb592279f94c2e70220aba5ddd52ea`; estilos `a72dc8bb18c8d5e9ec9b808c29afb07087ac2dba`.
 
-## Segundo jogo — Desafio do dia (2026-11-10)
+## Protótipo arquivado — Desafio do dia (2026-11-10)
 - Criado `src/components/CoupleDailyChallenge.tsx` com vinte missões curtas para conversa, carinho, criatividade e diversão.
 - A missão é determinística a partir do identificador do casal e da data no fuso `America/Sao_Paulo`; os dois dispositivos vinculados ao mesmo casal recebem a mesma missão no mesmo dia.
 - Criado `src/components/CoupleGames.tsx` para alternar entre Isto ou Aquilo e Desafio do dia; a navegação existente Hoje → Jogar a dois continua sendo o ponto de entrada.
@@ -66,6 +66,17 @@ Consultar AGENTS.md antes de cada ciclo.
 - As duas migrations foram versionadas na `main`, mas sua aplicação no Supabase ainda não foi confirmada. Até a confirmação, gravação e Realtime dependem da implantação dessas migrations.
 - Na última conferência, o Lovable reportou `latest_commit_sha=52afa0a24a7099645cd54fa5cea72984888df90b` e `status=ready`; a leitura de `CoupleDailyChallenge.tsx` confirmou o histórico e o filtro por ID de missão. A leitura de `styles.css` foi truncada antes dos estilos adicionados; não foi executado build ou teste visual do Preview.
 - Commits: componente do desafio com progresso `8145bf648e7890d7ffabff318bcdb30df4e3dc3a` e ajuste de consistência da missão `52afa0a24a7099645cd54fa5cea72984888df90b`; migrations `c14531bb34d3b503197957c83fd49af97594d8a0` e `782edef1711b5241576f2704fe31720f2e58d344`; adapter `fa67467a65309d5f6724f85b67290ca3e98c6d79`; estilos `367cad42eb93f9093809e9d57cbc610227df9e82`.
+
+## Nova biblioteca de jogos — Lig 4 (2026-11-10)
+- A biblioteca ativa foi reorganizada em `src/components/CoupleGames.tsx`. Os jogos antigos de perguntas e tarefas não aparecem mais; o hub apresenta jogos tradicionais de dois jogadores.
+- Criado `src/components/ConnectFourGame.tsx`: tabuleiro 7×6, sete colunas jogáveis, alternância de turnos, vitória horizontal/vertical/diagonal, empate, revanche e histórico das últimas partidas.
+- Criado `src/lib/connect-four.ts` como adapter estreito enquanto os tipos gerados do Supabase não são regenerados.
+- A partida e as jogadas são processadas por RPCs no banco. A função de jogada bloqueia a partida, valida jogador/turno/coluna, rejeita turnos desatualizados e só então grava o tabuleiro; o Realtime distribui as atualizações aos dois navegadores.
+- Migration `20261110150000_create_connect_four_matches.sql`: tabela com RLS de leitura do próprio casal; sem DML direto pelo cliente; RPCs autorizadas apenas a usuários autenticados; no máximo uma partida ativa por casal; inclusão idempotente na publicação Realtime.
+- O Lig 4 está implementado no código, mas a aplicação da migration no Supabase ainda não foi confirmada. A interface mostra estado de banco pendente em vez de simular uma partida se a tabela/RPC não estiverem implantadas.
+- Jogos previstos para as próximas etapas: Damas, Xadrez, Batalha Naval, Dominó, Truco e Quiz. Estão identificados como em desenvolvimento, não como disponíveis.
+- Não foram executados build, testes automatizados ou testes com duas contas; os checks de CI não foram disponibilizados nesta etapa.
+- Commits: migration e correções `ae6ffa4bed585b3267ed4cb121d2e5d688db4948`, `89ac1f36ad20db0d6f5af5be3a3aaa66af9403c9`, `cb6b3fe24db81e0339b030147a8b832ca6e532e6` e `63b2c96850c67812592880a45ed1f08f6b500225`; adapter `23bbe25320975bea210988892a4b9997a2ce15cc` e correção `bb2e45f3fd3300fe4f1177b234f8ea79c2b915a3`; tabuleiro `6b69633f7cb3597d16b7e9a8645f60d3f78b4865` e estado pendente `ed3cedddf74d3f743feb030ba78682003b1d8437`; biblioteca `7aa33e7b01a0a5deff500f1cc8fbf99c77345589`; estilos `bbad06ff8fd795f7eaee3e34192843227dde8e5b`.
 
 ## Ciclos
 
@@ -120,7 +131,7 @@ Consultar AGENTS.md antes de cada ciclo.
 1. Conversas e feed.
 2. Memórias e biblioteca.
 3. Organização e vida emocional.
-4. Jogos e desafios — Isto ou Aquilo e Desafio do dia implementados; próximos passos: validar o uso dos dois dispositivos e decidir como registrar conclusão/histórico dos desafios.
+4. Jogos — Lig 4 em implementação online; próximos: Damas, Xadrez, Batalha Naval, Dominó, Truco e Quiz, priorizando regras completas e partidas sincronizadas.
 5. Casa isométrica, avatares e mascotes.
 6. Cinema, música, livros, culinária, viagens, natureza e projetos.
 7. Eventos, surpresas e notificações.
