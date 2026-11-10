@@ -5727,3 +5727,50 @@
     flex-direction: column;
   }
 }
+
+
+/* Planos — filtros de privacidade do dia */
+.plans-event-filters {
+  display: inline-flex;
+  align-self: flex-start;
+  flex-wrap: wrap;
+  gap: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--color-sidebar) 22%, var(--color-background));
+  padding: 3px;
+}
+
+.plans-event-filters button {
+  min-height: 28px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  padding: 0 9px;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.plans-event-filters button:hover,
+.plans-event-filters button.is-active {
+  border-color: color-mix(in oklab, var(--color-accent) 52%, var(--color-border));
+  background: color-mix(in oklab, var(--color-primary) 18%, var(--color-background));
+  color: var(--color-foreground);
+}
+
+.plans-event-filters button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 680px) {
+  .plans-event-filters {
+    width: 100%;
+  }
+
+  .plans-event-filters button {
+    flex: 1 1 auto;
+  }
+}
