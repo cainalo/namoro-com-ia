@@ -127,7 +127,7 @@ export function HouseInterior({
           <g>
             <path d="M285 350 H365 V252 H285 Z" fill="#392c24" stroke="#c1a16a" strokeWidth="7" />
             <path d="M299 338 V285 Q325 235 351 285 V338 Z" fill="#211f1a" stroke="#8e6c49" strokeWidth="5" />
-            <path d="M306 334 Q312 300 325 316 Q340 285 346 334 Z" fill="url(#hall-fire)" />
+            <path className="house-hall-flame" d="M306 334 Q312 300 325 316 Q340 285 346 334 Z" fill="url(#hall-fire)" />
             <path d="M304 351 H347" stroke="#c7a574" strokeWidth="7" />
             <path d="M277 246 H373" stroke="#d2b98a" strokeWidth="9" />
             <path d="M287 354 L287 370 M362 354 L362 370" stroke="#3a3027" strokeWidth="8" />
