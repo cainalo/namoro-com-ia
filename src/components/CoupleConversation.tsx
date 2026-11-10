@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
@@ -64,6 +64,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const threadRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLFormElement>(null);
   const wasAtBottomRef = useRef(true);
   const previousMessageCountRef = useRef(0);
   const messageCount = state.status === "active" ? state.messages.length : 0;
@@ -251,6 +252,21 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
     }
   }
 
+  function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (
+      event.key !== "Enter" ||
+      event.shiftKey ||
+      (!event.ctrlKey && !event.metaKey)
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    if (!busy && draft.trim()) {
+      composerRef.current?.requestSubmit();
+    }
+  }
+
   return (
     <section className="conversation-screen" aria-labelledby="conversation-title">
       <header className="conversation-heading">
@@ -345,7 +361,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
             )}
           </div>
 
-          <form className="conversation-composer" onSubmit={handleSend}>
+          <form ref={composerRef} className="conversation-composer" onSubmit={handleSend}>
             <label className="conversation-input-label" htmlFor="conversation-draft">
               Mensagem
             </label>
@@ -356,9 +372,11 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
               placeholder="Escreva uma mensagem…"
               maxLength={2000}
               rows={2}
+              onKeyDown={handleComposerKeyDown}
               disabled={busy}
             />
             <div className="conversation-composer-footer">
+              <span className="conversation-shortcut-hint">Ctrl / ⌘ + Enter para enviar</span>
               <span className="conversation-counter">{draft.length}/2000</span>
               <button
                 type="submit"
