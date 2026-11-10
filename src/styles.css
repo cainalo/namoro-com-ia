@@ -4839,3 +4839,69 @@
     animation: none;
   }
 }
+
+
+/* Planos — edição de compromissos próprios */
+.plans-event-entry-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plans-event-entry-actions > span {
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 3px 6px;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.plans-event-entry-actions > span.is-shared {
+  border-color: color-mix(in oklab, var(--color-primary) 46%, var(--color-border));
+  color: var(--color-primary);
+}
+
+.plans-event-edit-action {
+  border: 0;
+  background: transparent;
+  padding: 2px 4px;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.plans-event-edit-action:hover {
+  text-decoration: underline;
+}
+
+.plans-event-edit-action:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.plans-edit-privacy {
+  align-self: center;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+@media (max-width: 680px) {
+  .plans-event-entry-actions {
+    grid-column: 2;
+    align-items: center;
+    flex-direction: row;
+    justify-self: start;
+  }
+
+  .plans-edit-privacy {
+    width: 100%;
+  }
+}
