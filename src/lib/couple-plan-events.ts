@@ -32,6 +32,10 @@ type PlanEventWriteResponse = {
   error: PlanEventError | null;
 };
 
+type PlanEventUpdateFilter = {
+  eq: (column: "id", value: string) => PromiseLike<PlanEventWriteResponse>;
+};
+
 type PlanEventSelection = {
   gte: (column: "event_date", value: string) => PlanEventSelection;
   lte: (column: "event_date", value: string) => PlanEventSelection;
@@ -56,6 +60,15 @@ type PlanEventTable = {
     start_time: string | null;
     end_time: string | null;
   }) => PromiseLike<PlanEventWriteResponse>;
+  update: (values: {
+    title: string;
+    description: string | null;
+    place: string | null;
+    event_date: string;
+    all_day: boolean;
+    start_time: string | null;
+    end_time: string | null;
+  }) => PlanEventUpdateFilter;
 };
 
 type PlanEventClient = {
@@ -103,4 +116,28 @@ export async function createCouplePlanEvent(input: {
     start_time: input.startTime,
     end_time: input.endTime,
   });
+}
+
+export async function updateCouplePlanEvent(input: {
+  id: string;
+  title: string;
+  description: string | null;
+  place: string | null;
+  eventDate: string;
+  allDay: boolean;
+  startTime: string | null;
+  endTime: string | null;
+}) {
+  return planEventClient
+    .from("couple_plan_events")
+    .update({
+      title: input.title,
+      description: input.description,
+      place: input.place,
+      event_date: input.eventDate,
+      all_day: input.allDay,
+      start_time: input.startTime,
+      end_time: input.endTime,
+    })
+    .eq("id", input.id);
 }
