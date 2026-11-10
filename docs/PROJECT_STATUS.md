@@ -57,7 +57,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Etapa 1 — profiles aplicada no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo, com os dois membros como admin (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [x] Especificar fluxo seguro de convites e aceite em docs/INVITATION_FLOW_PLAN.md.
-- [ ] Aplicar convites, aceite e desvinculação pelo fluxo Lovable/Supabase autorizado.
+- [ ] Confirmar a aplicação da migration da etapa 3 pelo Supabase GitHub Integration (Deploy to production em `main`); migration versionada em `supabase/migrations/20261110021500_create_couple_invitations.sql`.
 - [ ] Implementar a interface para criar o casal, gerar/renovar/revogar link e aceitar convite.
 - [ ] Testar create_couple, concorrência e isolamento de casais com duas contas.
 - [ ] Implementar vínculo atômico limitado a duas contas. O limite de duas pessoas já está garantido no banco; o fluxo de convite/aceite ainda não existe.
@@ -79,7 +79,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - A validação com duas contas continua pendente, mas não bloqueia o avanço das etapas de fundação do casal; conversas e memórias aguardam a implementação e validação do vínculo.
 
 ### Bloqueio operacional
-- Em 2026-11-09, o Lovable recusou novas mensagens por falta de créditos do workspace. A etapa de convites está especificada, mas nenhuma migration ou alteração de aplicação foi aplicada nesta etapa.
+- O workspace Lovable informou falta de créditos para novas mensagens. Para schema, o usuário habilitou a integração oficial GitHub do Supabase com Deploy to production em `main`; a migration de convites está versionada e aguarda confirmação do resultado da implantação. O código de interface ainda não foi implementado.
 - Antes de aceitar convites, a próxima migration também precisa corrigir couple_members_before_insert para exigir couples.status = 'pending' em qualquer nova membership; atualmente o trigger só bloqueia status archived.
 
 ### Ciclos seguintes
