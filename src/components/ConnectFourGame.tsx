@@ -299,10 +299,10 @@ export function ConnectFourGame({ userId }: { userId: string }) {
 
   function matchOutcome(match: ConnectFourMatch) {
     if (match.status === "active") {
-      return match.current_turn === userId ? "Sua vez" : "Vez da outra pessoa";
+      return match.current_turn === userId ? "Sua vez" : "Vez da adversário";
     }
     if (match.is_draw) return "Empate";
-    return match.winner_id === userId ? "Você venceu" : "Outra pessoa venceu";
+    return match.winner_id === userId ? "Você venceu" : "Adversário venceu";
   }
 
   return (
@@ -371,7 +371,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
         <>
           {!activeMatch ? (
             <div className="connect-four-start">
-              <p>Conecte quatro peças antes da outra pessoa. Vence quem completar primeiro uma linha horizontal, vertical ou diagonal.</p>
+              <p>Conecte quatro peças antes da adversário. Vence quem completar primeiro uma linha horizontal, vertical ou diagonal.</p>
               <button
                 type="button"
                 className="primary-action"
@@ -391,11 +391,11 @@ export function ConnectFourGame({ userId }: { userId: string }) {
                       ? "Empate"
                       : activeMatch.winner_id === userId
                         ? "Você venceu!"
-                        : "Outra pessoa venceu"}
+                        : "Adversário venceu"}
                 </p>
                 <div className="connect-four-legend">
                   <span><i className="connect-four-piece is-player-one" />Você {myToken === 1 ? "(verde)" : "(terracota)"}</span>
-                  <span><i className="connect-four-piece is-player-two" />Outra pessoa {myToken === 2 ? "(verde)" : "(terracota)"}</span>
+                  <span><i className="connect-four-piece is-player-two" />Adversário {myToken === 2 ? "(verde)" : "(terracota)"}</span>
                 </div>
               </div>
 
@@ -443,7 +443,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
               </div>
 
               {activeMatch.status === "active" && !myTurn && (
-                <p className="connect-four-waiting">Aguarde a jogada da outra pessoa.</p>
+                <p className="connect-four-waiting">Aguarde a jogada da adversário.</p>
               )}
 
               <div className="connect-four-actions">
