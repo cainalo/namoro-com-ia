@@ -2887,3 +2887,141 @@
     padding: 15px 14px 16px;
   }
 }
+
+
+/* Casa — terreno isométrico inicial */
+.house-screen {
+  display: flex;
+  min-height: calc(100dvh - 112px);
+  flex-direction: column;
+  gap: 17px;
+}
+
+.house-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 15px;
+}
+
+.house-heading h1 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.house-map-coordinate {
+  border: 1px solid color-mix(in oklab, var(--color-accent) 40%, var(--color-border));
+  border-radius: 3px;
+  padding: 7px 10px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.house-map-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 34%, var(--color-border));
+  border-radius: 5px;
+  background: #1e352c;
+  box-shadow:
+    inset 0 0 0 4px color-mix(in oklab, var(--color-accent) 7%, transparent),
+    0 12px 28px -22px oklch(0 0 0 / 0.9);
+}
+
+.house-isometric-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.house-map-legend {
+  position: absolute;
+  right: 18px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 42%, var(--color-border));
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--color-sidebar) 92%, transparent);
+  padding: 9px 12px;
+  color: var(--color-sidebar-foreground);
+}
+
+.house-map-marker {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  transform: rotate(45deg);
+  border: 1px solid #f0dca8;
+  background: #d5a43b;
+}
+
+.house-map-legend div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.house-map-legend strong {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.house-map-legend div span {
+  color: color-mix(in oklab, var(--color-sidebar-foreground) 72%, transparent);
+  font-size: 9px;
+}
+
+.house-map-note {
+  max-width: 680px;
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+@media (max-width: 680px) {
+  .house-screen {
+    min-height: calc(100dvh - 165px);
+    gap: 13px;
+  }
+
+  .house-heading {
+    align-items: center;
+    padding-bottom: 12px;
+  }
+
+  .house-map-shell {
+    border-radius: 4px;
+  }
+
+  .house-map-legend {
+    right: 8px;
+    bottom: 8px;
+    gap: 7px;
+    padding: 7px 8px;
+  }
+
+  .house-map-legend strong {
+    font-size: 14px;
+  }
+
+  .house-map-legend div span {
+    font-size: 8px;
+  }
+
+  .house-map-note {
+    font-size: 11px;
+  }
+}
