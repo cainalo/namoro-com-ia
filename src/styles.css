@@ -3025,3 +3025,47 @@
     font-size: 11px;
   }
 }
+
+
+/* Conversas — contraste dos balões e identificação */
+.conversation-message {
+  border-color: color-mix(in oklab, var(--color-accent) 24%, var(--color-border));
+  background: var(--color-card);
+}
+
+.conversation-message p {
+  color: var(--color-card-foreground);
+}
+
+.conversation-message-meta {
+  color: color-mix(in oklab, var(--color-card-foreground) 66%, var(--color-card));
+}
+
+.conversation-message-meta span {
+  color: var(--color-primary);
+}
+
+.conversation-message time {
+  font-variant-numeric: tabular-nums;
+}
+
+.conversation-message.is-own {
+  border-color: color-mix(in oklab, var(--color-accent) 38%, var(--color-sidebar));
+  background: color-mix(in oklab, var(--color-sidebar) 78%, var(--color-secondary));
+}
+
+.conversation-message.is-own p,
+.conversation-message.is-own .conversation-message-meta span {
+  color: var(--color-sidebar-foreground);
+}
+
+.conversation-message.is-own .conversation-message-meta {
+  color: color-mix(in oklab, var(--color-sidebar-foreground) 66%, transparent);
+}
+
+@media (max-width: 680px) {
+  .conversation-message {
+    max-width: 90%;
+    padding: 10px 12px;
+  }
+}
