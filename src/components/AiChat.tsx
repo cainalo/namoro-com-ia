@@ -19,6 +19,13 @@ export function AiChat() {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
+  function startNewConversation() {
+    if (loading) return;
+    setMessages([]);
+    setInput("");
+    setError(null);
+  }
+
   async function send(e: FormEvent) {
     e.preventDefault();
     const text = input.trim();
@@ -88,7 +95,17 @@ export function AiChat() {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
           <SheetHeader className="border-b px-6 py-5 text-left">
-            <SheetTitle className="font-display text-2xl tracking-[0.2em]">NAMORO · IA</SheetTitle>
+            <div className="flex items-center justify-between gap-3">
+              <SheetTitle className="font-display text-2xl tracking-[0.2em]">NAMORO · IA</SheetTitle>
+              <button
+                type="button"
+                className="shrink-0 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                onClick={startNewConversation}
+                disabled={loading || messages.length === 0}
+              >
+                Nova conversa
+              </button>
+            </div>
             <SheetDescription>Pergunte quando quiser uma ajuda para pensar, planejar ou conversar.</SheetDescription>
           </SheetHeader>
 
