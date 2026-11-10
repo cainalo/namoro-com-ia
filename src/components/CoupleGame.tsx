@@ -63,12 +63,25 @@ type CoupleGameProps = {
   userId: string;
 };
 
+function isCoupleGameChoice(value: unknown): value is CoupleGameChoice {
+  if (typeof value !== "object" || value === null) return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.couple_id === "string" &&
+    typeof row.question_id === "string" &&
+    typeof row.user_id === "string" &&
+    (row.choice === "a" || row.choice === "b") &&
+    typeof row.answered_at === "string"
+  );
+}
+
 export function CoupleGame({ userId }: CoupleGameProps) {
   const [state, setState] = useState<GameState>({ status: "loading" });
   const [questionIndex, setQuestionIndex] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
 
   useEffect(() => {
     let active = true;
@@ -166,6 +179,80 @@ export function CoupleGame({ userId }: CoupleGameProps) {
         ).size
       : 0;
 
+  const activeCoupleId = state.status === "active" ? state.coupleId : null;
+
+  useEffect(() => {
+    if (!activeCoupleId) {
+      setRealtimeStatus("connecting");
+      return;
+    }
+
+    let mounted = true;
+    setRealtimeStatus("connecting");
+
+    const channel = supabase
+      .channel(`couple-game-choices:${activeCoupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "couple_game_choices",
+          filter: `couple_id=eq.${activeCoupleId}`,
+        },
+        (payload) => {
+          if (!isCoupleGameChoice(payload.new)) return;
+          const incoming = payload.new;
+
+          setState((current) => {
+            if (
+              current.status !== "active" ||
+              current.coupleId !== activeCoupleId
+            ) {
+              return current;
+            }
+
+            const exists = current.choices.some(
+              (item) =>
+                item.question_id === incoming.question_id &&
+                item.user_id === incoming.user_id,
+            );
+
+            return {
+              ...current,
+              choices: [
+                ...current.choices.filter(
+                  (item) =>
+                    !(
+                      item.question_id === incoming.question_id &&
+                      item.user_id === incoming.user_id
+                    ),
+                ),
+                incoming,
+              ].slice(-60),
+            };
+          });
+        },
+      )
+      .subscribe((status) => {
+        if (!mounted) return;
+        if (status === "SUBSCRIBED") {
+          setRealtimeStatus("connected");
+        } else if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT" ||
+          status === "CLOSED"
+        ) {
+          setRealtimeStatus("offline");
+        }
+      });
+
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [activeCoupleId]);
+
   async function choose(choice: "a" | "b") {
     if (state.status !== "active" || busy) return;
 
@@ -224,6 +311,15 @@ export function CoupleGame({ userId }: CoupleGameProps) {
           <p className="date-kicker">Jogo para duas pessoas</p>
           <h1 id="couple-game-title">Isto ou aquilo?</h1>
         </div>
+        {state.status === "active" && (
+          <span className="couple-game-live-status" role="status">
+            {realtimeStatus === "connected"
+              ? "Ao vivo"
+              : realtimeStatus === "connecting"
+                ? "Conectando…"
+                : "Atualização manual"}
+          </span>
+        )}
         {state.status === "active" && (
           <button
             type="button"
