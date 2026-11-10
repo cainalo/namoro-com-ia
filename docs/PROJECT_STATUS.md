@@ -436,3 +436,13 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - A execução do GitHub Actions no commit `1e5ed860f499deca3bd869f554ac5144a8b25a1b` concluiu com sucesso: instalação congelada, 9 testes automatizados aprovados e build da aplicação aprovado.
 - A execução seguinte cobre os commits posteriores e deve ser conferida antes de considerar as mudanças atuais aprovadas.
 - Ainda não foi executado teste visual ou teste entre dois aparelhos; a captura do Lovable continua desatualizada.
+
+
+### Assistente de IA — nova conversa
+- `src/components/AiChat.tsx` agora oferece **Nova conversa** no cabeçalho do painel.
+- A ação limpa somente o histórico mantido no estado local do chat e o texto do campo; fica desabilitada durante uma resposta em andamento. Não apaga mensagens em outras áreas nem executa ações no aplicativo.
+- Commit: `3522af48764faca7b3d44fbd83b060413b1adbed`.
+
+### Verificação contínua após a cobertura geral
+- GitHub Actions no commit `3522af48764faca7b3d44fbd83b060413b1adbed`: execução `42903846304` concluída com sucesso. Instalação congelada, suíte Vitest concluída com sucesso (9 testes) e `vite build` concluído com sucesso.
+- Link da execução: https://github.com/cainalo/namoro-com-ia/actions/runs/42903846304
