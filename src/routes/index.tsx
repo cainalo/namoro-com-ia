@@ -38,14 +38,6 @@ const navigation: NavigationItem[] = [
   { id: "universe", label: "Casa", icon: Compass },
 ];
 
-const emptyStates: Record<
-  Exclude<SectionId, "home" | "games" | "universe" | "organize" | "memories">,
-  { title: string; message: string; icon: LucideIcon }
-> = {
-  messages: { title: "Conversas", message: "As mensagens de vocês aparecerão aqui.", icon: MessageCircle },
-  organize: { title: "Planos", message: "Datas, tarefas e projetos aparecerão aqui.", icon: CalendarDays },
-};
-
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -114,8 +106,6 @@ function Index() {
             <CouplePlans userId={session.user.id} />
           ) : activeSection === "memories" ? (
             <CoupleMemories userId={session.user.id} />
-          ) : activeSection !== "home" ? (
-            <EmptySection section={activeSection} />
           ) : null}
         </div>
       </main>
@@ -530,22 +520,5 @@ function HomeMemoriesPreview({
         </button>
       ))}
     </div>
-  );
-}
-
-function EmptySection({ section }: { section: Exclude<SectionId, "home" | "games" | "universe" | "organize" | "memories"> }) {
-  const detail = emptyStates[section];
-  const Icon = detail.icon;
-
-  return (
-    <section className="module-empty" aria-labelledby="module-title">
-      <h1 id="module-title">{detail.title}</h1>
-      <div className="module-empty-content">
-        <span className="module-empty-icon" aria-hidden="true">
-          <Icon />
-        </span>
-        <p>{detail.message}</p>
-      </div>
-    </section>
   );
 }
