@@ -1,6 +1,6 @@
 # Etapa 3 — convites e aceite do casal
 
-**Estado:** especificação preparada; ainda não aplicada. O schema deve ser alterado pelo Lovable no Supabase externo `jffryzeelzxjqbeagecb`, conforme `AGENTS.md`. Não usar Lovable Cloud nem criar migrations manualmente.
+**Estado:** implementação da etapa 3 preparada para a integração oficial GitHub do Supabase. O usuário habilitou **Deploy to production** na branch `main`. A migration é versionada em `supabase/migrations/` e aplicada somente pela integração; não usar SQL Editor, CLI push direto ou Lovable Cloud.
 
 ## Objetivo
 
@@ -13,9 +13,9 @@ A validade padrão do convite será de **7 dias**. Gerar um novo link revoga o a
 Antes de aplicar:
 
 1. Confirmar por leitura que o projeto conectado continua sendo o Supabase externo `jffryzeelzxjqbeagecb`.
-2. Inspecionar a localização de `pgcrypto` em `pg_extension`; o Supabase costuma instalar extensões no schema `extensions`, mas a migration deve usar o schema realmente observado. Não presumir que `digest` ou `gen_random_bytes` estejam em `public`.
+2. A migration descobre o schema real de `pgcrypto` por `pg_extension.extnamespace` e valida `gen_random_bytes(integer)` e `digest(bytea,text)` antes de qualquer DDL. Não presumir que estejam em `extensions` ou `public`.
 3. Conferir que não existem objetos homônimos, dados de convites ou dependências novas.
-4. Revalidar os privilégios, policies e triggers das etapas 1 e 2 sem alterá-los.
+4. Revalidar os privilégios, policies e triggers das etapas 1 e 2 sem alterá-los. A própria migration contém preflight que aborta se a base divergir do modelo esperado.
 
 ### Correção necessária no trigger existente
 
@@ -165,5 +165,6 @@ Com duas contas reais, além de testes SQL controlados:
 - Etapas 1 e 2 aplicadas no Supabase externo.
 - Tabela e funções de convite ainda não aplicadas.
 - Interface de criação/compartilhamento/aceite ainda não implementada.
-- Pendente: acesso do Lovable para enviar e aplicar a migration; o último envio foi recusado por falta de créditos do workspace.
+- Migration versionada em `supabase/migrations/20261110021500_create_couple_invitations.sql`, SHA256 `354faf44613a95cf41a449364aa044fc2847b2cbad6b6a6137ac0a0de46817a3`.
+- A integração GitHub do Supabase está habilitada pelo usuário para deploy em `main`; confirmar o resultado do deploy antes de marcar a etapa como aplicada.
 - Não declarar testes de duas contas nem fluxos funcionais até sua execução real.
