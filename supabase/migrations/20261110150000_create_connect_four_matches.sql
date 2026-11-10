@@ -207,7 +207,7 @@ BEGIN
     RAISE EXCEPTION 'not_authenticated' USING ERRCODE = 'insufficient_privilege';
   END IF;
 
-  IF p_column < 0 OR p_column > 6 THEN
+  IF p_column IS NULL OR p_column < 0 OR p_column > 6 THEN
     RAISE EXCEPTION 'invalid_column' USING ERRCODE = 'check_violation';
   END IF;
 
@@ -245,7 +245,7 @@ BEGIN
     RAISE EXCEPTION 'not_your_turn' USING ERRCODE = 'insufficient_privilege';
   END IF;
 
-  IF v_game.turn_number <> p_expected_turn THEN
+  IF p_expected_turn IS NULL OR v_game.turn_number <> p_expected_turn THEN
     RAISE EXCEPTION 'stale_turn' USING ERRCODE = 'serialization_failure';
   END IF;
 
