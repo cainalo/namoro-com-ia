@@ -50,8 +50,8 @@ Consultar AGENTS.md antes de cada ciclo.
 - RLS: integrantes atuais e antigos consultam o histórico do próprio casal; somente integrantes atuais de casal ativo podem inserir/alterar a própria escolha. Não há exclusão pelo cliente.
 - Criado `src/lib/couple-game.ts` como adapter tipado temporário até a regeneração oficial dos tipos Supabase.
 - Criado `src/components/CoupleGame.tsx` com seis perguntas, seleção entre duas opções, progresso individual e comparação das respostas.
-- O jogo foi ligado ao atalho “Jogar a dois” na área Hoje. Atualização é manual nesta primeira versão; realtime fica para uma etapa posterior.
-- A migration ainda não teve a aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
+- O jogo foi ligado ao atalho “Jogar a dois” na área Hoje. As escolhas agora sincronizam por Supabase Realtime para eventos INSERT e UPDATE, com status de conexão e atualização manual como alternativa.
+- As migrations da tabela e da publicação Realtime ainda não tiveram aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
 - Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`.
 
 ## Ciclos
