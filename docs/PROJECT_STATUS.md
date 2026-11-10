@@ -49,10 +49,10 @@ Consultar AGENTS.md antes de cada ciclo.
 - Criada a migration `20261110134500_create_couple_game_choices.sql` para guardar as escolhas individuais do jogo Isto ou Aquilo.
 - RLS: integrantes atuais e antigos consultam o histórico do próprio casal; somente integrantes atuais de casal ativo podem inserir/alterar a própria escolha. Não há exclusão pelo cliente.
 - Criado `src/lib/couple-game.ts` como adapter tipado temporário até a regeneração oficial dos tipos Supabase.
-- Criado `src/components/CoupleGame.tsx` com seis perguntas, seleção entre duas opções, progresso individual e comparação das respostas.
+- Criado `src/components/CoupleGame.tsx` com seis perguntas, seleção entre duas opções, progresso individual e comparação das respostas. O encerramento agora apresenta um resumo compartilhado: perguntas respondidas pelos dois, escolhas iguais/diferentes e as opções escolhidas em cada pergunta concluída. Perguntas sem duas respostas ficam fora da contagem.
 - O jogo foi ligado ao atalho “Jogar a dois” na área Hoje. As escolhas agora sincronizam por Supabase Realtime para eventos INSERT e UPDATE, com status de conexão e atualização manual como alternativa.
 - As migrations da tabela e da publicação Realtime ainda não tiveram aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
-- Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`.
+- Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`; resumo de resultados `e7fae96bb7bb592279f94c2e70220aba5ddd52ea`; estilos `a72dc8bb18c8d5e9ec9b808c29afb07087ac2dba`.
 
 ## Ciclos
 
