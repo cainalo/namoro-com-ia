@@ -75,6 +75,7 @@ export function CouplePlans({ userId }: { userId: string }) {
   const dayButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const [events, setEvents] = useState<CouplePlanEvent[]>([]);
   const [eventLoadStatus, setEventLoadStatus] = useState<EventLoadStatus>("loading");
+  const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const [coupleId, setCoupleId] = useState<string | null>(null);
   const [visibility, setVisibility] = useState<PlanEventVisibility>("shared");
   const [eventTitle, setEventTitle] = useState("");
@@ -177,9 +178,13 @@ export function CouplePlans({ userId }: { userId: string }) {
   }, [userId, monthStart, monthEnd, refreshKey]);
 
   useEffect(() => {
-    if (!coupleId) return;
+    if (!coupleId) {
+      setRealtimeStatus("offline");
+      return;
+    }
 
     let mounted = true;
+    setRealtimeStatus("connecting");
     const channel = supabase
       .channel(`couple-plan-events:${coupleId}`)
       .on(
@@ -206,7 +211,18 @@ export function CouplePlans({ userId }: { userId: string }) {
           if (mounted) setRefreshKey((current) => current + 1);
         },
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (!mounted) return;
+        if (status === "SUBSCRIBED") {
+          setRealtimeStatus("connected");
+        } else if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT" ||
+          status === "CLOSED"
+        ) {
+          setRealtimeStatus("offline");
+        }
+      });
 
     return () => {
       mounted = false;
@@ -437,6 +453,15 @@ export function CouplePlans({ userId }: { userId: string }) {
         <div>
           <p className="date-kicker">Datas e compromissos</p>
           <h1 id="plans-title">Planos</h1>
+          <span className={coupleId && realtimeStatus === "connected" ? "plans-live-status is-connected" : "plans-live-status"} role="status">
+            {!coupleId
+              ? "Agenda individual"
+              : realtimeStatus === "connected"
+                ? "Agenda compartilhada ao vivo"
+                : realtimeStatus === "connecting"
+                  ? "Conectando agenda…"
+                  : "Atualização manual"}
+          </span>
         </div>
         <button type="button" className="inline-action" onClick={goToToday}>
           Hoje
