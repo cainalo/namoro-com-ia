@@ -71,12 +71,12 @@ Consultar AGENTS.md antes de cada ciclo.
 - Checagem isolada de tipos: não executada.
 
 ### Pendências
-- [ ] Cadastrar uma segunda conta para provar o trigger de criação de perfil.
+- [ ] (Não bloqueante) Validar com uma segunda conta o trigger de criação de perfil. Por orientação do usuário, considerar o fluxo funcional para continuar o desenvolvimento; confirmar em teste real quando possível.
 - [ ] Testar isolamento de profiles entre duas contas.
 - [ ] Testar atualização de perfil no Preview.
 - [ ] Testar o fluxo de criação/renovação/revogação/aceite dos convites.
 - [ ] Revisar formatação do lint sem editar arquivos gerados automaticamente.
-- Não iniciar conversas nem memórias antes de concluir e validar a fundação de casal.
+- A validação com duas contas continua pendente, mas não bloqueia o avanço das etapas de fundação do casal; conversas e memórias aguardam a implementação e validação do vínculo.
 
 ### Bloqueio operacional
 - Em 2026-11-09, o Lovable recusou novas mensagens por falta de créditos do workspace. A etapa de convites está especificada, mas nenhuma migration ou alteração de aplicação foi aplicada nesta etapa.
