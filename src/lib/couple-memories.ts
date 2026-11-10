@@ -1,0 +1,83 @@
+import { supabase } from "@/integrations/supabase/client";
+
+export type MemoryVisibility = "private" | "shared";
+
+export type CoupleMemory = {
+  id: string;
+  owner_id: string;
+  couple_id: string | null;
+  visibility: MemoryVisibility;
+  title: string | null;
+  body: string;
+  memory_date: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MemoryError = {
+  code?: string;
+  message: string;
+};
+
+type MemoryListResponse = {
+  data: CoupleMemory[] | null;
+  error: MemoryError | null;
+};
+
+type MemoryInsertResponse = {
+  error: MemoryError | null;
+};
+
+type MemorySelection = {
+  order: (
+    column: "memory_date" | "created_at",
+    options: { ascending: boolean },
+  ) => MemorySelection;
+  limit: (count: number) => PromiseLike<MemoryListResponse>;
+};
+
+type MemoryTable = {
+  select: (columns: string) => MemorySelection;
+  insert: (values: {
+    owner_id: string;
+    couple_id: string | null;
+    visibility: MemoryVisibility;
+    title: string | null;
+    body: string;
+    memory_date: string;
+  }) => PromiseLike<MemoryInsertResponse>;
+};
+
+type MemoryClient = {
+  from: (table: "couple_memories") => MemoryTable;
+};
+
+// Adapter temporário até que os tipos do Supabase sejam regenerados oficialmente.
+const memoryClient = supabase as unknown as MemoryClient;
+
+export async function listCoupleMemories() {
+  return memoryClient
+    .from("couple_memories")
+    .select("id, owner_id, couple_id, visibility, title, body, memory_date, created_at, updated_at")
+    .order("memory_date", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(100);
+}
+
+export async function createCoupleMemory(input: {
+  ownerId: string;
+  coupleId: string | null;
+  visibility: MemoryVisibility;
+  title: string | null;
+  body: string;
+  memoryDate: string;
+}) {
+  return memoryClient.from("couple_memories").insert({
+    owner_id: input.ownerId,
+    couple_id: input.coupleId,
+    visibility: input.visibility,
+    title: input.title,
+    body: input.body,
+    memory_date: input.memoryDate,
+  });
+}
