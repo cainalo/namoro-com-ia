@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Undo2 } from "lucide-react";
 import {
   createInitialCheckersGame,
   getLegalCheckersMoves,
@@ -21,6 +22,7 @@ export function CheckersGame() {
   const [game, setGame] = useState<CheckersGameState>(() =>
     createInitialCheckersGame(),
   );
+  const [history, setHistory] = useState<CheckersGameState[]>([]);
   const [selectedFrom, setSelectedFrom] = useState<number | null>(null);
   const [selectedPath, setSelectedPath] = useState<number[]>([]);
 
@@ -132,6 +134,7 @@ export function CheckersGame() {
       );
 
       if (completedMove && !hasMoreSteps) {
+        setHistory((current) => [...current, game].slice(-50));
         setGame((current) => playCheckersMove(current, completedMove));
         clearSelection();
       } else {
@@ -150,8 +153,17 @@ export function CheckersGame() {
     }
   }
 
+  function undoLastMove() {
+    const previous = history[history.length - 1];
+    if (!previous) return;
+    setGame(previous);
+    setHistory((current) => current.slice(0, -1));
+    clearSelection();
+  }
+
   function startNewGame() {
     setGame(createInitialCheckersGame());
+    setHistory([]);
     clearSelection();
   }
 
@@ -236,16 +248,32 @@ export function CheckersGame() {
         </div>
 
         <div className="checkers-actions">
-          <p className="checkers-instructions">
-            Toque em uma peça para selecioná-la e depois escolha uma casa marcada. As jogadas permitidas ficam destacadas.
-          </p>
-          <button
-            type="button"
-            className="inline-action"
-            onClick={startNewGame}
-          >
-            Reiniciar partida
-          </button>
+          <div className="checkers-action-info">
+            <p className="checkers-instructions">
+              Toque em uma peça para selecioná-la e depois escolha uma casa marcada. As jogadas permitidas ficam destacadas.
+            </p>
+            <span className="checkers-move-count">
+              {history.length} {history.length === 1 ? "jogada concluída" : "jogadas concluídas"}
+            </span>
+          </div>
+          <div className="checkers-action-buttons">
+            <button
+              type="button"
+              className="inline-action"
+              onClick={undoLastMove}
+              disabled={history.length === 0}
+            >
+              <Undo2 aria-hidden="true" />
+              Desfazer
+            </button>
+            <button
+              type="button"
+              className="inline-action"
+              onClick={startNewGame}
+            >
+              Reiniciar partida
+            </button>
+          </div>
         </div>
       </div>
     </section>
