@@ -1538,6 +1538,115 @@
   opacity: 0.45;
 }
 
+.couple-game-summary {
+  width: 100%;
+  max-width: 760px;
+  margin: 20px auto 0;
+  border-top: 1px solid var(--color-border);
+  padding: 20px 0 28px;
+}
+
+.couple-game-summary-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.couple-game-summary-heading h2 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-size: 18px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.couple-game-summary-progress {
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.couple-game-summary-note {
+  margin: 12px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.couple-game-summary-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin: 16px 0 8px;
+}
+
+.couple-game-summary-totals p {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+}
+
+.couple-game-summary-totals strong {
+  color: var(--color-foreground);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+}
+
+.couple-game-summary-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.couple-game-summary-list li {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--color-border);
+  padding: 13px 0;
+}
+
+.couple-game-summary-question {
+  margin: 0 0 6px;
+  color: var(--color-foreground);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.couple-game-summary-choices {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.couple-game-summary-choices strong {
+  color: var(--color-foreground);
+  font-weight: 650;
+}
+
+.couple-game-summary-verdict {
+  flex: 0 0 auto;
+  padding-top: 1px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.couple-game-summary-verdict[data-result="same"] {
+  color: var(--color-primary);
+}
+
 @media (max-width: 680px) {
   .couple-game-screen {
     min-height: calc(100dvh - 165px);
@@ -1574,6 +1683,15 @@
 
   .couple-game-footer {
     padding-bottom: 74px;
+  }
+
+  .couple-game-summary-list li {
+    display: block;
+  }
+
+  .couple-game-summary-verdict {
+    display: inline-block;
+    margin-top: 7px;
   }
 }
 
