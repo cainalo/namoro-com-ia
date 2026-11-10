@@ -1,0 +1,6 @@
+[build]
+  command = "bun install --frozen-lockfile && NETLIFY=true bun run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
