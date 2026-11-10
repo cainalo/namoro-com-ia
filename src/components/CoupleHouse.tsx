@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Minus, Plus, RotateCcw } from "lucide-react";
 
 const houseLocations = [
   {
@@ -29,6 +30,7 @@ type HouseLocationId = (typeof houseLocations)[number]["id"];
 export function CoupleHouse() {
   const [selectedLocationId, setSelectedLocationId] =
     useState<HouseLocationId>("residence");
+  const [zoom, setZoom] = useState(1);
   const selectedLocation =
     houseLocations.find((location) => location.id === selectedLocationId) ??
     houseLocations[0];
@@ -44,6 +46,11 @@ export function CoupleHouse() {
       </header>
 
       <div className="house-map-shell">
+        <div className="house-map-viewport">
+          <div
+            className="house-map-canvas"
+            style={{ transform: `scale(${zoom})` }}
+          >
         <svg
           className="house-isometric-map"
           viewBox="0 0 900 500"
@@ -180,6 +187,38 @@ export function CoupleHouse() {
               <span className="house-map-hotspot-label">{location.label}</span>
             </button>
           ))}
+          </div>
+        </div>
+
+        <div className="house-map-zoom-controls" role="group" aria-label="Controles de aproximação do mapa">
+          <button
+            type="button"
+            onClick={() => setZoom((current) => Math.min(1.45, Number((current + 0.15).toFixed(2))))}
+            disabled={zoom >= 1.45}
+            aria-label="Aproximar mapa"
+            title="Aproximar"
+          >
+            <Plus aria-hidden="true" />
+          </button>
+          <span aria-live="polite">{Math.round(zoom * 100)}%</span>
+          <button
+            type="button"
+            onClick={() => setZoom((current) => Math.max(1, Number((current - 0.15).toFixed(2))))}
+            disabled={zoom <= 1}
+            aria-label="Afastar mapa"
+            title="Afastar"
+          >
+            <Minus aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoom(1)}
+            disabled={zoom === 1}
+            aria-label="Restaurar escala do mapa"
+            title="Restaurar"
+          >
+            <RotateCcw aria-hidden="true" />
+          </button>
         </div>
 
         <div className="house-map-legend" aria-live="polite">
