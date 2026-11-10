@@ -1,6 +1,6 @@
 # Supabase — plano de esquema inicial
 
-Este documento é uma especificação de implementação. Não aplicar como migração manual. O repositório está conectado ao Lovable e AGENTS.md determina que alterações no esquema sejam executadas pelo Lovable.
+Este documento descreve a estrutura do Supabase externo. As alterações de schema são versionadas em `supabase/migrations/` e aplicadas pela integração oficial GitHub do Supabase, habilitada pelo usuário para deploy na branch `main`. Não aplicar DDL pelo SQL Editor nem usar Lovable Cloud.
 
 ## Autenticação antes das tabelas
 
@@ -56,16 +56,20 @@ Os dois integrantes são admin, com permissões iguais. O primeiro é o criador;
 Acesso: authenticated tem somente SELECT nas duas tabelas; anon nenhum. As policies usam public.can_view_couple, que permite ver o casal e as duas memberships a quem é ou já foi membro. Isso não concede acesso a profiles privados.
 
 ### couple_invitations
-- id uuid primary key
-- couple_id uuid not null references couples(id)
-- inviter_user_id uuid not null references auth.users(id)
-- token_hash text not null unique
-- status text check in pending, accepted, revoked, expired
-- expires_at timestamptz not null
-- accepted_by uuid null references auth.users(id)
+- id uuid primary key default gen_random_uuid()
+- couple_id uuid not null references couples(id) on delete restrict
+- inviter_user_id uuid not null references auth.users(id) on delete restrict
+- token_hash text not null unique, SHA-256 hexadecimal de 64 caracteres
+- status text not null default pending, CHECK pending/accepted/revoked/expired
+- created_at timestamptz not null default now()
+- expires_at timestamptz not null, CHECK expires_at > created_at
+- accepted_by uuid null references auth.users(id) on delete restrict
 - accepted_at timestamptz null
+- revoked_at timestamptz null
+- CHECK de consistência entre status e campos accepted_by/accepted_at/revoked_at
+- UNIQUE parcial em couple_id WHERE status = 'pending' (um convite pendente por casal)
 
-O token bruto deve ser exibido apenas uma vez e não armazenado. Aceite deve validar prazo, estado, utilizador e capacidade do casal numa única transação.
+RLS ligada sem policies e sem privilégios diretos para anon/authenticated: acesso somente pelas RPCs autorizadas. Token aleatório de 32 bytes; somente o hash é persistido; token bruto retornado uma única vez na criação. Validade padrão de 7 dias. Registros terminais são imutáveis e nunca apagados.
 
 ## Modelo de visibilidade de conteúdo
 
@@ -106,9 +110,8 @@ A administração do casal não concede acesso a conteúdo privado.
 
 1. profiles.
 2. couples e couple_members.
-3. funções transacionais de convite, aceite, vínculo e desvinculação.
-4. couple_invitations.
-5. funções de autorização e testes de RLS.
+3. couple_invitations e funções transacionais de convite, aceite e revogação.
+4. demais funções de autorização e desvinculação, após testes de RLS.
 6. preferences e devices depois da fundação.
 7. tabelas de mensagens e memórias somente após provar isolamento entre duas contas.
 
@@ -150,3 +153,4 @@ A administração do casal não concede acesso a conteúdo privado.
   - A correção definiu CHECK role = 'admin' e default 'admin', removeu o índice de admin único da migration original e fez couple_members_before_insert exigir segundo membro admin. Verificado com 0 casais e 0 memberships, sem funções ou policies referenciando 'member'.
   - Linter: create_couple e can_view_couple executáveis por authenticated, intencional.
   - Não testado: create_couple pelo app, concorrência, isolamento com duas contas, transições de status.
+- Etapa 3 (convites e aceite): migration `supabase/migrations/20261110021500_create_couple_invitations.sql`, SHA256 `354faf44613a95cf41a449364aa044fc2847b2cbad6b6a6137ac0a0de46817a3`. A migration contém preflight para conferir as tabelas/função/triggers da etapa 2 e descobrir o schema real de pgcrypto antes do DDL. A integração GitHub do Supabase foi habilitada pelo usuário para deploy na `main`; status de aplicação ainda deve ser confirmado. Nenhum convite, casal ou membership de teste foi criado.
