@@ -28,6 +28,14 @@ type MemoryInsertResponse = {
   error: MemoryError | null;
 };
 
+type MemoryUpdateResponse = {
+  error: MemoryError | null;
+};
+
+type MemoryUpdateFilter = {
+  eq: (column: "id", value: string) => PromiseLike<MemoryUpdateResponse>;
+};
+
 type MemorySelection = {
   order: (
     column: "memory_date" | "created_at",
@@ -46,6 +54,11 @@ type MemoryTable = {
     body: string;
     memory_date: string;
   }) => PromiseLike<MemoryInsertResponse>;
+  update: (values: {
+    title: string | null;
+    body: string;
+    memory_date: string;
+  }) => MemoryUpdateFilter;
 };
 
 type MemoryClient = {
@@ -81,4 +94,20 @@ export async function createCoupleMemory(input: {
     body: input.body,
     memory_date: input.memoryDate,
   });
+}
+
+export async function updateCoupleMemory(input: {
+  id: string;
+  title: string | null;
+  body: string;
+  memoryDate: string;
+}) {
+  return memoryClient
+    .from("couple_memories")
+    .update({
+      title: input.title,
+      body: input.body,
+      memory_date: input.memoryDate,
+    })
+    .eq("id", input.id);
 }
