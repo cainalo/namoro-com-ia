@@ -1,5 +1,6 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
+import { HouseInterior } from "@/components/HouseInterior";
 
 const houseLocations = [
   {
@@ -31,6 +32,7 @@ type HouseLighting = "day" | "dusk" | "night";
 export function CoupleHouse() {
   const [selectedLocationId, setSelectedLocationId] =
     useState<HouseLocationId>("residence");
+  const [houseView, setHouseView] = useState<"grounds" | "entry-hall">("grounds");
   const [zoom, setZoom] = useState(1);
   const [lighting, setLighting] = useState<HouseLighting>("day");
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -114,6 +116,8 @@ export function CoupleHouse() {
         <span className="house-map-coordinate">Terreno inicial</span>
       </header>
 
+      {houseView === "grounds" ? (
+        <>
       <div className={`house-map-shell is-${lighting}`}>
         <div
           className={[
@@ -348,12 +352,24 @@ export function CoupleHouse() {
             <strong>{selectedLocation.label}</strong>
             <span>{selectedLocation.detail}</span>
           </div>
-        </div>
-      </div>
+          {selectedLocationId === "residence" && (
+            <button
+              type="button"
+              className="house-enter-action"
+              onClick={() => setHouseView("entry-hall")}
+            >
+              Entrar
+            </button>
+          )}
+        </div>   </div>
 
       <p className="house-map-note">
         {zoom > 1 ? "Arraste para explorar o terreno ampliado. Selecione os pontos para ver cada área." : "Selecione os pontos do mapa para conhecer cada área do terreno. Aproxime para explorar."}
       </p>
+        </>
+      ) : (
+        <HouseInterior lighting={lighting} onReturn={() => setHouseView("grounds")} />
+      )}
     </section>
   );
 }
