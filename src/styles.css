@@ -4786,3 +4786,56 @@
     flex: 1 1 auto;
   }
 }
+
+
+/* Casa — estrelas e reflexos ambientais */
+.house-map-atmosphere {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.house-map-atmosphere.is-day {
+  display: none;
+}
+
+.house-map-atmosphere.is-dusk {
+  background:
+    radial-gradient(ellipse at 30% 39%, rgb(255 190 92 / 27%), transparent 10%),
+    radial-gradient(ellipse at 83% 49%, rgb(255 190 92 / 23%), transparent 9%),
+    radial-gradient(ellipse at 70% 73%, rgb(255 190 92 / 22%), transparent 9%),
+    linear-gradient(145deg, transparent 25%, rgb(154 87 63 / 10%) 72%, transparent);
+  mix-blend-mode: screen;
+}
+
+.house-map-atmosphere.is-night {
+  background:
+    radial-gradient(circle at 12% 19%, rgb(244 232 190 / 78%) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 22% 11%, rgb(244 232 190 / 62%) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 32% 24%, rgb(244 232 190 / 58%) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 68% 13%, rgb(244 232 190 / 76%) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 82% 25%, rgb(244 232 190 / 68%) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 91% 17%, rgb(244 232 190 / 58%) 0 1px, transparent 1.8px),
+    radial-gradient(ellipse at 30% 39%, rgb(255 183 75 / 36%), transparent 11%),
+    radial-gradient(ellipse at 83% 49%, rgb(255 183 75 / 31%), transparent 10%),
+    radial-gradient(ellipse at 70% 73%, rgb(255 183 75 / 28%), transparent 10%);
+  background-size: 100% 100%;
+  mix-blend-mode: screen;
+  animation: house-night-glimmer 5s ease-in-out infinite alternate;
+}
+
+@keyframes house-night-glimmer {
+  from {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-map-atmosphere.is-night {
+    animation: none;
+  }
+}
