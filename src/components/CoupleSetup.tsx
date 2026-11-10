@@ -46,6 +46,7 @@ export function CoupleSetup({ userId }: CoupleSetupProps) {
   const [invitation, setInvitation] = useState<Invitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -103,6 +104,39 @@ export function CoupleSetup({ userId }: CoupleSetupProps) {
       active = false;
     };
   }, [userId, reloadKey]);
+
+  async function checkCoupleStatus() {
+    if (!couple || checkingStatus || busy) return;
+
+    setCheckingStatus(true);
+    setError(null);
+    setNotice(null);
+
+    try {
+      const { data, error: statusError } = await supabase
+        .from("couples")
+        .select("id, status")
+        .eq("id", couple.id)
+        .maybeSingle();
+
+      if (statusError || !data) {
+        throw statusError ?? new Error("couple_not_found");
+      }
+
+      const nextStatus = data.status === "active" ? "active" : "pending";
+      setCouple({ id: data.id, status: nextStatus });
+
+      setNotice(
+        nextStatus === "active"
+          ? "Convite aceito. Vocês já estão conectados."
+          : "O convite ainda está aguardando a outra pessoa.",
+      );
+    } catch {
+      setError("Não foi possível verificar o vínculo agora. Tente novamente.");
+    } finally {
+      setCheckingStatus(false);
+    }
+  }
 
   async function createCouple() {
     if (busy) return;
@@ -234,7 +268,17 @@ export function CoupleSetup({ userId }: CoupleSetupProps) {
           </button>
         </div>
       ) : couple?.status === "active" ? (
-        <p className="couple-setup-copy">Vocês já estão conectados.</p>
+        <div className="couple-setup-content">
+          <p className="couple-setup-copy">Vocês já estão conectados.</p>
+          <button
+            type="button"
+            className="inline-action"
+            onClick={() => void checkCoupleStatus()}
+            disabled={checkingStatus || busy}
+          >
+            {checkingStatus ? "Verificando…" : "Atualizar status"}
+          </button>
+        </div>
       ) : couple?.status === "pending" ? (
         <div className="couple-setup-content">
           {invitation ? (
@@ -253,11 +297,14 @@ export function CoupleSetup({ userId }: CoupleSetupProps) {
                 </button>
               </div>
               <div className="couple-setup-secondary-actions">
-                <button type="button" className="inline-action" onClick={createInvitation} disabled={busy}>
+                <button type="button" className="inline-action" onClick={createInvitation} disabled={busy || checkingStatus}>
                   Gerar novo link
                 </button>
-                <button type="button" className="inline-action couple-danger-action" onClick={revokeInvitation} disabled={busy}>
+                <button type="button" className="inline-action couple-danger-action" onClick={revokeInvitation} disabled={busy || checkingStatus}>
                   Revogar
+                </button>
+                <button type="button" className="inline-action" onClick={() => void checkCoupleStatus()} disabled={busy || checkingStatus}>
+                  {checkingStatus ? "Verificando…" : "Verificar aceite"}
                 </button>
               </div>
             </>
