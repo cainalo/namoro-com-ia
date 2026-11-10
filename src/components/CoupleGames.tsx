@@ -1,4 +1,9 @@
+import { useState } from "react";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
+import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
+import { CoupleGame } from "@/components/CoupleGame";
+
+type GameId = "connect-four" | "this-or-that" | "daily-challenge";
 
 const plannedGames = [
   { name: "Damas", type: "Estratégia", detail: "Captura de peças e coroação." },
@@ -10,6 +15,8 @@ const plannedGames = [
 ];
 
 export function CoupleGames({ userId }: { userId: string }) {
+  const [activeGame, setActiveGame] = useState<GameId>("connect-four");
+
   return (
     <section className="games-hub" aria-labelledby="games-hub-title">
       <header className="games-hub-heading">
@@ -19,13 +26,58 @@ export function CoupleGames({ userId }: { userId: string }) {
         </div>
       </header>
 
-      <section className="games-hub-available" aria-labelledby="games-available-title">
-        <h2 id="games-available-title">Disponível para jogar</h2>
-        <ConnectFourGame userId={userId} />
-      </section>
+      <div className="games-hub-categories">
+        <section className="games-hub-category" aria-labelledby="games-competition-title">
+          <h2 id="games-competition-title">Competir e cooperar</h2>
+          <p>Jogos clássicos, estratégia e desafios para jogar junto.</p>
+          <div className="games-hub-selectors" role="group" aria-label="Jogos para competir ou cooperar">
+            <button
+              type="button"
+              className={activeGame === "connect-four" ? "is-active" : ""}
+              aria-pressed={activeGame === "connect-four"}
+              onClick={() => setActiveGame("connect-four")}
+            >
+              Lig 4
+            </button>
+          </div>
+        </section>
+
+        <section className="games-hub-category" aria-labelledby="games-couple-title">
+          <h2 id="games-couple-title">Jogos de casal</h2>
+          <p>Jogos próprios para vocês se conhecerem, conversarem e se divertirem.</p>
+          <div className="games-hub-selectors" role="group" aria-label="Jogos de casal">
+            <button
+              type="button"
+              className={activeGame === "this-or-that" ? "is-active" : ""}
+              aria-pressed={activeGame === "this-or-that"}
+              onClick={() => setActiveGame("this-or-that")}
+            >
+              Isto ou aquilo?
+            </button>
+            <button
+              type="button"
+              className={activeGame === "daily-challenge" ? "is-active" : ""}
+              aria-pressed={activeGame === "daily-challenge"}
+              onClick={() => setActiveGame("daily-challenge")}
+            >
+              Desafio do dia
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div className="games-hub-active" aria-live="polite">
+        {activeGame === "connect-four" ? (
+          <ConnectFourGame userId={userId} />
+        ) : activeGame === "this-or-that" ? (
+          <CoupleGame userId={userId} />
+        ) : (
+          <CoupleDailyChallenge userId={userId} />
+        )}
+      </div>
 
       <section className="games-hub-planned" aria-labelledby="games-planned-title">
-        <h2 id="games-planned-title">Próximos jogos</h2>
+        <h2 id="games-planned-title">Mais jogos a caminho</h2>
         <ul>
           {plannedGames.map((game) => (
             <li key={game.name}>
