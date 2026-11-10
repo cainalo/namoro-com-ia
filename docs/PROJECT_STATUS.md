@@ -374,3 +374,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Compromissos privados não entram no canal porque não possuem `couple_id`. A leitura final continua protegida pelas policies RLS.
 - Commits: migration `8b74ceaba1438e90170cff670cfd4d79d682e834`, assinatura `2f6e96d802b180944b6a9041d857045e79867d85`.
 - A aplicação da migration ao Supabase e o teste entre dois aparelhos ainda não foram confirmados.
+
+
+### Planos — edição pelo autor
+- `src/lib/couple-plan-events.ts` agora permite atualizar por ID somente os campos editáveis: título, descrição, local, data e horário.
+- `src/components/CouplePlans.tsx` oferece edição aos compromissos cujo `owner_id` corresponde à conta atual. A edição usa o formulário existente, com salvar/cancelar.
+- A visibilidade é preservada e não pode ser alterada no formulário de edição. O RLS continua validando a propriedade na atualização.
+- Commits: adapter `6def4c324a05bf6ddf7a6e5056d7745cd023d010`, componente `e74dce1ebd2b1c5b4cb05c495472634835c5e372`, estilos `333909e99f06daef38633f8a2081fcad5f610797`.
+- Não foi executado build, teste automatizado ou validação visual; aplicação da migration e testes com duas contas permanecem pendentes.
