@@ -164,3 +164,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Regras e limites desta etapa documentados em `docs/CHECKERS_RULES.md`.
 - Esta entrega é somente o núcleo de regras. Ainda não há tabuleiro visual, partidas online, persistência Supabase ou regras de empate. Damas permanece como jogo em desenvolvimento na biblioteca.
 - Os testes foram adicionados, mas ainda não foram executados neste ambiente; não há confirmação de build, lint ou integração visual.
+
+## Damas brasileiras — tabuleiro local (2026-11-10)
+- Damas agora aparece como jogo selecionável na categoria **Competir e cooperar**; deixou de constar apenas na lista de jogos futuros.
+- Criado `src/components/CheckersGame.tsx`, conectado ao motor `src/lib/checkers.ts`. A interface apresenta o tabuleiro 8×8, seleção de peças, destinos legais destacados, contagem de peças, indicação de turno, reinício e fim de partida.
+- A interface permite que duas pessoas alternem os turnos no mesmo aparelho. O motor continua responsável por validar os movimentos, capturas obrigatórias, sequências de captura, Lei da Maioria e promoção.
+- O modo é explicitamente identificado como **prévia local**. Ainda não há criação de partidas de Damas no Supabase, sincronização entre dispositivos, convite ou histórico persistente. Não apresentar como jogo online.
+- Adicionados estilos responsivos em `src/styles.css`, compatíveis com os temas claro e escuro.
+- Não foram executados build, testes automatizados ou teste visual no Preview nesta etapa.
+- Commits: componente `9147c52415eab7b6bd4fb2dbc36a3d7aafcb8b9f`, ajuste do componente `3c37895e9704c649f5bfdf5a80195e2da6a0f801`, integração à biblioteca `1b0ab4f09f6e8be3fcb8ac31c2d00c9fa00be879`, estilos `6c6142ac9b01839809ccc67c4bd3bd674a34c338`.
