@@ -1320,3 +1320,259 @@
   font-size: 10px;
   font-weight: 600;
 }
+
+
+/* Primeiro jogo do casal */
+.couple-game-screen {
+  display: flex;
+  min-height: calc(100dvh - 120px);
+  flex-direction: column;
+}
+
+.couple-game-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 16px;
+}
+
+.couple-game-heading h1 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-size: clamp(25px, 3vw, 32px);
+  font-weight: 750;
+  letter-spacing: -0.055em;
+  line-height: 1.15;
+}
+
+.couple-game-state {
+  margin: 0;
+  padding: 30px 0;
+  color: var(--color-muted-foreground);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.couple-game-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 16px 0 10px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.couple-game-question-nav {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0 22px;
+}
+
+.couple-game-question-number {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.couple-game-question-number.is-answered {
+  border-color: color-mix(in oklab, var(--color-primary) 38%, var(--color-border));
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.couple-game-question-number.is-paired {
+  border-color: var(--color-primary);
+}
+
+.couple-game-question-number.is-current {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 3px;
+  color: var(--color-foreground);
+}
+
+.couple-game-question {
+  width: 100%;
+  max-width: 760px;
+  margin: auto;
+  padding: 12px 0 28px;
+}
+
+.couple-game-count {
+  margin: 0 0 8px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.couple-game-question h2 {
+  max-width: 560px;
+  margin: 0;
+  color: var(--color-foreground);
+  font-size: clamp(21px, 3vw, 28px);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.25;
+}
+
+.couple-game-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.couple-game-option {
+  display: flex;
+  min-height: 142px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 11px;
+  background: var(--color-card);
+  padding: 17px;
+  color: var(--color-foreground);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.couple-game-option:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.couple-game-option.is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-secondary);
+}
+
+.couple-game-option:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.couple-game-option > span {
+  display: inline-flex;
+  width: 25px;
+  height: 25px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.couple-game-option strong {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.couple-game-option small {
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.couple-game-result {
+  min-height: 84px;
+  margin-top: 18px;
+  border-top: 1px solid var(--color-border);
+  padding: 14px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.couple-game-result p {
+  margin: 0 0 5px;
+}
+
+.couple-game-result strong {
+  color: var(--color-foreground);
+  font-weight: 700;
+}
+
+.couple-game-result .couple-game-match {
+  margin-top: 9px;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.couple-game-error {
+  margin: 0 0 12px;
+  color: var(--color-destructive);
+  font-size: 11px;
+}
+
+.couple-game-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--color-border);
+  padding: 16px 0 8px;
+}
+
+.couple-game-footer .secondary-action {
+  min-width: 100px;
+}
+
+.couple-game-footer button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 680px) {
+  .couple-game-screen {
+    min-height: calc(100dvh - 165px);
+  }
+
+  .couple-game-progress {
+    gap: 12px;
+  }
+
+  .couple-game-question-nav {
+    gap: 7px;
+    padding-bottom: 16px;
+  }
+
+  .couple-game-question-number {
+    width: 30px;
+    height: 30px;
+  }
+
+  .couple-game-options {
+    gap: 9px;
+    margin-top: 20px;
+  }
+
+  .couple-game-option {
+    min-height: 138px;
+    gap: 14px;
+    padding: 12px;
+  }
+
+  .couple-game-option strong {
+    font-size: 12px;
+  }
+
+  .couple-game-footer {
+    padding-bottom: 74px;
+  }
+}
