@@ -10,6 +10,8 @@ import {
   type MemoryVisibility,
 } from "@/lib/couple-memories";
 
+type MemoryFilter = "all" | "private" | "shared";
+
 type MemoriesState =
   | { status: "loading" }
   | { status: "error" }
@@ -58,6 +60,8 @@ export function CoupleMemories({ userId }: { userId: string }) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [memoryFilter, setMemoryFilter] = useState<MemoryFilter>("all");
 
   useEffect(() => {
     let active = true;
@@ -228,6 +232,17 @@ export function CoupleMemories({ userId }: { userId: string }) {
     setDeleteError(null);
   }
 
+  const visibleMemories =
+    state.status === "ready"
+      ? state.memories.filter((memory) => {
+          const matchesVisibility =
+            memoryFilter === "all" || memory.visibility === memoryFilter;
+          const normalizedQuery = searchQuery.trim().toLocaleLowerCase("pt-BR");
+          const searchableText = `${memory.title ?? ""} ${memory.body}`.toLocaleLowerCase("pt-BR");
+          return matchesVisibility && (!normalizedQuery || searchableText.includes(normalizedQuery));
+        })
+      : [];
+
   async function handleDelete(memoryId: string) {
     if (state.status !== "ready" || deleteConfirmId !== memoryId || deleteBusy) return;
     const memory = state.memories.find((item) => item.id === memoryId);
@@ -381,16 +396,69 @@ export function CoupleMemories({ userId }: { userId: string }) {
             {notice && <p className="memory-feedback" role="status">{notice}</p>}
           </form>
 
-          <div className="memories-list" aria-live="polite">
+          <div className="memories-list">
             <div className="memories-list-heading">
               <h2>Guardadas</h2>
-              <span>{state.memories.length}</span>
+              <span>{visibleMemories.length} de {state.memories.length}</span>
+            </div>
+
+            <div className="memories-filter-bar">
+              <label className="memories-search">
+                <span>Buscar</span>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Título ou conteúdo…"
+                  aria-label="Buscar lembranças por título ou conteúdo"
+                />
+              </label>
+              <div className="memories-filter-options" role="group" aria-label="Filtrar por privacidade">
+                <button
+                  type="button"
+                  className={memoryFilter === "all" ? "is-active" : ""}
+                  aria-pressed={memoryFilter === "all"}
+                  onClick={() => setMemoryFilter("all")}
+                >
+                  Todas
+                </button>
+                <button
+                  type="button"
+                  className={memoryFilter === "private" ? "is-active" : ""}
+                  aria-pressed={memoryFilter === "private"}
+                  onClick={() => setMemoryFilter("private")}
+                >
+                  Privadas
+                </button>
+                <button
+                  type="button"
+                  className={memoryFilter === "shared" ? "is-active" : ""}
+                  aria-pressed={memoryFilter === "shared"}
+                  onClick={() => setMemoryFilter("shared")}
+                >
+                  Compartilhadas
+                </button>
+              </div>
             </div>
 
             {state.memories.length === 0 ? (
               <p className="memories-state">Nenhuma lembrança guardada ainda.</p>
+            ) : visibleMemories.length === 0 ? (
+              <div className="memories-state">
+                <p>Nenhuma lembrança corresponde à busca ou ao filtro.</p>
+                <button
+                  type="button"
+                  className="inline-action"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setMemoryFilter("all");
+                  }}
+                >
+                  Limpar filtros
+                </button>
+              </div>
             ) : (
-              state.memories.map((memory) =>
+              visibleMemories.map((memory) =>
                 editingId === memory.id ? (
                   <form
                     className="memory-edit-form"
