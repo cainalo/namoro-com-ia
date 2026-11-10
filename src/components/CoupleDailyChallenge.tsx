@@ -372,8 +372,12 @@ export function CoupleDailyChallenge({ userId }: { userId: string }) {
       ? getDailyChallenge(state.coupleId, today)
       : null;
   const todayProgress =
-    state.status === "active"
-      ? state.progress.filter((item) => item.challenge_date === today)
+    state.status === "active" && challenge
+      ? state.progress.filter(
+          (item) =>
+            item.challenge_date === today &&
+            item.challenge_id === challenge.id,
+        )
       : [];
   const completedByMe = todayProgress.some((item) => item.user_id === userId);
   const completedByPartner = todayProgress.some((item) => item.user_id !== userId);
@@ -564,13 +568,17 @@ export function CoupleDailyChallenge({ userId }: { userId: string }) {
                   const records = state.progress.filter(
                     (item) => item.challenge_date === date,
                   );
-                  const previousChallenge = challenges.find(
-                    (item) => item.id === records[0]?.challenge_id,
+                  const previousChallengeId = records[0]?.challenge_id;
+                  const matchingRecords = records.filter(
+                    (item) => item.challenge_id === previousChallengeId,
                   );
-                  const previousByMe = records.some(
+                  const previousChallenge = challenges.find(
+                    (item) => item.id === previousChallengeId,
+                  );
+                  const previousByMe = matchingRecords.some(
                     (item) => item.user_id === userId,
                   );
-                  const previousByPartner = records.some(
+                  const previousByPartner = matchingRecords.some(
                     (item) => item.user_id !== userId,
                   );
 
