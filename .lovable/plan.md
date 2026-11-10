@@ -1,6 +1,6 @@
 # Etapa 2 — couples e couple_members (Supabase externo jffryzeelzxjqbeagecb)
 
-Plano somente. Nada será aplicado até aprovação. Sem Lovable Cloud. Convites, aceite e desvinculação ficam para etapas 3–4.
+Aplicado; histórico da decisão da etapa 2. Sem Lovable Cloud. Convites, aceite e desvinculação ficam para etapas 3–4.
 
 ## Pré-checagem (somente leitura, antes da migration)
 - Confirmar via conector que o banco é `jffryzeelzxjqbeagecb`.
@@ -37,14 +37,13 @@ CHECKs estáticos (imutáveis, seguros):
 |---|---|---|
 | couple_id | uuid not null | FK couples(id) ON DELETE RESTRICT |
 | user_id | uuid not null | FK auth.users(id) ON DELETE RESTRICT |
-| role | text not null | CHECK in (admin, member) |
+| role | text not null default 'admin' | CHECK (role = 'admin'): os dois membros têm privilégios iguais |
 | joined_at | timestamptz not null default now() | |
 | ended_at | timestamptz null | CHECK ended_at IS NULL OR ended_at >= joined_at |
 | PK | (couple_id, user_id) | |
 
 Índices:
 - `UNIQUE (user_id) WHERE ended_at IS NULL` — no máximo uma relação atual por usuário (garantia concorrente pelo próprio índice).
-- `UNIQUE (couple_id) WHERE role = 'admin' AND ended_at IS NULL` — um admin atual por casal.
 - `(couple_id) WHERE ended_at IS NULL` — usado pelas policies.
 
 ## Triggers (enforcement)
@@ -53,7 +52,7 @@ CHECKs estáticos (imutáveis, seguros):
    - `SELECT ... FROM public.couples WHERE id = NEW.couple_id FOR UPDATE` — serializa inserções concorrentes no mesmo casal.
    - Recusa se casal `archived`.
    - Conta membros atuais; recusa se já houver 2.
-   - Primeiro membro deve ser `admin` e igual a `created_by`; segundo deve ser `member`.
+   - Primeiro membro deve ser `admin` e igual a `created_by`; segundo deve ser outro usuário, também `admin`.
    - Força `ended_at = NULL`, `joined_at = now()`.
 2. `couple_members_before_update`: só permite `ended_at` de NULL para valor; bloqueia mudança de `couple_id`, `user_id`, `role`, `joined_at`, e reabertura.
 3. `couple_members_before_delete` e `couples_before_delete`: sempre recusam (histórico imutável).

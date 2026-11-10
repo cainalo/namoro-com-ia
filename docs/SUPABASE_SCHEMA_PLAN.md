@@ -42,7 +42,7 @@ Não incluir conteúdo pessoal nem presumir que administrador pode ler diários 
 ### couple_members
 - couple_id uuid references couples(id) on delete restrict
 - user_id uuid references auth.users(id) on delete restrict
-- role text check in admin, member
+- role text check (role = 'admin'): os dois membros são admin, com privilégios iguais
 - joined_at timestamptz
 - primary key (couple_id, user_id)
 
@@ -137,7 +137,8 @@ A administração do casal não concede acesso a conteúdo privado.
 - Etapa 2 (couples, couple_members) aplicada no mesmo projeto. Convites, aceite e desvinculação não implementados.
   - Migration: supabase/migrations/20261110014046_86a99b94-7a96-4b84-af68-89c7d5bcc439.sql
   - SHA256: d6349f7c35812bd1dcca383f62b99341d3b85fc1e190e85b864ca372d8451e63
-  - Aplicado: FKs ON DELETE RESTRICT; CHECKs de status/timestamps e ended_at >= joined_at; PK (couple_id, user_id); únicos parciais de uma relação atual por usuário e um admin atual por casal; triggers de inserção (FOR UPDATE no casal, máx. 2, criador admin primeiro, segundo member), imutabilidade de membership, bloqueio de DELETE, transições pending→active (exige 2 membros), pending/active→archived, archived imutável, encerramento automático das memberships ao arquivar; create_couple (SECURITY DEFINER, auth.uid(), advisory lock) e can_view_couple (membro atual ou antigo); RLS com apenas SELECT TO authenticated via can_view_couple; anon sem privilégios; authenticated só SELECT; funções de trigger sem EXECUTE para clientes.
+  - Aplicado: FKs ON DELETE RESTRICT; CHECKs de status/timestamps e ended_at >= joined_at; PK (couple_id, user_id); único parcial de uma relação atual por usuário; role restrito a 'admin' (default 'admin'); triggers de inserção (FOR UPDATE no casal, máx. 2, criador admin primeiro, segundo outro usuário também admin), imutabilidade de membership, bloqueio de DELETE, transições pending→active (exige 2 membros), pending/active→archived, archived imutável, encerramento automático das memberships ao arquivar; create_couple (SECURITY DEFINER, auth.uid(), advisory lock) e can_view_couple (membro atual ou antigo); RLS com apenas SELECT TO authenticated via can_view_couple; anon sem privilégios; authenticated só SELECT; funções de trigger sem EXECUTE para clientes.
   - Verificação após aplicação (somente leitura): estruturas, grants, policies, search_path e EXECUTE conferidos; 0 casais e 0 memberships.
+  - Correção (dois admins): supabase/migrations/20261110014254_2a6b3199-0603-411b-a6f6-eb467176fac6.sql, SHA256 79c3bd8d1574297090c4a585ae2bdb2e47ec51b795fa3fc253bfabdd4a32a3c6. CHECK role = 'admin', default 'admin', índice couple_members_one_current_admin_uidx removido, couple_members_before_insert exige segundo membro admin. Verificado com 0 casais e 0 memberships, sem funções ou policies referenciando 'member'.
   - Linter: create_couple e can_view_couple executáveis por authenticated, intencional.
   - Não testado: create_couple pelo app, concorrência, isolamento com duas contas, transições de status.

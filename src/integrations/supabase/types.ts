@@ -26,7 +26,7 @@ export type Database = {
           couple_id: string
           ended_at?: string | null
           joined_at?: string
-          role: string
+          role?: string
           user_id: string
         }
         Update: {
