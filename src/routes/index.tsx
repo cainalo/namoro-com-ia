@@ -20,6 +20,7 @@ import { CoupleHouse } from "@/components/CoupleHouse";
 import { CouplePlans } from "@/components/CouplePlans";
 import { CoupleMemories } from "@/components/CoupleMemories";
 import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
+import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -227,16 +228,7 @@ function HomeScreen({
               <h2 id="dates-title">Próximas datas</h2>
               <CalendarDays aria-hidden="true" className="heading-icon" />
             </div>
-            <div className="compact-empty">
-              <p>Nenhuma data marcada.</p>
-              <button
-                type="button"
-                className="inline-action"
-                onClick={() => onNavigate("organize")}
-              >
-                Abrir calendário <ChevronRight aria-hidden="true" />
-              </button>
-            </div>
+            <HomeUpcomingPlans userId={userId} onNavigate={onNavigate} />
           </section>
 
           <div className="sidebar-divider" />
@@ -271,6 +263,145 @@ function HomeScreen({
           </section>
         </aside>
       </div>
+    </div>
+  );
+}
+
+type HomeUpcomingState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "database-pending" }
+  | { status: "ready"; events: CouplePlanEvent[] };
+
+function localDateKey(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatUpcomingDate(value: string) {
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  }).format(date);
+}
+
+function HomeUpcomingPlans({
+  userId,
+  onNavigate,
+}: {
+  userId: string;
+  onNavigate: (section: SectionId) => void;
+}) {
+  const [state, setState] = useState<HomeUpcomingState>({ status: "loading" });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadUpcoming() {
+      const now = new Date();
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+      const todayKey = localDateKey(now);
+
+      try {
+        const result = await listCouplePlanEvents(todayKey, localDateKey(end));
+        if (!active) return;
+
+        if (result.error) {
+          setState({
+            status:
+              result.error.code === "42P01" || result.error.code === "PGRST205"
+                ? "database-pending"
+                : "error",
+          });
+          return;
+        }
+
+        const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+        const upcoming = (result.data ?? []).filter((event) =>
+          event.event_date !== todayKey ||
+          event.all_day ||
+          !event.start_time ||
+          event.start_time.slice(0, 5) >= currentTime
+        );
+
+        setState({ status: "ready", events: upcoming.slice(0, 3) });
+      } catch {
+        if (active) setState({ status: "error" });
+      }
+    }
+
+    void loadUpcoming();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  if (state.status === "loading") {
+    return <div className="compact-empty"><p>Carregando datas…</p></div>;
+  }
+
+  if (state.status === "database-pending") {
+    return (
+      <div className="compact-empty">
+        <p>A agenda está sendo preparada.</p>
+        <button type="button" className="inline-action" onClick={() => onNavigate("organize")}>
+          Abrir calendário <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="compact-empty">
+        <p>Não foi possível carregar as datas.</p>
+        <button type="button" className="inline-action" onClick={() => onNavigate("organize")}>
+          Abrir calendário <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
+
+  if (state.events.length === 0) {
+    return (
+      <div className="compact-empty">
+        <p>Nenhuma data marcada para os próximos dias.</p>
+        <button type="button" className="inline-action" onClick={() => onNavigate("organize")}>
+          Abrir calendário <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="home-upcoming-list">
+      {state.events.map((event) => (
+        <button
+          type="button"
+          className="home-upcoming-entry"
+          key={event.id}
+          onClick={() => onNavigate("organize")}
+        >
+          <span className="home-upcoming-date">{formatUpcomingDate(event.event_date)}</span>
+          <span className="home-upcoming-copy">
+            <strong>{event.title}</strong>
+            <span>
+              {event.all_day || !event.start_time
+                ? "Dia inteiro"
+                : event.start_time.slice(0, 5)}
+              {event.place ? ` · ${event.place}` : ""}
+            </span>
+          </span>
+          <ChevronRight aria-hidden="true" />
+        </button>
+      ))}
+      <button type="button" className="inline-action" onClick={() => onNavigate("organize")}>
+        Abrir calendário <ChevronRight aria-hidden="true" />
+      </button>
     </div>
   );
 }
