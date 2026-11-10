@@ -60,6 +60,7 @@ function formatMessageDay(value: string) {
 export function CoupleConversation({ userId }: CoupleConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
+  const [messageSearch, setMessageSearch] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
@@ -88,6 +89,19 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
     }
     previousMessageCountRef.current = messageCount;
   }, [state.status, messageCount]);
+
+  const visibleMessages =
+    state.status === "active"
+      ? state.messages.filter((message) => {
+          const normalize = (value: string) =>
+            value
+              .toLocaleLowerCase("pt-BR")
+              .normalize("NFD")
+              .replace(/[\\u0300-\\u036f]/g, "");
+          const query = normalize(messageSearch.trim());
+          return !query || normalize(message.body).includes(query);
+        })
+      : [];
 
   function handleThreadScroll() {
     const thread = threadRef.current;
@@ -341,16 +355,44 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
 
       {state.status === "active" && (
         <>
+          {state.messages.length > 0 && (
+            <div className="conversation-history-tools">
+              <label className="conversation-search">
+                <span>Buscar no histórico recente</span>
+                <input
+                  type="search"
+                  value={messageSearch}
+                  onChange={(event) => setMessageSearch(event.target.value)}
+                  placeholder="Palavra ou trecho da mensagem…"
+                  aria-label="Buscar nas últimas 100 mensagens"
+                />
+              </label>
+              <span className="conversation-search-count">
+                {visibleMessages.length} de {state.messages.length}
+              </span>
+              {messageSearch && (
+                <button
+                  type="button"
+                  className="conversation-search-clear"
+                  onClick={() => setMessageSearch("")}
+                >
+                  Limpar
+                </button>
+              )}
+            </div>
+          )}
           <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" role="log" aria-label="Mensagens do casal" aria-live="polite">
             {state.messages.length === 0 ? (
               <p className="conversation-state conversation-empty">
                 Esta é a primeira conversa de vocês. Envie uma mensagem.
               </p>
+            ) : visibleMessages.length === 0 ? (
+              <p className="conversation-state conversation-empty">Nenhuma mensagem corresponde à busca.</p>
             ) : (
-              state.messages.map((message, index) => {
+              visibleMessages.map((message, index) => {
                 const ownMessage = message.sender_id === userId;
                 const currentDay = messageDayKey(message.created_at);
-                const previousMessage = state.messages[index - 1];
+                const previousMessage = visibleMessages[index - 1];
                 const showDayDivider =
                   !previousMessage ||
                   messageDayKey(previousMessage.created_at) !== currentDay;
