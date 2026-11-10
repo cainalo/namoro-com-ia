@@ -299,7 +299,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
 
   function matchOutcome(match: ConnectFourMatch) {
     if (match.status === "active") {
-      return match.current_turn === userId ? "Sua vez" : "Vez da adversário";
+      return match.current_turn === userId ? "Sua vez" : "Vez do adversário";
     }
     if (match.is_draw) return "Empate";
     return match.winner_id === userId ? "Você venceu" : "Adversário venceu";
@@ -371,7 +371,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
         <>
           {!activeMatch ? (
             <div className="connect-four-start">
-              <p>Conecte quatro peças antes da adversário. Vence quem completar primeiro uma linha horizontal, vertical ou diagonal.</p>
+              <p>Conecte quatro peças antes do adversário. Vence quem completar primeiro uma linha horizontal, vertical ou diagonal.</p>
               <button
                 type="button"
                 className="primary-action"
@@ -443,7 +443,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
               </div>
 
               {activeMatch.status === "active" && !myTurn && (
-                <p className="connect-four-waiting">Aguarde a jogada da adversário.</p>
+                <p className="connect-four-waiting">Aguarde a jogada do adversário.</p>
               )}
 
               <div className="connect-four-actions">
