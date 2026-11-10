@@ -17,6 +17,7 @@ import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
 import { CoupleGames } from "@/components/CoupleGames";
 import { CoupleHouse } from "@/components/CoupleHouse";
+import { CouplePlans } from "@/components/CouplePlans";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -35,7 +36,7 @@ const navigation: NavigationItem[] = [
 ];
 
 const emptyStates: Record<
-  Exclude<SectionId, "home" | "games" | "universe">,
+  Exclude<SectionId, "home" | "games" | "universe" | "organize">,
   { title: string; message: string; icon: LucideIcon }
 > = {
   messages: { title: "Conversas", message: "As mensagens de vocês aparecerão aqui.", icon: MessageCircle },
@@ -107,6 +108,8 @@ function Index() {
             <CoupleGames userId={session.user.id} />
           ) : activeSection === "universe" ? (
             <CoupleHouse />
+          ) : activeSection === "organize" ? (
+            <CouplePlans />
           ) : activeSection !== "home" ? (
             <EmptySection section={activeSection} />
           ) : null}
