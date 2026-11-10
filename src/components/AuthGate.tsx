@@ -5,11 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 type AuthGateProps = {
   children: (session: Session) => ReactNode;
-};
+  emailRedirectTo?: () => string;
+ };
 
 type AuthMode = "signin" | "signup";
 
-export function AuthGate({ children }: AuthGateProps) {
+export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
 
@@ -48,12 +49,12 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  if (!session) return <AuthForm />;
+  if (!session) return <AuthForm emailRedirectTo={emailRedirectTo} />;
 
   return <>{children(session)}</>;
 }
 
-function AuthForm() {
+function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -91,7 +92,7 @@ function AuthForm() {
           email: normalizedEmail,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: emailRedirectTo?.() ?? window.location.origin,
           },
         });
         if (signUpError) throw signUpError;
