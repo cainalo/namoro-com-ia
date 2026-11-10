@@ -4128,3 +4128,131 @@
     flex: 1;
   }
 }
+
+
+/* Casa — atmosferas de iluminação */
+.house-map-shell {
+  isolation: isolate;
+  background: #1e352c;
+}
+
+.house-map-shell::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background: transparent;
+  content: "";
+  transition: background-color 180ms ease;
+}
+
+.house-map-canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.house-map-shell.is-dusk {
+  background: #392d2a;
+}
+
+.house-map-shell.is-dusk .house-isometric-map {
+  filter: sepia(0.22) saturate(1.16) brightness(0.86);
+}
+
+.house-map-shell.is-dusk::after {
+  background: rgb(124 67 40 / 13%);
+}
+
+.house-map-shell.is-night {
+  background: #111c2a;
+}
+
+.house-map-shell.is-night .house-isometric-map {
+  filter: brightness(0.58) saturate(1.08) hue-rotate(12deg);
+}
+
+.house-map-shell.is-night::after {
+  background: rgb(8 17 35 / 34%);
+}
+
+.house-map-hotspots,
+.house-map-zoom-controls,
+.house-map-legend,
+.house-map-lighting-controls {
+  z-index: 4;
+}
+
+.house-map-lighting-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid color-mix(in oklab, #d5a43b 46%, #514b3e);
+  border-radius: 4px;
+  background: color-mix(in oklab, #1b3027 94%, transparent);
+  padding: 4px;
+  color: #f0e5cb;
+}
+
+.house-map-lighting-controls button {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  padding: 0 7px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.house-map-lighting-controls button:hover,
+.house-map-lighting-controls button.is-selected {
+  border-color: #d5a43b;
+  background: #315c48;
+}
+
+.house-map-lighting-controls button:focus-visible {
+  outline: 2px solid #f0dca8;
+  outline-offset: 2px;
+}
+
+.house-map-lighting-controls svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+}
+
+@media (max-width: 680px) {
+  .house-map-lighting-controls {
+    top: 7px;
+    left: 7px;
+    gap: 1px;
+    padding: 3px;
+  }
+
+  .house-map-lighting-controls button {
+    min-height: 27px;
+    gap: 3px;
+    padding: 0 5px;
+    font-size: 8px;
+  }
+
+  .house-map-lighting-controls svg {
+    width: 12px;
+    height: 12px;
+    flex-basis: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-map-shell::after {
+    transition: none;
+  }
+}
