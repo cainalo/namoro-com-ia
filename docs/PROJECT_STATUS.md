@@ -333,3 +333,10 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - `src/routes/index.tsx` passa o ID autenticado para Planos; `src/styles.css` recebeu o acabamento responsivo.
 - Commits: migration `ba92b39493f2a61ef63b387be18b032dd35ecd7a`, adapter `46c27020a629cb88d624370046ac7f02718ecf28`, componente `7337ee1407dd610022bf99e40d4ca6fa836e92a3`, rota `1b674de43fc0ebce68d5a6aa93dc47cc79df55c0`, estilos `e6ab9a8530084b56208accad21d9d982a13c035b`.
 - Ainda não implementados: editar/excluir eventos, repetição, notificações e sincronização Realtime. Não foram executados build, testes automatizados ou validação visual.
+
+
+### Conversas — atalho de envio
+- `src/components/CoupleConversation.tsx` permite enviar a mensagem com `Ctrl + Enter` ou `⌘ + Enter`, usando `requestSubmit()` e o mesmo fluxo validado de envio existente.
+- Enter sozinho continua inserindo quebra de linha; Shift+Enter também. O botão Enviar permanece disponível, e a dica do atalho é ocultada em telas estreitas.
+- Commits: componente `8754d4e38ae91e36d4fbb35078c1f0fb68702f56`, estilo `f2a41c4b09bf7472863b5656b5a8185e0ec12465`.
+- Não foi executado build, teste automatizado ou validação visual.
