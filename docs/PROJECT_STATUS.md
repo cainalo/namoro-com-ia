@@ -300,3 +300,10 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Os controles têm rótulos acessíveis, estado selecionado, foco visível e adaptação para celular. A transição respeita `prefers-reduced-motion`.
 - Commits: componente `a46f5e570f0705de0082354510b7e36f01c1800f`, estilos `22cfa6a8e3f14179288538f0698e0675f00a8184`.
 - Não foi executado build, teste automatizado ou validação visual; a preview segue desatualizada.
+
+
+### Planos — navegação por teclado
+- `src/components/CouplePlans.tsx` agora permite percorrer os dias com as setas; `Home` e `End` levam ao primeiro/último dia da semana, e `PageUp`/`PageDown` mudam o mês preservando o dia quando possível.
+- O foco acompanha a data selecionada, e a data atual usa `aria-current="date"`; a seleção continua funcionando por toque.
+- Commit: `9b33cabfec00a6c9cf9f88cc992738461636c2c8`.
+- Não foi executado build ou teste automatizado nesta etapa.
