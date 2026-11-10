@@ -44,7 +44,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Navegação principal responsiva.
 - [x] Chat de IA preservado.
 - [x] Refinar o shell para reduzir linguagem de marketing e padrões genéricos.
-- [ ] Validar preview, build e lint. Build e testes passaram; lint falhou (ver Validação local).
+- [ ] Validar preview, build e lint. Build e testes passaram antes das migrations da etapa 2; lint falhou (ver Validação local).
 
 ### Ciclo 2 — autenticação, dados e vínculo
 - [x] Adicionar tela de cadastro e login por e-mail/senha usando o Supabase Auth existente.
@@ -56,10 +56,12 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Inspecionar schema Supabase ativo, policies, buckets e extensões.
 - [x] Etapa 1 — profiles aplicada no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo, com os dois membros como admin (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
-- [ ] Aplicar convites, aceite e desvinculação.
+- [x] Especificar fluxo seguro de convites e aceite em docs/INVITATION_FLOW_PLAN.md.
+- [ ] Aplicar convites, aceite e desvinculação pelo fluxo Lovable/Supabase autorizado.
+- [ ] Implementar a interface para criar o casal, gerar/renovar/revogar link e aceitar convite.
 - [ ] Testar create_couple, concorrência e isolamento de casais com duas contas.
 - [ ] Implementar vínculo atômico limitado a duas contas. O limite de duas pessoas já está garantido no banco; o fluxo de convite/aceite ainda não existe.
-- [ ] Implementar RLS e testar com duas contas. RLS de profiles aplicada; teste com duas contas não feito.
+- [ ] Implementar RLS e testar com duas contas. RLS de profiles, couples e couple_members aplicada; testes com duas contas não feitos.
 - [ ] Bloquear acesso ao backend fora de sessão quando o endpoint passar a lidar com dados privados.
 
 ### Validação local (executada antes das migrations da etapa 2 e da correção de role; o código atual não foi rebuildado depois)
@@ -72,8 +74,13 @@ Consultar AGENTS.md antes de cada ciclo.
 - [ ] Cadastrar uma segunda conta para provar o trigger de criação de perfil.
 - [ ] Testar isolamento de profiles entre duas contas.
 - [ ] Testar atualização de perfil no Preview.
+- [ ] Testar o fluxo de criação/renovação/revogação/aceite dos convites.
 - [ ] Revisar formatação do lint sem editar arquivos gerados automaticamente.
-- Não iniciar conversas nem memórias antes dessas pendências.
+- Não iniciar conversas nem memórias antes de concluir e validar a fundação de casal.
+
+### Bloqueio operacional
+- Em 2026-11-09, o Lovable recusou novas mensagens por falta de créditos do workspace. A etapa de convites está especificada, mas nenhuma migration ou alteração de aplicação foi aplicada nesta etapa.
+- Antes de aceitar convites, a próxima migration também precisa corrigir couple_members_before_insert para exigir couples.status = 'pending' em qualquer nova membership; atualmente o trigger só bloqueia status archived.
 
 ### Ciclos seguintes
 1. Conversas e feed.
@@ -90,7 +97,7 @@ Consultar docs/DESIGN_PRINCIPLES.md.
 Não adicionar títulos e descrições por padrão. Cada tela deve ser orientada à tarefa e usar ajuda contextual somente quando necessária.
 
 ## Supabase
-Consultar docs/SUPABASE_SCHEMA_PLAN.md.
+Consultar docs/SUPABASE_SCHEMA_PLAN.md e docs/INVITATION_FLOW_PLAN.md.
 Esse documento não é uma migration; as etapas 1 (profiles) e 2 (couples, couple_members) estão aplicadas, pelas migrations registradas nele.
 A autenticação visual usa signUp/signInWithPassword/signOut do SDK Supabase já presente no projeto.
 O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmação de e-mail e login no Preview. Logout não foi confirmado. O endpoint /api/chat exige e valida um access token Supabase antes de consumir o gateway.
