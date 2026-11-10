@@ -5354,3 +5354,29 @@
     flex: 1 1 auto;
   }
 }
+
+
+/* Planos — estado da sincronização */
+.plans-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  line-height: 1.3;
+}
+
+.plans-live-status::before {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: var(--color-muted-foreground);
+  content: "";
+}
+
+.plans-live-status.is-connected::before {
+  background: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 15%, transparent);
+}
