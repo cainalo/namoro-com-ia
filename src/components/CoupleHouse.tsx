@@ -66,8 +66,8 @@ export function CoupleHouse() {
     const start = panStartRef.current;
     if (!start || start.pointerId !== event.pointerId) return;
 
-    const maxX = (zoom - 1) * 450;
-    const maxY = (zoom - 1) * 250;
+    const maxX = (event.currentTarget.clientWidth * (zoom - 1)) / 2;
+    const maxY = (event.currentTarget.clientHeight * (zoom - 1)) / 2;
     const nextX = Math.min(
       maxX,
       Math.max(-maxX, start.originX + event.clientX - start.pointerX),
@@ -90,15 +90,13 @@ export function CoupleHouse() {
   }
 
   function zoomIn() {
-    setZoom((current) => Math.min(1.45, Number((current + 0.15).toFixed(2))));
+    setZoom(Math.min(1.45, Number((zoom + 0.15).toFixed(2))));
   }
 
   function zoomOut() {
-    setZoom((current) => {
-      const next = Math.max(1, Number((current - 0.15).toFixed(2)));
-      if (next === 1) setPan({ x: 0, y: 0 });
-      return next;
-    });
+    const next = Math.max(1, Number((zoom - 0.15).toFixed(2)));
+    setZoom(next);
+    if (next === 1) setPan({ x: 0, y: 0 });
   }
 
   function resetMapView() {
