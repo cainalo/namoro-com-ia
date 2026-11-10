@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
@@ -47,6 +47,36 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
+  const threadRef = useRef<HTMLDivElement>(null);
+  const wasAtBottomRef = useRef(true);
+  const previousMessageCountRef = useRef(0);
+  const messageCount = state.status === "active" ? state.messages.length : 0;
+
+  useEffect(() => {
+    const thread = threadRef.current;
+    if (state.status !== "active" || !thread) {
+      previousMessageCountRef.current = 0;
+      return;
+    }
+
+    const isInitialLoad = previousMessageCountRef.current === 0 && messageCount > 0;
+    if (isInitialLoad || wasAtBottomRef.current) {
+      thread.scrollTo({
+        top: thread.scrollHeight,
+        behavior: isInitialLoad ? "auto" : "smooth",
+      });
+    }
+    previousMessageCountRef.current = messageCount;
+  }, [state.status, messageCount]);
+
+  function handleThreadScroll() {
+    const thread = threadRef.current;
+    if (!thread) return;
+
+    const distanceFromBottom =
+      thread.scrollHeight - thread.scrollTop - thread.clientHeight;
+    wasAtBottomRef.current = distanceFromBottom <= 80;
+  }
 
   useEffect(() => {
     let active = true;
@@ -261,7 +291,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
 
       {state.status === "active" && (
         <>
-          <div className="conversation-thread" role="log" aria-label="Mensagens do casal" aria-live="polite">
+          <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" role="log" aria-label="Mensagens do casal" aria-live="polite">
             {state.messages.length === 0 ? (
               <p className="conversation-state conversation-empty">
                 Esta é a primeira conversa de vocês. Envie uma mensagem.
