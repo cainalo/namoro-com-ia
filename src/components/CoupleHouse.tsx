@@ -27,6 +27,12 @@ const houseLocations = [
 type HouseLocationId = (typeof houseLocations)[number]["id"];
 
 export function CoupleHouse() {
+  const [selectedLocationId, setSelectedLocationId] =
+    useState<HouseLocationId>("residence");
+  const selectedLocation =
+    houseLocations.find((location) => location.id === selectedLocationId) ??
+    houseLocations[0];
+
   return (
     <section className="house-screen" aria-labelledby="house-title">
       <header className="house-heading">
@@ -46,8 +52,7 @@ export function CoupleHouse() {
         >
           <title id="house-map-title">Terreno da residência em perspectiva isométrica</title>
           <desc id="house-map-description">
-            Uma residência medieval de pedra e madeira, cercada por caminhos,
-            árvores, jardim e um pequeno pátio.
+            Mapa isométrico com três locais selecionáveis: residência, pátio e jardins.
           </desc>
 
           <polygon
