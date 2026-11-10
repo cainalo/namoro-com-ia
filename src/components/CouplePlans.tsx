@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   createCouplePlanEvent,
   listCouplePlanEvents,
+  updateCouplePlanEvent,
   type CouplePlanEvent,
   type PlanEventVisibility,
 } from "@/lib/couple-plan-events";
@@ -85,6 +86,7 @@ export function CouplePlans({ userId }: { userId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const today = new Date();
@@ -264,7 +266,44 @@ export function CouplePlans({ userId }: { userId: string }) {
     setFocusAfterNavigation(dateKey(nextDate));
   }
 
-  async function handleCreateEvent(event: FormEvent<HTMLFormElement>) {
+  function startEditingEvent(planEvent: CouplePlanEvent) {
+    if (planEvent.owner_id !== userId || busy) return;
+
+    setEditingEventId(planEvent.id);
+    setEventTitle(planEvent.title);
+    setDescription(planEvent.description ?? "");
+    setPlace(planEvent.place ?? "");
+    setEventDate(planEvent.event_date);
+    setAllDay(planEvent.all_day);
+    setStartTime(planEvent.start_time?.slice(0, 5) ?? "09:00");
+    setEndTime(planEvent.end_time?.slice(0, 5) ?? "10:00");
+    setVisibility(planEvent.visibility);
+
+    const [dateYear, dateMonth, dateDay] = planEvent.event_date.split("-").map(Number);
+    if (dateYear && dateMonth && dateDay) {
+      const nextDate = new Date(dateYear, dateMonth - 1, dateDay);
+      setSelectedDate(nextDate);
+      setVisibleMonth(new Date(dateYear, dateMonth - 1, 1));
+    }
+    setError(null);
+    setNotice(null);
+  }
+
+  function cancelEditingEvent() {
+    if (busy) return;
+    setEditingEventId(null);
+    setEventTitle("");
+    setDescription("");
+    setPlace("");
+    setEventDate(dateKey(selectedDate));
+    setAllDay(true);
+    setStartTime("09:00");
+    setEndTime("10:00");
+    setError(null);
+    setNotice(null);
+  }
+
+  async function handleSaveEvent(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || eventLoadStatus !== "ready") return;
 
@@ -287,34 +326,50 @@ export function CouplePlans({ userId }: { userId: string }) {
     setNotice(null);
 
     try {
-      const result = await createCouplePlanEvent({
-        ownerId: userId,
-        coupleId: visibility === "shared" ? coupleId : null,
-        visibility,
-        title: normalizedTitle,
-        description: description.trim() || null,
-        place: place.trim() || null,
-        eventDate,
-        allDay,
-        startTime: allDay ? null : startTime,
-        endTime: allDay ? null : endTime,
-      });
+      const result = editingEventId
+        ? await updateCouplePlanEvent({
+            id: editingEventId,
+            title: normalizedTitle,
+            description: description.trim() || null,
+            place: place.trim() || null,
+            eventDate,
+            allDay,
+            startTime: allDay ? null : startTime,
+            endTime: allDay ? null : endTime,
+          })
+        : await createCouplePlanEvent({
+            ownerId: userId,
+            coupleId: visibility === "shared" ? coupleId : null,
+            visibility,
+            title: normalizedTitle,
+            description: description.trim() || null,
+            place: place.trim() || null,
+            eventDate,
+            allDay,
+            startTime: allDay ? null : startTime,
+            endTime: allDay ? null : endTime,
+          });
 
       if (result.error) throw result.error;
 
-      const createdInVisibleMonth = eventDate >= monthStart && eventDate <= monthEnd;
-      if (createdInVisibleMonth) {
-        setRefreshKey((current) => current + 1);
-      }
       setEventTitle("");
       setDescription("");
       setPlace("");
-      setNotice("Compromisso guardado.");
+      setEditingEventId(null);
+      setAllDay(true);
+      setStartTime("09:00");
+      setEndTime("10:00");
+      setNotice(editingEventId ? "Compromisso atualizado." : "Compromisso guardado.");
+      setRefreshKey((current) => current + 1);
     } catch (cause) {
       if (isMissingPlanEventsTable(cause)) {
         setEventLoadStatus("database-pending");
       } else {
-        setError("Não foi possível guardar o compromisso. Confira os dados e tente novamente.");
+        setError(
+          editingEventId
+            ? "Não foi possível atualizar o compromisso."
+            : "Não foi possível guardar o compromisso. Confira os dados e tente novamente.",
+        );
       }
     } finally {
       setBusy(false);
@@ -458,9 +513,20 @@ export function CouplePlans({ userId }: { userId: string }) {
                   {planEvent.description && <p>{planEvent.description}</p>}
                   {planEvent.place && <span>{planEvent.place}</span>}
                 </div>
-                <span className={planEvent.visibility === "shared" ? "is-shared" : "is-private"}>
-                  {planEvent.visibility === "shared" ? "A dois" : "Privado"}
-                </span>
+                <div className="plans-event-entry-actions">
+                  <span className={planEvent.visibility === "shared" ? "is-shared" : "is-private"}>
+                    {planEvent.visibility === "shared" ? "A dois" : "Privado"}
+                  </span>
+                  {planEvent.owner_id === userId && (
+                    <button
+                      type="button"
+                      className="plans-event-edit-action"
+                      onClick={() => startEditingEvent(planEvent)}
+                    >
+                      Editar
+                    </button>
+                  )}
+                </div>
               </article>
             ))}
           </div>
@@ -468,10 +534,10 @@ export function CouplePlans({ userId }: { userId: string }) {
       </section>
 
       {eventLoadStatus === "ready" && (
-        <form className="plans-event-composer" onSubmit={handleCreateEvent}>
+        <form className="plans-event-composer" onSubmit={handleSaveEvent}>
           <div className="plans-event-composer-heading">
             <CalendarPlus aria-hidden="true" />
-            <h2>Novo compromisso</h2>
+            <h2>{editingEventId ? "Editar compromisso" : "Novo compromisso"}</h2>
           </div>
 
           <label className="plans-field">
@@ -568,35 +634,55 @@ export function CouplePlans({ userId }: { userId: string }) {
               />
             </label>
 
-            <div className="memory-visibility-switch" role="group" aria-label="Privacidade do compromisso">
-              <button
-                type="button"
-                className={visibility === "private" ? "is-active" : ""}
-                aria-pressed={visibility === "private"}
-                disabled={busy}
-                onClick={() => setVisibility("private")}
-              >
-                <LockKeyhole aria-hidden="true" />
-                Privado
-              </button>
-              <button
-                type="button"
-                className={visibility === "shared" ? "is-active" : ""}
-                aria-pressed={visibility === "shared"}
-                disabled={!coupleId || busy}
-                onClick={() => setVisibility("shared")}
-              >
-                <Users aria-hidden="true" />
-                Compartilhado
-              </button>
-            </div>
+            {editingEventId ? (
+              <p className="plans-edit-privacy">
+                Privacidade mantida: {visibility === "shared" ? "compartilhado com o casal" : "privado"}.
+              </p>
+            ) : (
+              <div className="memory-visibility-switch" role="group" aria-label="Privacidade do compromisso">
+                <button
+                  type="button"
+                  className={visibility === "private" ? "is-active" : ""}
+                  aria-pressed={visibility === "private"}
+                  disabled={busy}
+                  onClick={() => setVisibility("private")}
+                >
+                  <LockKeyhole aria-hidden="true" />
+                  Privado
+                </button>
+                <button
+                  type="button"
+                  className={visibility === "shared" ? "is-active" : ""}
+                  aria-pressed={visibility === "shared"}
+                  disabled={!coupleId || busy}
+                  onClick={() => setVisibility("shared")}
+                >
+                  <Users aria-hidden="true" />
+                  Compartilhado
+                </button>
+              </div>
+            )}
 
+            {editingEventId && (
+              <button
+                type="button"
+                className="secondary-action"
+                onClick={cancelEditingEvent}
+                disabled={busy}
+              >
+                Cancelar
+              </button>
+            )}
             <button
               type="submit"
               className="primary-action"
               disabled={busy || !eventTitle.trim() || eventLoadStatus !== "ready"}
             >
-              {busy ? "Guardando…" : "Guardar compromisso"}
+              {busy
+                ? "Salvando…"
+                : editingEventId
+                  ? "Salvar alterações"
+                  : "Guardar compromisso"}
             </button>
           </div>
 
