@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Minus, Plus, RotateCcw } from "lucide-react";
+import { Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
 
 const houseLocations = [
   {
@@ -26,11 +26,13 @@ const houseLocations = [
 ] as const;
 
 type HouseLocationId = (typeof houseLocations)[number]["id"];
+type HouseLighting = "day" | "dusk" | "night";
 
 export function CoupleHouse() {
   const [selectedLocationId, setSelectedLocationId] =
     useState<HouseLocationId>("residence");
   const [zoom, setZoom] = useState(1);
+  const [lighting, setLighting] = useState<HouseLighting>("day");
   const selectedLocation =
     houseLocations.find((location) => location.id === selectedLocationId) ??
     houseLocations[0];
@@ -45,7 +47,7 @@ export function CoupleHouse() {
         <span className="house-map-coordinate">Terreno inicial</span>
       </header>
 
-      <div className="house-map-shell">
+      <div className={`house-map-shell is-${lighting}`}>
         <div className="house-map-viewport">
           <div
             className="house-map-canvas"
@@ -189,6 +191,42 @@ export function CoupleHouse() {
           ))}
           </div>
           </div>
+        </div>
+
+        <div className="house-map-lighting-controls" role="group" aria-label="Iluminação do cenário">
+          <button
+            type="button"
+            className={lighting === "day" ? "is-selected" : ""}
+            onClick={() => setLighting("day")}
+            aria-pressed={lighting === "day"}
+            aria-label="Luz do dia"
+            title="Dia"
+          >
+            <Sun aria-hidden="true" />
+            <span>Dia</span>
+          </button>
+          <button
+            type="button"
+            className={lighting === "dusk" ? "is-selected" : ""}
+            onClick={() => setLighting("dusk")}
+            aria-pressed={lighting === "dusk"}
+            aria-label="Luz do entardecer"
+            title="Entardecer"
+          >
+            <Sunset aria-hidden="true" />
+            <span>Entardecer</span>
+          </button>
+          <button
+            type="button"
+            className={lighting === "night" ? "is-selected" : ""}
+            onClick={() => setLighting("night")}
+            aria-pressed={lighting === "night"}
+            aria-label="Luz da noite"
+            title="Noite"
+          >
+            <Moon aria-hidden="true" />
+            <span>Noite</span>
+          </button>
         </div>
 
         <div className="house-map-zoom-controls" role="group" aria-label="Controles de aproximação do mapa">
