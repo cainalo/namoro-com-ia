@@ -192,10 +192,6 @@ export function CheckersGame() {
             const playableSquare = (row + column) % 2 === 1;
             const isSelected = selectedPosition === index;
             const isDestination = nextDestinations.has(index);
-            const canSelectPiece =
-              game.status === "active" &&
-              !piece &&
-              false;
             const canSelectOwnPiece =
               game.status === "active" &&
               selectedPath.length === 0 &&
