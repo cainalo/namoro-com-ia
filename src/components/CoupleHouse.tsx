@@ -1,3 +1,31 @@
+import { useState } from "react";
+
+const houseLocations = [
+  {
+    id: "residence",
+    label: "Residência",
+    detail: "A construção principal da propriedade.",
+    left: "45%",
+    top: "45%",
+  },
+  {
+    id: "courtyard",
+    label: "Pátio",
+    detail: "O espaço de pedra que conecta a casa aos jardins.",
+    left: "51%",
+    top: "72%",
+  },
+  {
+    id: "gardens",
+    label: "Jardins",
+    detail: "A área verde ao redor da residência.",
+    left: "77%",
+    top: "55%",
+  },
+] as const;
+
+type HouseLocationId = (typeof houseLocations)[number]["id"];
+
 export function CoupleHouse() {
   return (
     <section className="house-screen" aria-labelledby="house-title">
@@ -128,18 +156,38 @@ export function CoupleHouse() {
           </g>
         </svg>
 
-        <div className="house-map-legend">
+        <div className="house-map-hotspots" aria-label="Locais do terreno">
+          {houseLocations.map((location) => (
+            <button
+              key={location.id}
+              type="button"
+              className={
+                selectedLocationId === location.id
+                  ? "house-map-hotspot is-selected"
+                  : "house-map-hotspot"
+              }
+              style={{ left: location.left, top: location.top }}
+              onClick={() => setSelectedLocationId(location.id)}
+              aria-pressed={selectedLocationId === location.id}
+              aria-label={location.label}
+            >
+              <span className="house-map-marker" aria-hidden="true" />
+              <span className="house-map-hotspot-label">{location.label}</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="house-map-legend" aria-live="polite">
           <span className="house-map-marker" aria-hidden="true" />
           <div>
-            <strong>Residência</strong>
-            <span>O primeiro lugar do mapa</span>
+            <strong>{selectedLocation.label}</strong>
+            <span>{selectedLocation.detail}</span>
           </div>
         </div>
       </div>
 
       <p className="house-map-note">
-        O terreno já tem sua forma. A residência, os jardins e os caminhos serão
-        desenvolvidos aqui, pouco a pouco.
+        Selecione os pontos do mapa para conhecer cada área do terreno.
       </p>
     </section>
   );
