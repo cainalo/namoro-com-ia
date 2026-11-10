@@ -348,3 +348,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Cada item e o link para agenda completa navegam até Planos. Estados de carregamento, erro e tabela pendente não usam dados fictícios.
 - Commits: integração `023242016354b8f037a5fc5b649552d82c955681`, estilos `eb5877a91a1e74bb21e3fbddc71513be67cfd40b`.
 - A consulta depende da migration de compromissos estar aplicada no Supabase. Não foi executado build, teste automatizado ou validação visual.
+
+
+### Memórias — busca e filtros locais
+- `src/components/CoupleMemories.tsx` agora permite buscar por título ou conteúdo e filtrar Todas, Privadas ou Compartilhadas.
+- A busca é feita somente nos registros já retornados pelo Supabase e respeita RLS. Não altera visibilidade, não envia texto de busca ao servidor e não amplia permissões.
+- A lista informa quantos resultados correspondem ao filtro e oferece limpeza dos filtros quando não há correspondências.
+- Estilos responsivos adicionados em `src/styles.css`.
+- Commits: componente `b1fa7bc4510b1e5edead85eb7cab3e8ba5ece7bb`, estilos `ba5e8fc32d6ae3f31cf36530a53f123b25553e4e`.
+- Não foi executado build, teste automatizado ou validação visual.
