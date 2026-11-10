@@ -390,3 +390,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - A confirmação oferece cancelar e informa falhas sem remover o item da tela. A exclusão de eventos do parceiro não é oferecida.
 - Commits: adapter `7d2df50340e9cd6bc2e7fe57a55aed5d6d48767c`, componente `1d00caff0a2d98d061bd691238d9770ae8363085`, estilos `f8a535192ae9efe15e70c2f88f1002ddd6381ee2`.
 - Não foi executado build, teste automatizado ou validação visual.
+
+
+### Planos — Realtime de edições e atualização manual
+- `src/components/CouplePlans.tsx` agora escuta INSERT e UPDATE na tabela compartilhada filtrada pelo casal ativo; edições recebidas fazem a agenda recarregar.
+- Acrescentado botão para atualizar compromissos manualmente, útil para conferir mudanças quando a conexão Realtime estiver indisponível e após exclusões remotas.
+- Eventos privados permanecem fora do canal porque não têm `couple_id`.
+- Commit: `fe6771a2cefe779dbf6b1ab3dfd13dd19c3fe7e1`.
+- Não foi executado teste entre duas contas/dispositivos nem validação visual.
