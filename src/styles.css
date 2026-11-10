@@ -5695,3 +5695,35 @@
     justify-content: flex-start;
   }
 }
+
+
+/* Lig 4 — retomar partida em andamento */
+.connect-four-resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 32%, var(--color-border));
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--color-primary) 8%, var(--color-background));
+  padding: 9px 11px;
+}
+
+.connect-four-resume > span {
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+}
+
+.connect-four-resume .inline-action {
+  margin: 0;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+@media (max-width: 680px) {
+  .connect-four-resume {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
