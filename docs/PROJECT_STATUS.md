@@ -53,16 +53,16 @@ Consultar AGENTS.md antes de cada ciclo.
 - [x] Exigir token Supabase válido no endpoint de IA.
 - [x] Cadastro, confirmação de e-mail e login no Preview (confirmado pelo usuário, com URL de redirecionamento configurada por ele).
 - [ ] Validar logout no Preview.
-- [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
+- [x] Inspecionar schema Supabase ativo, policies, buckets e extensões.
 - [x] Etapa 1 — profiles aplicada no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo, com os dois membros como admin (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [ ] Aplicar convites, aceite e desvinculação.
 - [ ] Testar create_couple, concorrência e isolamento de casais com duas contas.
-- [ ] Implementar vínculo atômico limitado a duas contas.
+- [ ] Implementar vínculo atômico limitado a duas contas. O limite de duas pessoas já está garantido no banco; o fluxo de convite/aceite ainda não existe.
 - [ ] Implementar RLS e testar com duas contas. RLS de profiles aplicada; teste com duas contas não feito.
 - [ ] Bloquear acesso ao backend fora de sessão quando o endpoint passar a lidar com dados privados.
 
-### Validação local (código atual, sem correções)
+### Validação local (executada antes das migrations da etapa 2 e da correção de role; o código atual não foi rebuildado depois)
 - bun run build: passou.
 - bun run test: 1 arquivo, 1 teste passou.
 - bun run lint: falhou — 226 erros prettier/prettier e 6 avisos react-refresh/only-export-components.
@@ -91,6 +91,6 @@ Não adicionar títulos e descrições por padrão. Cada tela deve ser orientada
 
 ## Supabase
 Consultar docs/SUPABASE_SCHEMA_PLAN.md.
-Esse documento não é uma migration; somente a etapa 1 (profiles) foi aplicada, pela migration registrada nele.
+Esse documento não é uma migration; as etapas 1 (profiles) e 2 (couples, couple_members) estão aplicadas, pelas migrations registradas nele.
 A autenticação visual usa signUp/signInWithPassword/signOut do SDK Supabase já presente no projeto.
 O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmação de e-mail e login no Preview. Logout não foi confirmado. O endpoint /api/chat exige e valida um access token Supabase antes de consumir o gateway.

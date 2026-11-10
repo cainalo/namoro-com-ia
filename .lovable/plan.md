@@ -26,9 +26,10 @@ Aplicado; histórico da decisão da etapa 2. Sem Lovable Cloud. Convites, aceite
 | activated_at | timestamptz null | |
 | archived_at | timestamptz null | |
 
-CHECKs estáticos (imutáveis, seguros):
-- `(status = 'archived') = (archived_at IS NOT NULL)`
-- `status = 'pending' OR activated_at IS NOT NULL OR status = 'archived'` (archived pode vir de pending sem ativação)
+CHECK `couples_status_timestamps_chk`:
+- pending: `activated_at IS NULL AND archived_at IS NULL`
+- active: `activated_at IS NOT NULL AND archived_at IS NULL`
+- archived: `archived_at IS NOT NULL` (`activated_at` pode ser NULL se arquivado ainda pending)
 
 Índice: `couples(created_by)`.
 
@@ -42,9 +43,10 @@ CHECKs estáticos (imutáveis, seguros):
 | ended_at | timestamptz null | CHECK ended_at IS NULL OR ended_at >= joined_at |
 | PK | (couple_id, user_id) | |
 
-Índices:
-- `UNIQUE (user_id) WHERE ended_at IS NULL` — no máximo uma relação atual por usuário (garantia concorrente pelo próprio índice).
-- `(couple_id) WHERE ended_at IS NULL` — usado pelas policies.
+Índice:
+- `UNIQUE (user_id) WHERE ended_at IS NULL` — no máximo uma relação atual por usuário (garantia concorrente pelo próprio índice). Sem índice extra por `couple_id`: a PK já começa por ele.
+
+Os dois membros são admin, com permissões iguais; `created_by` só identifica o criador.
 
 ## Triggers (enforcement)
 
@@ -69,12 +71,11 @@ Funções de trigger: plpgsql, `SET search_path = ''`, EXECUTE revogado de PUBLI
 ## Funções expostas
 
 - `public.create_couple(p_relationship_started_on date DEFAULT NULL) RETURNS uuid` — SECURITY DEFINER, `search_path = ''`.
-  - Exige `auth.uid()` não nulo.
+  - Exige `auth.uid()` não nulo; advisory lock de transação por usuário.
   - Insere couple (`created_by = auth.uid()`, status pending) e membership admin na mesma transação.
-  - Violação do índice único de usuário vira erro claro ("já pertence a um casal").
+  - Usuário com relação atual recebe erro claro; o índice único é a proteção final.
   - EXECUTE só para `authenticated`.
-- `public.is_current_couple_member(p_couple_id uuid) RETURNS boolean` — SECURITY DEFINER, STABLE, `search_path = ''`; verifica membership atual de `auth.uid()`. Evita recursão de RLS. EXECUTE só para `authenticated`.
-- `public.current_couple_id() RETURNS uuid` — opcional, mesma forma; facilita o cliente.
+- `public.can_view_couple(p_couple_id uuid) RETURNS boolean` — SECURITY DEFINER, STABLE, `search_path = ''`; verdadeiro se `auth.uid()` é ou já foi membro do casal. Evita recursão de RLS. EXECUTE só para `authenticated`.
 
 Ativação, convite, aceite e arquivamento por usuário não ganham função exposta agora.
 
@@ -83,8 +84,8 @@ Ativação, convite, aceite e arquivamento por usuário não ganham função exp
 - `GRANT SELECT` para authenticated; nenhum INSERT/UPDATE/DELETE para clientes.
 - `GRANT ALL` para service_role (triggers continuam valendo para ela).
 - RLS ligada nas duas tabelas, policies `TO authenticated`:
-  - `couples_select_member`: `public.is_current_couple_member(id)` OR o usuário tem membership encerrada nesse casal (histórico próprio).
-  - `couple_members_select`: `user_id = (select auth.uid())` OR (`ended_at IS NULL` AND `public.is_current_couple_member(couple_id)`).
+  - `couples_select_member`: `public.can_view_couple(id)`.
+  - `couple_members_select_member`: `public.can_view_couple(couple_id)`.
 - `profiles` não muda: admin do casal não lê perfil do parceiro. Exposição de nome ao parceiro fica para etapa futura, por função/policy explícita.
 
 ## Casos de borda
@@ -94,7 +95,7 @@ Ativação, convite, aceite e arquivamento por usuário não ganham função exp
 - Casal arquivado: memberships encerradas automaticamente; nenhuma linha muda depois; usuários podem criar novo casal.
 - Mesmo par voltando a se unir: novo `couple_id` (PK impede reuso do casal arquivado), o que é desejável.
 - Cliente tentando INSERT/UPDATE direto, ou chamando a função com outro user_id: sem grant e sem parâmetro de usuário.
-- Ex-membro: vê só a própria membership e o casal arquivado, não membros atuais de outro casal.
+- Ex-membro: vê as duas memberships e o casal histórico, nunca o conteúdo privado de profiles nem membros de outro casal.
 - Exclusão de conta em auth.users com casal: bloqueada pelo RESTRICT. Regra de remoção/anonimização precisa ser documentada antes de oferecer exclusão de conta.
 - Ativar casal com 1 membro: o trigger recusa.
 
