@@ -315,3 +315,21 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - O deslocamento é limitado ao tamanho real do viewport para não expor áreas vazias além do terreno. O movimento direto desativa a transição durante o arraste.
 - Commits: componente `301b4005e205d4fba03f1636999f58a2ebfe697e`, estilos `a7f94fa5d22b7aac6569fe5ad189e37b16471ff7`, ajuste de limites `0ba6f97e63d7cc96b5c43c328f6ceac3db065b95`.
 - Não foi executado teste em dispositivo nem validação visual; o gesto precisa ser conferido na prévia quando ela voltar a atualizar.
+
+
+## Planos — compromissos reais (2026-11-10)
+
+### Banco e permissões
+- Migration `20261110213000_create_couple_plan_events.sql` cria `public.couple_plan_events` com título, descrição, local, data, dia inteiro ou horário e visibilidade privada/compartilhada.
+- RLS segue a regra: privado somente ao autor; compartilhado somente a integrantes atuais de casal ativo. Somente o autor pode editar ou excluir.
+- Constraints validam título, descrição, local e coerência entre dia inteiro/horários.
+- Migration versionada; aplicação ao Supabase ainda não confirmada.
+
+### Interface e adapter
+- Criado `src/lib/couple-plan-events.ts` com consultas por intervalo mensal e inserção de compromissos. Tipagem local temporária; tipos gerados não foram editados.
+- `src/components/CouplePlans.tsx` agora recebe o usuário autenticado, consulta o casal ativo, carrega eventos visíveis do mês, marca dias com eventos e mostra compromissos da data selecionada.
+- Cadastro permite título, descrição, local, dia inteiro ou horário e privacidade privada/compartilhada. Compartilhamento fica bloqueado sem casal ativo. Não há dados de demonstração.
+- A seção Planos continua com navegação por teclado, toque e mouse. Estados de carregamento, erro e tabela pendente são tratados.
+- `src/routes/index.tsx` passa o ID autenticado para Planos; `src/styles.css` recebeu o acabamento responsivo.
+- Commits: migration `ba92b39493f2a61ef63b387be18b032dd35ecd7a`, adapter `46c27020a629cb88d624370046ac7f02718ecf28`, componente `7337ee1407dd610022bf99e40d4ca6fa836e92a3`, rota `1b674de43fc0ebce68d5a6aa93dc47cc79df55c0`, estilos `e6ab9a8530084b56208accad21d9d982a13c035b`.
+- Ainda não implementados: editar/excluir eventos, repetição, notificações e sincronização Realtime. Não foram executados build, testes automatizados ou validação visual.
