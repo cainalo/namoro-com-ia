@@ -78,6 +78,8 @@ export function CoupleMemories({ userId }: { userId: string }) {
           if (couple?.status === "active") activeCoupleId = couple.id;
         }
 
+        if (!activeCoupleId) setVisibility("private");
+
         const result = await listCoupleMemories();
         if (result.error) throw result.error;
         if (!active) return;
@@ -208,6 +210,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
                   type="button"
                   className={visibility === "private" ? "is-active" : ""}
                   aria-pressed={visibility === "private"}
+                  disabled={busy}
                   onClick={() => setVisibility("private")}
                 >
                   <LockKeyhole aria-hidden="true" />
@@ -217,7 +220,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
                   type="button"
                   className={visibility === "shared" ? "is-active" : ""}
                   aria-pressed={visibility === "shared"}
-                  disabled={!state.coupleId}
+                  disabled={!state.coupleId || busy}
                   onClick={() => setVisibility("shared")}
                 >
                   <Users aria-hidden="true" />
@@ -234,6 +237,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
               placeholder="Título (opcional)"
               maxLength={120}
               aria-label="Título da lembrança"
+              disabled={busy}
             />
 
             <textarea
