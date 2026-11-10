@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { LockKeyhole, RefreshCw, Users } from "lucide-react";
+import { Download, LockKeyhole, RefreshCw, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCoupleMemory,
@@ -300,6 +300,41 @@ export function CoupleMemories({ userId }: { userId: string }) {
         })
       : [];
 
+  function exportVisibleMemories() {
+    if (state.status !== "ready" || visibleMemories.length === 0) return;
+
+    const exportedAt = formatLocalDate(new Date());
+    const content = [
+      "MEMÓRIAS — NAMORO",
+      `Exportado em: ${exportedAt}`,
+      `Registros: ${visibleMemories.length}`,
+      "",
+      ...visibleMemories.flatMap((memory, index) => [
+        `${index + 1}. ${memory.title || "Lembrança sem título"}`,
+        `Data: ${memory.memory_date}`,
+        `Privacidade: ${memory.visibility === "shared" ? "Compartilhada" : "Privada"}`,
+        "",
+        memory.body,
+        "",
+        "—".repeat(36),
+        "",
+      ]),
+    ].join("\n");
+
+    const file = new Blob(["\\uFEFF", content], {
+      type: "text/plain;charset=utf-8",
+    });
+    const url = URL.createObjectURL(file);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `namoro-memorias-${exportedAt}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    setNotice(`${visibleMemories.length} lembrança(s) exportada(s).`);
+  }
+
   async function handleDelete(memoryId: string) {
     if (state.status !== "ready" || deleteConfirmId !== memoryId || deleteBusy) return;
     const memory = state.memories.find((item) => item.id === memoryId);
@@ -338,15 +373,26 @@ export function CoupleMemories({ userId }: { userId: string }) {
                   : "Atualização manual"}
           </span>
         </div>
-        <button
-          type="button"
-          className="inline-action"
-          onClick={() => setRefreshKey((current) => current + 1)}
-          disabled={state.status === "loading" || busy}
-        >
-          <RefreshCw aria-hidden="true" />
-          Atualizar
-        </button>
+        <div className="memories-heading-actions">
+          <button
+            type="button"
+            className="inline-action"
+            onClick={exportVisibleMemories}
+            disabled={state.status !== "ready" || visibleMemories.length === 0}
+          >
+            <Download aria-hidden="true" />
+            Exportar seleção
+          </button>
+          <button
+            type="button"
+            className="inline-action"
+            onClick={() => setRefreshKey((current) => current + 1)}
+            disabled={state.status === "loading" || busy}
+          >
+            <RefreshCw aria-hidden="true" />
+            Atualizar
+          </button>
+        </div>
       </header>
 
       {state.status === "loading" && (
