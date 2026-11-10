@@ -1,13 +1,15 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Sunset } from "lucide-react";
 
 type HouseLighting = "day" | "dusk" | "night";
 
 export function HouseInterior({
   lighting,
   onReturn,
+  onLightingChange,
 }: {
   lighting: HouseLighting;
   onReturn: () => void;
+  onLightingChange: (lighting: HouseLighting) => void;
 }) {
   return (
     <section className={`house-interior is-${lighting}`} aria-labelledby="house-interior-title">
@@ -17,10 +19,41 @@ export function HouseInterior({
           <h2 id="house-interior-title">Salão de entrada</h2>
           <p>Pedra antiga, madeira aquecida e a primeira sala da casa.</p>
         </div>
-        <button type="button" className="inline-action" onClick={onReturn}>
-          <ArrowLeft aria-hidden="true" />
-          Voltar ao terreno
-        </button>
+        <div className="house-interior-header-actions">
+          <div className="house-interior-lighting" role="group" aria-label="Iluminação do salão">
+            <button
+              type="button"
+              className={lighting === "day" ? "is-selected" : ""}
+              onClick={() => onLightingChange("day")}
+              aria-pressed={lighting === "day"}
+            >
+              <Sun aria-hidden="true" />
+              <span>Dia</span>
+            </button>
+            <button
+              type="button"
+              className={lighting === "dusk" ? "is-selected" : ""}
+              onClick={() => onLightingChange("dusk")}
+              aria-pressed={lighting === "dusk"}
+            >
+              <Sunset aria-hidden="true" />
+              <span>Entardecer</span>
+            </button>
+            <button
+              type="button"
+              className={lighting === "night" ? "is-selected" : ""}
+              onClick={() => onLightingChange("night")}
+              aria-pressed={lighting === "night"}
+            >
+              <Moon aria-hidden="true" />
+              <span>Noite</span>
+            </button>
+          </div>
+          <button type="button" className="inline-action" onClick={onReturn}>
+            <ArrowLeft aria-hidden="true" />
+            Voltar ao terreno
+          </button>
+        </div>
       </header>
 
       <div className="house-interior-scene">
