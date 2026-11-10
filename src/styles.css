@@ -1313,3 +1313,10 @@
     padding-bottom: 74px;
   }
 }
+
+
+.conversation-live-status {
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 600;
+}
