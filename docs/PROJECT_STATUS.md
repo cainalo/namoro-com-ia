@@ -40,10 +40,10 @@ Consultar AGENTS.md antes de cada ciclo.
 ## Entrega recente — Conversas (2026-11-10)
 - Criado o armazenamento privado de mensagens em public.couple_messages, com RLS: membros atuais e antigos consultam o histórico do próprio casal; somente membros atuais de casal ativo podem inserir em nome próprio.
 - Implementado o componente CoupleConversation e conectado à navegação existente.
-- Primeira versão permite carregar as 100 mensagens mais recentes, enviar texto de até 2000 caracteres e atualizar manualmente. Ainda não há realtime, anexos, edição/exclusão, recibos de leitura ou notificações.
+- Primeira versão permite carregar as 100 mensagens mais recentes, enviar texto de até 2000 caracteres e atualizar manualmente. A assinatura Realtime de INSERT foi implementada, com indicação de conexão e fallback à atualização manual. Ainda não há anexos, edição/exclusão, recibos de leitura ou notificações.
 - A tabela é consultada por adapter tipado temporário em src/lib/couple-messages.ts; atualizar os tipos gerados do Supabase em etapa separada, sem editar o arquivo gerado manualmente.
 - Migration ainda aguarda confirmação de aplicação no banco. Não inserir dados fictícios.
-- Código: commit 5c287bf82880e3dff29732f225737d17343bd0d7.
+- Código inicial: commit 5c287bf82880e3dff29732f225737d17343bd0d7. Realtime: commit 7051c8baccc47dd80cac054d6ed644a10626e7bd. Migration da publicação Realtime: commit eea6e69b7583b69a20393bfb8cdc52b24e52721a.
 
 ## Ciclos
 
@@ -91,7 +91,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - A migration de convites foi confirmada aplicada por consulta ao histórico de migrations.
 - O fluxo de convites tem componentes de criação/gerenciamento e uma página de aceite. Atenção: src/routeTree.gen.ts ainda não registra /invite/$token e só pode ser atualizado pelo gerador oficial.
 - O workspace Lovable recusou uma mensagem de edição por falta de créditos. Não pedir ao usuário tokens, Secrets ou compra de créditos como requisito; usar o GitHub conectado para tarefas que possam ser feitas com segurança.
-- A migration de mensagens 20261110131600_create_couple_messages.sql foi adicionada à main. Sua aplicação no Supabase ainda não foi confirmada.
+- A migration de mensagens 20261110131600_create_couple_messages.sql e a migration 20261110132200_enable_realtime_for_couple_messages.sql foram adicionadas à main. A aplicação de ambas no Supabase ainda não foi confirmada.
 - O Lovable reconhece o commit de implementação das conversas e reporta o projeto como ready. Não há checks de CI no commit e os comandos de testes/build não foram executados nesta etapa.
 
 ### Ciclos seguintes
