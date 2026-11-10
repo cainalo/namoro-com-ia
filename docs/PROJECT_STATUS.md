@@ -155,3 +155,12 @@ Consultar docs/SUPABASE_SCHEMA_PLAN.md e docs/INVITATION_FLOW_PLAN.md.
 Esse documento não é uma migration; as etapas 1 (profiles) e 2 (couples, couple_members) estão aplicadas, pelas migrations registradas nele.
 A autenticação visual usa signUp/signInWithPassword/signOut do SDK Supabase já presente no projeto.
 O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmação de e-mail e login no Preview. Logout não foi confirmado. O endpoint /api/chat exige e valida um access token Supabase antes de consumir o gateway.
+
+
+## Etapa seguinte de jogos — núcleo de Damas brasileiras (2026-11-10)
+- Definida a variante Damas brasileiras: tabuleiro 8×8, 12 peças por jogador e início pelas brancas.
+- Criado `src/lib/checkers.ts` com estado inicial, coordenadas, movimentos regulares, captura para trás por pedras, captura obrigatória, sequência de captura, Lei da Maioria, dama voadora, promoção ao final do lance e detecção de vitória por falta de peças ou jogadas.
+- Criados testes unitários em `src/lib/checkers.test.ts` cobrindo posição inicial, captura para trás, maioria, dama voadora, promoção, bloqueio e jogadas ilegais.
+- Regras e limites desta etapa documentados em `docs/CHECKERS_RULES.md`.
+- Esta entrega é somente o núcleo de regras. Ainda não há tabuleiro visual, partidas online, persistência Supabase ou regras de empate. Damas permanece como jogo em desenvolvimento na biblioteca.
+- Os testes foram adicionados, mas ainda não foram executados neste ambiente; não há confirmação de build, lint ou integração visual.
