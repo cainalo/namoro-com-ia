@@ -31,5 +31,8 @@ use the editor.
 
 ## Project rules
 
+### Supabase GitHub migration workflow — user-authorized 2026-11-10
+The user enabled the official Supabase GitHub integration with **Deploy to production** for the production branch `main`. For this project, this explicitly supersedes the older Lovable-only instruction above for database schema changes: create timestamped migration files under `supabase/migrations/` in GitHub and let the official Supabase integration apply them on pushes to `main`. Do not apply DDL through the SQL Editor, direct database connectors, or a separate CLI push. Keep migrations additive, transactional, reviewed, and guarded by fail-fast preflight checks. Never use Lovable Cloud. Do not claim a migration is applied until the Supabase deployment result or live schema has been verified.
+
 - AI chat streams plain text from the server route `src/routes/api/chat.ts` (SDK `streamResponse`), consumed by `src/components/AiChat.tsx` via fetch reader — keeps the prompt and key server-side with simple incremental rendering.
 - Backend must be the user's own external Supabase project, never Lovable Cloud — the user requested it explicitly.
