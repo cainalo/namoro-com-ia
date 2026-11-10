@@ -5494,3 +5494,36 @@
     margin-right: auto;
   }
 }
+
+
+/* Casa — movimento da chama da lareira */
+.house-hall-flame {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: house-fire-flicker 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes house-fire-flicker {
+  0% {
+    opacity: 0.82;
+    transform: scale(0.94, 0.96) skewX(-2deg);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1.04, 1.02) skewX(1.5deg);
+  }
+  72% {
+    opacity: 0.9;
+    transform: scale(0.97, 1.06) skewX(-1deg);
+  }
+  100% {
+    opacity: 0.96;
+    transform: scale(1.02, 0.98) skewX(2deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-hall-flame {
+    animation: none;
+  }
+}
