@@ -4280,3 +4280,323 @@
 .house-map-viewport.is-pannable .house-map-canvas {
   will-change: transform;
 }
+
+
+/* Planos — compromissos do casal */
+.plans-day-number {
+  position: relative;
+  z-index: 1;
+}
+
+.plans-day-event-indicator {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.plans-day.is-selected .plans-day-event-indicator {
+  background: var(--color-primary-foreground);
+}
+
+.plans-feedback {
+  width: min(100%, 700px);
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.plans-feedback button {
+  margin-left: 8px;
+}
+
+.plans-feedback.is-error {
+  color: var(--color-destructive);
+}
+
+.plans-feedback.is-success {
+  color: var(--color-primary);
+}
+
+.plans-selected-day-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.plans-selected-day-heading > span {
+  padding-bottom: 8px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+}
+
+.plans-no-events {
+  margin: 6px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.plans-event-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 6px;
+}
+
+.plans-event-entry {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-border);
+  padding: 12px 3px;
+}
+
+.plans-event-entry > time {
+  padding-top: 2px;
+  color: var(--color-primary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.plans-event-entry > div {
+  min-width: 0;
+}
+
+.plans-event-entry h3 {
+  margin: 0 0 4px;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.plans-event-entry p,
+.plans-event-entry > div > span {
+  display: block;
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.plans-event-entry > div > span {
+  margin-top: 4px;
+}
+
+.plans-event-entry > span {
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  padding: 3px 6px;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.plans-event-entry > span.is-shared {
+  border-color: color-mix(in oklab, var(--color-primary) 46%, var(--color-border));
+  color: var(--color-primary);
+}
+
+.plans-event-composer {
+  display: flex;
+  width: min(100%, 700px);
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 30%, var(--color-border));
+  border-left: 3px solid color-mix(in oklab, var(--color-accent) 72%, var(--color-primary));
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--color-sidebar) 25%, var(--color-background));
+  padding: 17px 19px;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 7%, transparent);
+}
+
+.plans-event-composer-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 10px;
+}
+
+.plans-event-composer-heading svg {
+  width: 16px;
+  height: 16px;
+  color: var(--color-accent);
+}
+
+.plans-event-composer-heading h2 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.plans-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.plans-field input,
+.plans-field textarea {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-input);
+  border-radius: 4px;
+  background: var(--color-card);
+  padding: 9px 11px;
+  color: var(--color-card-foreground);
+  font: inherit;
+  font-size: 12px;
+}
+
+.plans-field input {
+  min-height: 37px;
+}
+
+.plans-field textarea {
+  min-height: 62px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.plans-field input:focus-visible,
+.plans-field textarea:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.plans-field input::placeholder,
+.plans-field textarea::placeholder {
+  color: color-mix(in oklab, var(--color-card-foreground) 58%, var(--color-card));
+}
+
+.plans-field input:disabled,
+.plans-field textarea:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.plans-event-options {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.plans-all-day-toggle {
+  display: inline-flex;
+  min-height: 37px;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-foreground);
+  font-size: 11px;
+}
+
+.plans-all-day-toggle input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-primary);
+}
+
+.plans-time-fields {
+  display: grid;
+  flex: 1 1 240px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.plans-event-footer {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.plans-event-date {
+  flex: 1 1 145px;
+}
+
+.plans-event-footer .memory-visibility-switch {
+  flex: 1 1 210px;
+}
+
+.plans-event-footer .memory-visibility-switch button {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.plans-event-footer > .primary-action {
+  min-height: 37px;
+  margin: 0;
+  padding: 0 13px;
+  font-size: 11px;
+}
+
+.plans-privacy-note {
+  margin: -3px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .plans-event-entry {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .plans-event-entry > span {
+    grid-column: 2;
+    justify-self: start;
+  }
+
+  .plans-event-composer {
+    gap: 11px;
+    padding: 14px 12px;
+  }
+
+  .plans-event-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .plans-event-footer .plans-event-date,
+  .plans-event-footer .memory-visibility-switch {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .plans-event-footer > .primary-action {
+    width: 100%;
+  }
+
+  .plans-selected-day-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .plans-selected-day-heading > span {
+    padding-bottom: 0;
+  }
+}
