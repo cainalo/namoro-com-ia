@@ -56,11 +56,14 @@ Consultar AGENTS.md antes de cada ciclo.
 
 ## Segundo jogo — Desafio do dia (2026-11-10)
 - Criado `src/components/CoupleDailyChallenge.tsx` com vinte missões curtas para conversa, carinho, criatividade e diversão.
-- A missão é determinística a partir do identificador do casal e da data no fuso `America/Sao_Paulo`; assim, os dois dispositivos vinculados ao mesmo casal recebem a mesma missão no mesmo dia, sem gravar um novo registro no banco.
+- A missão é determinística a partir do identificador do casal e da data no fuso `America/Sao_Paulo`; os dois dispositivos vinculados ao mesmo casal recebem a mesma missão no mesmo dia.
 - Criado `src/components/CoupleGames.tsx` para alternar entre Isto ou Aquilo e Desafio do dia; a navegação existente Hoje → Jogar a dois continua sendo o ponto de entrada.
-- Esta primeira versão não registra conclusão, histórico ou pontuação do desafio. Não confundir a missão compartilhada com sincronização de progresso; isso exigiria uma etapa própria de persistência.
-- Não foi criada migration para esta etapa.
-- Commits: desafio `f8bdd5df0a2443c2c933ef7507ac33596e18a45e`; seletor de jogos `9664f87487f522214d4357c796e7458c114868f4`; integração `adbc04820de08bc939c289bfcbc6805241ff1776`; estilos `87bc3b3309a49226c6a9bc3d1c2169071ee9d1a7`.
+- Progresso implementado: cada integrante registra a própria conclusão do desafio do dia; o status da outra pessoa chega por Supabase Realtime. O desafio só aparece como concluído pelo casal quando os dois registram a conclusão.
+- Histórico: consulta os últimos 30 dias e exibe até os dez dias anteriores mais recentes com registros. Os registros são imutáveis pelo cliente nesta versão; não há desfazer nem pontuação.
+- Migration `20261110143000_create_couple_daily_challenge_progress.sql`: tabela com chave por casal/data/integrante, RLS para leitura do próprio casal e inserção da conclusão pelo próprio integrante atual em casal ativo, apenas na data de São Paulo. Não concede UPDATE ou DELETE ao cliente.
+- Migration `20261110143100_enable_realtime_for_couple_daily_challenge_progress.sql`: inclui a tabela na publicação `supabase_realtime`.
+- A aplicação das duas migrations no Supabase ainda não foi confirmada. Até isso ocorrer, a gravação e a sincronização do histórico não funcionarão no ambiente remoto.
+- Commits: componente do desafio `8145bf648e7890d7ffabff318bcdb30df4e3dc3a`; migrations de progresso e Realtime `c14531bb34d3b503197957c83fd49af97594d8a0` e `782edef1711b5241576f2704fe31720f2e58d344`; adapter `fa67467a65309d5f6724f85b67290ca3e98c6d79`; estilos `367cad42eb93f9093809e9d57cbc610227df9e82`.
 
 ## Ciclos
 
