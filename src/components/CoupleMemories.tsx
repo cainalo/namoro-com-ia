@@ -43,6 +43,7 @@ function isMissingMemoryTable(cause: unknown) {
 
 export function CoupleMemories({ userId }: { userId: string }) {
   const [state, setState] = useState<MemoriesState>({ status: "loading" });
+  const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const [visibility, setVisibility] = useState<MemoryVisibility>("private");
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
@@ -121,6 +122,62 @@ export function CoupleMemories({ userId }: { userId: string }) {
       active = false;
     };
   }, [userId, refreshKey]);
+
+  const activeCoupleId = state.status === "ready" ? state.coupleId : null;
+
+  useEffect(() => {
+    if (!activeCoupleId) {
+      setRealtimeStatus("offline");
+      return;
+    }
+
+    let mounted = true;
+    setRealtimeStatus("connecting");
+
+    const channel = supabase
+      .channel(`couple-memories:${activeCoupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "couple_memories",
+          filter: `couple_id=eq.${activeCoupleId}`,
+        },
+        () => {
+          if (mounted) setRefreshKey((current) => current + 1);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "couple_memories",
+          filter: `couple_id=eq.${activeCoupleId}`,
+        },
+        () => {
+          if (mounted) setRefreshKey((current) => current + 1);
+        },
+      )
+      .subscribe((status) => {
+        if (!mounted) return;
+        if (status === "SUBSCRIBED") {
+          setRealtimeStatus("connected");
+        } else if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT" ||
+          status === "CLOSED"
+        ) {
+          setRealtimeStatus("offline");
+        }
+      });
+
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [activeCoupleId]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -271,6 +328,15 @@ export function CoupleMemories({ userId }: { userId: string }) {
         <div>
           <p className="date-kicker">Lembranças de vocês</p>
           <h1 id="memories-title">Memórias</h1>
+          <span className={activeCoupleId && realtimeStatus === "connected" ? "memories-live-status is-connected" : "memories-live-status"} role="status">
+            {!activeCoupleId
+              ? "Biblioteca privada"
+              : realtimeStatus === "connected"
+                ? "Memórias compartilhadas ao vivo"
+                : realtimeStatus === "connecting"
+                  ? "Conectando memórias…"
+                  : "Atualização manual"}
+          </span>
         </div>
         <button
           type="button"
