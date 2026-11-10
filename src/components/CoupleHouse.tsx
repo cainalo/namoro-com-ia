@@ -13,7 +13,7 @@ const houseLocations = [
     label: "Pátio",
     detail: "O espaço de pedra que conecta a casa aos jardins.",
     left: "51%",
-    top: "72%",
+    top: "63%",
   },
   {
     id: "gardens",
@@ -161,7 +161,7 @@ export function CoupleHouse() {
           </g>
         </svg>
 
-        <div className="house-map-hotspots" aria-label="Locais do terreno">
+        <div className="house-map-hotspots" role="group" aria-label="Locais do terreno">
           {houseLocations.map((location) => (
             <button
               key={location.id}
