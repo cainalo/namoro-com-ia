@@ -46,9 +46,9 @@ export function CouplePlans() {
   }).format(visibleMonth);
 
   function moveMonth(offset: number) {
-    setVisibleMonth((current) =>
-      new Date(current.getFullYear(), current.getMonth() + offset, 1),
-    );
+    const nextMonth = new Date(year, month + offset, 1);
+    setVisibleMonth(nextMonth);
+    setSelectedDate(nextMonth);
   }
 
   function goToToday() {
@@ -90,9 +90,9 @@ export function CouplePlans() {
           </div>
         </div>
 
-        <div className="plans-calendar-grid" role="grid" aria-label={monthLabel}>
+        <div className="plans-calendar-grid" aria-label={monthLabel}>
           {weekdays.map((weekday) => (
-            <span className="plans-weekday" role="columnheader" key={weekday}>
+            <span className="plans-weekday" key={weekday}>
               {weekday}
             </span>
           ))}
@@ -102,7 +102,6 @@ export function CouplePlans() {
               return (
                 <span
                   className="plans-day-placeholder"
-                  role="gridcell"
                   aria-hidden="true"
                   key={`empty-${index}`}
                 />
@@ -116,7 +115,6 @@ export function CouplePlans() {
             return (
               <button
                 type="button"
-                role="gridcell"
                 key={day}
                 className={[
                   "plans-day",
