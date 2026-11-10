@@ -55,7 +55,9 @@ Consultar AGENTS.md antes de cada ciclo.
 - [ ] Validar logout no Preview.
 - [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
 - [x] Etapa 1 — profiles aplicada no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
-- [ ] Aplicar casal, membros e convites pelo fluxo Lovable/Supabase autorizado.
+- [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
+- [ ] Aplicar convites, aceite e desvinculação.
+- [ ] Testar create_couple, concorrência e isolamento de casais com duas contas.
 - [ ] Implementar vínculo atômico limitado a duas contas.
 - [ ] Implementar RLS e testar com duas contas. RLS de profiles aplicada; teste com duas contas não feito.
 - [ ] Bloquear acesso ao backend fora de sessão quando o endpoint passar a lidar com dados privados.

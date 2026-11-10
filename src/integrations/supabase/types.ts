@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      couple_members: {
+        Row: {
+          couple_id: string
+          ended_at: string | null
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          ended_at?: string | null
+          joined_at?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          ended_at?: string | null
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_members_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couples: {
+        Row: {
+          activated_at: string | null
+          archived_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          relationship_started_on: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          archived_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          relationship_started_on?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          archived_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          relationship_started_on?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_path: string | null
@@ -43,7 +108,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_couple: { Args: { p_couple_id: string }; Returns: boolean }
+      create_couple: {
+        Args: { p_relationship_started_on?: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

@@ -134,3 +134,10 @@ A administração do casal não concede acesso a conteúdo privado.
 - Aplicado: public.profiles com FK id → auth.users(id) ON DELETE CASCADE; RLS ligada; policies TO authenticated de SELECT e UPDATE somente do próprio id; sem policy de INSERT/DELETE; anon sem privilégios; authenticated com SELECT e UPDATE apenas em display_name e avatar_path; trigger AFTER INSERT em auth.users criando o perfil (SECURITY DEFINER, search_path vazio, EXECUTE revogado de PUBLIC/anon/authenticated); trigger de updated_at; backfill idempotente só de ids.
 - Verificação após aplicação (somente leitura): 1 auth user, 1 profile, 0 usuários sem perfil.
 - Não testado: trigger com um novo cadastro, isolamento entre duas contas, atualização de perfil pelo cliente.
+- Etapa 2 (couples, couple_members) aplicada no mesmo projeto. Convites, aceite e desvinculação não implementados.
+  - Migration: supabase/migrations/20261110014046_86a99b94-7a96-4b84-af68-89c7d5bcc439.sql
+  - SHA256: d6349f7c35812bd1dcca383f62b99341d3b85fc1e190e85b864ca372d8451e63
+  - Aplicado: FKs ON DELETE RESTRICT; CHECKs de status/timestamps e ended_at >= joined_at; PK (couple_id, user_id); únicos parciais de uma relação atual por usuário e um admin atual por casal; triggers de inserção (FOR UPDATE no casal, máx. 2, criador admin primeiro, segundo member), imutabilidade de membership, bloqueio de DELETE, transições pending→active (exige 2 membros), pending/active→archived, archived imutável, encerramento automático das memberships ao arquivar; create_couple (SECURITY DEFINER, auth.uid(), advisory lock) e can_view_couple (membro atual ou antigo); RLS com apenas SELECT TO authenticated via can_view_couple; anon sem privilégios; authenticated só SELECT; funções de trigger sem EXECUTE para clientes.
+  - Verificação após aplicação (somente leitura): estruturas, grants, policies, search_path e EXECUTE conferidos; 0 casais e 0 memberships.
+  - Linter: create_couple e can_view_couple executáveis por authenticated, intencional.
+  - Não testado: create_couple pelo app, concorrência, isolamento com duas contas, transições de status.
