@@ -357,3 +357,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Estilos responsivos adicionados em `src/styles.css`.
 - Commits: componente `b1fa7bc4510b1e5edead85eb7cab3e8ba5ece7bb`, estilos `ba5e8fc32d6ae3f31cf36530a53f123b25553e4e`.
 - Não foi executado build, teste automatizado ou validação visual.
+
+
+### Casa — efeitos ambientais do entardecer e da noite
+- `src/components/CoupleHouse.tsx` agora renderiza uma camada atmosférica decorativa conforme a iluminação selecionada.
+- Entardecer recebe reflexos quentes nos pontos de luz; Noite recebe pequenas estrelas e brilhos de lanternas com pulsação sutil.
+- A camada não captura ponteiros nem bloqueia hotspots, zoom, controles de iluminação ou arraste.
+- A animação respeita `prefers-reduced-motion`.
+- Commits: componente `fa92b5410cb7162f096de701a55128ab287b24ea`, estilos `7c0bf7adb93dd6e024cee41f03d8d0c1c1da7b1f`.
+- Não foi executado build, teste automatizado ou validação visual; a cena precisa ser conferida na prévia quando a atualização voltar a funcionar.
