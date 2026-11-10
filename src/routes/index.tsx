@@ -110,7 +110,7 @@ function Index() {
           ) : activeSection === "universe" ? (
             <CoupleHouse />
           ) : activeSection === "organize" ? (
-            <CouplePlans />
+            <CouplePlans userId={session.user.id} />
           ) : activeSection === "memories" ? (
             <CoupleMemories userId={session.user.id} />
           ) : activeSection !== "home" ? (
