@@ -398,3 +398,41 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Eventos privados permanecem fora do canal porque não têm `couple_id`.
 - Commit: `fe6771a2cefe779dbf6b1ab3dfd13dd19c3fe7e1`.
 - Não foi executado teste entre duas contas/dispositivos nem validação visual.
+
+
+## Cobertura geral do aplicativo — correções e novas interações (2026-11-10)
+
+### Base e navegação
+- Corrigido JSX inválido nos handlers de zoom do mapa em `src/components/CoupleHouse.tsx` (commit `03cf2c31f865db3ade0acbf73f12febdb34552fd`).
+- Removidos o fallback e os tipos obsoletos de seções vazias em `src/routes/index.tsx`; as seções implementadas agora são renderizadas diretamente (commit `f2f84c2d8d91f5fb3021478e9628eaaf144d6f47`).
+- `HomeScreen` passa a ser desmontada ao navegar para outra área e remontada ao voltar, atualizando Mural e Próximas datas sem manter consultas antigas (commit `1e5ed860f499deca3bd869f554ac5144a8b25a1b`).
+- Corrigida expressão de data com template string que impedia o carregamento de `CoupleDailyChallenge.tsx` (commit `eb7cd807c75b068ea17209b28760205c6212c951`).
+
+### Vínculo do casal
+- `src/components/CoupleSetup.tsx` ganhou a ação **Verificar aceite** para atualizar o status do casal pendente sem perder o link de convite exibido; no estado ativo permite atualizar o status sob demanda.
+- Commit: `ad0c5ffbd450f99d795ddd47abe39615fdf87a06`.
+
+### Casa
+- Criado `src/components/HouseInterior.tsx` com a primeira sala interna — Salão de entrada — em arte vetorial: arcos, vitral, lareira, tapeçaria, escadaria, piso e luzes.
+- O marcador Residência no mapa agora oferece **Entrar** e abre o salão; **Voltar ao terreno** retorna ao mapa, preservando o modo de iluminação.
+- Commits: cena `e91a79aa78659db0b3b441bd3b17f8c77b00c294`, integração `66c88e4f199dd63882574d1886f8197b6de0e219`, estilos `86f26528feb4932630373d1d25812e4f819f1206`.
+- Ainda não há navegação entre cômodos, andares ou objetos interativos dentro do salão.
+
+### Conversas
+- Cada balão agora possui ação para copiar o texto; o controle confirma a cópia e informa quando a API de clipboard não está disponível.
+- Commits: componente `14b10ea20df6039f8c61cb562a5e0ec85aa0b280`, estilos `4c22d36610137a84dbda97e14ddaa3e624854ff3`.
+
+### Jogos
+- Damas ganhou histórico local de até 50 posições anteriores, contagem de jogadas e opção de desfazer o último lance concluído. Capturas múltiplas entram no histórico como uma jogada única; reiniciar limpa o histórico.
+- Commits: componente `f4513d6d52eccf3982feb446566ac36b87da275b`, estilos `212b7366144839996fa85766df541ee39c930df9`.
+- Damas continua sendo uma prévia local para duas pessoas no mesmo aparelho; não foi apresentada como jogo online.
+
+### Hoje
+- O resumo de próximas datas agora identifica o casal ativo e assina INSERT/UPDATE de compromissos compartilhados, atualizando a lista quando o parceiro cria ou edita um evento.
+- Commit: `0dc69b2f98b5c4842da4fb85b195f484e63fbad1`.
+- A consulta depende de a migration de compromissos estar aplicada no Supabase; eventos privados permanecem fora do canal compartilhado.
+
+### Verificação automática
+- A execução do GitHub Actions no commit `1e5ed860f499deca3bd869f554ac5144a8b25a1b` concluiu com sucesso: instalação congelada, 9 testes automatizados aprovados e build da aplicação aprovado.
+- A execução seguinte cobre os commits posteriores e deve ser conferida antes de considerar as mudanças atuais aprovadas.
+- Ainda não foi executado teste visual ou teste entre dois aparelhos; a captura do Lovable continua desatualizada.
