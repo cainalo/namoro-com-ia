@@ -340,3 +340,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Enter sozinho continua inserindo quebra de linha; Shift+Enter também. O botão Enviar permanece disponível, e a dica do atalho é ocultada em telas estreitas.
 - Commits: componente `8754d4e38ae91e36d4fbb35078c1f0fb68702f56`, estilo `f2a41c4b09bf7472863b5656b5a8185e0ec12465`.
 - Não foi executado build, teste automatizado ou validação visual.
+
+
+### Hoje — próximas datas reais
+- O bloco estático de datas foi substituído por `HomeUpcomingPlans`, que consulta compromissos dos próximos 60 dias usando o adapter de Planos.
+- Mostra até três eventos futuros com data, horário/dia inteiro e local; eventos com horário já passado no dia atual são omitidos.
+- Cada item e o link para agenda completa navegam até Planos. Estados de carregamento, erro e tabela pendente não usam dados fictícios.
+- Commits: integração `023242016354b8f037a5fc5b649552d82c955681`, estilos `eb5877a91a1e74bb21e3fbddc71513be67cfd40b`.
+- A consulta depende da migration de compromissos estar aplicada no Supabase. Não foi executado build, teste automatizado ou validação visual.
