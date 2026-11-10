@@ -4615,3 +4615,80 @@
     display: none;
   }
 }
+
+
+/* Hoje — próximas datas da agenda */
+.home-upcoming-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.home-upcoming-entry {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 48px minmax(0, 1fr) 14px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  padding: 9px 2px;
+  color: var(--color-foreground);
+  cursor: pointer;
+  text-align: left;
+}
+
+.home-upcoming-entry:hover {
+  background: color-mix(in oklab, var(--color-accent) 7%, transparent);
+}
+
+.home-upcoming-entry:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: -2px;
+}
+
+.home-upcoming-date {
+  color: var(--color-primary);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+.home-upcoming-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.home-upcoming-copy strong {
+  overflow: hidden;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-upcoming-copy > span {
+  overflow: hidden;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-upcoming-entry > svg {
+  width: 13px;
+  height: 13px;
+  color: var(--color-muted-foreground);
+}
+
+.home-upcoming-list > .inline-action {
+  align-self: flex-start;
+  margin-top: 7px;
+}
+
