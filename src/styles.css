@@ -3142,3 +3142,215 @@
     max-width: min(260px, calc(100% - 16px));
   }
 }
+
+
+/* Planos — calendário navegável */
+.plans-screen {
+  display: flex;
+  min-height: calc(100dvh - 112px);
+  flex-direction: column;
+  gap: 24px;
+}
+
+.plans-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 15px;
+}
+
+.plans-heading h1 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(30px, 4vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.plans-calendar {
+  width: min(100%, 700px);
+  border: 1px solid color-mix(in oklab, var(--color-accent) 28%, var(--color-border));
+  border-radius: 5px;
+  background: color-mix(in oklab, var(--color-sidebar) 25%, var(--color-background));
+  padding: 20px;
+}
+
+.plans-calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.plans-calendar-toolbar h2 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 24px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.plans-calendar-navigation {
+  display: flex;
+  gap: 6px;
+}
+
+.plans-calendar-navigation button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+
+.plans-calendar-navigation button:hover {
+  border-color: var(--color-accent);
+  background: var(--color-secondary);
+}
+
+.plans-calendar-navigation button:focus-visible,
+.plans-day:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.plans-calendar-navigation svg {
+  width: 17px;
+  height: 17px;
+}
+
+.plans-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.plans-weekday {
+  display: grid;
+  min-height: 30px;
+  place-items: center;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.plans-day-placeholder,
+.plans-day {
+  min-width: 0;
+  min-height: 44px;
+  aspect-ratio: 1;
+}
+
+.plans-day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-foreground);
+  cursor: pointer;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.plans-day:hover {
+  border-color: color-mix(in oklab, var(--color-accent) 52%, var(--color-border));
+  background: var(--color-secondary);
+}
+
+.plans-day.is-today {
+  border-color: color-mix(in oklab, var(--color-accent) 72%, var(--color-border));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-accent) 18%, transparent);
+}
+
+.plans-day.is-selected {
+  border-color: var(--color-accent);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-weight: 800;
+}
+
+.plans-selected-day {
+  width: min(100%, 700px);
+  border-top: 1px solid var(--color-border);
+  padding-top: 17px;
+}
+
+.plans-selected-day h2 {
+  margin: 3px 0 8px;
+  color: var(--color-foreground);
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.plans-selected-day > p:last-child {
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 680px) {
+  .plans-screen {
+    min-height: calc(100dvh - 165px);
+    gap: 18px;
+  }
+
+  .plans-heading {
+    padding-bottom: 12px;
+  }
+
+  .plans-calendar {
+    padding: 13px 10px;
+  }
+
+  .plans-calendar-toolbar {
+    margin-bottom: 13px;
+  }
+
+  .plans-calendar-toolbar h2 {
+    font-size: 21px;
+  }
+
+  .plans-calendar-grid {
+    gap: 3px;
+  }
+
+  .plans-weekday {
+    min-height: 26px;
+    font-size: 9px;
+  }
+
+  .plans-day-placeholder,
+  .plans-day {
+    min-height: 39px;
+  }
+
+  .plans-day {
+    font-size: 11px;
+  }
+
+  .plans-selected-day h2 {
+    font-size: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plans-day {
+    transition: none;
+  }
+}
