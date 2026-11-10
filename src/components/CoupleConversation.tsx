@@ -17,6 +17,18 @@ type CoupleConversationProps = {
   userId: string;
 };
 
+function isCoupleMessage(value: unknown): value is CoupleMessage {
+  if (typeof value !== "object" || value === null) return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.id === "string" &&
+    typeof row.couple_id === "string" &&
+    typeof row.sender_id === "string" &&
+    typeof row.body === "string" &&
+    typeof row.created_at === "string"
+  );
+}
+
 function formatMessageTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -34,6 +46,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
 
   useEffect(() => {
     let active = true;
@@ -98,6 +111,72 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
     };
   }, [userId, refreshKey]);
 
+  const activeCoupleId = state.status === "active" ? state.coupleId : null;
+
+  useEffect(() => {
+    if (!activeCoupleId) {
+      setRealtimeStatus("connecting");
+      return;
+    }
+
+    let mounted = true;
+    setRealtimeStatus("connecting");
+
+    const channel = supabase
+      .channel(`couple-messages:${activeCoupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "couple_messages",
+          filter: `couple_id=eq.${activeCoupleId}`,
+        },
+        (payload) => {
+          if (!isCoupleMessage(payload.new)) return;
+
+          const incoming = payload.new;
+          setState((current) => {
+            if (
+              current.status !== "active" ||
+              current.coupleId !== activeCoupleId ||
+              current.messages.some((message) => message.id === incoming.id)
+            ) {
+              return current;
+            }
+
+            return {
+              ...current,
+              messages: [...current.messages, incoming]
+                .sort(
+                  (left, right) =>
+                    new Date(left.created_at).getTime() -
+                    new Date(right.created_at).getTime(),
+                )
+                .slice(-100),
+            };
+          });
+        },
+      )
+      .subscribe((status) => {
+        if (!mounted) return;
+        if (status === "SUBSCRIBED") {
+          setRealtimeStatus("connected");
+        } else if (
+          status === "CHANNEL_ERROR" ||
+          status === "TIMED_OUT" ||
+          status === "CLOSED"
+        ) {
+          setRealtimeStatus("offline");
+        }
+      });
+
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [activeCoupleId]);
+
   async function handleSend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const current = state;
@@ -130,6 +209,15 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
     <section className="conversation-screen" aria-labelledby="conversation-title">
       <header className="conversation-heading">
         <h1 id="conversation-title">Conversas</h1>
+        {state.status === "active" && (
+          <span className="conversation-live-status" role="status">
+            {realtimeStatus === "connected"
+              ? "Ao vivo"
+              : realtimeStatus === "connecting"
+                ? "Conectando…"
+                : "Atualização manual"}
+          </span>
+        )}
         {state.status === "active" && (
           <button
             type="button"
