@@ -16,6 +16,7 @@ import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
 import { CoupleGames } from "@/components/CoupleGames";
+import { CoupleHouse } from "@/components/CoupleHouse";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -34,13 +35,12 @@ const navigation: NavigationItem[] = [
 ];
 
 const emptyStates: Record<
-  Exclude<SectionId, "home" | "games">,
+  Exclude<SectionId, "home" | "games" | "universe">,
   { title: string; message: string; icon: LucideIcon }
 > = {
   messages: { title: "Conversas", message: "As mensagens de vocês aparecerão aqui.", icon: MessageCircle },
   memories: { title: "Memórias", message: "As lembranças que vocês guardarem ficarão aqui.", icon: Images },
   organize: { title: "Planos", message: "Datas, tarefas e projetos aparecerão aqui.", icon: CalendarDays },
-  universe: { title: "Casa", message: "A casa de vocês começa a ganhar forma aqui.", icon: Compass },
 };
 
 export const Route = createFileRoute("/")({
@@ -105,6 +105,8 @@ function Index() {
             <CoupleConversation userId={session.user.id} />
           ) : activeSection === "games" ? (
             <CoupleGames userId={session.user.id} />
+          ) : activeSection === "universe" ? (
+            <CoupleHouse />
           ) : activeSection !== "home" ? (
             <EmptySection section={activeSection} />
           ) : null}
