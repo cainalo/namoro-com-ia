@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from "react";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
+import { CoupleSetup } from "@/components/CoupleSetup";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe";
 
@@ -67,7 +68,7 @@ function Index() {
 
   return (
     <AuthGate>
-      {() => (
+      {(session) => (
         <div className="app-shell min-h-dvh bg-background text-foreground">
       <aside className="app-sidebar">
         <Brand />
@@ -94,11 +95,10 @@ function Index() {
         </header>
 
         <div className="page-frame">
-          {activeSection === "home" ? (
-            <HomeScreen date={date} onNavigate={setActiveSection} />
-          ) : (
-            <EmptySection section={activeSection} />
-          )}
+          <div className={activeSection === "home" ? undefined : "section-hidden"} aria-hidden={activeSection !== "home"}>
+            <HomeScreen date={date} userId={session.user.id} onNavigate={setActiveSection} />
+          </div>
+          {activeSection !== "home" && <EmptySection section={activeSection} />}
         </div>
       </main>
 
@@ -164,9 +164,11 @@ function NavigationButton({
 
 function HomeScreen({
   date,
+  userId,
   onNavigate,
 }: {
   date: string;
+  userId: string;
   onNavigate: (section: SectionId) => void;
 }) {
   return (
@@ -185,6 +187,8 @@ function HomeScreen({
           <span>Guardar lembrança</span>
         </button>
       </div>
+
+      <CoupleSetup userId={userId} />
 
       <div className="home-columns">
         <section className="home-primary" aria-labelledby="wall-title">
