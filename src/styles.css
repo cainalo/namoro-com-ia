@@ -4692,3 +4692,97 @@
   margin-top: 7px;
 }
 
+
+
+/* Memórias — busca e filtros de privacidade */
+.memories-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 11px;
+}
+
+.memories-search {
+  display: flex;
+  min-width: min(100%, 220px);
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.memories-search input {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid var(--color-input);
+  border-radius: 4px;
+  background: var(--color-card);
+  padding: 0 10px;
+  color: var(--color-card-foreground);
+  font-size: 11px;
+}
+
+.memories-search input::placeholder {
+  color: color-mix(in oklab, var(--color-card-foreground) 58%, var(--color-card));
+}
+
+.memories-search input:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.memories-filter-options {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: color-mix(in oklab, var(--color-sidebar) 22%, var(--color-background));
+  padding: 3px;
+}
+
+.memories-filter-options button {
+  min-height: 28px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  padding: 0 8px;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.memories-filter-options button:hover,
+.memories-filter-options button.is-active {
+  border-color: color-mix(in oklab, var(--color-accent) 52%, var(--color-border));
+  background: color-mix(in oklab, var(--color-primary) 18%, var(--color-background));
+  color: var(--color-foreground);
+}
+
+.memories-filter-options button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 680px) {
+  .memories-filter-bar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .memories-search {
+    flex-basis: auto;
+  }
+
+  .memories-filter-options {
+    width: 100%;
+  }
+
+  .memories-filter-options button {
+    flex: 1 1 auto;
+  }
+}
