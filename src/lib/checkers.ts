@@ -201,7 +201,6 @@ function getCaptureSteps(
 
 function collectCaptureSequences(
   board: CheckersBoard,
-  player: CheckersPlayer,
   from: number,
   current: number,
   piece: CheckersPiece,
@@ -227,7 +226,6 @@ function collectCaptureSequences(
 
     collectCaptureSequences(
       nextBoard,
-      player,
       from,
       step.landing,
       piece,
@@ -306,7 +304,6 @@ export function getLegalCheckersMoves(
 
     collectCaptureSequences(
       board,
-      player,
       from,
       from,
       piece,
