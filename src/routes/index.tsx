@@ -10,7 +10,7 @@ import {
   MessageCircle,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
@@ -19,6 +19,7 @@ import { CoupleGames } from "@/components/CoupleGames";
 import { CoupleHouse } from "@/components/CoupleHouse";
 import { CouplePlans } from "@/components/CouplePlans";
 import { CoupleMemories } from "@/components/CoupleMemories";
+import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -214,19 +215,10 @@ function HomeScreen({
               Memórias <ChevronRight aria-hidden="true" />
             </button>
           </div>
-          <div className="wall-empty">
-            <div className="empty-symbol" aria-hidden="true">
-              <Images />
-            </div>
-            <p className="empty-title">Ainda não há lembranças.</p>
-            <button
-              type="button"
-              className="primary-action"
-              onClick={() => onNavigate("memories")}
-            >
-              Guardar a primeira
-            </button>
-          </div>
+          <HomeMemoriesPreview
+            userId={userId}
+            onNavigate={onNavigate}
+          />
         </section>
 
         <aside className="home-secondary">
@@ -279,6 +271,133 @@ function HomeScreen({
           </section>
         </aside>
       </div>
+    </div>
+  );
+}
+
+type HomeMemoriesState =
+  | { status: "loading" }
+  | { status: "error" }
+  | { status: "database-pending" }
+  | { status: "ready"; memories: CoupleMemory[] };
+
+function formatHomeMemoryDate(value: string) {
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  }).format(date);
+}
+
+function HomeMemoriesPreview({
+  userId,
+  onNavigate,
+}: {
+  userId: string;
+  onNavigate: (section: SectionId) => void;
+}) {
+  const [state, setState] = useState<HomeMemoriesState>({ status: "loading" });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadPreview() {
+      try {
+        const result = await listCoupleMemories(3);
+        if (!active) return;
+
+        if (result.error) {
+          setState({
+            status:
+              result.error.code === "42P01" || result.error.code === "PGRST205"
+                ? "database-pending"
+                : "error",
+          });
+          return;
+        }
+
+        setState({
+          status: "ready",
+          memories: result.data ?? [],
+        });
+      } catch {
+        if (active) setState({ status: "error" });
+      }
+    }
+
+    void loadPreview();
+    return () => {
+      active = false;
+    };
+  }, [userId]);
+
+  if (state.status === "loading") {
+    return <p className="wall-preview-state" role="status">Carregando lembranças…</p>;
+  }
+
+  if (state.status === "database-pending") {
+    return (
+      <p className="wall-preview-state">
+        A biblioteca de lembranças está sendo preparada.
+      </p>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="wall-preview-state">
+        <p>Não foi possível carregar o mural.</p>
+        <button
+          type="button"
+          className="inline-action"
+          onClick={() => onNavigate("memories")}
+        >
+          Abrir Memórias <ChevronRight aria-hidden="true" />
+        </button>
+      </div>
+    );
+  }
+
+  if (state.memories.length === 0) {
+    return (
+      <div className="wall-empty">
+        <div className="empty-symbol" aria-hidden="true">
+          <Images />
+        </div>
+        <p className="empty-title">Ainda não há lembranças.</p>
+        <button
+          type="button"
+          className="primary-action"
+          onClick={() => onNavigate("memories")}
+        >
+          Guardar a primeira
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="wall-memory-list" aria-live="polite">
+      {state.memories.map((memory) => (
+        <button
+          type="button"
+          className="wall-memory-entry"
+          key={memory.id}
+          onClick={() => onNavigate("memories")}
+        >
+          <span className="wall-memory-date">{formatHomeMemoryDate(memory.memory_date)}</span>
+          <span className="wall-memory-copy">
+            <strong>{memory.title || "Lembrança sem título"}</strong>
+            <span>{memory.body}</span>
+          </span>
+          <span
+            className={memory.visibility === "shared" ? "wall-memory-visibility is-shared" : "wall-memory-visibility"}
+          >
+            {memory.visibility === "shared" ? "A dois" : memory.owner_id === userId ? "Privada" : "Compartilhada"}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
