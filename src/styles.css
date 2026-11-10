@@ -3354,3 +3354,93 @@
     transition: none;
   }
 }
+
+
+/* Casa — controles de aproximação */
+.house-map-viewport {
+  overflow: hidden;
+}
+
+.house-map-canvas {
+  position: relative;
+  width: 100%;
+  transform-origin: center center;
+  transition: transform 180ms ease;
+}
+
+.house-map-zoom-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid color-mix(in oklab, #d5a43b 46%, #514b3e);
+  border-radius: 4px;
+  background: color-mix(in oklab, #1b3027 94%, transparent);
+  padding: 4px;
+  color: #f0e5cb;
+}
+
+.house-map-zoom-controls button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.house-map-zoom-controls button:hover:not(:disabled) {
+  border-color: #d5a43b;
+  background: #315c48;
+}
+
+.house-map-zoom-controls button:focus-visible {
+  outline: 2px solid #f0dca8;
+  outline-offset: 2px;
+}
+
+.house-map-zoom-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.house-map-zoom-controls svg {
+  width: 15px;
+  height: 15px;
+}
+
+.house-map-zoom-controls > span {
+  min-width: 37px;
+  color: #f0e5cb;
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .house-map-zoom-controls {
+    top: 7px;
+    right: 7px;
+    gap: 2px;
+    padding: 3px;
+  }
+
+  .house-map-zoom-controls button {
+    width: 27px;
+    height: 27px;
+    flex-basis: 27px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-map-canvas {
+    transition: none;
+  }
+}
