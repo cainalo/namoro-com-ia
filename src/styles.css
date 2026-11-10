@@ -4256,3 +4256,27 @@
     transition: none;
   }
 }
+
+
+/* Casa — exploração por arraste */
+.house-map-viewport {
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.house-map-viewport.is-pannable {
+  touch-action: none;
+  cursor: grab;
+}
+
+.house-map-viewport.is-panning {
+  cursor: grabbing;
+}
+
+.house-map-viewport.is-panning .house-map-canvas {
+  transition: none;
+}
+
+.house-map-viewport.is-pannable .house-map-canvas {
+  will-change: transform;
+}
