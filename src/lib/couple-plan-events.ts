@@ -36,6 +36,10 @@ type PlanEventUpdateFilter = {
   eq: (column: "id", value: string) => PromiseLike<PlanEventWriteResponse>;
 };
 
+type PlanEventDeleteFilter = {
+  eq: (column: "id", value: string) => PromiseLike<PlanEventWriteResponse>;
+};
+
 type PlanEventSelection = {
   gte: (column: "event_date", value: string) => PlanEventSelection;
   lte: (column: "event_date", value: string) => PlanEventSelection;
@@ -69,6 +73,7 @@ type PlanEventTable = {
     start_time: string | null;
     end_time: string | null;
   }) => PlanEventUpdateFilter;
+  delete: () => PlanEventDeleteFilter;
 };
 
 type PlanEventClient = {
@@ -140,4 +145,11 @@ export async function updateCouplePlanEvent(input: {
       end_time: input.endTime,
     })
     .eq("id", input.id);
+}
+
+export async function deleteCouplePlanEvent(id: string) {
+  return planEventClient
+    .from("couple_plan_events")
+    .delete()
+    .eq("id", id);
 }
