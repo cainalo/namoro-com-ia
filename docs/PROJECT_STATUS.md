@@ -76,7 +76,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - O Lig 4 está implementado no código, mas a aplicação da migration no Supabase ainda não foi confirmada. A interface mostra estado de banco pendente em vez de simular uma partida se a tabela/RPC não estiverem implantadas.
 - Jogos previstos para as próximas etapas: Damas, Xadrez, Batalha Naval, Dominó, Truco e Quiz. Estão identificados como em desenvolvimento, não como disponíveis.
 - Não foram executados build, testes automatizados ou testes com duas contas; os checks de CI não foram disponibilizados nesta etapa.
-- Commits: migration e correções `ae6ffa4bed585b3267ed4cb121d2e5d688db4948`, `89ac1f36ad20db0d6f5af5be3a3aaa66af9403c9`, `cb6b3fe24db81e0339b030147a8b832ca6e532e6` e `63b2c96850c67812592880a45ed1f08f6b500225`; adapter `23bbe25320975bea210988892a4b9997a2ce15cc` e correção `bb2e45f3fd3300fe4f1177b234f8ea79c2b915a3`; tabuleiro `6b69633f7cb3597d16b7e9a8645f60d3f78b4865` e estado pendente `ed3cedddf74d3f743feb030ba78682003b1d8437`; biblioteca `7aa33e7b01a0a5deff500f1cc8fbf99c77345589`; estilos `bbad06ff8fd795f7eaee3e34192843227dde8e5b`.
+- Commits: migration e correções `ae6ffa4bed585b3267ed4cb121d2e5d688db4948`, `89ac1f36ad20db0d6f5af5be3a3aaa66af9403c9`, `cb6b3fe24db81e0339b030147a8b832ca6e532e6` e `63b2c96850c67812592880a45ed1f08f6b500225`; adapter `23bbe25320975bea210988892a4b9997a2ce15cc` e correção `bb2e45f3fd3300fe4f1177b234f8ea79c2b915a3`; tabuleiro `6b69633f7cb3597d16b7e9a8645f60d3f78b4865`, estado de banco pendente `ed3cedddf74d3f743feb030ba78682003b1d8437` e rótulos de jogadores `f9e4c5436ed85e1ce6618c828cc32971e2aedaaa`; biblioteca `7aa33e7b01a0a5deff500f1cc8fbf99c77345589`; estilos `bbad06ff8fd795f7eaee3e34192843227dde8e5b`.
 
 ## Ciclos
 
