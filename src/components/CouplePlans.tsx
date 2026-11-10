@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -20,11 +20,35 @@ function formatSelectedDate(value: Date) {
   }).format(value);
 }
 
+function dateKey(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function shiftMonth(value: Date, amount: number) {
+  const targetMonth = new Date(value.getFullYear(), value.getMonth() + amount, 1);
+  const lastDay = new Date(
+    targetMonth.getFullYear(),
+    targetMonth.getMonth() + 1,
+    0,
+  ).getDate();
+
+  return new Date(
+    targetMonth.getFullYear(),
+    targetMonth.getMonth(),
+    Math.min(value.getDate(), lastDay),
+  );
+}
+
 export function CouplePlans() {
   const [visibleMonth, setVisibleMonth] = useState(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
   const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [focusAfterNavigation, setFocusAfterNavigation] = useState<string | null>(null);
+  const dayButtonRefs = useRef(new Map<string, HTMLButtonElement>());
 
   const today = new Date();
   const year = visibleMonth.getFullYear();
@@ -38,6 +62,54 @@ export function CouplePlans() {
 
   while (calendarCells.length % 7 !== 0) {
     calendarCells.push(null);
+  }
+
+  useEffect(() => {
+    if (!focusAfterNavigation) return;
+    dayButtonRefs.current.get(focusAfterNavigation)?.focus();
+    setFocusAfterNavigation(null);
+  }, [focusAfterNavigation, visibleMonth]);
+
+  function handleDayKeyDown(event: KeyboardEvent<HTMLButtonElement>, date: Date) {
+    let nextDate: Date | null = null;
+
+    switch (event.key) {
+      case "ArrowLeft":
+        nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1);
+        break;
+      case "ArrowRight":
+        nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+        break;
+      case "ArrowUp":
+        nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() - 7);
+        break;
+      case "ArrowDown":
+        nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7);
+        break;
+      case "Home": {
+        const weekdayOffset = (date.getDay() + 6) % 7;
+        nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() - weekdayOffset);
+        break;
+      }
+      case "End": {
+        const weekdayOffset = (date.getDay() + 6) % 7;
+        nextDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + (6 - weekdayOffset));
+        break;
+      }
+      case "PageUp":
+        nextDate = shiftMonth(date, -1);
+        break;
+      case "PageDown":
+        nextDate = shiftMonth(date, 1);
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    setSelectedDate(nextDate);
+    setVisibleMonth(new Date(nextDate.getFullYear(), nextDate.getMonth(), 1));
+    setFocusAfterNavigation(dateKey(nextDate));
   }
 
   const monthLabel = new Intl.DateTimeFormat("pt-BR", {
@@ -55,6 +127,7 @@ export function CouplePlans() {
     const now = new Date();
     setVisibleMonth(new Date(now.getFullYear(), now.getMonth(), 1));
     setSelectedDate(now);
+    setFocusAfterNavigation(dateKey(now));
   }
 
   return (
@@ -114,16 +187,24 @@ export function CouplePlans() {
 
             return (
               <button
+                ref={(node) => {
+                  const key = dateKey(date);
+                  if (node) dayButtonRefs.current.set(key, node);
+                  else dayButtonRefs.current.delete(key);
+                }}
                 type="button"
                 key={day}
+                tabIndex={isSelected ? 0 : -1}
                 className={[
                   "plans-day",
                   isToday ? "is-today" : "",
                   isSelected ? "is-selected" : "",
                 ].filter(Boolean).join(" ")}
                 aria-label={formatSelectedDate(date)}
+                aria-current={isToday ? "date" : undefined}
                 aria-pressed={isSelected}
                 onClick={() => setSelectedDate(date)}
+                onKeyDown={(event) => handleDayKeyDown(event, date)}
               >
                 {day}
               </button>
