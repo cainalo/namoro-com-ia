@@ -24,6 +24,7 @@ type MessageInsertResponse = {
 
 type MessageSelection = {
   eq: (column: "couple_id", value: string) => MessageSelection;
+  lt: (column: "created_at", value: string) => MessageSelection;
   order: (
     column: "created_at",
     options: { ascending: boolean },
@@ -48,13 +49,15 @@ type CoupleMessageClient = {
 // tipos gerados do Supabase serão atualizados em uma etapa própria.
 const messageClient = supabase as unknown as CoupleMessageClient;
 
-export async function listCoupleMessages(coupleId: string) {
-  return messageClient
+export async function listCoupleMessages(coupleId: string, before?: string) {
+  let query = messageClient
     .from("couple_messages")
     .select("id, couple_id, sender_id, body, created_at")
     .eq("couple_id", coupleId)
-    .order("created_at", { ascending: false })
-    .limit(100);
+    .order("created_at", { ascending: false });
+
+  if (before) query = query.lt("created_at", before);
+  return query.limit(100);
 }
 
 export async function sendCoupleMessage(input: {
