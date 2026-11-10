@@ -206,7 +206,7 @@ function formatChallengeDate(dateKey: string) {
     day: "numeric",
     month: "long",
     weekday: "short",
-  }).format(new Date(`${dateKey}T12:00:00-03:00"));
+  }).format(new Date(`${dateKey}T12:00:00-03:00`));
 }
 
 function getDailyChallenge(coupleId: string, dateKey = getDateKey()) {
