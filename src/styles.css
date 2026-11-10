@@ -1576,3 +1576,10 @@
     padding-bottom: 74px;
   }
 }
+
+
+.couple-game-live-status {
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 600;
+}
