@@ -93,10 +93,9 @@ function Index() {
         </header>
 
         <div className="page-frame">
-          <div className={activeSection === "home" ? undefined : "section-hidden"} aria-hidden={activeSection !== "home"}>
+          {activeSection === "home" ? (
             <HomeScreen date={date} userId={session.user.id} onNavigate={setActiveSection} />
-          </div>
-          {activeSection === "messages" ? (
+          ) : activeSection === "messages" ? (
             <CoupleConversation userId={session.user.id} />
           ) : activeSection === "games" ? (
             <CoupleGames userId={session.user.id} />
