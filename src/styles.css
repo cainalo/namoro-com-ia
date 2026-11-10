@@ -973,3 +973,148 @@
     margin-bottom: 38px;
   }
 }
+
+
+/* Couple creation and invitation flow */
+.section-hidden {
+  display: none !important;
+}
+
+.couple-setup {
+  border-top: 1px solid var(--color-border);
+  padding-top: 17px;
+}
+
+.couple-setup .section-heading {
+  margin-bottom: 12px;
+}
+
+.couple-setup-content {
+  display: flex;
+  max-width: 560px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.couple-setup-copy {
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.couple-setup .primary-action {
+  margin-top: 2px;
+}
+
+.couple-link-field {
+  display: flex;
+  width: min(100%, 560px);
+  flex-direction: column;
+  gap: 6px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.couple-link-field input {
+  width: 100%;
+  min-height: 39px;
+  border: 1px solid var(--color-input);
+  border-radius: 8px;
+  background: var(--color-card);
+  padding: 0 11px;
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: 11px;
+  outline: none;
+}
+
+.couple-setup-actions,
+.couple-setup-secondary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.couple-setup-actions .primary-action {
+  margin: 0;
+}
+
+.secondary-action {
+  min-height: 39px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: transparent;
+  padding: 0 13px;
+  color: var(--color-foreground);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.secondary-action:hover:not(:disabled) {
+  background: var(--color-secondary);
+}
+
+.couple-setup button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.couple-setup-secondary-actions {
+  gap: 16px;
+}
+
+.couple-danger-action {
+  color: var(--color-destructive);
+}
+
+.couple-feedback {
+  margin: 8px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.couple-feedback-error {
+  color: var(--color-destructive);
+}
+
+.invite-copy {
+  margin: -10px 0 22px;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.invite-back {
+  display: block;
+  margin-top: 18px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.invite-back:hover:not(:disabled) {
+  color: var(--color-foreground);
+}
+
+@media (max-width: 680px) {
+  .couple-setup {
+    padding-top: 15px;
+  }
+
+  .couple-setup-actions {
+    width: 100%;
+  }
+
+  .couple-setup-actions button {
+    flex: 1;
+  }
+}
