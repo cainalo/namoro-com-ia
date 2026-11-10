@@ -314,7 +314,7 @@ export function CoupleHouse() {
         <div className="house-map-zoom-controls" role="group" aria-label="Controles de aproximação do mapa">
           <button
             type="button"
-            onClick={zoomIn}}
+            onClick={zoomIn}
             disabled={zoom >= 1.45}
             aria-label="Aproximar mapa"
             title="Aproximar"
@@ -324,7 +324,7 @@ export function CoupleHouse() {
           <span aria-live="polite">{Math.round(zoom * 100)}%</span>
           <button
             type="button"
-            onClick={zoomOut}}
+            onClick={zoomOut}
             disabled={zoom <= 1}
             aria-label="Afastar mapa"
             title="Afastar"
