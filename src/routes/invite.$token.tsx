@@ -55,7 +55,7 @@ function InvitationRoute() {
   }
 
   return (
-    <AuthGate emailRedirectTo={() => window.location.href}>
+    <AuthGate emailRedirectTo={() => window.location.origin}>
       {() => (
         <main className="auth-shell">
           <section className="auth-panel invite-panel" aria-labelledby="invite-title">
@@ -68,7 +68,7 @@ function InvitationRoute() {
             </div>
 
             <h1 id="invite-title">Convite para o espaço de vocês</h1>
-            <p className="invite-copy">Entre com sua conta para aceitar o convite.</p>
+            <p className="invite-copy">Entre com sua conta para aceitar o convite. Se precisar confirmar seu e-mail, depois abra este link novamente.</p>
 
             {error && <p className="auth-feedback auth-error" role="alert">{error}</p>}
 
