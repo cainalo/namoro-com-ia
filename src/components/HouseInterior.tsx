@@ -1,6 +1,45 @@
-import { ArrowLeft, Moon, Sun, Sunset } from "lucide-react";
+import { ArrowLeft, Flame, Moon, Sun, Sunset } from "lucide-react";
+import { useState } from "react";
 
 type HouseLighting = "day" | "dusk" | "night";
+type HallFeatureId = "fireplace" | "stained-glass" | "tapestry" | "staircase";
+
+const hallFeatures: Array<{
+  id: HallFeatureId;
+  title: string;
+  description: string;
+  left: string;
+  top: string;
+}> = [
+  {
+    id: "fireplace",
+    title: "Lareira",
+    description: "O fogo mantém o salão acolhedor. É o lugar de sentar, conversar e descansar nos dias frios.",
+    left: "36%",
+    top: "58%",
+  },
+  {
+    id: "stained-glass",
+    title: "Vitral",
+    description: "A luz atravessa as peças coloridas e projeta tons de rubi, ouro e azul sobre a pedra.",
+    left: "50%",
+    top: "44%",
+  },
+  {
+    id: "tapestry",
+    title: "Tapeçaria",
+    description: "Tecida com fios profundos e detalhes dourados, ela guarda a identidade e a história da residência.",
+    left: "65%",
+    top: "38%",
+  },
+  {
+    id: "staircase",
+    title: "Escadaria",
+    description: "A escada de madeira conduz aos pavimentos superiores. Outros ambientes da casa serão explorados em etapas futuras.",
+    left: "79%",
+    top: "48%",
+  },
+];
 
 export function HouseInterior({
   lighting,
@@ -182,13 +221,33 @@ export function HouseInterior({
             <path d="M450 57 Q435 42 450 24 Q465 42 450 57 Z" />
           </g>
         </svg>
-        <div className="house-interior-caption">
-          <span>01</span>
-          <div>
-            <strong>Salão de entrada</strong>
-            <p>Um lugar para chegar, descansar e começar a explorar a casa.</p>
-          </div>
+        <div className="house-interior-hotspots" role="group" aria-label="Explorar elementos do salão">
+          {hallFeatures.map((feature) => (
+            <button
+              type="button"
+              key={feature.id}
+              className={selectedFeature === feature.id ? "is-selected" : ""}
+              style={{ left: feature.left, top: feature.top }}
+              onClick={() => setSelectedFeature(feature.id)}
+              aria-pressed={selectedFeature === feature.id}
+              aria-label={`Explorar ${feature.title}`}
+              title={feature.title}
+            >
+              <span />
+            </button>
+          ))}
         </div>
+      </div>
+      <div className="house-interior-caption" aria-live="polite">
+        <span>✦</span>
+        <div>
+          <strong>{currentFeature.title}</strong>
+          <p>{currentFeature.description}</p>
+        </div>
+      </div>
+      <p className="house-interior-explore-hint">
+        Toque nos pontos luminosos para explorar os detalhes do salão.
+      </p>
       </div>
     </section>
   );
