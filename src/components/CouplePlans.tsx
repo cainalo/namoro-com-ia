@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, Users } from "lucide-react";
+import { CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, RefreshCw, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCouplePlanEvent,
@@ -186,6 +186,18 @@ export function CouplePlans({ userId }: { userId: string }) {
         "postgres_changes",
         {
           event: "INSERT",
+          schema: "public",
+          table: "couple_plan_events",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          if (mounted) setRefreshKey((current) => current + 1);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
           schema: "public",
           table: "couple_plan_events",
           filter: `couple_id=eq.${coupleId}`,
@@ -435,6 +447,14 @@ export function CouplePlans({ userId }: { userId: string }) {
         <div className="plans-calendar-toolbar">
           <h2 aria-live="polite">{monthLabel}</h2>
           <div className="plans-calendar-navigation">
+            <button
+              type="button"
+              onClick={() => setRefreshKey((current) => current + 1)}
+              aria-label="Atualizar compromissos"
+              title="Atualizar compromissos"
+            >
+              <RefreshCw aria-hidden="true" />
+            </button>
             <button
               type="button"
               onClick={() => moveMonth(-1)}
