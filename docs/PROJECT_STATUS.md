@@ -258,3 +258,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - `listCoupleMemories(limit)` agora aceita limite seguro entre 1 e 100; a tela Memórias mantém até 100, enquanto Hoje solicita três.
 - Commits: adapter `e5b55b0d6b2505face04e11d3121473867a68651`, integração `f6ca05ebf53b2c98678e0b8def745820a387d506`, estilos `10cc8e1778027cfce634aacd96eb0c5dc8811e6f`.
 - Não foi executado build, teste automatizado ou validação visual. O mural depende da migration de Memórias ser aplicada.
+
+
+### Conversas — agrupamento por dia
+- `src/components/CoupleConversation.tsx` agora insere divisórias cronológicas entre mensagens de dias diferentes, usando a data local do dispositivo.
+- A ordem, o texto, os horários, o envio, o Realtime e a rolagem inteligente permanecem inalterados.
+- Estilos das divisórias foram adicionados em `src/styles.css`.
+- Commits: componente `5bb53a6cb7af586ac69012ba4c6b1411a1444822`, estilos `cd7234cdd7b7556c1ab2cfd7821fbc6b78245610`.
+- Não foi executado build, teste automatizado ou validação visual.
