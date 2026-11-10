@@ -467,3 +467,28 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - O commit `3522af48764faca7b3d44fbd83b060413b1adbed` passou em 9 testes automatizados e no build.
 - Os ajustes posteriores de iluminação interna e indicador de sincronização ainda aguardam a execução correspondente do GitHub Actions.
 - A prévia do Lovable continua desatualizada; a conferência visual e o teste entre dois aparelhos seguem pendentes.
+
+
+## Cobertura geral — sincronização e busca (2026-11-10)
+
+### Memórias — Realtime compartilhado
+- Migration `20261110223000_enable_couple_memories_realtime.sql` adiciona `public.couple_memories` à publicação `supabase_realtime`, com preflight para tabela e publicação.
+- `src/components/CoupleMemories.tsx` identifica o casal ativo e escuta INSERT/UPDATE filtrados por `couple_id`; após alterações compartilhadas, recarrega a lista e atualiza o indicador de conexão.
+- Memórias privadas não entram no canal porque possuem `couple_id = NULL`. Exclusões remotas podem ser conferidas pelo botão **Atualizar**; não há assinatura de DELETE.
+- A aplicação da migration ao Supabase ainda precisa ser confirmada.
+- Commits: migration `1a1b9e9286e2c15fd499942e4d68dd725a50366f`, componente `5019e2db4adef43cc559bf89619104e24a5cf586`, estilos `2a6d3ea1dbbdf6655d220fab9fd64493fcda18a0`.
+
+### Conversas — busca no histórico recente
+- `src/components/CoupleConversation.tsx` permite filtrar localmente as últimas 100 mensagens já carregadas, com contagem e ação para limpar a busca.
+- A comparação ignora maiúsculas/minúsculas e acentos; a busca não altera o histórico armazenado nem consulta outros casais.
+- Commits: busca e filtro `90909d51e34a22bf3af48b379e5713d24b0e4399`, normalização `798ab806c14ec8a3607ec994a49f20349c829a1c`, estilos `8a902418d515187aa6b413e361affdaa25da5a04`.
+
+### Casa — chama da lareira
+- A chama da lareira do Salão de entrada ganhou movimento sutil em CSS, com animação desativada quando `prefers-reduced-motion` está ativo.
+- Commits: gancho SVG `1e5ad254bec27688cb488729ba07e27d81e77ced`, animação `b55deded6be462fff3f3c64230aa5ea0e1503559`.
+
+### Hoje — Mural em tempo real
+- `HomeMemoriesPreview` agora consulta a associação atual, limita a visualização às lembranças privadas do usuário e às compartilhadas com o casal ativo, e assina INSERT/UPDATE no canal de Memórias compartilhadas.
+- O resumo do Mural passa a recarregar quando o parceiro cria ou edita uma lembrança compartilhada; conteúdo privado não é transmitido pelo canal.
+- Commit: `0c794e9d4079d9184127e0a9cbc83f80e6fd1965`.
+- Depende da migration de Realtime de Memórias estar aplicada. Não foi validado entre dois aparelhos.
