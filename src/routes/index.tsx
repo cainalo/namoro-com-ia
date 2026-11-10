@@ -15,7 +15,7 @@ import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
-import { CoupleGame } from "@/components/CoupleGame";
+import { CoupleGames } from "@/components/CoupleGames";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -104,7 +104,7 @@ function Index() {
           {activeSection === "messages" ? (
             <CoupleConversation userId={session.user.id} />
           ) : activeSection === "games" ? (
-            <CoupleGame userId={session.user.id} />
+            <CoupleGames userId={session.user.id} />
           ) : activeSection !== "home" ? (
             <EmptySection section={activeSection} />
           ) : null}
