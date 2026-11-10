@@ -446,3 +446,24 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 ### Verificação contínua após a cobertura geral
 - GitHub Actions no commit `3522af48764faca7b3d44fbd83b060413b1adbed`: execução `42903846304` concluída com sucesso. Instalação congelada, suíte Vitest concluída com sucesso (9 testes) e `vite build` concluído com sucesso.
 - Link da execução: https://github.com/cainalo/namoro-com-ia/actions/runs/42903846304
+
+
+### Casa — iluminação controlável dentro do salão
+- `HouseInterior` agora recebe e altera o mesmo estado de iluminação usado no terreno; Dia, Entardecer e Noite podem ser escolhidos sem sair do salão.
+- O estado permanece compartilhado entre mapa e interior enquanto o componente Casa estiver montado.
+- Commits: controles `e1f7f1f4ea15e03446f647271db81366af6fefef`, integração `bc55f449be17b7eb60ba1c416044e43b7cb4fae7`, estilos `5b268c284e6af06f7cc513520d2eacf3b923855f`.
+
+### Planos — indicador de sincronização
+- `src/components/CouplePlans.tsx` agora acompanha os estados SUBSCRIBED, CHANNEL_ERROR, TIMED_OUT e CLOSED do canal Realtime.
+- O cabeçalho distingue agenda individual, agenda compartilhada ao vivo, conexão em andamento e atualização manual.
+- Commits: componente `061623d2174ff294db5abc74ad05069d96f0361a`, estilos `b1acbf0d4c42c728228487f6e3e8e6599a56faad`.
+
+### Assistente de IA
+- A conversa pode ser reiniciada pelo botão **Nova conversa**; o histórico local é limpo somente quando não há resposta em andamento.
+- Commit: `3522af48764faca7b3d44fbd83b060413b1adbed`.
+- CI desse commit: execução `42903846304` concluída com sucesso (testes e build).
+
+### Estado das verificações
+- O commit `3522af48764faca7b3d44fbd83b060413b1adbed` passou em 9 testes automatizados e no build.
+- Os ajustes posteriores de iluminação interna e indicador de sincronização ainda aguardam a execução correspondente do GitHub Actions.
+- A prévia do Lovable continua desatualizada; a conferência visual e o teste entre dois aparelhos seguem pendentes.
