@@ -114,7 +114,7 @@ BEGIN
   WHERE m.couple_id = p_couple_id
     AND m.ended_at IS NULL;
 
-  IF pg_catalog.coalesce(pg_catalog.array_length(v_members, 1), 0) <> 2
+  IF COALESCE(pg_catalog.array_length(v_members, 1), 0) <> 2
      OR NOT (v_user_id = ANY(v_members)) THEN
     RAISE EXCEPTION 'invalid_couple_members' USING ERRCODE = 'insufficient_privilege';
   END IF;
