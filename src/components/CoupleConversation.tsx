@@ -97,7 +97,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
             value
               .toLocaleLowerCase("pt-BR")
               .normalize("NFD")
-              .replace(/[\\u0300-\\u036f]/g, "");
+              .replace(/[\u0300-\u036f]/g, "");
           const query = normalize(messageSearch.trim());
           return !query || normalize(message.body).includes(query);
         })
