@@ -504,13 +504,38 @@ function HomeMemoriesPreview({
   onNavigate: (section: SectionId) => void;
 }) {
   const [state, setState] = useState<HomeMemoriesState>({ status: "loading" });
+  const [coupleId, setCoupleId] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let active = true;
 
     async function loadPreview() {
       try {
-        const result = await listCoupleMemories(3);
+        const { data: membership, error: membershipError } = await supabase
+          .from("couple_members")
+          .select("couple_id")
+          .eq("user_id", userId)
+          .is("ended_at", null)
+          .maybeSingle();
+
+        if (membershipError) throw membershipError;
+        if (!active) return;
+
+        let activeCoupleId: string | null = null;
+        if (membership?.couple_id) {
+          const { data: couple, error: coupleError } = await supabase
+            .from("couples")
+            .select("id, status")
+            .eq("id", membership.couple_id)
+            .maybeSingle();
+
+          if (coupleError) throw coupleError;
+          if (couple?.status === "active") activeCoupleId = couple.id;
+        }
+        setCoupleId(activeCoupleId);
+
+        const result = await listCoupleMemories(100);
         if (!active) return;
 
         if (result.error) {
@@ -523,9 +548,14 @@ function HomeMemoriesPreview({
           return;
         }
 
+        const visible = (result.data ?? []).filter(
+          (memory) =>
+            memory.visibility === "private" ||
+            (memory.visibility === "shared" && memory.couple_id === activeCoupleId),
+        );
         setState({
           status: "ready",
-          memories: result.data ?? [],
+          memories: visible.slice(0, 3),
         });
       } catch {
         if (active) setState({ status: "error" });
@@ -536,7 +566,45 @@ function HomeMemoriesPreview({
     return () => {
       active = false;
     };
-  }, [userId]);
+  }, [userId, refreshKey]);
+
+  useEffect(() => {
+    if (!coupleId) return;
+
+    let mounted = true;
+    const channel = supabase
+      .channel(`home-memories:${coupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "couple_memories",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          if (mounted) setRefreshKey((current) => current + 1);
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "couple_memories",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          if (mounted) setRefreshKey((current) => current + 1);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [coupleId]);
 
   if (state.status === "loading") {
     return <p className="wall-preview-state" role="status">Carregando lembranças…</p>;
