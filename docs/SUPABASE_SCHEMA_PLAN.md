@@ -31,22 +31,29 @@ O perfil é individual. Cada pessoa pode ler o próprio perfil e os campos expli
 
 ### couples
 - id uuid primary key default gen_random_uuid()
-- created_by uuid not null references auth.users(id)
-- status text not null check in pending, active, archived
+- created_by uuid not null references auth.users(id) on delete restrict
+- status text not null default 'pending' check in pending, active, archived
+- check de timestamps: pending exige activated_at e archived_at null; active exige activated_at not null e archived_at null; archived exige archived_at not null (activated_at pode ser null se arquivado ainda pending)
 - relationship_started_on date null
 - created_at timestamptz not null default now()
+- updated_at timestamptz not null default now()
+- activated_at timestamptz null
 - archived_at timestamptz null
 
-Não incluir conteúdo pessoal nem presumir que administrador pode ler diários privados.
+created_by apenas identifica quem criou o casal; não concede privilégio extra. Não incluir conteúdo pessoal nem presumir que administrador pode ler diários privados.
 
 ### couple_members
-- couple_id uuid references couples(id) on delete restrict
-- user_id uuid references auth.users(id) on delete restrict
-- role text check (role = 'admin'): os dois membros são admin, com privilégios iguais
-- joined_at timestamptz
+- couple_id uuid not null references couples(id) on delete restrict
+- user_id uuid not null references auth.users(id) on delete restrict
+- role text not null default 'admin' check (role = 'admin')
+- joined_at timestamptz not null default now()
+- ended_at timestamptz null, check ended_at is null or ended_at >= joined_at
 - primary key (couple_id, user_id)
+- unique parcial (user_id) where ended_at is null
 
-A regra de no máximo duas pessoas e de uma única relação ativa por usuário precisa ser garantida por função transacional, trigger ou outra estratégia concorrente segura. Não depender de validação no cliente.
+Os dois integrantes são admin, com permissões iguais. O primeiro é o criador; o segundo entrará por aceite de convite em etapa futura. O limite de duas pessoas e de uma única relação atual por usuário é garantido no banco (índice único parcial e trigger com lock FOR UPDATE no casal), não no cliente.
+
+Acesso: authenticated tem somente SELECT nas duas tabelas; anon nenhum. As policies usam public.can_view_couple, que permite ver o casal e as duas memberships a quem é ou já foi membro. Isso não concede acesso a profiles privados.
 
 ### couple_invitations
 - id uuid primary key
@@ -127,18 +134,19 @@ A administração do casal não concede acesso a conteúdo privado.
 
 ## Estado
 
-- Etapa 1 (profiles) aplicada no Supabase externo jffryzeelzxjqbeagecb. Etapas 2 em diante não aplicadas.
+- Etapa 1 (profiles) aplicada no Supabase externo jffryzeelzxjqbeagecb.
   - Migration: supabase/migrations/20261109234320_16e8a6fb-466e-49d4-bda3-7f087ee51be8.sql
   - SHA256: 932ca0891763b547c8ec5187a917fa73fa3c2b550b96341c5256de622fc5639b
   - Commit com migration e tipos regenerados: 8575c81c63a89a8302050bdd2e4e461e5f6b26f2
 - Aplicado: public.profiles com FK id → auth.users(id) ON DELETE CASCADE; RLS ligada; policies TO authenticated de SELECT e UPDATE somente do próprio id; sem policy de INSERT/DELETE; anon sem privilégios; authenticated com SELECT e UPDATE apenas em display_name e avatar_path; trigger AFTER INSERT em auth.users criando o perfil (SECURITY DEFINER, search_path vazio, EXECUTE revogado de PUBLIC/anon/authenticated); trigger de updated_at; backfill idempotente só de ids.
 - Verificação após aplicação (somente leitura): 1 auth user, 1 profile, 0 usuários sem perfil.
 - Não testado: trigger com um novo cadastro, isolamento entre duas contas, atualização de perfil pelo cliente.
-- Etapa 2 (couples, couple_members) aplicada no mesmo projeto. Convites, aceite e desvinculação não implementados.
-  - Migration: supabase/migrations/20261110014046_86a99b94-7a96-4b84-af68-89c7d5bcc439.sql
-  - SHA256: d6349f7c35812bd1dcca383f62b99341d3b85fc1e190e85b864ca372d8451e63
-  - Aplicado: FKs ON DELETE RESTRICT; CHECKs de status/timestamps e ended_at >= joined_at; PK (couple_id, user_id); único parcial de uma relação atual por usuário; role restrito a 'admin' (default 'admin'); triggers de inserção (FOR UPDATE no casal, máx. 2, criador admin primeiro, segundo outro usuário também admin), imutabilidade de membership, bloqueio de DELETE, transições pending→active (exige 2 membros), pending/active→archived, archived imutável, encerramento automático das memberships ao arquivar; create_couple (SECURITY DEFINER, auth.uid(), advisory lock) e can_view_couple (membro atual ou antigo); RLS com apenas SELECT TO authenticated via can_view_couple; anon sem privilégios; authenticated só SELECT; funções de trigger sem EXECUTE para clientes.
+- Etapa 2 (couples, couple_members) aplicada no mesmo projeto. Etapas 3 em diante (convites, aceite, desvinculação) não aplicadas.
+  - Migration original: supabase/migrations/20261110014046_86a99b94-7a96-4b84-af68-89c7d5bcc439.sql, SHA256 d6349f7c35812bd1dcca383f62b99341d3b85fc1e190e85b864ca372d8451e63
+  - Migration corretiva (dois admins): supabase/migrations/20261110014254_2a6b3199-0603-411b-a6f6-eb467176fac6.sql, SHA256 79c3bd8d1574297090c4a585ae2bdb2e47ec51b795fa3fc253bfabdd4a32a3c6
+  - types.ts regenerado: couples, couple_members (com relação FK para couples), create_couple e can_view_couple; role é opcional no Insert por causa do default.
+  - Estado final: FKs ON DELETE RESTRICT; CHECKs de status/timestamps e ended_at >= joined_at; PK (couple_id, user_id); único parcial de uma relação atual por usuário; role restrito a 'admin' (default 'admin'); triggers de inserção (FOR UPDATE no casal, máx. 2, criador admin primeiro, segundo outro usuário também admin), imutabilidade de membership, bloqueio de DELETE, transições pending→active (exige 2 membros), pending/active→archived, archived imutável, encerramento automático das memberships ao arquivar; create_couple (SECURITY DEFINER, auth.uid(), advisory lock) e can_view_couple (membro atual ou antigo); RLS com apenas SELECT TO authenticated via can_view_couple; anon sem privilégios; authenticated só SELECT; funções de trigger sem EXECUTE para clientes.
   - Verificação após aplicação (somente leitura): estruturas, grants, policies, search_path e EXECUTE conferidos; 0 casais e 0 memberships.
-  - Correção (dois admins): supabase/migrations/20261110014254_2a6b3199-0603-411b-a6f6-eb467176fac6.sql, SHA256 79c3bd8d1574297090c4a585ae2bdb2e47ec51b795fa3fc253bfabdd4a32a3c6. CHECK role = 'admin', default 'admin', índice couple_members_one_current_admin_uidx removido, couple_members_before_insert exige segundo membro admin. Verificado com 0 casais e 0 memberships, sem funções ou policies referenciando 'member'.
+  - A correção definiu CHECK role = 'admin' e default 'admin', removeu o índice de admin único da migration original e fez couple_members_before_insert exigir segundo membro admin. Verificado com 0 casais e 0 memberships, sem funções ou policies referenciando 'member'.
   - Linter: create_couple e can_view_couple executáveis por authenticated, intencional.
   - Não testado: create_couple pelo app, concorrência, isolamento com duas contas, transições de status.
