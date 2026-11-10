@@ -520,3 +520,9 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 ### Validação
 - As alterações desta seção foram versionadas na `main`. O build e os testes correspondentes serão considerados aprovados somente após a execução mais recente do GitHub Actions concluir com sucesso.
 - Não foi realizada validação visual em dispositivo nem teste de duas contas nesta etapa.
+
+
+### Planos — filtro de privacidade do dia
+- `src/components/CouplePlans.tsx` agora filtra os compromissos da data selecionada por Todos, Compartilhados ou Privados.
+- O filtro é apenas de apresentação e atua sobre os eventos que já passaram pelas permissões RLS; não modifica os registros nem a privacidade de nenhum compromisso.
+- Commits: componente `803a16cfcc628f3e706897faa1b7d5f469059851`, estilos `7384f9175bf205c1dfefca4015f5520d9e7847b9`.
