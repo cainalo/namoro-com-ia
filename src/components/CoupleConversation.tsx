@@ -226,8 +226,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
                   (left, right) =>
                     new Date(left.created_at).getTime() -
                     new Date(right.created_at).getTime(),
-                )
-                ,
+                ),
             };
           });
         },
@@ -267,6 +266,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
 
       const olderMessages = (result.data ?? []).slice().reverse();
       setHasOlderMessages((result.data ?? []).length === 100);
+      if (olderMessages.length === 0) pendingScrollHeightRef.current = null;
       setState((current) => {
         if (current.status !== "active" || current.coupleId !== state.coupleId) return current;
         const existingIds = new Set(current.messages.map((message) => message.id));
