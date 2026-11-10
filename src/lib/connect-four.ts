@@ -42,7 +42,7 @@ type ConnectFourClient = {
     name: "create_connect_four_match" | "play_connect_four_move",
     args: Record<string, string | number>,
   ) => PromiseLike<{
-    data: string | ConnectFourMatch[] | null;
+    data: string | Record<string, unknown>[] | null;
     error: ConnectFourError | null;
   }>;
 };
@@ -83,9 +83,15 @@ export async function playConnectFourMove(input: {
     p_expected_turn: input.expectedTurn,
   });
 
-  const matches = Array.isArray(result.data) ? result.data : [];
+  const rows = Array.isArray(result.data) ? result.data : [];
+  const row = rows[0];
+
+  const data = row && typeof row.match_id === "string"
+    ? { ...row, id: row.match_id } as unknown as ConnectFourMatch
+    : null;
+
   return {
-    data: matches[0] ?? null,
+    data,
     error: result.error,
   };
 }
