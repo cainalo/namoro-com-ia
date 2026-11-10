@@ -55,7 +55,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - [ ] Validar logout no Preview.
 - [ ] Inspecionar schema Supabase ativo, policies, buckets e extensões.
 - [x] Etapa 1 — profiles aplicada no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
-- [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
+- [x] Etapa 2 — couples e couple_members aplicadas no Supabase externo, com os dois membros como admin (ver docs/SUPABASE_SCHEMA_PLAN.md, Estado).
 - [ ] Aplicar convites, aceite e desvinculação.
 - [ ] Testar create_couple, concorrência e isolamento de casais com duas contas.
 - [ ] Implementar vínculo atômico limitado a duas contas.
