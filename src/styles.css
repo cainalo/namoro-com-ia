@@ -5527,3 +5527,88 @@
     animation: none;
   }
 }
+
+
+/* Casa — pontos interativos do salão */
+.house-interior-hotspots {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.house-interior-hotspots button {
+  position: absolute;
+  display: grid;
+  width: clamp(26px, 4vw, 38px);
+  height: clamp(26px, 4vw, 38px);
+  transform: translate(-50%, -50%);
+  place-items: center;
+  border: 1px solid rgb(239 210 145 / 72%);
+  border-radius: 50%;
+  background: rgb(34 47 40 / 78%);
+  box-shadow: 0 0 0 4px rgb(213 164 59 / 14%), 0 2px 12px rgb(0 0 0 / 28%);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.house-interior-hotspots button > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f4d58f;
+  box-shadow: 0 0 10px rgb(244 213 143 / 88%);
+}
+
+.house-interior-hotspots button:hover,
+.house-interior-hotspots button.is-selected {
+  transform: translate(-50%, -50%) scale(1.12);
+  border-color: #ffedc2;
+  background: #8b6435;
+  box-shadow: 0 0 0 6px rgb(213 164 59 / 22%), 0 2px 15px rgb(0 0 0 / 38%);
+}
+
+.house-interior-hotspots button:focus-visible {
+  outline: 3px solid #fff0c7;
+  outline-offset: 4px;
+}
+
+.house-interior-caption {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  margin: 12px 14px 0;
+}
+
+.house-interior-explore-hint {
+  margin: 7px 14px 12px;
+  color: #b8ad98;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+@media (max-width: 680px) {
+  .house-interior-hotspots button {
+    width: 27px;
+    height: 27px;
+  }
+
+  .house-interior-caption {
+    margin: 8px 7px 0;
+  }
+
+  .house-interior-explore-hint {
+    margin: 6px 8px 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-interior-hotspots button {
+    transition: none;
+  }
+}
