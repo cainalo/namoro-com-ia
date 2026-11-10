@@ -307,3 +307,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - O foco acompanha a data selecionada, e a data atual usa `aria-current="date"`; a seleção continua funcionando por toque.
 - Commit: `9b33cabfec00a6c9cf9f88cc992738461636c2c8`.
 - Não foi executado build ou teste automatizado nesta etapa.
+
+
+### Casa — exploração por arraste
+- O mapa pode ser arrastado quando está ampliado; na escala de 100%, o gesto permanece livre para a rolagem normal da página.
+- A movimentação usa Pointer Events, ignora os botões interativos e mantém os marcadores e a legenda alinhados ao cenário.
+- O deslocamento é limitado ao tamanho real do viewport para não expor áreas vazias além do terreno. O movimento direto desativa a transição durante o arraste.
+- Commits: componente `301b4005e205d4fba03f1636999f58a2ebfe697e`, estilos `a7f94fa5d22b7aac6569fe5ad189e37b16471ff7`, ajuste de limites `0ba6f97e63d7cc96b5c43c328f6ceac3db065b95`.
+- Não foi executado teste em dispositivo nem validação visual; o gesto precisa ser conferido na prévia quando ela voltar a atualizar.
