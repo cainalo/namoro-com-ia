@@ -5285,3 +5285,72 @@
     justify-content: space-between;
   }
 }
+
+
+/* Casa — controle de luz no salão */
+.house-interior-header-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.house-interior-lighting {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid color-mix(in oklab, #d5a43b 42%, #514b3e);
+  border-radius: 4px;
+  background: rgb(27 40 34 / 82%);
+  padding: 3px;
+  color: #f0e5cb;
+}
+
+.house-interior-lighting button {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  padding: 0 7px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.house-interior-lighting button:hover,
+.house-interior-lighting button.is-selected {
+  border-color: #d5a43b;
+  background: #315c48;
+}
+
+.house-interior-lighting button:focus-visible {
+  outline: 2px solid #f0dca8;
+  outline-offset: 2px;
+}
+
+.house-interior-lighting svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media (max-width: 680px) {
+  .house-interior-header-actions {
+    width: 100%;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .house-interior-lighting {
+    width: 100%;
+  }
+
+  .house-interior-lighting button {
+    flex: 1 1 auto;
+  }
+}
