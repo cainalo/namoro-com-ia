@@ -180,7 +180,7 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 ### Casa — primeira cena isométrica
 - Criado `src/components/CoupleHouse.tsx` com uma primeira cena isométrica em SVG: residência medieval de pedra, telhado escuro, pátio, caminhos, árvores e pontos de iluminação.
 - A tela foi conectada à navegação **Casa** em `src/routes/index.tsx`; o estado vazio anterior foi removido para essa seção.
-- A cena é somente visual nesta etapa. Cômodos, navegação espacial, zoom, seleção de locais, mudanças de estação e persistência ainda não existem.
+- A cena é estática, com seleção local de três pontos (residência, pátio e jardins) e legenda contextual. Cômodos exploráveis, navegação espacial, zoom, mudanças de estação e persistência ainda não existem.
 
 ### Conversas — legibilidade dos balões
 - Ajustado `src/styles.css` para que mensagens recebidas usem texto escuro sobre pergaminho claro e mensagens enviadas usem texto claro sobre verde profundo.
@@ -191,3 +191,23 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Os arquivos foram versionados na `main`; a sincronização do último commit deve ser confirmada no projeto Lovable.
 - Não foram executados build, lint, testes automatizados ou validação visual. A prévia do Lovable permanece conhecida como desatualizada.
 - Commits: cena `5713d3a0e385ab4f69c58744adf7b05f7b9da4e9`, integração à navegação `1ddd876b41b81181a354175bbc24b9e47e946367`, estilos da Casa `6e50c58e0c741aaaad914ff472c2a81bb7fb7b7d`, contraste das Conversas `d2549832941fee502a9239a7644943924ebfbc4a`.
+
+
+## Continuação em etapas encadeadas — Conversas e Casa (2026-11-10)
+
+### Conversas — ancoragem inteligente
+- `src/components/CoupleConversation.tsx` agora posiciona o histórico nas mensagens mais recentes ao carregá-lo.
+- A tela acompanha novas mensagens somente quando a pessoa já está próxima do fim da conversa; ao ler mensagens antigas, preserva a posição de rolagem.
+- O acompanhamento funciona para atualizações recebidas pelo Realtime e não altera envio, banco ou políticas.
+- Commit: `5a0029394152f337dfb8700c6972229cc496c09b`.
+
+### Casa — pontos selecionáveis
+- `src/components/CoupleHouse.tsx` agora permite selecionar Residência, Pátio e Jardins diretamente no mapa isométrico.
+- A seleção usa estado local React e botões acessíveis por toque/teclado, com `aria-pressed` e descrição contextual atualizada.
+- Os pontos são marcadores de localização; ainda não abrem cômodos nem executam ações que não foram implementadas.
+- Pátio reposicionado para evitar sobreposição com a legenda em telas pequenas.
+- Commits: seleção `8272dc449e63e3820ef1b30657f79e1cd965d3a3`, estilos `b1d8cdaef0c160c24dcd3922d81e3413d93b8526`, estado e alinhamento `d43cc7afdf7b08dda752a8696396428b311ce79e` e `69655ab2384ab2435fe27fdaa990a46ab370cb67`.
+
+### Validação
+- O Lovable ainda precisa confirmar sincronização desta sequência.
+- Não foram executados build, lint, testes automatizados ou validação visual. A prévia permanece desatualizada.
