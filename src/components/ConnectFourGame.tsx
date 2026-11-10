@@ -203,13 +203,14 @@ export function ConnectFourGame({ userId }: { userId: string }) {
 
   const matches = state.status === "ready" ? state.matches : [];
   const activeMatch = matches.find((match) => match.id === selectedMatchId) ?? null;
-  const hasActiveMatch = matches.some((match) => match.status === "active");
+  const ongoingMatch = matches.find((match) => match.status === "active") ?? null;
+  const hasActiveMatch = Boolean(ongoingMatch);
   const myToken =
     activeMatch?.player_one_id === userId ? 1 : 2;
   const myTurn =
     activeMatch?.status === "active" && activeMatch.current_turn === userId;
   const canPlay = Boolean(myTurn && !busy);
-  const history = matches.filter((match) => match.id !== activeMatch?.id);
+  const history = matches.filter((match) => match.status === "finished" && match.id !== activeMatch?.id);
 
   async function startMatch() {
     if (state.status !== "ready" || busy || hasActiveMatch) return;
@@ -369,6 +370,19 @@ export function ConnectFourGame({ userId }: { userId: string }) {
 
       {state.status === "ready" && (
         <>
+          {activeMatch?.status === "finished" && ongoingMatch && (
+            <div className="connect-four-resume">
+              <span>Há outra partida em andamento.</span>
+              <button
+                type="button"
+                className="inline-action"
+                onClick={() => setSelectedMatchId(ongoingMatch.id)}
+              >
+                Voltar à partida em andamento
+              </button>
+            </div>
+          )}
+
           {!activeMatch ? (
             <div className="connect-four-start">
               <p>Conecte quatro peças antes do adversário. Vence quem completar primeiro uma linha horizontal, vertical ou diagonal.</p>
