@@ -249,3 +249,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 ### Validação
 - Build, lint, testes automatizados e validação visual não foram executados nesta etapa.
 - Não foi confirmado se a migration foi aplicada ao Supabase; a interface trata a tabela ausente com uma mensagem de preparação.
+
+
+### Hoje — mural ligado às Memórias
+- A tela Hoje deixou de apresentar somente o vazio estático: `HomeMemoriesPreview` consulta as três lembranças mais recentes pelo mesmo adapter e respeita RLS.
+- Registros privados aparecem apenas para seu criador; registros compartilhados aparecem conforme a policy do banco. O mural mostra data, título, trecho e indicação de privacidade.
+- Estados de carregamento, ausência da tabela e falha são tratados sem inserir conteúdo de demonstração.
+- `listCoupleMemories(limit)` agora aceita limite seguro entre 1 e 100; a tela Memórias mantém até 100, enquanto Hoje solicita três.
+- Commits: adapter `e5b55b0d6b2505face04e11d3121473867a68651`, integração `f6ca05ebf53b2c98678e0b8def745820a387d506`, estilos `10cc8e1778027cfce634aacd96eb0c5dc8811e6f`.
+- Não foi executado build, teste automatizado ou validação visual. O mural depende da migration de Memórias ser aplicada.
