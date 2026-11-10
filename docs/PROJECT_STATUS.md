@@ -220,3 +220,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Estilos responsivos adicionados a `src/styles.css`, incluindo foco visível e respeito a `prefers-reduced-motion`.
 - Commits: componente `73a8ff850e17f890ead095334bbb24413453b8cb`, integração e semântica `ca5e694aeef3ea8088f6c5f5e29cb7984b8e6928` e `ff65d979637e83cfff0de8022e424071f88725f9`, estilos `4f714fc823e2ab28046a97975526adcd82d25fca`.
 - Não foram executados build, lint, testes automatizados ou teste visual; a prévia permanece desatualizada.
+
+
+### Casa — aproximação do mapa
+- Adicionados controles de zoom (aproximar, afastar e restaurar escala) em `src/components/CoupleHouse.tsx`.
+- A transformação engloba o SVG e os pontos selecionáveis para manter os marcadores alinhados ao cenário.
+- O zoom varia de 100% a 145%; controles têm rótulos acessíveis, estados desabilitados e foco visível. A transição respeita `prefers-reduced-motion`.
+- Não há movimentação panorâmica nesta etapa.
+- Commits: controles `f9d8edd316adbcf52eb0d6c4e4cac5ff389f5d2c`, estilos `d22505a2aa7e2e62af100e95fd76c255fd312fe5`, correção estrutural `3c4bcddaf01d7843e3985b11a6eebec96c4d6ee7`.
