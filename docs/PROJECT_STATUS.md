@@ -366,3 +366,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - A animação respeita `prefers-reduced-motion`.
 - Commits: componente `fa92b5410cb7162f096de701a55128ab287b24ea`, estilos `7c0bf7adb93dd6e024cee41f03d8d0c1c1da7b1f`.
 - Não foi executado build, teste automatizado ou validação visual; a cena precisa ser conferida na prévia quando a atualização voltar a funcionar.
+
+
+### Planos — Realtime para compromissos compartilhados
+- Migration `20261110220000_enable_couple_plan_events_realtime.sql` adiciona a tabela à publicação `supabase_realtime`, com preflight para tabela e publicação existentes.
+- `src/components/CouplePlans.tsx` assina somente INSERTs filtrados pelo `couple_id` ativo; ao receber um novo compromisso compartilhado, recarrega os eventos do mês.
+- Compromissos privados não entram no canal porque não possuem `couple_id`. A leitura final continua protegida pelas policies RLS.
+- Commits: migration `8b74ceaba1438e90170cff670cfd4d79d682e834`, assinatura `2f6e96d802b180944b6a9041d857045e79867d85`.
+- A aplicação da migration ao Supabase e o teste entre dois aparelhos ainda não foram confirmados.
