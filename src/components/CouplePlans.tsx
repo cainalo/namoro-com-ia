@@ -13,6 +13,7 @@ import {
 const weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 type EventLoadStatus = "loading" | "ready" | "error" | "database-pending";
+type PlanVisibilityFilter = "all" | "shared" | "private";
 
 function sameDay(left: Date, right: Date) {
   return (
@@ -74,6 +75,7 @@ export function CouplePlans({ userId }: { userId: string }) {
   const [focusAfterNavigation, setFocusAfterNavigation] = useState<string | null>(null);
   const dayButtonRefs = useRef(new Map<string, HTMLButtonElement>());
   const [events, setEvents] = useState<CouplePlanEvent[]>([]);
+  const [eventFilter, setEventFilter] = useState<PlanVisibilityFilter>("all");
   const [eventLoadStatus, setEventLoadStatus] = useState<EventLoadStatus>("loading");
   const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const [coupleId, setCoupleId] = useState<string | null>(null);
@@ -236,7 +238,11 @@ export function CouplePlans({ userId }: { userId: string }) {
   }
 
   const selectedDateKey = dateKey(selectedDate);
-  const selectedEvents = events.filter((event) => event.event_date === selectedDateKey);
+  const selectedEvents = events.filter(
+    (event) =>
+      event.event_date === selectedDateKey &&
+      (eventFilter === "all" || event.visibility === eventFilter),
+  );
 
   function selectDate(date: Date) {
     setSelectedDate(date);
@@ -587,6 +593,33 @@ export function CouplePlans({ userId }: { userId: string }) {
             <h2>{formatSelectedDate(selectedDate)}</h2>
           </div>
           {selectedEvents.length > 0 && <span>{selectedEvents.length} compromisso(s)</span>}
+        </div>
+
+        <div className="plans-event-filters" role="group" aria-label="Filtrar compromissos por privacidade">
+          <button
+            type="button"
+            className={eventFilter === "all" ? "is-active" : ""}
+            aria-pressed={eventFilter === "all"}
+            onClick={() => setEventFilter("all")}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            className={eventFilter === "shared" ? "is-active" : ""}
+            aria-pressed={eventFilter === "shared"}
+            onClick={() => setEventFilter("shared")}
+          >
+            Compartilhados
+          </button>
+          <button
+            type="button"
+            className={eventFilter === "private" ? "is-active" : ""}
+            aria-pressed={eventFilter === "private"}
+            onClick={() => setEventFilter("private")}
+          >
+            Privados
+          </button>
         </div>
 
         {selectedEvents.length === 0 && eventLoadStatus === "ready" ? (
