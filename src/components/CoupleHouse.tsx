@@ -247,6 +247,11 @@ export function CoupleHouse() {
           </g>
         </svg>
 
+        <div
+          className={`house-map-atmosphere is-${lighting}`}
+          aria-hidden="true"
+        />
+
         <div className="house-map-hotspots" role="group" aria-label="Locais do terreno">
           {houseLocations.map((location) => (
             <button
