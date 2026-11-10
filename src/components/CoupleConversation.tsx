@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { Check, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
@@ -61,6 +62,8 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const threadRef = useRef<HTMLDivElement>(null);
@@ -252,6 +255,21 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
     }
   }
 
+  async function copyMessage(messageId: string, body: string) {
+    setCopyError(null);
+    setCopiedMessageId(null);
+
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("clipboard_unavailable");
+      }
+      await navigator.clipboard.writeText(body);
+      setCopiedMessageId(messageId);
+    } catch {
+      setCopyError("Não foi possível copiar esta mensagem neste navegador.");
+    }
+  }
+
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (
       event.key !== "Enter" ||
@@ -354,6 +372,20 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
                         </time>
                       </div>
                       <p>{message.body}</p>
+                      <button
+                        type="button"
+                        className="conversation-copy-action"
+                        onClick={() => void copyMessage(message.id, message.body)}
+                        aria-label={copiedMessageId === message.id ? "Mensagem copiada" : "Copiar mensagem"}
+                        title={copiedMessageId === message.id ? "Copiada" : "Copiar mensagem"}
+                      >
+                        {copiedMessageId === message.id ? (
+                          <Check aria-hidden="true" />
+                        ) : (
+                          <Copy aria-hidden="true" />
+                        )}
+                        <span>{copiedMessageId === message.id ? "Copiada" : "Copiar"}</span>
+                      </button>
                     </article>
                   </Fragment>
                 );
@@ -361,6 +393,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
             )}
           </div>
 
+          {copyError && <p className="conversation-error" role="alert">{copyError}</p>}
           <form ref={composerRef} className="conversation-composer" onSubmit={handleSend}>
             <label className="conversation-input-label" htmlFor="conversation-draft">
               Mensagem
