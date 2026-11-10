@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
@@ -37,6 +37,22 @@ function formatMessageTime(value: string) {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
+  }).format(date);
+}
+
+function messageDayKey(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+}
+
+function formatMessageDay(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   }).format(date);
 }
 
@@ -297,22 +313,33 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
                 Esta é a primeira conversa de vocês. Envie uma mensagem.
               </p>
             ) : (
-              state.messages.map((message) => {
+              state.messages.map((message, index) => {
                 const ownMessage = message.sender_id === userId;
+                const currentDay = messageDayKey(message.created_at);
+                const previousMessage = state.messages[index - 1];
+                const showDayDivider =
+                  !previousMessage ||
+                  messageDayKey(previousMessage.created_at) !== currentDay;
 
                 return (
-                  <article
-                    key={message.id}
-                    className={ownMessage ? "conversation-message is-own" : "conversation-message"}
-                  >
-                    <div className="conversation-message-meta">
-                      <span>{ownMessage ? "Você" : "A outra pessoa"}</span>
-                      <time dateTime={message.created_at}>
-                        {formatMessageTime(message.created_at)}
-                      </time>
-                    </div>
-                    <p>{message.body}</p>
-                  </article>
+                  <Fragment key={message.id}>
+                    {showDayDivider && (
+                      <div className="conversation-day-divider" role="separator">
+                        <span>{formatMessageDay(message.created_at)}</span>
+                      </div>
+                    )}
+                    <article
+                      className={ownMessage ? "conversation-message is-own" : "conversation-message"}
+                    >
+                      <div className="conversation-message-meta">
+                        <span>{ownMessage ? "Você" : "A outra pessoa"}</span>
+                        <time dateTime={message.created_at}>
+                          {formatMessageTime(message.created_at)}
+                        </time>
+                      </div>
+                      <p>{message.body}</p>
+                    </article>
+                  </Fragment>
                 );
               })
             )}
