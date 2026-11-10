@@ -13,6 +13,7 @@ import { useMemo, useState } from "react";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
+import { CoupleConversation } from "@/components/CoupleConversation";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe";
 
@@ -98,7 +99,11 @@ function Index() {
           <div className={activeSection === "home" ? undefined : "section-hidden"} aria-hidden={activeSection !== "home"}>
             <HomeScreen date={date} userId={session.user.id} onNavigate={setActiveSection} />
           </div>
-          {activeSection !== "home" && <EmptySection section={activeSection} />}
+          {activeSection === "messages" ? (
+            <CoupleConversation userId={session.user.id} />
+          ) : activeSection !== "home" ? (
+            <EmptySection section={activeSection} />
+          ) : null}
         </div>
       </main>
 
