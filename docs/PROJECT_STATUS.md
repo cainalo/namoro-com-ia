@@ -292,3 +292,11 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - `bun run lint` ainda não foi incluído porque a última validação conhecida reportou problemas existentes de Prettier; será integrado após a revisão de formatação.
 - O workflow foi adicionado na `main`; os checks do commit inicial ainda não apareceram na consulta imediatamente após o commit. O resultado do primeiro build/teste precisa ser conferido quando a execução terminar.
 - Commit: `58136cb20510234cd9fdf6e5963b4fa1ce6f50d7`.
+
+
+### Casa — iluminação variável
+- Adicionado seletor de atmosfera em `src/components/CoupleHouse.tsx`: Dia, Entardecer e Noite.
+- Cada modo ajusta o tratamento visual da ilustração; a seleção dos locais, a escala e os pontos do mapa permanecem intactos.
+- Os controles têm rótulos acessíveis, estado selecionado, foco visível e adaptação para celular. A transição respeita `prefers-reduced-motion`.
+- Commits: componente `a46f5e570f0705de0082354510b7e36f01c1800f`, estilos `22cfa6a8e3f14179288538f0698e0675f00a8184`.
+- Não foi executado build, teste automatizado ou validação visual; a preview segue desatualizada.
