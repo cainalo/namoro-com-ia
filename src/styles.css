@@ -1817,3 +1817,140 @@
     font-size: 13px;
   }
 }
+
+
+.couple-daily-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.couple-daily-completion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 22px;
+  margin-top: 24px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+}
+
+.couple-daily-completion p {
+  margin: 0;
+}
+
+.couple-daily-completion strong {
+  color: var(--color-foreground);
+  font-weight: 700;
+}
+
+.couple-daily-completion .is-complete strong {
+  color: var(--color-primary);
+}
+
+.couple-daily-together {
+  flex-basis: 100%;
+  padding-top: 3px;
+  color: var(--color-primary);
+  font-weight: 750;
+}
+
+.couple-daily-complete-button {
+  margin-top: 18px;
+}
+
+.couple-daily-complete-button:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.couple-daily-history {
+  max-width: 760px;
+  margin: 42px auto 0;
+  border-top: 1px solid var(--color-border);
+  padding: 20px 0 32px;
+}
+
+.couple-daily-history > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.couple-daily-history > header h2 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-size: 17px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.couple-daily-history > header span {
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.couple-daily-history-empty {
+  margin: 14px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.couple-daily-history ol {
+  display: grid;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.couple-daily-history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--color-border);
+  padding: 13px 0;
+}
+
+.couple-daily-history-date {
+  margin: 0 0 4px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.couple-daily-history-title {
+  margin: 0 0 4px;
+  color: var(--color-foreground);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.couple-daily-history-status {
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+}
+
+.couple-daily-history-both {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+@media (max-width: 680px) {
+  .couple-daily-actions {
+    gap: 7px 10px;
+  }
+
+  .couple-daily-history li {
+    align-items: flex-start;
+  }
+}
