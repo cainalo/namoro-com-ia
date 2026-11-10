@@ -32,6 +32,14 @@ type MemoryUpdateResponse = {
   error: MemoryError | null;
 };
 
+type MemoryDeleteResponse = {
+  error: MemoryError | null;
+};
+
+type MemoryDeleteFilter = {
+  eq: (column: "id", value: string) => PromiseLike<MemoryDeleteResponse>;
+};
+
 type MemoryUpdateFilter = {
   eq: (column: "id", value: string) => PromiseLike<MemoryUpdateResponse>;
 };
@@ -59,6 +67,7 @@ type MemoryTable = {
     body: string;
     memory_date: string;
   }) => MemoryUpdateFilter;
+  delete: () => MemoryDeleteFilter;
 };
 
 type MemoryClient = {
@@ -110,4 +119,11 @@ export async function updateCoupleMemory(input: {
       memory_date: input.memoryDate,
     })
     .eq("id", input.id);
+}
+
+export async function deleteCoupleMemory(id: string) {
+  return memoryClient
+    .from("couple_memories")
+    .delete()
+    .eq("id", id);
 }
