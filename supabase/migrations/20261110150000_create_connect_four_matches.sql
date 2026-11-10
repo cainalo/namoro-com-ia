@@ -350,7 +350,25 @@ REVOKE ALL ON FUNCTION public.play_connect_four_move(uuid, integer, integer) FRO
 GRANT EXECUTE ON FUNCTION public.create_connect_four_match(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.play_connect_four_move(uuid, integer, integer) TO authenticated;
 
-ALTER PUBLICATION supabase_realtime ADD TABLE public.couple_game_matches;
+DO $publication$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_publication
+    WHERE pubname = 'supabase_realtime'
+      AND puballtables
+  ) AND NOT EXISTS (
+    SELECT 1
+    FROM pg_catalog.pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+      AND schemaname = 'public'
+      AND tablename = 'couple_game_matches'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime
+      ADD TABLE public.couple_game_matches;
+  END IF;
+END;
+$publication$;
 
 COMMENT ON TABLE public.couple_game_matches IS
   'Partidas competitivas de dois jogadores. O estado só é alterado pelas RPCs validadas no servidor.';
