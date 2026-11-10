@@ -49,7 +49,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - Criada a migration `20261110134500_create_couple_game_choices.sql` para guardar as escolhas individuais do jogo Isto ou Aquilo.
 - RLS: integrantes atuais e antigos consultam o histórico do próprio casal; somente integrantes atuais de casal ativo podem inserir/alterar a própria escolha. Não há exclusão pelo cliente.
 - Criado `src/lib/couple-game.ts` como adapter tipado temporário até a regeneração oficial dos tipos Supabase.
-- Os protótipos Isto ou Aquilo e Desafio do dia foram retirados da biblioteca ativa por serem perguntas/dinâmicas sobre a relação, e não jogos de competição ou cooperação com regras próprias. Os arquivos e migrations históricos foram preservados, mas não são mais exibidos em Jogos.
+- Os protótipos Isto ou Aquilo e Desafio do dia foram temporariamente retirados da biblioteca ativa durante a reorientação dos jogos. Na etapa posterior, foram recolocados numa categoria própria de Jogos de casal, separados dos jogos gerais de competição e cooperação.
 - O jogo foi ligado ao atalho “Jogar a dois” na área Hoje. As escolhas agora sincronizam por Supabase Realtime para eventos INSERT e UPDATE, com status de conexão e atualização manual como alternativa.
 - As migrations da tabela e da publicação Realtime ainda não tiveram aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
 - Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`; resumo de resultados `e7fae96bb7bb592279f94c2e70220aba5ddd52ea`; estilos `a72dc8bb18c8d5e9ec9b808c29afb07087ac2dba`.
@@ -68,7 +68,7 @@ Consultar AGENTS.md antes de cada ciclo.
 - Commits: componente do desafio com progresso `8145bf648e7890d7ffabff318bcdb30df4e3dc3a` e ajuste de consistência da missão `52afa0a24a7099645cd54fa5cea72984888df90b`; migrations `c14531bb34d3b503197957c83fd49af97594d8a0` e `782edef1711b5241576f2704fe31720f2e58d344`; adapter `fa67467a65309d5f6724f85b67290ca3e98c6d79`; estilos `367cad42eb93f9093809e9d57cbc610227df9e82`.
 
 ## Nova biblioteca de jogos — Lig 4 (2026-11-10)
-- A biblioteca ativa foi reorganizada em `src/components/CoupleGames.tsx`. Os jogos antigos de perguntas e tarefas não aparecem mais; o hub apresenta jogos tradicionais de dois jogadores.
+- A biblioteca ativa foi reorganizada em `src/components/CoupleGames.tsx`, com duas categorias independentes: Competir e cooperar (Lig 4) e Jogos de casal (Isto ou aquilo? e Desafio do dia). Os jogos gerais futuros permanecem separados e identificados como em desenvolvimento.
 - Criado `src/components/ConnectFourGame.tsx`: tabuleiro 7×6, sete colunas jogáveis, alternância de turnos, vitória horizontal/vertical/diagonal, empate, revanche e histórico das últimas partidas.
 - Criado `src/lib/connect-four.ts` como adapter estreito enquanto os tipos gerados do Supabase não são regenerados.
 - A partida e as jogadas são processadas por RPCs no banco. A função de jogada bloqueia a partida, valida jogador/turno/coluna, rejeita turnos desatualizados e só então grava o tabuleiro; o Realtime distribui as atualizações aos dois navegadores.
@@ -78,6 +78,14 @@ Consultar AGENTS.md antes de cada ciclo.
 - Jogos previstos para as próximas etapas: Damas, Xadrez, Batalha Naval, Dominó, Truco e Quiz. Estão identificados como em desenvolvimento, não como disponíveis.
 - Não foram executados build, testes automatizados ou testes com duas contas; os checks de CI não foram disponibilizados nesta etapa.
 - Commits: migration e correções `ae6ffa4bed585b3267ed4cb121d2e5d688db4948`, `89ac1f36ad20db0d6f5af5be3a3aaa66af9403c9`, `cb6b3fe24db81e0339b030147a8b832ca6e532e6` e `63b2c96850c67812592880a45ed1f08f6b500225`; adapter `23bbe25320975bea210988892a4b9997a2ce15cc` e correção `bb2e45f3fd3300fe4f1177b234f8ea79c2b915a3`; tabuleiro `6b69633f7cb3597d16b7e9a8645f60d3f78b4865`, estado de banco pendente `ed3cedddf74d3f743feb030ba78682003b1d8437` e rótulos de jogadores `f9e4c5436ed85e1ce6618c828cc32971e2aedaaa`; biblioteca `7aa33e7b01a0a5deff500f1cc8fbf99c77345589`; estilos `bbad06ff8fd795f7eaee3e34192843227dde8e5b`.
+
+## Organização da biblioteca — jogos gerais e jogos de casal (2026-11-10)
+- A biblioteca agora tem duas categorias visíveis: `Competir e cooperar` e `Jogos de casal`.
+- Lig 4 continua na categoria geral de jogos para competir/cooperar.
+- Isto ou aquilo? e Desafio do dia voltaram numa categoria própria de jogos de casal, com seleção independente.
+- Damas, Xadrez, Batalha Naval, Dominó, Truco e Quiz continuam listados como próximos jogos, sem serem apresentados como disponíveis.
+- Não houve alteração de schema nesta etapa. Os jogos de casal continuam dependentes das migrations anteriores de respostas e progresso, cuja aplicação no Supabase ainda não foi confirmada.
+- Commits: reorganização do catálogo `ab07ee9291be35e18269b37b2c6a144d456a7e4d`; estilos das categorias `455661e82d33e323f2d9b5f979febb56e8ad5701`.
 
 ## Ciclos
 
