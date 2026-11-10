@@ -2733,3 +2733,51 @@
     letter-spacing: -0.015em;
   }
 }
+
+
+/* Títulos de seção — hierarquia editorial */
+.section-heading {
+  position: relative;
+  border-bottom: 0;
+  padding-bottom: 12px;
+}
+
+.section-heading::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--color-accent) 70%, var(--color-border)),
+    var(--color-border) 58%,
+    transparent
+  );
+  content: "";
+}
+
+.section-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.section-heading h2::before {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  transform: rotate(45deg);
+  border: 1px solid var(--color-accent);
+  content: "";
+}
+
+@media (max-width: 680px) {
+  .section-heading h2 {
+    font-size: 17px;
+  }
+}
