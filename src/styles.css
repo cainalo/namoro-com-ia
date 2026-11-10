@@ -5657,3 +5657,41 @@
   font-size: 10px;
   text-align: center;
 }
+
+
+/* Memórias — exportação local da seleção */
+.memories-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.memories-heading-actions button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.memories-heading-actions svg {
+  width: 13px;
+  height: 13px;
+}
+
+.memories-heading-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+@media (max-width: 680px) {
+  .memories-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .memories-heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
