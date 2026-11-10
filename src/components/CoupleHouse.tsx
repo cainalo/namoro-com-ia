@@ -368,7 +368,7 @@ export function CoupleHouse() {
       </p>
         </>
       ) : (
-        <HouseInterior lighting={lighting} onReturn={() => setHouseView("grounds")} />
+        <HouseInterior lighting={lighting} onLightingChange={setLighting} onReturn={() => setHouseView("grounds")} />
       )}
     </section>
   );
