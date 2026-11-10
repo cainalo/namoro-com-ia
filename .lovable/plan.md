@@ -1,6 +1,11 @@
 # Etapa 2 — couples e couple_members (Supabase externo jffryzeelzxjqbeagecb)
 
-Aplicado; histórico da decisão da etapa 2. Sem Lovable Cloud. Convites, aceite e desvinculação ficam para etapas 3–4.
+Aplicado; histórico da decisão da etapa 2. Sem Lovable Cloud.
+
+## Atualização de workflow — 2026-11-10
+O usuário habilitou o Supabase GitHub Integration com Deploy to production para a branch `main`. Para o projeto, migrations são versionadas em `supabase/migrations/` e aplicadas exclusivamente pela integração oficial. Não usar SQL Editor, CLI push direto ou Lovable Cloud. Só marcar migrations como aplicadas após verificar o resultado do deployment.
+
+Etapa 3: `supabase/migrations/20261110021500_create_couple_invitations.sql` (SHA256 `354faf44613a95cf41a449364aa044fc2847b2cbad6b6a6137ac0a0de46817a3`); deployment pendente de confirmação. Interface ainda não implementada.
 
 ## Pré-checagem (somente leitura, antes da migration)
 - Confirmar via conector que o banco é `jffryzeelzxjqbeagecb`.
