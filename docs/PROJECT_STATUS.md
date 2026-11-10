@@ -107,7 +107,7 @@ Consultar AGENTS.md antes de cada ciclo.
 1. Conversas e feed.
 2. Memórias e biblioteca.
 3. Organização e vida emocional.
-4. Jogos e desafios — primeiro jogo Isto ou Aquilo iniciado; ampliar catálogo, atualização em tempo real e novos formatos.
+4. Jogos e desafios — primeiro jogo Isto ou Aquilo implementado com sincronização em tempo real e resumo final das seis perguntas; próximo passo: ampliar o catálogo com jogos de mecânicas diferentes.
 5. Casa isométrica, avatares e mascotes.
 6. Cinema, música, livros, culinária, viagens, natureza e projetos.
 7. Eventos, surpresas e notificações.
