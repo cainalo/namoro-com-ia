@@ -61,6 +61,9 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
+  const [hasOlderMessages, setHasOlderMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
+  const [olderMessagesError, setOlderMessagesError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
@@ -71,6 +74,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   const composerRef = useRef<HTMLFormElement>(null);
   const wasAtBottomRef = useRef(true);
   const previousMessageCountRef = useRef(0);
+  const pendingScrollHeightRef = useRef<number | null>(null);
   const messageCount = state.status === "active" ? state.messages.length : 0;
 
   useEffect(() => {
@@ -80,12 +84,18 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
       return;
     }
 
-    const isInitialLoad = previousMessageCountRef.current === 0 && messageCount > 0;
-    if (isInitialLoad || wasAtBottomRef.current) {
-      thread.scrollTo({
-        top: thread.scrollHeight,
-        behavior: isInitialLoad ? "auto" : "smooth",
-      });
+    const previousHeight = pendingScrollHeightRef.current;
+    if (previousHeight !== null) {
+      thread.scrollTop = thread.scrollHeight - previousHeight;
+      pendingScrollHeightRef.current = null;
+    } else {
+      const isInitialLoad = previousMessageCountRef.current === 0 && messageCount > 0;
+      if (isInitialLoad || wasAtBottomRef.current) {
+        thread.scrollTo({
+          top: thread.scrollHeight,
+          behavior: isInitialLoad ? "auto" : "smooth",
+        });
+      }
     }
     previousMessageCountRef.current = messageCount;
   }, [state.status, messageCount]);
@@ -217,7 +227,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
                     new Date(left.created_at).getTime() -
                     new Date(right.created_at).getTime(),
                 )
-                .slice(-100),
+                ,
             };
           });
         },
@@ -240,6 +250,39 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
       void supabase.removeChannel(channel);
     };
   }, [activeCoupleId]);
+
+  async function loadOlderMessages() {
+    if (state.status !== "active" || !hasOlderMessages || loadingOlderMessages) return;
+    const oldestMessage = state.messages[0];
+    if (!oldestMessage) return;
+
+    const thread = threadRef.current;
+    pendingScrollHeightRef.current = thread?.scrollHeight ?? null;
+    setLoadingOlderMessages(true);
+    setOlderMessagesError(null);
+
+    try {
+      const result = await listCoupleMessages(state.coupleId, oldestMessage.created_at);
+      if (result.error) throw result.error;
+
+      const olderMessages = (result.data ?? []).slice().reverse();
+      setHasOlderMessages((result.data ?? []).length === 100);
+      setState((current) => {
+        if (current.status !== "active" || current.coupleId !== state.coupleId) return current;
+        const existingIds = new Set(current.messages.map((message) => message.id));
+        const uniqueOlder = olderMessages.filter((message) => !existingIds.has(message.id));
+        return {
+          ...current,
+          messages: [...uniqueOlder, ...current.messages],
+        };
+      });
+    } catch {
+      pendingScrollHeightRef.current = null;
+      setOlderMessagesError("Não foi possível carregar as mensagens anteriores.");
+    } finally {
+      setLoadingOlderMessages(false);
+    }
+  }
 
   async function handleSend(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -358,13 +401,13 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
           {state.messages.length > 0 && (
             <div className="conversation-history-tools">
               <label className="conversation-search">
-                <span>Buscar no histórico recente</span>
+                <span>Buscar no histórico carregado</span>
                 <input
                   type="search"
                   value={messageSearch}
                   onChange={(event) => setMessageSearch(event.target.value)}
                   placeholder="Palavra ou trecho da mensagem…"
-                  aria-label="Buscar nas últimas 100 mensagens"
+                  aria-label="Buscar nas mensagens carregadas"
                 />
               </label>
               <span className="conversation-search-count">
@@ -381,7 +424,20 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
               )}
             </div>
           )}
-          <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" role="log" aria-label="Mensagens do casal" aria-live="polite">
+          <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" role="log" aria-label="Mensagens do casal" aria-live="polite" aria-busy={loadingOlderMessages}>
+            {hasOlderMessages && (
+              <div className="conversation-load-older">
+                <button
+                  type="button"
+                  className="inline-action"
+                  onClick={() => void loadOlderMessages()}
+                  disabled={loadingOlderMessages}
+                >
+                  {loadingOlderMessages ? "Carregando…" : "Carregar mensagens anteriores"}
+                </button>
+                {olderMessagesError && <p role="alert">{olderMessagesError}</p>}
+              </div>
+            )}
             {state.messages.length === 0 ? (
               <p className="conversation-state conversation-empty">
                 Esta é a primeira conversa de vocês. Envie uma mensagem.
