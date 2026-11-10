@@ -3069,3 +3069,76 @@
     padding: 10px 12px;
   }
 }
+
+
+/* Casa — pontos interativos do mapa */
+.house-map-hotspots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.house-map-hotspot {
+  position: absolute;
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 7px;
+  transform: translate(-50%, -50%);
+  border: 1px solid color-mix(in oklab, #d5a43b 72%, #514b3e);
+  border-radius: 3px;
+  background: color-mix(in oklab, #1b3027 92%, transparent);
+  padding: 0 9px;
+  color: #f0e5cb;
+  cursor: pointer;
+  pointer-events: auto;
+  font-family: "Manrope", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 3px 8px -5px #000;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.house-map-hotspot:hover,
+.house-map-hotspot.is-selected {
+  border-color: #f0dca8;
+  background: #315c48;
+}
+
+.house-map-hotspot .house-map-marker {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  box-shadow: 0 0 0 3px color-mix(in oklab, #d5a43b 18%, transparent);
+}
+
+.house-map-hotspot.is-selected .house-map-marker {
+  background: #f0dca8;
+}
+
+.house-map-hotspot:focus-visible {
+  outline: 2px solid #f0dca8;
+  outline-offset: 3px;
+}
+
+.house-map-legend {
+  max-width: min(290px, calc(100% - 24px));
+}
+
+.house-map-legend div span {
+  line-height: 1.4;
+}
+
+@media (max-width: 680px) {
+  .house-map-hotspot {
+    min-height: 30px;
+    gap: 6px;
+    padding: 0 7px;
+    font-size: 9px;
+  }
+
+  .house-map-legend {
+    max-width: min(260px, calc(100% - 16px));
+  }
+}
