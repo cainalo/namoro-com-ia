@@ -12,6 +12,7 @@ type GameScreenState =
   | { status: "error" }
   | { status: "no-couple" }
   | { status: "pending" }
+  | { status: "database-pending" }
   | {
       status: "ready";
       coupleId: string;
@@ -126,8 +127,14 @@ export function ConnectFourGame({ userId }: { userId: string }) {
               matches[0]?.id ??
               null,
         );
-      } catch {
-        if (mounted) setState({ status: "error" });
+      } catch (cause) {
+        if (!mounted) return;
+        const failure = cause as { code?: string };
+        if (failure.code === "42P01" || failure.code === "PGRST205") {
+          setState({ status: "database-pending" });
+        } else {
+          setState({ status: "error" });
+        }
       }
     }
 
@@ -217,8 +224,17 @@ export function ConnectFourGame({ userId }: { userId: string }) {
 
       setSelectedMatchId(result.data);
       setRefreshKey((key) => key + 1);
-    } catch {
-      setError("Não foi possível iniciar a partida. Atualize e tente novamente.");
+    } catch (cause) {
+      const failure = cause as { code?: string; message?: string };
+      if (
+        failure.code === "PGRST202" ||
+        failure.code === "42883" ||
+        failure.message?.includes("create_connect_four_match")
+      ) {
+        setState({ status: "database-pending" });
+      } else {
+        setError("Não foi possível iniciar a partida. Atualize e tente novamente.");
+      }
     } finally {
       setBusy(false);
     }
@@ -258,8 +274,14 @@ export function ConnectFourGame({ userId }: { userId: string }) {
         };
       });
     } catch (cause) {
-      const failure = cause as { message?: string };
+      const failure = cause as { code?: string; message?: string };
       if (
+        failure.code === "PGRST202" ||
+        failure.code === "42883" ||
+        failure.message?.includes("play_connect_four_move")
+      ) {
+        setState({ status: "database-pending" });
+      } else if (
         failure.message?.includes("not_your_turn") ||
         failure.message?.includes("stale_turn")
       ) {
@@ -328,6 +350,21 @@ export function ConnectFourGame({ userId }: { userId: string }) {
         <p className="couple-game-state">
           A partida ficará disponível quando a segunda conta aceitar o convite.
         </p>
+      )}
+
+      {state.status === "database-pending" && (
+        <div className="couple-game-state">
+          <p role="status">
+            O Lig 4 está preparado, mas o banco de dados ainda não recebeu a estrutura necessária para criar e sincronizar partidas.
+          </p>
+          <button
+            type="button"
+            className="inline-action"
+            onClick={() => setRefreshKey((key) => key + 1)}
+          >
+            Verificar novamente
+          </button>
+        </div>
       )}
 
       {state.status === "ready" && (
