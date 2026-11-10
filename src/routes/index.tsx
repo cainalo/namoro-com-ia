@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
@@ -286,6 +287,7 @@ function HomeUpcomingPlans({
   onNavigate: (section: SectionId) => void;
 }) {
   const [state, setState] = useState<HomeUpcomingState>({ status: "loading" });
+  const [coupleId, setCoupleId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -296,6 +298,29 @@ function HomeUpcomingPlans({
       const todayKey = localDateKey(now);
 
       try {
+        const { data: membership, error: membershipError } = await supabase
+          .from("couple_members")
+          .select("couple_id")
+          .eq("user_id", userId)
+          .is("ended_at", null)
+          .maybeSingle();
+
+        if (membershipError) throw membershipError;
+        if (!active) return;
+
+        let activeCoupleId: string | null = null;
+        if (membership?.couple_id) {
+          const { data: couple, error: coupleError } = await supabase
+            .from("couples")
+            .select("id, status")
+            .eq("id", membership.couple_id)
+            .maybeSingle();
+
+          if (coupleError) throw coupleError;
+          if (couple?.status === "active") activeCoupleId = couple.id;
+        }
+        setCoupleId(activeCoupleId);
+
         const result = await listCouplePlanEvents(todayKey, localDateKey(end));
         if (!active) return;
 
@@ -328,6 +353,67 @@ function HomeUpcomingPlans({
       active = false;
     };
   }, [userId]);
+
+  useEffect(() => {
+    if (!coupleId) return;
+
+    let mounted = true;
+    const channel = supabase
+      .channel(`home-upcoming-plans:${coupleId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "couple_plan_events",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          if (mounted) {
+            const today = new Date();
+            const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 60);
+            void listCouplePlanEvents(localDateKey(today), localDateKey(end)).then((result) => {
+              if (mounted && !result.error) {
+                const now = new Date();
+                const todayKey = localDateKey(now);
+                const currentTime = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+                const upcoming = (result.data ?? []).filter((event) =>
+                  event.event_date !== todayKey ||
+                  event.all_day ||
+                  !event.start_time ||
+                  event.start_time.slice(0, 5) >= currentTime
+                );
+                setState({ status: "ready", events: upcoming.slice(0, 3) });
+              }
+            });
+          }
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "couple_plan_events",
+          filter: `couple_id=eq.${coupleId}`,
+        },
+        () => {
+          if (mounted) {
+            const today = new Date();
+            const end = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 60);
+            void listCouplePlanEvents(localDateKey(today), localDateKey(end)).then((result) => {
+              if (mounted && !result.error) setState({ status: "ready", events: (result.data ?? []).slice(0, 3) });
+            });
+          }
+        },
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      void supabase.removeChannel(channel);
+    };
+  }, [coupleId]);
 
   if (state.status === "loading") {
     return <div className="compact-empty"><p>Carregando datas…</p></div>;
