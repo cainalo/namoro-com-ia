@@ -54,6 +54,14 @@ Consultar AGENTS.md antes de cada ciclo.
 - As migrations da tabela e da publicação Realtime ainda não tiveram aplicação confirmada por consulta ao histórico remoto. Não inserir respostas fictícias.
 - Commits: migration `8b44e6494a26f75b0aec25b43ba6b36448ad0dae`; adapter `cbe1dfef3e161e65f473548addf93ab57d5ef03a`; componente `4db0bfbb9e7ee55fd5fbb5f58505a38965da354a`; integração `7a7ab2335635397b9242a069085c573a1f499d77`; resumo de resultados `e7fae96bb7bb592279f94c2e70220aba5ddd52ea`; estilos `a72dc8bb18c8d5e9ec9b808c29afb07087ac2dba`.
 
+## Segundo jogo — Desafio do dia (2026-11-10)
+- Criado `src/components/CoupleDailyChallenge.tsx` com vinte missões curtas para conversa, carinho, criatividade e diversão.
+- A missão é determinística a partir do identificador do casal e da data no fuso `America/Sao_Paulo`; assim, os dois dispositivos vinculados ao mesmo casal recebem a mesma missão no mesmo dia, sem gravar um novo registro no banco.
+- Criado `src/components/CoupleGames.tsx` para alternar entre Isto ou Aquilo e Desafio do dia; a navegação existente Hoje → Jogar a dois continua sendo o ponto de entrada.
+- Esta primeira versão não registra conclusão, histórico ou pontuação do desafio. Não confundir a missão compartilhada com sincronização de progresso; isso exigiria uma etapa própria de persistência.
+- Não foi criada migration para esta etapa.
+- Commits: desafio `f8bdd5df0a2443c2c933ef7507ac33596e18a45e`; seletor de jogos `9664f87487f522214d4357c796e7458c114868f4`; integração `adbc04820de08bc939c289bfcbc6805241ff1776`; estilos `87bc3b3309a49226c6a9bc3d1c2169071ee9d1a7`.
+
 ## Ciclos
 
 ### Ciclo 1 — shell visual
@@ -107,7 +115,7 @@ Consultar AGENTS.md antes de cada ciclo.
 1. Conversas e feed.
 2. Memórias e biblioteca.
 3. Organização e vida emocional.
-4. Jogos e desafios — primeiro jogo Isto ou Aquilo implementado com sincronização em tempo real e resumo final das seis perguntas; próximo passo: ampliar o catálogo com jogos de mecânicas diferentes.
+4. Jogos e desafios — Isto ou Aquilo e Desafio do dia implementados; próximos passos: validar o uso dos dois dispositivos e decidir como registrar conclusão/histórico dos desafios.
 5. Casa isométrica, avatares e mascotes.
 6. Cinema, música, livros, culinária, viagens, natureza e projetos.
 7. Eventos, surpresas e notificações.
