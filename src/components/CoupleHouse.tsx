@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, type PointerEvent } from "react";
 import { Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
 
 const houseLocations = [
@@ -33,9 +33,78 @@ export function CoupleHouse() {
     useState<HouseLocationId>("residence");
   const [zoom, setZoom] = useState(1);
   const [lighting, setLighting] = useState<HouseLighting>("day");
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{
+    pointerId: number;
+    pointerX: number;
+    pointerY: number;
+    originX: number;
+    originY: number;
+  } | null>(null);
   const selectedLocation =
     houseLocations.find((location) => location.id === selectedLocationId) ??
     houseLocations[0];
+
+  function handlePanStart(event: PointerEvent<HTMLDivElement>) {
+    if (zoom <= 1) return;
+    if ((event.target as Element).closest("button")) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+
+    panStartRef.current = {
+      pointerId: event.pointerId,
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      originX: pan.x,
+      originY: pan.y,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsPanning(true);
+  }
+
+  function handlePanMove(event: PointerEvent<HTMLDivElement>) {
+    const start = panStartRef.current;
+    if (!start || start.pointerId !== event.pointerId) return;
+
+    const maxX = (zoom - 1) * 450;
+    const maxY = (zoom - 1) * 250;
+    const nextX = Math.min(
+      maxX,
+      Math.max(-maxX, start.originX + event.clientX - start.pointerX),
+    );
+    const nextY = Math.min(
+      maxY,
+      Math.max(-maxY, start.originY + event.clientY - start.pointerY),
+    );
+
+    setPan({ x: nextX, y: nextY });
+  }
+
+  function handlePanEnd(event: PointerEvent<HTMLDivElement>) {
+    if (panStartRef.current?.pointerId !== event.pointerId) return;
+    panStartRef.current = null;
+    setIsPanning(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  }
+
+  function zoomIn() {
+    setZoom((current) => Math.min(1.45, Number((current + 0.15).toFixed(2))));
+  }
+
+  function zoomOut() {
+    setZoom((current) => {
+      const next = Math.max(1, Number((current - 0.15).toFixed(2)));
+      if (next === 1) setPan({ x: 0, y: 0 });
+      return next;
+    });
+  }
+
+  function resetMapView() {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  }
 
   return (
     <section className="house-screen" aria-labelledby="house-title">
@@ -48,10 +117,20 @@ export function CoupleHouse() {
       </header>
 
       <div className={`house-map-shell is-${lighting}`}>
-        <div className="house-map-viewport">
+        <div
+          className={[
+            "house-map-viewport",
+            zoom > 1 ? "is-pannable" : "",
+            isPanning ? "is-panning" : "",
+          ].filter(Boolean).join(" ")}
+          onPointerDown={handlePanStart}
+          onPointerMove={handlePanMove}
+          onPointerUp={handlePanEnd}
+          onPointerCancel={handlePanEnd}
+        >
           <div
             className="house-map-canvas"
-            style={{ transform: `scale(${zoom})` }}
+            style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}
           >
         <svg
           className="house-isometric-map"
@@ -232,7 +311,7 @@ export function CoupleHouse() {
         <div className="house-map-zoom-controls" role="group" aria-label="Controles de aproximação do mapa">
           <button
             type="button"
-            onClick={() => setZoom((current) => Math.min(1.45, Number((current + 0.15).toFixed(2))))}
+            onClick={zoomIn}}
             disabled={zoom >= 1.45}
             aria-label="Aproximar mapa"
             title="Aproximar"
@@ -242,7 +321,7 @@ export function CoupleHouse() {
           <span aria-live="polite">{Math.round(zoom * 100)}%</span>
           <button
             type="button"
-            onClick={() => setZoom((current) => Math.max(1, Number((current - 0.15).toFixed(2))))}
+            onClick={zoomOut}}
             disabled={zoom <= 1}
             aria-label="Afastar mapa"
             title="Afastar"
@@ -251,7 +330,7 @@ export function CoupleHouse() {
           </button>
           <button
             type="button"
-            onClick={() => setZoom(1)}
+            onClick={resetMapView}
             disabled={zoom === 1}
             aria-label="Restaurar escala do mapa"
             title="Restaurar"
@@ -270,7 +349,7 @@ export function CoupleHouse() {
       </div>
 
       <p className="house-map-note">
-        Selecione os pontos do mapa para conhecer cada área do terreno.
+        {zoom > 1 ? "Arraste para explorar o terreno ampliado. Selecione os pontos para ver cada área." : "Selecione os pontos do mapa para conhecer cada área do terreno. Aproxime para explorar."}
       </p>
     </section>
   );
