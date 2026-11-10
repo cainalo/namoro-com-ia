@@ -5406,3 +5406,91 @@
   background: var(--color-primary);
   box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 15%, transparent);
 }
+
+
+/* Conversas — busca no histórico recente */
+.conversation-history-tools {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 0 10px;
+}
+
+.conversation-search {
+  display: flex;
+  min-width: min(100%, 220px);
+  flex: 1 1 240px;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.conversation-search input {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid var(--color-input);
+  border-radius: 4px;
+  background: var(--color-card);
+  padding: 0 10px;
+  color: var(--color-card-foreground);
+  font-size: 11px;
+}
+
+.conversation-search input::placeholder {
+  color: color-mix(in oklab, var(--color-card-foreground) 58%, var(--color-card));
+}
+
+.conversation-search input:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.conversation-search-count {
+  padding-bottom: 9px;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.conversation-search-clear {
+  min-height: 30px;
+  margin-bottom: 2px;
+  border: 0;
+  background: transparent;
+  padding: 0 5px;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.conversation-search-clear:hover {
+  text-decoration: underline;
+}
+
+.conversation-search-clear:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 680px) {
+  .conversation-history-tools {
+    align-items: center;
+    gap: 6px 8px;
+  }
+
+  .conversation-search {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .conversation-search-count {
+    padding-bottom: 0;
+    margin-right: auto;
+  }
+}
