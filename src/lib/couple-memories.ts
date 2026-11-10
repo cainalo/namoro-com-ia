@@ -55,13 +55,14 @@ type MemoryClient = {
 // Adapter temporário até que os tipos do Supabase sejam regenerados oficialmente.
 const memoryClient = supabase as unknown as MemoryClient;
 
-export async function listCoupleMemories() {
+export async function listCoupleMemories(limit = 100) {
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit)));
   return memoryClient
     .from("couple_memories")
     .select("id, owner_id, couple_id, visibility, title, body, memory_date, created_at, updated_at")
     .order("memory_date", { ascending: false })
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(safeLimit);
 }
 
 export async function createCoupleMemory(input: {
