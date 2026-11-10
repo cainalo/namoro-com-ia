@@ -64,8 +64,8 @@ Consultar AGENTS.md antes de cada ciclo.
 - Migration `20261110143100_enable_realtime_for_couple_daily_challenge_progress.sql`: inclui a tabela na publicação `supabase_realtime`.
 - O adapter `src/lib/couple-daily-challenge.ts` consulta o histórico e insere a conclusão; `src/components/CoupleDailyChallenge.tsx` trata estado atual, atualização ao vivo, histórico e falhas de gravação.
 - As duas migrations foram versionadas na `main`, mas sua aplicação no Supabase ainda não foi confirmada. Até a confirmação, gravação e Realtime dependem da implantação dessas migrations.
-- O Lovable ainda reportava `latest_commit_sha=9e0491f0894c6eb1edc53316fff895f3d6600418` na última conferência, anterior a esta etapa. Portanto, não afirmar que o Preview está sincronizado ou atualizado.
-- Commits: componente do desafio com progresso `8145bf648e7890d7ffabff318bcdb30df4e3dc3a`; migrations `c14531bb34d3b503197957c83fd49af97594d8a0` e `782edef1711b5241576f2704fe31720f2e58d344`; adapter `fa67467a65309d5f6724f85b67290ca3e98c6d79`; estilos `367cad42eb93f9093809e9d57cbc610227df9e82`.
+- Na última conferência, o Lovable reportou `latest_commit_sha=52afa0a24a7099645cd54fa5cea72984888df90b` e `status=ready`; a leitura de `CoupleDailyChallenge.tsx` confirmou o histórico e o filtro por ID de missão. A leitura de `styles.css` foi truncada antes dos estilos adicionados; não foi executado build ou teste visual do Preview.
+- Commits: componente do desafio com progresso `8145bf648e7890d7ffabff318bcdb30df4e3dc3a` e ajuste de consistência da missão `52afa0a24a7099645cd54fa5cea72984888df90b`; migrations `c14531bb34d3b503197957c83fd49af97594d8a0` e `782edef1711b5241576f2704fe31720f2e58d344`; adapter `fa67467a65309d5f6724f85b67290ca3e98c6d79`; estilos `367cad42eb93f9093809e9d57cbc610227df9e82`.
 
 ## Ciclos
 
