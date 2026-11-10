@@ -5612,3 +5612,48 @@
     transition: none;
   }
 }
+
+
+/* Conversas — carregamento progressivo do histórico */
+.conversation-load-older {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 0 12px;
+}
+
+.conversation-load-older > button {
+  min-height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--color-card) 75%, transparent);
+  padding: 0 10px;
+  color: var(--color-muted-foreground);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.conversation-load-older > button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-foreground);
+}
+
+.conversation-load-older > button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+.conversation-load-older > button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.conversation-load-older > p {
+  margin: 0;
+  color: var(--color-destructive);
+  font-size: 10px;
+  text-align: center;
+}
