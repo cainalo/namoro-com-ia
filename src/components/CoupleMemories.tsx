@@ -3,6 +3,7 @@ import { LockKeyhole, RefreshCw, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCoupleMemory,
+  deleteCoupleMemory,
   listCoupleMemories,
   updateCoupleMemory,
   type CoupleMemory,
@@ -54,6 +55,9 @@ export function CoupleMemories({ userId }: { userId: string }) {
   const [editDate, setEditDate] = useState("");
   const [editBusy, setEditBusy] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -162,6 +166,8 @@ export function CoupleMemories({ userId }: { userId: string }) {
   function startEditing(memory: CoupleMemory) {
     if (memory.owner_id !== userId || editBusy) return;
     setEditingId(memory.id);
+    setDeleteConfirmId(null);
+    setDeleteError(null);
     setEditTitle(memory.title ?? "");
     setEditBody(memory.body);
     setEditDate(memory.memory_date);
@@ -205,6 +211,42 @@ export function CoupleMemories({ userId }: { userId: string }) {
       setEditError("Não foi possível atualizar esta lembrança.");
     } finally {
       setEditBusy(false);
+    }
+  }
+
+  function requestDelete(memory: CoupleMemory) {
+    if (memory.owner_id !== userId || deleteBusy) return;
+    setEditingId(null);
+    setDeleteConfirmId(memory.id);
+    setDeleteError(null);
+    setError(null);
+  }
+
+  function cancelDelete() {
+    if (deleteBusy) return;
+    setDeleteConfirmId(null);
+    setDeleteError(null);
+  }
+
+  async function handleDelete(memoryId: string) {
+    if (state.status !== "ready" || deleteConfirmId !== memoryId || deleteBusy) return;
+    const memory = state.memories.find((item) => item.id === memoryId);
+    if (!memory || memory.owner_id !== userId) return;
+
+    setDeleteBusy(true);
+    setDeleteError(null);
+    setNotice(null);
+
+    try {
+      const result = await deleteCoupleMemory(memoryId);
+      if (result.error) throw result.error;
+      setDeleteConfirmId(null);
+      setNotice("Lembrança excluída.");
+      setRefreshKey((current) => current + 1);
+    } catch {
+      setDeleteError("Não foi possível excluir esta lembrança.");
+    } finally {
+      setDeleteBusy(false);
     }
   }
 
@@ -419,15 +461,48 @@ export function CoupleMemories({ userId }: { userId: string }) {
                         {memory.visibility === "shared" ? "Compartilhada" : "Privada"}
                       </span>
                       {memory.owner_id === userId && (
-                        <button
-                          type="button"
-                          className="memory-edit-action"
-                          onClick={() => startEditing(memory)}
-                        >
-                          Editar
-                        </button>
+                        <div className="memory-entry-actions">
+                          <button
+                            type="button"
+                            className="memory-edit-action"
+                            onClick={() => startEditing(memory)}
+                          >
+                            Editar
+                          </button>
+                          <button
+                            type="button"
+                            className="memory-delete-action"
+                            onClick={() => requestDelete(memory)}
+                          >
+                            Excluir
+                          </button>
+                        </div>
                       )}
                     </div>
+                    {deleteConfirmId === memory.id && (
+                      <div className="memory-delete-confirm" role="alert">
+                        <p>Excluir esta lembrança definitivamente?</p>
+                        <div>
+                          <button
+                            type="button"
+                            className="secondary-action"
+                            onClick={cancelDelete}
+                            disabled={deleteBusy}
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            type="button"
+                            className="memory-delete-confirm-action"
+                            onClick={() => void handleDelete(memory.id)}
+                            disabled={deleteBusy}
+                          >
+                            {deleteBusy ? "Excluindo…" : "Sim, excluir"}
+                          </button>
+                        </div>
+                        {deleteError && <p className="memory-feedback is-error" role="alert">{deleteError}</p>}
+                      </div>
+                    )}
                     <h3>{memory.title || "Lembrança sem título"}</h3>
                     <p>{memory.body}</p>
                   </article>
