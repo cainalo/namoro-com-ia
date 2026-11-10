@@ -3893,3 +3893,30 @@
     transition: none;
   }
 }
+
+
+/* Conversas — divisórias cronológicas */
+.conversation-day-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 4px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.conversation-day-divider::before,
+.conversation-day-divider::after {
+  height: 1px;
+  flex: 1 1 auto;
+  background: color-mix(in oklab, var(--color-accent) 32%, var(--color-border));
+  content: "";
+}
+
+.conversation-day-divider span {
+  flex: 0 0 auto;
+  padding: 0 3px;
+  text-transform: capitalize;
+}
