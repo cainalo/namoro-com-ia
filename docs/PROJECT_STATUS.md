@@ -228,3 +228,24 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - O zoom varia de 100% a 145%; controles têm rótulos acessíveis, estados desabilitados e foco visível. A transição respeita `prefers-reduced-motion`.
 - Não há movimentação panorâmica nesta etapa.
 - Commits: controles `f9d8edd316adbcf52eb0d6c4e4cac5ff389f5d2c`, estilos `d22505a2aa7e2e62af100e95fd76c255fd312fe5`, correção estrutural `3c4bcddaf01d7843e3985b11a6eebec96c4d6ee7`.
+
+
+## Memórias — primeiros registros em texto (2026-11-10)
+
+### Banco e privacidade
+- Migration `20261110210000_create_couple_memories.sql` cria `public.couple_memories` para registros textuais privados ou compartilhados.
+- A leitura privada é restrita ao criador. A leitura compartilhada exige que a pessoa autenticada seja integrante atual de um casal ativo e passe por `public.can_view_couple`.
+- Somente o criador pode editar ou excluir o registro. RLS valida a identidade do criador e o vínculo ativo antes de inserir ou alterar compartilhados.
+- A tabela não foi incluída em Realtime nesta etapa. Fotos, vídeos, anexos e visibilidades selecionada/agendada/secreta/temporária permanecem fora do escopo.
+- A migration está versionada na `main`; a aplicação no Supabase ainda precisa ser confirmada. O isolamento de RLS com duas contas permanece como teste obrigatório antes de tratar compartilhamento como validado em produção.
+
+### Interface
+- Criado `src/lib/couple-memories.ts` como adapter tipado temporário, sem editar tipos gerados do Supabase.
+- Criado `src/components/CoupleMemories.tsx` com lista, criação de texto, título opcional, data, escolha privada/compartilhada e estados de carregamento/falha/banco pendente.
+- Conectada a seção **Memórias** em `src/routes/index.tsx`; a tela vazia foi removida.
+- O compartilhamento fica indisponível sem casal ativo. Sem vínculo ativo, a tela força a opção privada.
+- Commit da migration `e11b61c4976cc3de37aee0d532707a2d243d6bd6`; adapter `22667b3f34a5bb3a23caa20b6233ebd4f24b33ec`; interface `7d48c9b55da3d5cf59d4635254aaa58d87ec62ab`; integração `976ff1d32fc34a4c3061bfb9aabd65076312f8e0`; estilos `1d4007d4cf8fd5b7d102954f49d7dc9878115d41`; correção de tipagem de rota `e50eda63e5e7e2aee9daf9e66f503e60cfa3ca48`; proteção do formulário `7e1a91e172a6da68e9a0fcf915f7e3df6283561e`.
+
+### Validação
+- Build, lint, testes automatizados e validação visual não foram executados nesta etapa.
+- Não foi confirmado se a migration foi aplicada ao Supabase; a interface trata a tabela ausente com uma mensagem de preparação.
