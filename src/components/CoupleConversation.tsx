@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { Check, Copy } from "lucide-react";
+import { ArrowLeft, Check, Copy, History, MoreVertical, RefreshCw, Search, Send, X } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
@@ -17,6 +18,7 @@ type ConversationState =
 
 type CoupleConversationProps = {
   userId: string;
+  onBack: () => void;
 };
 
 function isCoupleMessage(value: unknown): value is CoupleMessage {
@@ -58,10 +60,11 @@ function formatMessageDay(value: string) {
   }).format(date);
 }
 
-export function CoupleConversation({ userId }: CoupleConversationProps) {
+export function CoupleConversation({ userId, onBack }: CoupleConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
   const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
   const [olderMessagesError, setOlderMessagesError] = useState<string | null>(null);
@@ -329,51 +332,67 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   }
 
   function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (
-      event.key !== "Enter" ||
-      event.shiftKey ||
-      (!event.ctrlKey && !event.metaKey)
-    ) {
-      return;
-    }
+    if (event.key !== "Enter" || event.shiftKey) return;
 
     event.preventDefault();
-    if (!busy && draft.trim()) {
-      composerRef.current?.requestSubmit();
-    }
+    if (!busy && draft.trim()) composerRef.current?.requestSubmit();
   }
 
   return (
     <section className="conversation-screen" aria-labelledby="conversation-title">
       <header className="conversation-heading">
-        <div className="conversation-heading-copy">
-          <span className="conversation-heading-kicker">UM ESPAÇO DE VOCÊS</span>
-          <h1 id="conversation-title">Conversas</h1>
-          <p>Palavras, planos e pequenos recados que aproximam.</p>
+        <button
+          type="button"
+          className="conversation-back-button"
+          onClick={onBack}
+          aria-label="Voltar"
+          title="Voltar"
+        >
+          <ArrowLeft aria-hidden="true" />
+        </button>
+        <span className="conversation-person-avatar" aria-hidden="true">♡</span>
+        <div className="conversation-person-copy">
+          <h1 id="conversation-title">Conversa</h1>
+          <p className={`conversation-live-status is-${realtimeStatus}`} role="status">
+            <span className="conversation-live-indicator" aria-hidden="true" />
+            {state.status === "active"
+              ? realtimeStatus === "connected" ? "online" : realtimeStatus === "connecting" ? "conectando…" : "atualização manual"
+              : state.status === "pending" ? "aguardando convite" : state.status === "no-couple" ? "sem espaço vinculado" : " " }
+          </p>
         </div>
-        <MoradosSectionArt variant="conversation" />
-        <div className="conversation-heading-actions">
-          {state.status === "active" && (
-            <span className={`conversation-live-status is-${realtimeStatus}`} role="status">
-              <span className="conversation-live-indicator" aria-hidden="true" />
-              {realtimeStatus === "connected"
-                ? "Ao vivo"
-                : realtimeStatus === "connecting"
-                  ? "Conectando…"
-                  : "Atualização manual"}
-            </span>
-          )}
-          {state.status === "active" && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="conversation-refresh-action"
-              onClick={() => setRefreshKey((key) => key + 1)}
-              disabled={busy}
+              className="conversation-options-button"
+              aria-label="Mais opções da conversa"
+              title="Mais opções"
             >
-              Atualizar
+              <MoreVertical aria-hidden="true" />
             </button>
-          )}
-        </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" sideOffset={8} className="conversation-options-menu">
+            <DropdownMenuItem onSelect={() => setSearchOpen((open) => !open)}>
+              <Search aria-hidden="true" />
+              {searchOpen ? "Ocultar pesquisa" : "Pesquisar mensagens"}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              disabled={!hasOlderMessages || loadingOlderMessages || state.status !== "active"}
+              onSelect={() => void loadOlderMessages()}
+            >
+              <History aria-hidden="true" />
+              {loadingOlderMessages ? "Carregando mensagens…" : "Carregar mensagens anteriores"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              disabled={busy || state.status === "loading"}
+              onSelect={() => setRefreshKey((key) => key + 1)}
+            >
+              <RefreshCw aria-hidden="true" />
+              Atualizar conversa
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       {state.status === "loading" && (
@@ -407,46 +426,29 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
 
       {state.status === "active" && (
         <>
-          {state.messages.length > 0 && (
-            <div className="conversation-history-tools">
-              <label className="conversation-search">
-                <span>Buscar no histórico carregado</span>
-                <input
-                  type="search"
-                  value={messageSearch}
-                  onChange={(event) => setMessageSearch(event.target.value)}
-                  placeholder="Palavra ou trecho da mensagem…"
-                  aria-label="Buscar nas mensagens carregadas"
-                />
-              </label>
-              <span className="conversation-search-count">
-                {visibleMessages.length} de {state.messages.length}
-              </span>
-              {messageSearch && (
-                <button
-                  type="button"
-                  className="conversation-search-clear"
-                  onClick={() => setMessageSearch("")}
-                >
-                  Limpar
-                </button>
-              )}
+          {searchOpen && (
+            <div className="conversation-search-panel">
+              <Search aria-hidden="true" />
+              <input
+                type="search"
+                autoFocus
+                value={messageSearch}
+                onChange={(event) => setMessageSearch(event.target.value)}
+                placeholder="Pesquisar nesta conversa"
+                aria-label="Pesquisar mensagens"
+              />
+              <span className="conversation-search-count">{visibleMessages.length}</span>
+              <button
+                type="button"
+                onClick={() => { setMessageSearch(""); setSearchOpen(false); }}
+                aria-label="Fechar pesquisa"
+              >
+                <X aria-hidden="true" />
+              </button>
             </div>
           )}
           <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" data-chrome-scroll role="log" aria-label="Mensagens do casal" aria-live="polite" aria-busy={loadingOlderMessages}>
-            {hasOlderMessages && (
-              <div className="conversation-load-older">
-                <button
-                  type="button"
-                  className="inline-action"
-                  onClick={() => void loadOlderMessages()}
-                  disabled={loadingOlderMessages}
-                >
-                  {loadingOlderMessages ? "Carregando…" : "Carregar mensagens anteriores"}
-                </button>
-                {olderMessagesError && <p role="alert">{olderMessagesError}</p>}
-              </div>
-            )}
+            {olderMessagesError && <p className="conversation-history-error" role="alert">{olderMessagesError}</p>}
             {state.messages.length === 0 ? (
               <p className="conversation-state conversation-empty">
                 Esta é a primeira conversa de vocês. Envie uma mensagem.
@@ -507,36 +509,26 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
 
           {copyError && <p className="conversation-error" role="alert">{copyError}</p>}
           <form ref={composerRef} className="conversation-composer" onSubmit={handleSend}>
-            <div className="conversation-composer-heading">
-              <div>
-                <span className="conversation-composer-kicker">SEU PRÓXIMO RECADO</span>
-                <label className="conversation-input-label" htmlFor="conversation-draft">
-                  Escreva para a outra pessoa
-                </label>
-              </div>
-              <span className="conversation-composer-decoration" aria-hidden="true">✦</span>
-            </div>
+            <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
             <textarea
               id="conversation-draft"
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Escreva uma mensagem…"
+              placeholder="Mensagem"
               maxLength={2000}
-              rows={2}
+              rows={1}
               onKeyDown={handleComposerKeyDown}
               disabled={busy}
             />
-            <div className="conversation-composer-footer">
-              <span className="conversation-shortcut-hint">Ctrl / ⌘ + Enter para enviar</span>
-              <span className="conversation-counter">{draft.length}/2000</span>
-              <button
-                type="submit"
-                className="primary-action"
-                disabled={busy || draft.trim().length === 0}
-              >
-                {busy ? "Enviando…" : "Enviar"}
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="conversation-send-button"
+              disabled={busy || draft.trim().length === 0}
+              aria-label="Enviar mensagem"
+              title="Enviar"
+            >
+              <Send aria-hidden="true" />
+            </button>
             {error && <p className="conversation-error" role="alert">{error}</p>}
           </form>
         </>
