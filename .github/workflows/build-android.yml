@@ -6,6 +6,12 @@ on:
       - main
     paths:
       - "android/**"
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "bun.lockb"
+      - "vite.config.ts"
+      - "index.html"
       - ".github/workflows/build-android.yml"
   workflow_dispatch:
 
