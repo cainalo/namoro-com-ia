@@ -18,24 +18,42 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
 
   useEffect(() => {
     let active = true;
+    let authEventReceived = false;
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       if (!active) return;
+      authEventReceived = true;
       setSession(nextSession);
       setChecking(false);
     });
 
-    void supabase.auth.getSession().then(({ data, error }) => {
-      if (!active) return;
-      if (error) console.error("Could not restore Supabase session", error);
-      setSession(data.session);
-      setChecking(false);
-    });
+    // Never leave the whole app trapped behind the loading mark if an embedded
+    // browser rejects a storage read or the auth endpoint is temporarily slow.
+    const fallbackTimer = window.setTimeout(() => {
+      if (active) setChecking(false);
+    }, 5000);
+
+    void Promise.resolve()
+      .then(() => supabase.auth.getSession())
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error("Could not restore Supabase session", error);
+        if (!authEventReceived) setSession(data.session);
+        setChecking(false);
+      })
+      .catch((error: unknown) => {
+        console.error("Could not initialize Supabase authentication", error);
+        if (active) {
+          if (!authEventReceived) setSession(null);
+          setChecking(false);
+        }
+      });
 
     return () => {
       active = false;
+      window.clearTimeout(fallbackTimer);
       subscription.unsubscribe();
     };
   }, []);
@@ -162,7 +180,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
               name="password"
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
               required
-              minLength={8}
+              minLength={mode === "signup" ? 8 : undefined}
               maxLength={128}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
