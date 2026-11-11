@@ -32,7 +32,7 @@ async function createNetlifyAiResponse(
   messages: Array<{ role: "user" | "assistant"; content: string }>,
 ) {
   const apiKey = process.env.OPENAI_API_KEY;
-  const baseUrl = process.env.OPENAI_BASE_URL?.replace(/\\/+$/, "");
+  const baseUrl = process.env.OPENAI_BASE_URL?.replace(/\/+$/, "");
 
   if (!apiKey || !baseUrl) {
     return jsonError(
@@ -90,7 +90,7 @@ async function createNetlifyAiResponse(
 
       function emitEvent() {
         if (eventData.length === 0) return;
-        const payload = eventData.join("\\n");
+        const payload = eventData.join("\n");
         eventData = [];
         if (!payload || payload === "[DONE]") {
           finished = payload === "[DONE]";
@@ -116,10 +116,10 @@ async function createNetlifyAiResponse(
           if (done) break;
 
           buffer += decoder.decode(value, { stream: true });
-          let newlineIndex = buffer.indexOf("\\n");
+          let newlineIndex = buffer.indexOf("\n");
 
           while (newlineIndex !== -1) {
-            const line = buffer.slice(0, newlineIndex).replace(/\\r$/, "");
+            const line = buffer.slice(0, newlineIndex).replace(/\r$/, "");
             buffer = buffer.slice(newlineIndex + 1);
 
             if (line === "") {
@@ -129,7 +129,7 @@ async function createNetlifyAiResponse(
               eventData.push(line.slice(5).trimStart());
             }
 
-            newlineIndex = buffer.indexOf("\\n");
+            newlineIndex = buffer.indexOf("\n");
           }
         }
 
