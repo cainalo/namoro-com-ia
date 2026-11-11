@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { ArrowRight, Download, LogOut } from "lucide-react";
+import { MoradosMark } from "@/components/MoradosMark";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -42,10 +43,7 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
   if (checking) {
     return (
       <main className="auth-shell" aria-busy="true">
-        <span className="pair-mark auth-mark" aria-hidden="true">
-          <span />
-          <span />
-        </span>
+        <MoradosMark size={30} className="auth-mark" />
       </main>
     );
   }

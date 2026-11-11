@@ -6,6 +6,7 @@ import {
   ArrowUpRight,
   Compass,
   Download,
+  ArrowLeft,
   Heart,
   Home,
   Gamepad2,
@@ -13,7 +14,7 @@ import {
   MessageCircle,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
@@ -26,6 +27,8 @@ import { CoupleMemories } from "@/components/CoupleMemories";
 import { MoradosHeroScene } from "@/components/MoradosHeroScene";
 import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
+import { MoradosMark } from "@/components/MoradosMark";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -59,6 +62,33 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
+  const [canGoBack, setCanGoBack] = useState(false);
+  const sectionHistory = useRef<SectionId[]>([]);
+  const activeSectionRef = useRef<SectionId>("home");
+  const chromeHidden = useHideOnScroll(activeSection);
+
+  const goToSection = (section: SectionId) => {
+    if (activeSectionRef.current === section) return;
+    sectionHistory.current = [...sectionHistory.current, activeSectionRef.current].slice(-20);
+    activeSectionRef.current = section;
+    setActiveSection(section);
+    setCanGoBack(sectionHistory.current.length > 0);
+  };
+
+  const goHome = () => {
+    sectionHistory.current = [];
+    activeSectionRef.current = "home";
+    setActiveSection("home");
+    setCanGoBack(false);
+  };
+
+  const goBack = () => {
+    const previous = sectionHistory.current.pop() ?? "home";
+    activeSectionRef.current = previous;
+    setActiveSection(previous);
+    setCanGoBack(sectionHistory.current.length > 0);
+  };
+
   const date = useMemo(
     () =>
       new Intl.DateTimeFormat("pt-BR", {
@@ -73,94 +103,133 @@ function Index() {
     <AuthGate>
       {(session) => (
         <div className="app-shell min-h-dvh bg-background text-foreground">
-      <aside className="app-sidebar">
-        <Brand />
-        <nav aria-label="Principal" className="app-nav">
-          {navigation.map((item) => (
-            <NavigationButton
-              key={item.id}
-              item={item}
-              active={activeSection === item.id}
-              onClick={() => setActiveSection(item.id)}
-            />
-          ))}
-        </nav>
-        <div className="sidebar-account"><SignOutButton /></div>
-      </aside>
+          <header className="app-chrome" data-hidden={chromeHidden}>
+            <div className="app-topbar">
+              <div className="topbar-inner">
+                <div className="topbar-side topbar-side-leading">
+                  <button
+                    type="button"
+                    className="topbar-icon-button"
+                    onClick={goBack}
+                    disabled={!canGoBack}
+                    aria-label="Voltar à seção anterior"
+                    title="Voltar"
+                  >
+                    <ArrowLeft aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className="topbar-icon-button"
+                    onClick={goHome}
+                    aria-label="Ir para Hoje"
+                    title="Início"
+                  >
+                    <Home aria-hidden="true" />
+                  </button>
+                </div>
 
-      <main className="app-main">
-        <header className="app-topbar">
-          <div className="mobile-brand">
-            <Brand compact />
-          </div>
-          <span className="topbar-space" />
-          <Link to="/download" className="topbar-install-link" aria-label="Baixar ou instalar o Morados">
-            <Download aria-hidden="true" />
-            <span>Instalar app</span>
-          </Link>
-          <SignOutButton compact />
-        </header>
+                <button
+                  type="button"
+                  className="topbar-wordmark"
+                  onClick={goHome}
+                  aria-label="Morados — início"
+                >
+                  <MoradosMark size={34} />
+                  <span>Morados</span>
+                </button>
 
-        <div className="page-frame">
-          {activeSection === "home" ? (
-            <HomeScreen date={date} userId={session.user.id} onNavigate={setActiveSection} />
-          ) : activeSection === "messages" ? (
-            <CoupleConversation userId={session.user.id} />
-          ) : activeSection === "games" ? (
-            <CoupleGames userId={session.user.id} />
-          ) : activeSection === "universe" ? (
-            <CoupleHouse />
-          ) : activeSection === "organize" ? (
-            <CouplePlans userId={session.user.id} />
-          ) : activeSection === "memories" ? (
-            <CoupleMemories userId={session.user.id} />
-          ) : null}
-        </div>
-      </main>
+                <div className="topbar-side topbar-side-trailing">
+                  <Link
+                    to="/download"
+                    className="topbar-icon-button"
+                    aria-label="Baixar ou instalar o Morados"
+                    title="Instalar o aplicativo"
+                  >
+                    <Download aria-hidden="true" />
+                  </Link>
+                  <SignOutButton compact />
+                </div>
+              </div>
+            </div>
 
-      <nav aria-label="Principal" className="mobile-nav">
-        {navigation.map((item) => (
-          <NavigationButton
-            key={item.id}
-            item={item}
-            active={activeSection === item.id}
-            onClick={() => setActiveSection(item.id)}
-            mobile
-          />
-        ))}
-      </nav>
+            <nav aria-label="Navegação principal" className="desktop-nav">
+              {navigation.map((item) => (
+                <NavigationButton
+                  key={item.id}
+                  item={item}
+                  active={activeSection === item.id}
+                  onClick={() => goToSection(item.id)}
+                  desktop
+                />
+              ))}
+            </nav>
+          </header>
 
-      <AiChat />
+          <main className="app-main">
+            <div className="page-frame">
+              {activeSection === "home" ? (
+                <HomeScreen date={date} userId={session.user.id} onNavigate={goToSection} />
+              ) : activeSection === "messages" ? (
+                <CoupleConversation userId={session.user.id} />
+              ) : activeSection === "games" ? (
+                <CoupleGames userId={session.user.id} />
+              ) : activeSection === "universe" ? (
+                <CoupleHouse />
+              ) : activeSection === "organize" ? (
+                <CouplePlans userId={session.user.id} />
+              ) : activeSection === "memories" ? (
+                <CoupleMemories userId={session.user.id} />
+              ) : null}
+            </div>
+          </main>
+
+          <nav
+            aria-label="Navegação principal"
+            className="mobile-nav"
+            data-hidden={chromeHidden}
+          >
+            {navigation.map((item) => (
+              <NavigationButton
+                key={item.id}
+                item={item}
+                active={activeSection === item.id}
+                onClick={() => goToSection(item.id)}
+                mobile
+              />
+            ))}
+          </nav>
+
+          <AiChat />
         </div>
       )}
     </AuthGate>
   );
 }
 
-function Brand({ compact = false }: { compact?: boolean }) {
-  return (
-    <div className={compact ? "brand brand-compact" : "brand"}>
-      <span className="pair-mark" aria-hidden="true">
-        <span />
-        <span />
-      </span>
-      <span className="brand-word">Morados</span>
-    </div>
-  );
-}
+const NAV_ACCENTS: Record<SectionId, string> = {
+  home: "#0F4C5C",
+  messages: "#C8402A",
+  memories: "#6B3A6E",
+  organize: "#D4A017",
+  universe: "#556B2F",
+  games: "#27675A",
+};
 
 function NavigationButton({
   item,
   active,
   onClick,
   mobile = false,
+  desktop = false,
 }: {
   item: NavigationItem;
   active: boolean;
   onClick: () => void;
   mobile?: boolean;
+  desktop?: boolean;
 }) {
   const Icon = item.icon;
+  const accent = NAV_ACCENTS[item.id];
   return (
     <button
       type="button"
@@ -170,10 +239,17 @@ function NavigationButton({
         "nav-button",
         active ? "is-active" : "",
         mobile ? "nav-button-mobile" : "",
+        desktop ? "nav-button-desktop" : "",
       ].join(" ")}
+      style={active ? { color: accent, ...(desktop ? { borderBottomColor: accent } : {}) } : undefined}
     >
-      <Icon aria-hidden="true" />
-      <span>{item.label}</span>
+      <span
+        className="nav-icon-wrap"
+        style={active ? { backgroundColor: `color-mix(in srgb, ${accent} 15%, transparent)` } : undefined}
+      >
+        <Icon aria-hidden="true" />
+      </span>
+      <span className="nav-label">{item.label}</span>
     </button>
   );
 }
