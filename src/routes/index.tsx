@@ -22,6 +22,7 @@ import { CoupleGames } from "@/components/CoupleGames";
 import { CoupleHouse } from "@/components/CoupleHouse";
 import { CouplePlans } from "@/components/CouplePlans";
 import { CoupleMemories } from "@/components/CoupleMemories";
+import { MoradosHeroScene } from "@/components/MoradosHeroScene";
 import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
 
@@ -222,31 +223,7 @@ function HomeScreen({
             </button>
           </div>
         </div>
-        <div className="morados-hero-visual">
-          <img
-            src="https://images.unsplash.com/photo-1792977228364-d7a1f0caa181?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=82&w=1800"
-            alt="Flores de lavanda desfocadas em tons violetas e azulados"
-            width={1800}
-            height={1200}
-            fetchPriority="high"
-          />
-          <div className="morados-hero-image-overlay" />
-          <div className="morados-hero-image-note">
-            <span>✦</span>
-            <div>
-              <strong>Feito de pequenos momentos</strong>
-              <span>O que é de vocês, no tempo de vocês.</span>
-            </div>
-          </div>
-          <a
-            className="morados-image-credit"
-            href="https://unsplash.com/photos/purple-lavender-flowers-in-soft-focus-1wsVEwTPDWE"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Foto de Egor Myznik · Unsplash
-          </a>
-        </div>
+        <MoradosHeroScene />
       </section>
 
       <CoupleSetup userId={userId} />
