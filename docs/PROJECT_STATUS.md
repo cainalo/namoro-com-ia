@@ -559,3 +559,24 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Commits: painel Hoje `baa79de5a7fad891d1ee7ec20cab6af3ea94afbf`, sistema visual global `3e80b0c24f50243e3288d5d42ba66210dcb57d31`, painel de vínculo `813d9dea43b409801511f5bc5f6b82a50004d8ec`.
 - A reformulação está somente na `main`; não foi promovida à `prod`.
 - Build/testes devem ser conferidos após o último commit. A captura da prévia não substitui a validação visual em dispositivo.
+
+
+## Reformulação visual — referência NutriConnect + Pórtico (2026-11-11)
+
+### Referências estudadas
+- NutriConnect: tema Editorial Vibrante / Portico no próprio `src/styles.css` do projeto `cainalo/nutriconnect-simple-site`. Princípios extraídos: papel quente, Fraunces + Inter Tight, cartões-pôster com cores sólidas, linhas finas e movimento curto.
+- Pórtico: `src/styles/index.css`, `src/styles/look.css`, `src/lib/theme.ts` e componentes de cena do projeto `cainalo/Cronicas-do-Conhecimento-`. Princípios extraídos: ilustração narrativa, composição editorial, papel/tinta, paleta de petróleo, terracota, ameixa, oliva e ocre, sem depender de vidro, brilho ou gradientes.
+- A identidade do Morados permanece própria; nenhuma marca, mascote ou ilustração desses projetos foi copiada.
+
+### Aplicação no Morados
+- Substituída a fotografia de banco de imagens na tela Hoje por uma cena vetorial original: pequena morada, arco, caminho, vegetação, lanternas e duas figuras.
+- Tipografia: Fraunces nos títulos e Inter Tight nos textos, com fontes de sistema como fallback.
+- Paleta clara: papel `#F7EFDF`, superfície `#FFF9EF`, petróleo `#0F4C5C`, terracota `#C8402A`, oliva `#556B2F`, ocre `#D4A017`, ameixa `#6B3A6E`.
+- Paleta escura: petróleo profundo e superfícies azul-petróleo, com texto de papel e acentos terracota.
+- Removida a predominância de superfícies de vidro, blur, gradientes, brilho e sombras fortes. Os cartões agora usam tons sólidos, filetes, contornos leves e cantos moderados.
+- Navegação, autenticação, Hoje, Conversas, Memórias, Planos, Casa, Jogos, vínculo do casal e diálogos foram alinhados à nova linguagem.
+- Mantidos os tratamentos próprios da Casa medieval-fantástica e dos tabuleiros.
+- Arquivos: `src/components/MoradosHeroScene.tsx`, `src/routes/index.tsx`, `src/styles.css`.
+- Commits: ilustração `398974d8d4313155a4266acd10d80f0fb608fe6b`, aplicação na tela Hoje `10219e19d53c6b15e437cf8af489f9b8318c1967`, sistema editorial `d52b1c30b84fede67f7fa8d70437bbd6974e5121`.
+- Alterações somente na branch `main`; a `prod` e o domínio publicado permanecem sem mudança até a aprovação visual.
+- CI no commit `d52b1c30b84fede67f7fa8d70437bbd6974e5121`: testes e builds Lovable/Netlify aprovados.
