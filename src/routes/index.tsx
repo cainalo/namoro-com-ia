@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   CalendarDays,
   ChevronRight,
+  Sparkles,
+  ArrowUpRight,
   Compass,
   Heart,
   Home,
@@ -195,6 +197,57 @@ function HomeScreen({
           <span>Guardar lembrança</span>
         </button>
       </div>
+
+      <section className="morados-hero" aria-label="Bem-vindos ao Morados">
+        <div className="morados-hero-copy">
+          <span className="morados-hero-kicker">
+            <Sparkles aria-hidden="true" />
+            Um espaço de vocês
+          </span>
+          <h2>
+            Um mundo inteiro
+            <span> para viver a dois.</span>
+          </h2>
+          <p>
+            Guardem histórias, combinem o próximo encontro e criem pequenos rituais
+            que só fazem sentido para vocês.
+          </p>
+          <div className="morados-hero-actions">
+            <button type="button" className="morados-hero-primary" onClick={() => onNavigate("memories")}>
+              Guardar uma memória
+              <ArrowUpRight aria-hidden="true" />
+            </button>
+            <button type="button" className="morados-hero-secondary" onClick={() => onNavigate("universe")}>
+              Conhecer a casa
+            </button>
+          </div>
+        </div>
+        <div className="morados-hero-visual">
+          <img
+            src="https://images.unsplash.com/photo-1792977228364-d7a1f0caa181?auto=format&fit=crop&fm=jpg&ixlib=rb-4.1.0&q=82&w=1800"
+            alt="Flores de lavanda desfocadas em tons violetas e azulados"
+            width={1800}
+            height={1200}
+            fetchPriority="high"
+          />
+          <div className="morados-hero-image-overlay" />
+          <div className="morados-hero-image-note">
+            <span>✦</span>
+            <div>
+              <strong>Feito de pequenos momentos</strong>
+              <span>O que é de vocês, no tempo de vocês.</span>
+            </div>
+          </div>
+          <a
+            className="morados-image-credit"
+            href="https://unsplash.com/photos/purple-lavender-flowers-in-soft-focus-1wsVEwTPDWE"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Foto de Egor Myznik · Unsplash
+          </a>
+        </div>
+      </section>
 
       <CoupleSetup userId={userId} />
 
