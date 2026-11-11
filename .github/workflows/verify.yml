@@ -28,13 +28,16 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install locked dependencies
-        run: bun install --frozen-lockfile
+        run: bun install --no-save
 
       - name: Run automated tests
         run: bun run test
 
       - name: Build application for the existing Lovable target
         run: bun run build
+
+      - name: Build locally bundled Capacitor web assets
+        run: bun run build:android-web
 
       - name: Build application for Netlify
         run: bun run build
