@@ -345,26 +345,33 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
   return (
     <section className="conversation-screen" aria-labelledby="conversation-title">
       <header className="conversation-heading">
-        <h1 id="conversation-title">Conversas</h1>
-        {state.status === "active" && (
-          <span className="conversation-live-status" role="status">
-            {realtimeStatus === "connected"
-              ? "Ao vivo"
-              : realtimeStatus === "connecting"
-                ? "Conectando…"
-                : "Atualização manual"}
-          </span>
-        )}
-        {state.status === "active" && (
-          <button
-            type="button"
-            className="inline-action"
-            onClick={() => setRefreshKey((key) => key + 1)}
-            disabled={busy}
-          >
-            Atualizar
-          </button>
-        )}
+        <div className="conversation-heading-copy">
+          <span className="conversation-heading-kicker">UM ESPAÇO DE VOCÊS</span>
+          <h1 id="conversation-title">Conversas</h1>
+          <p>Palavras, planos e pequenos recados que aproximam.</p>
+        </div>
+        <div className="conversation-heading-actions">
+          {state.status === "active" && (
+            <span className={`conversation-live-status is-${realtimeStatus}`} role="status">
+              <span className="conversation-live-indicator" aria-hidden="true" />
+              {realtimeStatus === "connected"
+                ? "Ao vivo"
+                : realtimeStatus === "connecting"
+                  ? "Conectando…"
+                  : "Atualização manual"}
+            </span>
+          )}
+          {state.status === "active" && (
+            <button
+              type="button"
+              className="conversation-refresh-action"
+              onClick={() => setRefreshKey((key) => key + 1)}
+              disabled={busy}
+            >
+              Atualizar
+            </button>
+          )}
+        </div>
       </header>
 
       {state.status === "loading" && (
@@ -464,7 +471,12 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
                       className={ownMessage ? "conversation-message is-own" : "conversation-message"}
                     >
                       <div className="conversation-message-meta">
-                        <span>{ownMessage ? "Você" : "A outra pessoa"}</span>
+                        <span className="conversation-sender">
+                          <span className="conversation-sender-mark" aria-hidden="true">
+                            {ownMessage ? "EU" : "♡"}
+                          </span>
+                          {ownMessage ? "Você" : "A outra pessoa"}
+                        </span>
                         <time dateTime={message.created_at}>
                           {formatMessageTime(message.created_at)}
                         </time>
@@ -493,9 +505,15 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
 
           {copyError && <p className="conversation-error" role="alert">{copyError}</p>}
           <form ref={composerRef} className="conversation-composer" onSubmit={handleSend}>
-            <label className="conversation-input-label" htmlFor="conversation-draft">
-              Mensagem
-            </label>
+            <div className="conversation-composer-heading">
+              <div>
+                <span className="conversation-composer-kicker">SEU PRÓXIMO RECADO</span>
+                <label className="conversation-input-label" htmlFor="conversation-draft">
+                  Escreva para a outra pessoa
+                </label>
+              </div>
+              <span className="conversation-composer-decoration" aria-hidden="true">✦</span>
+            </div>
             <textarea
               id="conversation-draft"
               value={draft}
