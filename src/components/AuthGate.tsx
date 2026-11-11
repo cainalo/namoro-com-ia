@@ -133,7 +133,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
             <span />
             <span />
           </span>
-          <span>namoro</span>
+          <span>Morados</span>
         </div>
 
         <h1 id="auth-title">{mode === "signin" ? "Entrar" : "Criar conta"}</h1>
