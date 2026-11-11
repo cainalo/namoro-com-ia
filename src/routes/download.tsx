@@ -1,22 +1,15 @@
-import { useEffect, useState } from "react";
+
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   Apple,
   ArrowDownToLine,
   ArrowLeft,
-  Check,
-  Chrome,
   ExternalLink,
   Heart,
   Smartphone,
   Share,
   Wifi,
 } from "lucide-react";
-
-type InstallPromptEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
-};
 
 export const Route = createFileRoute("/download")({
   head: () => ({
@@ -30,27 +23,6 @@ export const Route = createFileRoute("/download")({
 });
 
 function DownloadPage() {
-  const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
-  const [installDone, setInstallDone] = useState(false);
-
-  useEffect(() => {
-    const handlePrompt = (event: Event) => {
-      event.preventDefault();
-      setInstallPrompt(event as InstallPromptEvent);
-    };
-
-    window.addEventListener("beforeinstallprompt", handlePrompt);
-    return () => window.removeEventListener("beforeinstallprompt", handlePrompt);
-  }, []);
-
-  async function installPwa() {
-    if (!installPrompt) return;
-    await installPrompt.prompt();
-    const choice = await installPrompt.userChoice;
-    setInstallDone(choice.outcome === "accepted");
-    setInstallPrompt(null);
-  }
-
   return (
     <main className="download-page">
       <header className="download-topbar">
@@ -66,8 +38,8 @@ function DownloadPage() {
           <span className="download-kicker">MORADOS NO SEU DIA A DIA</span>
           <h1>Leve o mundo de vocês <em>no bolso.</em></h1>
           <p>
-            Instale o Morados no celular para abrir suas conversas, memórias,
-            planos e a Casa como se fosse um aplicativo.
+            Instale o aplicativo do Morados para acessar conversas, memórias,
+            planos e a Casa com a interface incluída no próprio app Android.
           </p>
           <div className="download-hero-note">
             <Wifi aria-hidden="true" />
@@ -103,33 +75,25 @@ function DownloadPage() {
           </div>
           <h2>Instalar no Android</h2>
           <p className="download-platform-copy">
-            Baixe o APK e instale diretamente no seu aparelho. O aplicativo abre
-            o Morados publicado e mantém os dados sincronizados pela internet.
+            Baixe o aplicativo nativo construído com Capacitor. A interface fica
+            empacotada no APK; conta, conversas e sincronização usam a internet.
           </p>
           <a
             className="download-primary-button"
-            href="https://github.com/cainalo/namoro-com-ia/releases/download/morados-android-10/Morados-Android.apk"
+            href="https://github.com/cainalo/namoro-com-ia/releases/latest/download/Morados-Android.apk"
           >
             <ArrowDownToLine aria-hidden="true" />
             Baixar APK para Android
           </a>
-          {installPrompt && (
-            <button type="button" className="download-secondary-button" onClick={() => void installPwa()}>
-              <Chrome aria-hidden="true" /> Instalar pelo navegador
-            </button>
-          )}
-          {installDone && (
-            <span className="download-install-success"><Check aria-hidden="true" /> Instalação iniciada.</span>
-          )}
           <ol className="download-steps">
             <li><span>1</span> Baixe o arquivo <strong>Morados-Android.apk</strong>.</li>
             <li><span>2</span> Abra o arquivo e permita a instalação solicitada pelo Android.</li>
             <li><span>3</span> Conclua a instalação e abra o Morados.</li>
           </ol>
           <p className="download-small-note">
-            APK 1.2.0: esta é a edição que instala separadamente das versões antigas.
-            As correções de interface e navegação chegam pelo site e não exigem baixar outro APK.
-            Entre com a mesma conta para acessar os dados sincronizados.
+            Morados Android nativo 1.3.0 · Capacitor. Instala como aplicativo
+            independente das versões antigas. Entre com a mesma conta para acessar
+            as conversas, memórias e demais dados sincronizados.
           </p>
         </article>
 
