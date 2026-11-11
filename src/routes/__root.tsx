@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { Capacitor } from "@capacitor/core";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
@@ -122,7 +123,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
-    if (!("serviceWorker" in navigator)) return;
+    if (Capacitor.isNativePlatform() || !("serviceWorker" in navigator)) return;
 
     void navigator.serviceWorker
       .register("/morados-sw.js", { scope: "/" })
