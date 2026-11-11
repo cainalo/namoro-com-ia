@@ -9,6 +9,7 @@ import {
   type CoupleMemory,
   type MemoryVisibility,
 } from "@/lib/couple-memories";
+import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 type MemoryFilter = "all" | "private" | "shared";
 
@@ -373,6 +374,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
                   : "Atualização manual"}
           </span>
         </div>
+        <MoradosSectionArt variant="memories" />
         <div className="memories-heading-actions">
           <button
             type="button"

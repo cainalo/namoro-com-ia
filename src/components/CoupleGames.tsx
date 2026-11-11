@@ -3,6 +3,7 @@ import { CheckersGame } from "@/components/CheckersGame";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
 import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
 import { CoupleGame } from "@/components/CoupleGame";
+import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge";
 
@@ -24,6 +25,7 @@ export function CoupleGames({ userId }: { userId: string }) {
           <p className="date-kicker">Jogos para dois · online e local</p>
           <h1 id="games-hub-title">Jogos</h1>
         </div>
+        <MoradosSectionArt variant="games" />
       </header>
 
       <div className="games-hub-categories">

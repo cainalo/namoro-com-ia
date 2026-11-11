@@ -6,6 +6,7 @@ import {
   sendCoupleMessage,
   type CoupleMessage,
 } from "@/lib/couple-messages";
+import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 type ConversationState =
   | { status: "loading" }
@@ -350,6 +351,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
           <h1 id="conversation-title">Conversas</h1>
           <p>Palavras, planos e pequenos recados que aproximam.</p>
         </div>
+        <MoradosSectionArt variant="conversation" />
         <div className="conversation-heading-actions">
           {state.status === "active" && (
             <span className={`conversation-live-status is-${realtimeStatus}`} role="status">

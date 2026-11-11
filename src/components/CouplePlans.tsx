@@ -9,6 +9,7 @@ import {
   type CouplePlanEvent,
   type PlanEventVisibility,
 } from "@/lib/couple-plan-events";
+import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 const weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -469,6 +470,7 @@ export function CouplePlans({ userId }: { userId: string }) {
                   : "Atualização manual"}
           </span>
         </div>
+        <MoradosSectionArt variant="plans" />
         <button type="button" className="inline-action" onClick={goToToday}>
           Hoje
         </button>

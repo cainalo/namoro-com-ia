@@ -1,6 +1,7 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
 import { HouseInterior } from "@/components/HouseInterior";
+import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 const houseLocations = [
   {
@@ -113,6 +114,7 @@ export function CoupleHouse() {
           <p className="date-kicker">O lugar de vocês</p>
           <h1 id="house-title">Casa</h1>
         </div>
+        <MoradosSectionArt variant="house" />
         <span className="house-map-coordinate">Terreno inicial</span>
       </header>
 

@@ -11848,3 +11848,270 @@ h3,
     min-height: 60px;
   }
 }
+
+
+/* MORADOS — ilustrações vetoriais editoriais para cada módulo */
+.module-art {
+  display: grid;
+  width: 112px;
+  height: 78px;
+  flex: 0 0 112px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #EFE2CD;
+}
+.module-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.module-art--conversation { background: #E1EBE7; }
+.module-art--memories { background: #EEE3EE; }
+.module-art--plans { background: #F2E6D5; }
+.module-art--games { background: #F3E0D8; }
+.module-art--house { background: #DDE8D8; }
+
+.dark .module-art,
+.dark .module-art--conversation,
+.dark .module-art--memories,
+.dark .module-art--plans,
+.dark .module-art--games,
+.dark .module-art--house {
+  border-color: var(--color-border);
+  background: #1B3E46;
+}
+
+.conversation-heading,
+.memories-heading,
+.plans-heading,
+.games-hub-heading,
+.house-heading {
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 15px;
+}
+
+.conversation-heading-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.conversation-heading-actions {
+  flex: 0 0 auto;
+}
+
+.memories-heading > div:first-child,
+.plans-heading > div:first-child,
+.games-hub-heading > div:first-child,
+.house-heading > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.conversation-heading .module-art,
+.memories-heading .module-art,
+.plans-heading .module-art,
+.games-hub-heading .module-art,
+.house-heading .module-art {
+  margin-inline: auto;
+}
+
+.conversation-thread,
+.conversation-composer,
+.memory-composer,
+.memories-list,
+.plans-calendar,
+.plans-selected-day,
+.plans-event-composer,
+.games-hub-category,
+.games-hub-active,
+.house-interior {
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-card);
+  box-shadow: none;
+}
+
+.conversation-thread {
+  border-top: 3px solid #0F4C5C;
+  background: color-mix(in srgb, var(--color-card) 88%, #DDE9E6);
+}
+
+.conversation-composer {
+  border-top: 4px solid #C8402A;
+  background: #FFF9EF;
+}
+
+.memory-composer {
+  border-top: 4px solid #6B3A6E;
+  background: #FFF9EF;
+}
+
+.memories-list {
+  border-top: 4px solid #D4A017;
+  background: var(--color-card);
+}
+
+.plans-calendar {
+  border-top: 4px solid #0F4C5C;
+  background: var(--color-card);
+}
+
+.plans-selected-day {
+  border-top: 4px solid #C8402A;
+  background: var(--color-card);
+}
+
+.plans-event-composer {
+  border-top: 4px solid #556B2F;
+  background: var(--color-card);
+}
+
+.games-hub-category {
+  position: relative;
+  overflow: hidden;
+  border-top: 4px solid #0F4C5C;
+  background: #FFF9EF;
+}
+.games-hub-category:nth-child(2) {
+  border-top-color: #C8402A;
+}
+.games-hub-active {
+  border-top: 4px solid #6B3A6E;
+  background: var(--color-card);
+}
+.games-hub-planned {
+  border-top: 1px solid var(--color-border);
+}
+
+.house-map-shell {
+  border: 1px solid #D4A017;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.house-map-legend {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-card);
+}
+.house-interior {
+  border-top: 4px solid #556B2F;
+}
+
+.conversation-message {
+  border: 1px solid #D9C9AF;
+  border-radius: 8px 8px 8px 2px;
+  box-shadow: none;
+}
+.conversation-message.is-own {
+  border-color: #B7D0D1;
+  border-radius: 8px 8px 2px 8px;
+}
+.memory-entry,
+.plans-event-entry {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: none;
+}
+.memory-entry:nth-child(4n + 1) { border-top: 3px solid #0F4C5C; }
+.memory-entry:nth-child(4n + 2) { border-top: 3px solid #C8402A; }
+.memory-entry:nth-child(4n + 3) { border-top: 3px solid #6B3A6E; }
+.memory-entry:nth-child(4n + 4) { border-top: 3px solid #556B2F; }
+
+.plans-event-entry {
+  border-left: 4px solid #0F4C5C;
+  background: var(--color-card);
+}
+.plans-event-entry:nth-child(2n) { border-left-color: #C8402A; }
+
+.plans-day {
+  border-radius: 6px;
+}
+.plans-day.is-today {
+  outline: 2px solid #D4A017;
+  outline-offset: 1px;
+}
+.plans-day.is-selected {
+  background: #0F4C5C;
+  color: #FFF9EF;
+}
+.plans-day.is-selected .plans-day-number {
+  color: #FFF9EF;
+}
+
+.games-hub-selectors button {
+  border-radius: 6px;
+  border-color: var(--color-border);
+  background: var(--color-secondary);
+  color: var(--color-foreground);
+}
+.games-hub-selectors button.is-active {
+  border-color: #0F4C5C;
+  background: #0F4C5C;
+  color: #FFF9EF;
+}
+.games-hub-planned li {
+  border-top-color: var(--color-border);
+}
+.games-hub-planned li:nth-child(3n + 1) {
+  border-left: 4px solid #0F4C5C;
+  padding-left: 10px;
+}
+.games-hub-planned li:nth-child(3n + 2) {
+  border-left: 4px solid #C8402A;
+  padding-left: 10px;
+}
+.games-hub-planned li:nth-child(3n + 3) {
+  border-left: 4px solid #556B2F;
+  padding-left: 10px;
+}
+
+@media (max-width: 680px) {
+  .module-art {
+    width: 78px;
+    height: 58px;
+    flex-basis: 78px;
+  }
+  .conversation-heading,
+  .memories-heading,
+  .plans-heading,
+  .games-hub-heading,
+  .house-heading {
+    gap: 9px;
+    padding-bottom: 12px;
+  }
+  .conversation-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .conversation-heading-copy {
+    grid-column: 1 / -1;
+  }
+  .conversation-heading-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .conversation-heading .module-art {
+    display: none;
+  }
+  .memories-heading-actions {
+    flex-wrap: wrap;
+  }
+  .house-map-shell {
+    border-radius: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .module-art *,
+  .games-hub-category,
+  .memory-entry,
+  .plans-event-entry {
+    animation: none !important;
+    transition: none !important;
+  }
+}
