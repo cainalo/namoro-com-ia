@@ -38,11 +38,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
-
-      - name: Install Android platform and build tools
-        run: |
-          yes | sdkmanager --licenses
-          sdkmanager "platforms;android-37" "build-tools;36.0.0" "platform-tools"
+        with:
+          packages: "platforms;android-36 build-tools;36.0.0 platform-tools"
 
       - name: Assemble debug APK
         run: gradle -p android assembleDebug --no-daemon
