@@ -14,6 +14,176 @@ export type Database = {
   }
   public: {
     Tables: {
+      couple_daily_challenge_progress: {
+        Row: {
+          challenge_date: string
+          challenge_id: string
+          completed_at: string
+          couple_id: string
+          user_id: string
+        }
+        Insert: {
+          challenge_date: string
+          challenge_id: string
+          completed_at?: string
+          couple_id: string
+          user_id: string
+        }
+        Update: {
+          challenge_date?: string
+          challenge_id?: string
+          completed_at?: string
+          couple_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_daily_challenge_progress_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_game_choices: {
+        Row: {
+          answered_at: string
+          choice: string
+          couple_id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string
+          choice: string
+          couple_id: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string
+          choice?: string
+          couple_id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_game_choices_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_game_matches: {
+        Row: {
+          board: Json
+          couple_id: string
+          created_at: string
+          current_turn: string
+          finished_at: string | null
+          game_key: string
+          id: string
+          is_draw: boolean
+          player_one_id: string
+          player_two_id: string
+          status: string
+          turn_number: number
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          board: Json
+          couple_id: string
+          created_at?: string
+          current_turn: string
+          finished_at?: string | null
+          game_key: string
+          id?: string
+          is_draw?: boolean
+          player_one_id: string
+          player_two_id: string
+          status?: string
+          turn_number?: number
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          board?: Json
+          couple_id?: string
+          created_at?: string
+          current_turn?: string
+          finished_at?: string | null
+          game_key?: string
+          id?: string
+          is_draw?: boolean
+          player_one_id?: string
+          player_two_id?: string
+          status?: string
+          turn_number?: number
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_game_matches_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          couple_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          inviter_user_id: string
+          revoked_at: string | null
+          status: string
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          couple_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          inviter_user_id: string
+          revoked_at?: string | null
+          status?: string
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          couple_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          inviter_user_id?: string
+          revoked_at?: string | null
+          status?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_invitations_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_members: {
         Row: {
           couple_id: string
@@ -39,6 +209,138 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "couple_members_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_memories: {
+        Row: {
+          body: string
+          couple_id: string | null
+          created_at: string
+          id: string
+          memory_date: string
+          owner_id: string
+          title: string | null
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          body: string
+          couple_id?: string | null
+          created_at?: string
+          id?: string
+          memory_date?: string
+          owner_id: string
+          title?: string | null
+          updated_at?: string
+          visibility: string
+        }
+        Update: {
+          body?: string
+          couple_id?: string | null
+          created_at?: string
+          id?: string
+          memory_date?: string
+          owner_id?: string
+          title?: string | null
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_memories_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_messages: {
+        Row: {
+          body: string
+          couple_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          body: string
+          couple_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          couple_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_messages_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_plan_events: {
+        Row: {
+          all_day: boolean
+          couple_id: string | null
+          created_at: string
+          description: string | null
+          end_time: string | null
+          event_date: string
+          id: string
+          owner_id: string
+          place: string | null
+          start_time: string | null
+          title: string
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          all_day?: boolean
+          couple_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          id?: string
+          owner_id: string
+          place?: string | null
+          start_time?: string | null
+          title: string
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          all_day?: boolean
+          couple_id?: string | null
+          created_at?: string
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          id?: string
+          owner_id?: string
+          place?: string | null
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_plan_events_couple_id_fkey"
             columns: ["couple_id"]
             isOneToOne: false
             referencedRelation: "couples"
@@ -108,10 +410,46 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_couple_invitation: { Args: { p_token: string }; Returns: string }
       can_view_couple: { Args: { p_couple_id: string }; Returns: boolean }
+      create_connect_four_match: {
+        Args: { p_couple_id: string }
+        Returns: string
+      }
       create_couple: {
         Args: { p_relationship_started_on?: string }
         Returns: string
+      }
+      create_couple_invitation: {
+        Args: { p_couple_id: string }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          token: string
+        }[]
+      }
+      play_connect_four_move: {
+        Args: { p_column: number; p_expected_turn: number; p_match_id: string }
+        Returns: {
+          board: Json
+          couple_id: string
+          created_at: string
+          current_turn: string
+          finished_at: string
+          game_key: string
+          is_draw: boolean
+          match_id: string
+          player_one_id: string
+          player_two_id: string
+          status: string
+          turn_number: number
+          updated_at: string
+          winner_id: string
+        }[]
+      }
+      revoke_couple_invitation: {
+        Args: { p_couple_id: string }
+        Returns: boolean
       }
     }
     Enums: {
