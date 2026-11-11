@@ -10,8 +10,8 @@ android {
         applicationId "com.morados.app"
         minSdk 24
         targetSdk 36
-        versionCode 2
-        versionName "1.1.0"
+        versionCode 3
+        versionName "1.2.0"
     }
 
     compileOptions {
@@ -21,7 +21,9 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix ".debug"
+            // Instala como uma edição separada para evitar o conflito de assinatura
+            // com as versões antigas já instaladas no aparelho.
+            applicationIdSuffix ".v2"
             versionNameSuffix "-debug"
         }
     }
