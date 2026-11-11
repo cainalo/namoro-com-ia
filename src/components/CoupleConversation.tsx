@@ -433,7 +433,7 @@ export function CoupleConversation({ userId }: CoupleConversationProps) {
               )}
             </div>
           )}
-          <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" role="log" aria-label="Mensagens do casal" aria-live="polite" aria-busy={loadingOlderMessages}>
+          <div ref={threadRef} onScroll={handleThreadScroll} className="conversation-thread" data-chrome-scroll role="log" aria-label="Mensagens do casal" aria-live="polite" aria-busy={loadingOlderMessages}>
             {hasOlderMessages && (
               <div className="conversation-load-older">
                 <button
