@@ -1,5 +1,7 @@
 # Publicação do Morados no Netlify
 
+Domínio público definido: **https://morados.netlify.app**.
+
 ## Modelo de branches
 
 - `main`: desenvolvimento contínuo. As alterações são feitas e validadas primeiro aqui.
