@@ -108,7 +108,7 @@ function DownloadPage() {
           </p>
           <a
             className="download-primary-button"
-            href="https://github.com/cainalo/namoro-com-ia/releases/latest/download/Morados-Android.apk"
+            href="https://github.com/cainalo/namoro-com-ia/releases/download/morados-android-5/Morados-Android.apk"
           >
             <ArrowDownToLine aria-hidden="true" />
             Baixar APK para Android
