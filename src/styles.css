@@ -10402,3 +10402,649 @@ button[aria-label="Conversar com a IA"] {
     transition: none;
   }
 }
+
+
+/* Morados — página pública de instalação mobile */
+.download-page {
+  min-height: 100dvh;
+  background: #F7EFDF;
+  background-image: radial-gradient(rgb(16 40 46 / 4%) 0.55px, transparent 0.55px);
+  background-size: 4px 4px;
+  color: #10282E;
+  padding: 0 clamp(16px, 4vw, 54px) 28px;
+}
+
+.download-topbar {
+  display: flex;
+  width: min(100%, 1160px);
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 auto;
+  border-bottom: 1px solid #D9C9AF;
+}
+
+.download-brand,
+.download-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #0F4C5C;
+  text-decoration: none;
+}
+
+.download-brand {
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 23px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+
+.download-brand-mark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 8px;
+  background: #0F4C5C;
+  color: #FFF9EF;
+}
+
+.download-brand-mark svg {
+  width: 15px;
+  height: 15px;
+}
+
+.download-back {
+  min-height: 36px;
+  border: 1px solid #D9C9AF;
+  border-radius: 6px;
+  background: #FFF9EF;
+  padding: 0 11px;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.download-back svg {
+  width: 14px;
+  height: 14px;
+}
+
+.download-back:hover {
+  border-color: #0F4C5C;
+  background: #EFE2CD;
+}
+
+.download-hero {
+  display: grid;
+  width: min(100%, 1160px);
+  min-height: 330px;
+  grid-template-columns: minmax(0, 1.08fr) minmax(260px, 0.92fr);
+  align-items: center;
+  gap: 30px;
+  margin: 0 auto;
+  border-bottom: 1px solid #D9C9AF;
+  padding: 26px 0 30px;
+}
+
+.download-hero-copy {
+  max-width: 620px;
+  padding: 20px 0;
+}
+
+.download-kicker {
+  display: inline-block;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #C8402A;
+  padding-bottom: 7px;
+  color: #C8402A;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+.download-hero h1 {
+  max-width: 590px;
+  margin: 0;
+  color: #10282E;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(39px, 5vw, 65px);
+  font-weight: 600;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.download-hero h1 em {
+  display: block;
+  color: #C8402A;
+  font-style: normal;
+}
+
+.download-hero-copy > p {
+  max-width: 530px;
+  margin: 18px 0 0;
+  color: #52646A;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.download-hero-note {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 20px;
+  border-left: 3px solid #D4A017;
+  background: #EFE2CD;
+  padding: 9px 12px;
+  color: #52646A;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.download-hero-note svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  color: #0F4C5C;
+}
+
+.download-hero-art {
+  position: relative;
+  display: grid;
+  min-height: 290px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid #D9C9AF;
+  border-radius: 11px;
+  background: #0F4C5C;
+}
+
+.download-orbit {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border: 1px solid rgb(247 239 223 / 30%);
+  border-radius: 50%;
+}
+
+.download-orbit-one {
+  transform: translate(-34px, 14px);
+}
+
+.download-orbit-two {
+  width: 340px;
+  height: 340px;
+  transform: translate(40px, -10px);
+  border-color: rgb(212 160 23 / 42%);
+}
+
+.download-phone {
+  position: relative;
+  z-index: 1;
+  width: 150px;
+  height: 260px;
+  transform: rotate(-5deg);
+  border: 5px solid #10282E;
+  border-radius: 26px;
+  background: #F7EFDF;
+  padding: 8px;
+  box-shadow: 16px 19px 0 rgb(16 40 46 / 22%);
+}
+
+.download-phone-speaker {
+  position: absolute;
+  z-index: 2;
+  top: 7px;
+  left: 50%;
+  width: 42px;
+  height: 8px;
+  transform: translateX(-50%);
+  border-radius: 99px;
+  background: #10282E;
+}
+
+.download-phone-screen {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 17px;
+  background: #FFF9EF;
+  padding: 29px 11px 10px;
+  color: #0F4C5C;
+}
+
+.download-mini-mark {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 8px;
+  background: #C8402A;
+  color: #FFF9EF;
+}
+
+.download-mini-mark svg {
+  width: 15px;
+  height: 15px;
+}
+
+.download-phone-screen > strong {
+  margin-top: 7px;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 18px;
+}
+
+.download-phone-screen > span:not(.download-mini-mark) {
+  margin-top: 1px;
+  color: #52646A;
+  font-size: 8px;
+}
+
+.download-mini-arch {
+  display: grid;
+  width: 92px;
+  height: 94px;
+  place-items: center;
+  margin-top: 11px;
+  border: 5px solid #D4A017;
+  border-bottom: 0;
+  border-radius: 60px 60px 0 0;
+  background: #0F4C5C;
+}
+
+.download-mini-heart {
+  color: #F7EFDF;
+  font-size: 44px;
+  line-height: 1;
+}
+
+.download-phone-screen > i {
+  display: block;
+  width: 100%;
+  height: 7px;
+  margin-top: 8px;
+  border-radius: 99px;
+  background: #D9C9AF;
+}
+
+.download-phone-screen > i:last-child {
+  width: 68%;
+  align-self: flex-start;
+  margin-top: 5px;
+  background: #C8402A;
+}
+
+.download-art-star {
+  position: absolute;
+  top: 32px;
+  right: 49px;
+  color: #D4A017;
+  font-size: 35px;
+}
+
+.download-art-dot {
+  position: absolute;
+  bottom: 40px;
+  left: 55px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #C8402A;
+}
+
+.download-platforms {
+  display: grid;
+  width: min(100%, 1160px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px auto 0;
+}
+
+.download-platform-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  border: 1px solid #D9C9AF;
+  border-radius: 11px;
+  background: #FFF9EF;
+  padding: clamp(17px, 2.4vw, 26px);
+}
+
+.download-android-card {
+  border-top: 4px solid #0F4C5C;
+}
+
+.download-ios-card {
+  border-top: 4px solid #6B3A6E;
+}
+
+.download-platform-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.download-platform-icon {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 37px;
+  place-items: center;
+  border-radius: 8px;
+  background: #D7E5E7;
+  color: #0F4C5C;
+}
+
+.download-ios-card .download-platform-icon {
+  background: #F1EAF0;
+  color: #6B3A6E;
+}
+
+.download-platform-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.download-platform-label {
+  color: #52646A;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+
+.download-platform-card h2 {
+  margin: 16px 0 0;
+  color: #10282E;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(22px, 2.5vw, 29px);
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+.download-platform-copy {
+  min-height: 68px;
+  margin: 9px 0 16px;
+  color: #52646A;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.download-primary-button,
+.download-secondary-button {
+  display: inline-flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #0F4C5C;
+  border-radius: 7px;
+  background: #0F4C5C;
+  padding: 0 15px;
+  color: #FFF9EF;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 130ms ease, transform 130ms ease;
+}
+
+.download-primary-button svg,
+.download-secondary-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.download-primary-button:hover {
+  transform: translateY(-1px);
+  background: #0A3B48;
+}
+
+.download-secondary-button {
+  margin-top: 8px;
+  border-color: #D9C9AF;
+  background: #EFE2CD;
+  color: #0F4C5C;
+}
+
+.download-secondary-button:hover {
+  border-color: #0F4C5C;
+  background: #D7E5E7;
+}
+
+.download-safari-button {
+  border-color: #6B3A6E;
+  background: #6B3A6E;
+  color: #FFF9EF;
+}
+
+.download-safari-button:hover {
+  border-color: #512A55;
+  background: #512A55;
+  color: #FFF9EF;
+}
+
+.download-steps {
+  display: grid;
+  gap: 10px;
+  margin: 19px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.download-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #52646A;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.download-steps li > span {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  flex: 0 0 21px;
+  place-items: center;
+  border: 1px solid #D9C9AF;
+  border-radius: 5px;
+  background: #F7EFDF;
+  color: #0F4C5C;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.download-steps strong {
+  color: #10282E;
+  font-weight: 850;
+}
+
+.download-inline-icon {
+  display: inline-block;
+  width: 14px !important;
+  height: 14px !important;
+  vertical-align: -3px;
+  color: #6B3A6E;
+}
+
+.download-small-note {
+  margin: auto 0 0;
+  border-top: 1px solid #D9C9AF;
+  padding-top: 12px;
+  margin-top: 17px;
+  color: #6D7778;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.download-install-success {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: #556B2F;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.download-install-success svg {
+  width: 14px;
+  height: 14px;
+}
+
+.download-footnote {
+  display: flex;
+  width: min(100%, 1160px);
+  align-items: center;
+  gap: 12px;
+  margin: 16px auto 0;
+  border: 1px solid #D9C9AF;
+  border-radius: 8px;
+  background: #EFE2CD;
+  padding: 14px 16px;
+}
+
+.download-footnote-icon {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 35px;
+  place-items: center;
+  border-radius: 7px;
+  background: #C8402A;
+  color: #FFF9EF;
+}
+
+.download-footnote-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.download-footnote strong {
+  color: #10282E;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 15px;
+}
+
+.download-footnote p {
+  margin: 2px 0 0;
+  color: #52646A;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.download-footer {
+  display: flex;
+  width: min(100%, 1160px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px auto 0;
+  border-top: 1px solid #D9C9AF;
+  padding-top: 14px;
+  color: #6D7778;
+  font-size: 10px;
+}
+
+.download-footer a {
+  color: #0F4C5C;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.download-footer a:hover {
+  color: #C8402A;
+}
+
+@media (max-width: 700px) {
+  .download-page {
+    padding-inline: 13px;
+  }
+
+  .download-topbar {
+    min-height: 58px;
+  }
+
+  .download-brand {
+    font-size: 21px;
+  }
+
+  .download-back {
+    min-height: 33px;
+    font-size: 10px;
+  }
+
+  .download-hero {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 13px;
+    padding: 23px 0 19px;
+  }
+
+  .download-hero-copy {
+    padding: 5px 0;
+  }
+
+  .download-kicker {
+    margin-bottom: 12px;
+    font-size: 9px;
+  }
+
+  .download-hero h1 {
+    font-size: clamp(37px, 10vw, 48px);
+  }
+
+  .download-hero-copy > p {
+    margin-top: 13px;
+    font-size: 12px;
+  }
+
+  .download-hero-note {
+    margin-top: 13px;
+  }
+
+  .download-hero-art {
+    min-height: 226px;
+  }
+
+  .download-phone {
+    transform: scale(.83) rotate(-5deg);
+  }
+
+  .download-platforms {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 11px;
+    margin-top: 14px;
+  }
+
+  .download-platform-card {
+    border-radius: 8px;
+    padding: 16px;
+  }
+
+  .download-platform-card h2 {
+    margin-top: 12px;
+    font-size: 25px;
+  }
+
+  .download-platform-copy {
+    min-height: 0;
+    font-size: 11px;
+  }
+
+  .download-footnote {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .download-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-bottom: 8px;
+  }
+}
