@@ -49,6 +49,23 @@ Após a primeira publicação:
 
 Se o chat retornar que não está configurado logo após o primeiro deploy, confirme se o Gateway está habilitado e faça um novo deploy de produção para reinicializar as funções com as variáveis de runtime.
 
+## Supabase Auth — domínio de confirmação de e-mail
+
+O cadastro usa `window.location.origin` como `emailRedirectTo`. Depois do primeiro deploy, copie o endereço oficial do site Netlify (por exemplo, `https://namoro-exemplo.netlify.app`) e configure no Supabase:
+
+1. Abra **Authentication → URL Configuration**.
+2. Defina **Site URL** como o endereço oficial do site Netlify.
+3. Em **Redirect URLs**, adicione o endereço exato do site e o padrão `https://SEU-SITE.netlify.app/**`.
+4. Salve e teste um cadastro novo, abrindo o link de confirmação recebido por e-mail.
+
+Ao adicionar um domínio próprio futuramente, atualize o Site URL e inclua também esse domínio na lista de Redirect URLs. A configuração deve corresponder ao domínio efetivamente usado pelo navegador.
+
+## Visibilidade pública do site
+
+O site precisa estar acessível para qualquer pessoa com o endereço, para que a outra pessoa do casal também consiga abrir o aplicativo. Depois que existir um deploy de produção, vá a **Project configuration → General → Visitor access → Project visibility** e escolha **Public** para a produção. Em planos com visibilidade privada por padrão, um projeto novo pode ficar acessível somente à equipe Netlify até essa mudança.
+
+Tornar o site público libera o carregamento da aplicação, não os dados privados dos usuários: a autenticação Supabase e as políticas RLS continuam responsáveis por restringir Memórias, Conversas, Planos e demais conteúdos do casal.
+
 ## Banco de dados Supabase
 
 A publicação no Netlify não aplica migrations do Supabase. Antes de considerar Memórias e Planos prontos em produção, confirme que as migrations versionadas em `supabase/migrations/` foram aplicadas pelo fluxo oficial de integração GitHub–Supabase. Não aplicar SQL manualmente no painel nem usar a chave `service_role` no cliente.
