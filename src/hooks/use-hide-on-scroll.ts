@@ -52,7 +52,16 @@ export function useHideOnScroll(resetKey: string | number) {
       if (!source) return;
 
       const currentY = readPosition(source);
-      const previousY = previousPositions.get(source) ?? 0;
+      // Uma área interna pode aparecer depois do carregamento inicial e já receber
+      // um scrollTo programático (por exemplo, a conversa vai direto à última mensagem).
+      // Nesse primeiro evento apenas registramos a posição; somente gestos seguintes
+      // do usuário devem recolher as barras.
+      if (!previousPositions.has(source)) {
+        previousPositions.set(source, currentY);
+        return;
+      }
+
+      const previousY = previousPositions.get(source) ?? currentY;
       const delta = currentY - previousY;
 
       if (currentY <= TOP_THRESHOLD) {
