@@ -1,10 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   CalendarDays,
   ChevronRight,
   Sparkles,
   ArrowUpRight,
   Compass,
+  Download,
   Heart,
   Home,
   Gamepad2,
@@ -93,6 +94,10 @@ function Index() {
             <Brand compact />
           </div>
           <span className="topbar-space" />
+          <Link to="/download" className="topbar-install-link" aria-label="Baixar ou instalar o Morados">
+            <Download aria-hidden="true" />
+            <span>Instalar app</span>
+          </Link>
           <SignOutButton compact />
         </header>
 

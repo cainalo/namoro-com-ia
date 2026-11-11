@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
-import { ArrowRight, LogOut } from "lucide-react";
+import { ArrowRight, Download, LogOut } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 type AuthGateProps = {
@@ -193,6 +194,11 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
             </>
           )}
         </div>
+
+        <Link to="/download" className="auth-download-link">
+          <Download aria-hidden="true" />
+          <span>Baixar o aplicativo</span>
+        </Link>
       </section>
     </main>
   );

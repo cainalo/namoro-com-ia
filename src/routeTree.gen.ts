@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as DownloadRouteImport } from './routes/download'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DownloadRoute = DownloadRouteImport.update({
+  id: '/download',
+  path: '/download',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InviteTokenRoute = InviteTokenRouteImport.update({
   id: '/invite/$token',
   path: '/invite/$token',
@@ -32,6 +38,7 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/chat': typeof ApiChatRoute
+  '/download': typeof DownloadRoute
   '/invite/$token': typeof InviteTokenRoute
 }
 export interface FileRoutesByTo {
@@ -47,15 +54,16 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/chat' | '/invite/$token'
+  fullPaths: '/' | '/api/chat' | '/download' | '/invite/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/chat' | '/invite/$token'
-  id: '__root__' | '/' | '/api/chat' | '/invite/$token'
+  to: '/' | '/api/chat' | '/download' | '/invite/$token'
+  id: '__root__' | '/' | '/api/chat' | '/download' | '/invite/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiChatRoute: typeof ApiChatRoute
+  DownloadRoute: typeof DownloadRoute
   InviteTokenRoute: typeof InviteTokenRoute
 }
 
@@ -75,6 +83,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/download': {
+      id: '/download'
+      path: '/download'
+      fullPath: '/download'
+      preLoaderRoute: typeof DownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/invite/$token': {
       id: '/invite/$token'
       path: '/invite/$token'
@@ -88,6 +103,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiChatRoute: ApiChatRoute,
+  DownloadRoute: DownloadRoute,
   InviteTokenRoute: InviteTokenRoute,
 }
 export const routeTree = rootRouteImport
