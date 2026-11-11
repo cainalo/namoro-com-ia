@@ -1,4 +1,4 @@
-# Publicação do Namoro no Netlify
+# Publicação do Morados no Netlify
 
 ## Modelo de branches
 
@@ -16,7 +16,7 @@
 
 ## Configuração do build
 
-O projeto usa TanStack Start com o preset Nitro `netlify`. A configuração foi validada pelo GitHub Actions.
+O Morados usa TanStack Start com o preset Nitro `netlify`. A configuração foi validada pelo GitHub Actions.
 
 O arquivo `netlify.toml` já contém:
 
