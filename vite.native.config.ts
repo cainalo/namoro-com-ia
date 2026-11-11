@@ -14,7 +14,7 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
-      input: "index.html",
+      // Capacitor has its own document; keep the TanStack Start project free of a root index.html.\n      input: { index: "native.html" },
     },
   },
 });
