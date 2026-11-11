@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Capacitor } from "@capacitor/core";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -47,7 +48,10 @@ export function AiChat() {
         throw new Error("Sua sessão expirou. Entre novamente.");
       }
 
-      const res = await fetch("/api/chat", {
+      const chatEndpoint = Capacitor.isNativePlatform()
+        ? "https://morados.netlify.app/api/chat"
+        : "/api/chat";
+      const res = await fetch(chatEndpoint, {
         method: "POST",
         headers: {
           "content-type": "application/json",
