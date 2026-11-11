@@ -14,7 +14,7 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
-      input: "native.html",
+      input: "index.html",
     },
   },
 });
