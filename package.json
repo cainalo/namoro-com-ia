@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:android-web": "vite build --config vite.native.config.ts",
+    "build:android-web": "vite build --config vite.native.config.ts && node -e \"require('node:fs').copyFileSync('dist-native/native.html', 'dist-native/index.html')\"",
     "cap:sync": "bun run build:android-web && bunx cap sync android",
     "cap:open:android": "bunx cap open android"
   },
