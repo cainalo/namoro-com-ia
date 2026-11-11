@@ -1,13 +1,14 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowLeft, Check, Copy, History, MoreVertical, RefreshCw, Search, Send, X } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Capacitor } from "@capacitor/core";
+import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
   sendCoupleMessage,
   type CoupleMessage,
 } from "@/lib/couple-messages";
-import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 type ConversationState =
   | { status: "loading" }
@@ -308,6 +309,9 @@ export function CoupleConversation({ userId, onBack }: CoupleConversationProps) 
       if (result.error) throw result.error;
 
       setDraft("");
+      if (Capacitor.isNativePlatform()) {
+        void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+      }
       setRefreshKey((key) => key + 1);
     } catch {
       setError("Não foi possível enviar a mensagem. Tente novamente.");
