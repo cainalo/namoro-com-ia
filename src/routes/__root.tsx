@@ -88,6 +88,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/morados-icon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/morados-icon.svg" },
+    ],
+    meta: [
+      { name: "theme-color", content: "#0F4C5C" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Morados" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
     ],
   }),
   shellComponent: RootShell,
@@ -112,6 +122,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    void navigator.serviceWorker
+      .register("/morados-sw.js", { scope: "/" })
+      .catch((error: unknown) => {
+        console.error("Não foi possível registrar o modo instalável do Morados.", error);
+      });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
