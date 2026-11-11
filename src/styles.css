@@ -7607,3 +7607,125 @@ button[aria-label="Conversar com a IA"] {
     transition: none !important;
   }
 }
+
+
+/* MORADOS — painel de vínculo e convites */
+.couple-setup {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 82%);
+  border-radius: 23px;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(230 207 255 / 36%), transparent 19rem),
+    linear-gradient(115deg, rgb(255 255 255 / 76%), rgb(250 241 255 / 63%));
+  padding: 18px 21px;
+  box-shadow: 0 16px 42px -34px rgb(63 37 87 / 35%), inset 0 1px 0 white;
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+.couple-setup::after {
+  position: absolute;
+  top: -46px;
+  right: -35px;
+  width: 145px;
+  height: 145px;
+  border: 1px solid rgb(146 105 190 / 12%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 19px rgb(146 105 190 / 5%), 0 0 0 39px rgb(146 105 190 / 4%);
+  content: "";
+  pointer-events: none;
+}
+
+.couple-setup .section-heading {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 9px;
+}
+
+.couple-setup .section-heading h2 {
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.couple-setup-content {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  gap: 12px;
+}
+
+.couple-setup-copy {
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.couple-link-field {
+  gap: 8px;
+  color: var(--color-foreground);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.couple-link-field input {
+  min-height: 43px;
+  border: 1px solid rgb(128 91 164 / 17%);
+  border-radius: 13px;
+  background: rgb(255 255 255 / 80%);
+  padding-inline: 13px;
+  color: var(--color-foreground);
+}
+
+.couple-link-field input:focus-visible {
+  outline: 3px solid rgb(139 95 193 / 19%);
+  border-color: rgb(130 84 184 / 53%);
+}
+
+.couple-setup-actions,
+.couple-setup-secondary-actions {
+  position: relative;
+  z-index: 1;
+  gap: 8px;
+}
+
+.couple-setup-secondary-actions {
+  gap: 6px;
+}
+
+.couple-setup .secondary-action {
+  border-color: rgb(128 91 164 / 18%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 52%);
+}
+
+.couple-feedback {
+  position: relative;
+  z-index: 1;
+  border-radius: 12px;
+  background: rgb(134 90 179 / 7%);
+  padding: 9px 11px;
+}
+
+.couple-feedback-error {
+  background: rgb(190 69 89 / 8%);
+}
+
+@media (max-width: 680px) {
+  .couple-setup {
+    border-radius: 20px;
+    padding: 15px;
+  }
+
+  .couple-setup-actions {
+    gap: 7px;
+  }
+
+  .couple-setup-actions button {
+    flex: 1;
+  }
+
+  .couple-setup-secondary-actions {
+    gap: 5px;
+  }
+}
