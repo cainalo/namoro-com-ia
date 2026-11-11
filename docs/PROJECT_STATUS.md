@@ -526,3 +526,12 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - `src/components/CouplePlans.tsx` agora filtra os compromissos da data selecionada por Todos, Compartilhados ou Privados.
 - O filtro é apenas de apresentação e atua sobre os eventos que já passaram pelas permissões RLS; não modifica os registros nem a privacidade de nenhum compromisso.
 - Commits: componente `803a16cfcc628f3e706897faa1b7d5f469059851`, estilos `7384f9175bf205c1dfefca4015f5520d9e7847b9`.
+
+
+## Identidade pública — Morados (2026-11-11)
+- Nome oficial do aplicativo e da marca exibida: **Morados**.
+- Significado adotado: forma carinhosa de dizer “namorados”, conforme decisão do usuário.
+- Domínio público definido: `https://morados.netlify.app`.
+- Atualizados os títulos e metadados globais, Open Graph, marca na navegação, tela de autenticação e cabeçalho do Assistente de IA.
+- O nome técnico do repositório `cainalo/namoro-com-ia`, as branches `main` e `prod` e o histórico Git foram preservados.
+- Commits de interface: `bf0b6979da065405dd040247713b7baf6cd91657`, `f58e651dd37585e3e52e4e7ea74c539d31c18aed`, `65884a3305243ba4fc6153a02d901b5d0ca115c4`, `6887317977828888ccc481a6d8e5f1d36433e0d5`.
