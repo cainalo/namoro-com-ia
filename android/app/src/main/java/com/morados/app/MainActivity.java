@@ -6,8 +6,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Build;
 import android.view.View;
 import android.view.Window;
+import androidx.core.view.WindowCompat;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
@@ -27,6 +29,7 @@ public final class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Window window = getWindow();
+        WindowCompat.setDecorFitsSystemWindows(window, true);
         window.setStatusBarColor(Color.rgb(15, 76, 92));
         window.setNavigationBarColor(Color.rgb(247, 239, 223));
         window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
@@ -51,7 +54,9 @@ public final class MainActivity extends Activity {
         settings.setAllowContentAccess(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setMediaPlaybackRequiresUserGesture(true);
-        settings.setSafeBrowsingEnabled(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            settings.setSafeBrowsingEnabled(true);
+        }
         settings.setUserAgentString(settings.getUserAgentString() + " MoradosAndroid/1.0");
 
         CookieManager cookieManager = CookieManager.getInstance();
