@@ -1,0 +1,84 @@
+name: Build Morados Android APK
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "android/**"
+      - ".github/workflows/build-android.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: morados-android-\${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-android:
+    name: Build installable Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.6.0"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform and build tools
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-37" "build-tools;36.0.0" "platform-tools"
+
+      - name: Assemble debug APK
+        run: gradle -p android assembleDebug --no-daemon
+
+      - name: Prepare public APK asset
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/debug/app-debug.apk release/Morados-Android.apk
+          sha256sum release/Morados-Android.apk | tee release/Morados-Android.apk.sha256
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Morados-Android-APK
+          path: |
+            release/Morados-Android.apk
+            release/Morados-Android.apk.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish APK download release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: morados-android-\${{ github.run_number }}
+          name: Morados para Android — build \${{ github.run_number }}
+          body: |
+            APK de instalação direta para testes do Morados.
+
+            - Pacote Android: com.morados.app.debug
+            - Origem do conteúdo: https://morados.netlify.app/
+            - Requer conexão com a internet.
+            - Esta é uma build de depuração assinada automaticamente pelo GitHub Actions; não é um lançamento da Google Play.
+          files: |
+            release/Morados-Android.apk
+            release/Morados-Android.apk.sha256
+          make_latest: true
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
