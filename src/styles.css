@@ -12600,3 +12600,66 @@ h3,
     transition: none !important;
   }
 }
+
+
+/* Auth interactivity: keep controls above decorative layers in mobile WebViews
+   and embedded preview frames. */
+.auth-shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  pointer-events: auto;
+}
+
+.auth-panel,
+.auth-form,
+.auth-field {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-field input {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+  user-select: text;
+  -webkit-user-select: text;
+  -webkit-appearance: none;
+  appearance: none;
+  caret-color: var(--color-foreground);
+}
+
+.auth-submit,
+.auth-switch button,
+.auth-download-link {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.auth-field input:focus-visible,
+.auth-submit:focus-visible,
+.auth-switch button:focus-visible,
+.auth-download-link:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 3px;
+}
+
+@media (max-width: 680px) {
+  .auth-shell {
+    min-height: 100svh;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  .auth-panel {
+    width: min(100%, 460px);
+  }
+}
