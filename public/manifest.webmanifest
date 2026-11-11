@@ -26,18 +26,4 @@
       "purpose": "maskable"
     }
   ],
-  "shortcuts": [
-    {
-      "name": "Conversas",
-      "short_name": "Conversas",
-      "url": "/?section=messages",
-      "icons": [{ "src": "/morados-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Memórias",
-      "short_name": "Memórias",
-      "url": "/?section=memories",
-      "icons": [{ "src": "/morados-icon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    }
-  ]
 }
