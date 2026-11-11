@@ -42,10 +42,10 @@ const navigation: NavigationItem[] = [
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Namoro" },
-      { name: "description", content: "Um espaço para duas pessoas." },
-      { property: "og:title", content: "Namoro" },
-      { property: "og:description", content: "Um espaço para duas pessoas." },
+      { title: "Morados" },
+      { name: "description", content: "Morados — um espaço para duas pessoas." },
+      { property: "og:title", content: "Morados" },
+      { property: "og:description", content: "Morados — um espaço para duas pessoas." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -136,7 +136,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
         <span />
         <span />
       </span>
-      <span className="brand-word">namoro</span>
+      <span className="brand-word">Morados</span>
     </div>
   );
 }
