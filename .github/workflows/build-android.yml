@@ -70,11 +70,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: morados-android-${{ github.run_number }}
-          name: Morados para Android — build ${{ github.run_number }}
+          name: Morados para Android 1.2.0 — build ${{ github.run_number }}
           body: |
             APK de instalação direta para testes do Morados.
 
-            - Pacote Android: com.morados.app.debug
+            - Pacote Android: com.morados.app.v2
+            - Esta edição instala separadamente das versões anteriores para evitar conflito de assinatura.
             - Origem do conteúdo: https://morados.netlify.app/
             - Requer conexão com a internet.
             - Esta é uma build de depuração assinada automaticamente pelo GitHub Actions; não é um lançamento da Google Play.
