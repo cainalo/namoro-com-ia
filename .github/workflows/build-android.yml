@@ -4,15 +4,10 @@ on:
   push:
     branches:
       - main
+    # O APK é apenas um contêiner WebView: a interface é atualizada pelo site
+    # hospedado no Netlify. Não gere um APK novo a cada alteração de React/CSS.
     paths:
       - "android/**"
-      - "src/**"
-      - "public/**"
-      - "package.json"
-      - "bun.lockb"
-      - "vite.config.ts"
-      - "index.html"
-      - ".github/workflows/build-android.yml"
   workflow_dispatch:
 
 permissions:
