@@ -96,7 +96,7 @@ export function AiChat() {
         <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
           <SheetHeader className="border-b px-6 py-5 text-left">
             <div className="flex items-center justify-between gap-3">
-              <SheetTitle className="font-display text-2xl tracking-[0.2em]">NAMORO · IA</SheetTitle>
+              <SheetTitle className="font-display text-2xl tracking-[0.2em]">MORADOS · IA</SheetTitle>
               <button
                 type="button"
                 className="shrink-0 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
