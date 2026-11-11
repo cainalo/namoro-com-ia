@@ -108,7 +108,7 @@ function DownloadPage() {
           </p>
           <a
             className="download-primary-button"
-            href="https://github.com/cainalo/namoro-com-ia/releases/download/morados-android-5/Morados-Android.apk"
+            href="https://github.com/cainalo/namoro-com-ia/releases/latest/download/Morados-Android.apk"
           >
             <ArrowDownToLine aria-hidden="true" />
             Baixar APK para Android
@@ -127,7 +127,9 @@ function DownloadPage() {
             <li><span>3</span> Conclua a instalação e abra o Morados.</li>
           </ol>
           <p className="download-small-note">
-            APK de instalação direta para testes. Não é um lançamento da Play Store.
+            Esta edição instala separadamente da versão antiga para evitar o conflito de assinatura.
+            Não é necessário desinstalar o Morados anterior. Entre com a mesma conta para acessar
+            os dados sincronizados.
           </p>
         </article>
 
