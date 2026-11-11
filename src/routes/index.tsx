@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Capacitor } from "@capacitor/core";
+import { App } from "@capacitor/app";
 import {
   CalendarDays,
   ChevronRight,
@@ -89,6 +91,33 @@ function Index() {
     setCanGoBack(sectionHistory.current.length > 0);
   };
 
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let mounted = true;
+    let listener: { remove: () => Promise<void> } | undefined;
+
+    void App.addListener("backButton", () => {
+      if (activeSectionRef.current !== "home") {
+        const previous = sectionHistory.current.pop() ?? "home";
+        activeSectionRef.current = previous;
+        setActiveSection(previous);
+        setCanGoBack(sectionHistory.current.length > 0);
+      } else {
+        void App.exitApp();
+      }
+    }).then((handle) => {
+      if (mounted) listener = handle;
+      else void handle.remove();
+    });
+
+    return () => {
+      mounted = false;
+      void listener?.remove();
+    };
+  }, [activeSection]);
+
+
   const date = useMemo(
     () =>
       new Intl.DateTimeFormat("pt-BR", {
@@ -102,8 +131,8 @@ function Index() {
   return (
     <AuthGate>
       {(session) => (
-        <div className="app-shell min-h-dvh bg-background text-foreground">
-          <header className="app-chrome" data-hidden={chromeHidden}>
+        <div className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`}>
+          {activeSection !== "messages" && <header className="app-chrome" data-hidden={chromeHidden}>
             <div className="app-topbar">
               <div className="topbar-inner">
                 <div className="topbar-side topbar-side-leading">
@@ -163,14 +192,15 @@ function Index() {
                 />
               ))}
             </nav>
-          </header>
+          </header>}
 
-          <main className="app-main">
-            <div className="page-frame">
+          <main className={activeSection === "messages" ? "app-main app-main-conversation" : "app-main"}>
+            {activeSection === "messages" ? (
+              <CoupleConversation userId={session.user.id} onBack={goBack} />
+            ) : (
+              <div className="page-frame">
               {activeSection === "home" ? (
                 <HomeScreen date={date} userId={session.user.id} onNavigate={goToSection} />
-              ) : activeSection === "messages" ? (
-                <CoupleConversation userId={session.user.id} />
               ) : activeSection === "games" ? (
                 <CoupleGames userId={session.user.id} />
               ) : activeSection === "universe" ? (
@@ -180,10 +210,11 @@ function Index() {
               ) : activeSection === "memories" ? (
                 <CoupleMemories userId={session.user.id} />
               ) : null}
-            </div>
+              </div>
+            )}
           </main>
 
-          <nav
+          {activeSection !== "messages" && <nav
             aria-label="Navegação principal"
             className="mobile-nav"
             data-hidden={chromeHidden}
@@ -197,9 +228,9 @@ function Index() {
                 mobile
               />
             ))}
-          </nav>
+          </nav>}
 
-          <AiChat />
+          {activeSection !== "messages" && <AiChat />}
         </div>
       )}
     </AuthGate>
