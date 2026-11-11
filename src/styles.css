@@ -9506,3 +9506,346 @@ button[aria-label="Conversar com a IA"] {
     transition: none !important;
   }
 }
+
+
+/* MORADOS — etapa visual: cartões da tela Hoje */
+.home-primary,
+.home-secondary {
+  border: 1px solid #D9C9AF;
+  border-radius: 13px;
+  background: #FFF9EF;
+  padding: clamp(14px, 1.8vw, 20px);
+  box-shadow: 0 3px 0 rgb(16 40 46 / 4%);
+}
+
+.home-primary {
+  border-top: 3px solid #0F4C5C;
+}
+
+.home-secondary {
+  border-top: 3px solid #C8402A;
+  gap: 16px;
+}
+
+.home-primary .section-heading,
+.home-secondary .section-heading {
+  min-height: 38px;
+  border-bottom: 1px solid #D9C9AF;
+  padding-bottom: 10px;
+}
+
+.home-primary .section-heading h2,
+.home-secondary .section-heading h2 {
+  font-size: 19px;
+}
+
+.home-primary .subtle-action,
+.home-secondary .inline-action {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #D9C9AF;
+  border-radius: 5px;
+  background: #F7EFDF;
+  padding: 0 9px;
+  color: #0F4C5C;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.home-primary .subtle-action:hover,
+.home-secondary .inline-action:hover {
+  border-color: #0F4C5C;
+  background: #EFE2CD;
+}
+
+.wall-memory-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  border: 0;
+  padding-top: 2px;
+}
+
+.wall-memory-entry {
+  position: relative;
+  min-width: 0;
+  min-height: 118px;
+  grid-template-columns: 49px minmax(0, 1fr);
+  align-content: start;
+  gap: 9px;
+  border: 1px solid #D9C9AF;
+  border-left: 3px solid #0F4C5C;
+  border-radius: 9px;
+  background: #F1F5F1;
+  padding: 12px 10px;
+  transition: border-color 140ms ease, background-color 140ms ease, transform 140ms ease;
+}
+
+.wall-memory-entry:nth-child(2n) {
+  border-left-color: #C8402A;
+  background: #FAEEE6;
+}
+
+.wall-memory-entry:nth-child(3n) {
+  border-left-color: #556B2F;
+  background: #F0F1E5;
+}
+
+.wall-memory-entry:hover {
+  transform: translateY(-2px);
+  border-color: #0F4C5C;
+  background: #FFF9EF;
+}
+
+.wall-memory-date {
+  display: grid;
+  min-height: 36px;
+  align-content: center;
+  justify-items: center;
+  border: 1px solid rgb(15 76 92 / 14%);
+  border-radius: 5px;
+  background: #D7E5E7;
+  padding: 4px 3px;
+  color: #0F4C5C;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+}
+
+.wall-memory-entry:nth-child(2n) .wall-memory-date {
+  border-color: rgb(200 64 42 / 17%);
+  background: #F2D7CA;
+  color: #A43120;
+}
+
+.wall-memory-copy {
+  gap: 5px;
+  padding-top: 1px;
+}
+
+.wall-memory-copy strong {
+  color: #10282E;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.12;
+  white-space: normal;
+}
+
+.wall-memory-copy > span {
+  color: #52646A;
+  font-size: 10px;
+  line-height: 1.45;
+  -webkit-line-clamp: 3;
+}
+
+.wall-memory-visibility {
+  grid-column: 2;
+  justify-self: start;
+  align-self: end;
+  border-color: #C8B89E;
+  border-radius: 4px;
+  background: rgb(255 249 239 / 72%);
+  padding: 3px 7px;
+  color: #52646A;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.wall-memory-visibility.is-shared {
+  border-color: #0F4C5C;
+  background: #D7E5E7;
+  color: #0F4C5C;
+}
+
+.wall-empty {
+  min-height: 190px;
+  border: 1px dashed #C8B89E;
+  border-radius: 9px;
+  background: #F7EFDF;
+}
+
+.compact-empty {
+  border: 1px dashed #D9C9AF;
+  border-radius: 8px;
+  background: #F7EFDF;
+  padding: 13px;
+}
+
+.compact-empty p {
+  color: #52646A;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.home-upcoming-list {
+  gap: 7px;
+  padding-top: 3px;
+}
+
+.home-upcoming-entry {
+  min-height: 58px;
+  grid-template-columns: 53px minmax(0, 1fr) 14px;
+  gap: 10px;
+  border: 1px solid #D9C9AF;
+  border-left: 3px solid #D4A017;
+  border-radius: 8px;
+  background: #F8F1DF;
+  padding: 8px 9px;
+  transition: border-color 130ms ease, background-color 130ms ease, transform 130ms ease;
+}
+
+.home-upcoming-entry:nth-child(2n) {
+  border-left-color: #6B3A6E;
+  background: #F1EAF0;
+}
+
+.home-upcoming-entry:hover {
+  transform: translateY(-1px);
+  border-color: #0F4C5C;
+  background: #FFF9EF;
+}
+
+.home-upcoming-date {
+  display: grid;
+  min-height: 38px;
+  align-content: center;
+  justify-items: center;
+  border-radius: 5px;
+  background: #D4A017;
+  padding: 3px;
+  color: #10282E;
+  font-size: 10px;
+  font-weight: 850;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.home-upcoming-entry:nth-child(2n) .home-upcoming-date {
+  background: #6B3A6E;
+  color: #FFF9EF;
+}
+
+.home-upcoming-copy {
+  gap: 4px;
+}
+
+.home-upcoming-copy strong {
+  color: #10282E;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.home-upcoming-copy > span {
+  color: #52646A;
+  font-size: 9px;
+}
+
+.home-upcoming-entry > svg {
+  color: #0F4C5C;
+}
+
+.shortcut-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  padding-top: 9px;
+}
+
+.shortcut-list button,
+.shortcut-list button:last-child {
+  min-width: 0;
+  min-height: 52px;
+  justify-content: flex-start;
+  gap: 8px;
+  border: 1px solid #D9C9AF;
+  border-radius: 7px;
+  background: #F7EFDF;
+  padding: 8px 9px;
+}
+
+.shortcut-list button:nth-child(2n) {
+  background: #F1EAF0;
+}
+
+.shortcut-list button:hover {
+  border-color: #0F4C5C;
+  background: #D7E5E7;
+}
+
+.shortcut-list button > svg:first-child {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  color: #0F4C5C;
+}
+
+.shortcut-list button > svg:last-child {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #52646A;
+}
+
+.shortcut-list button span {
+  min-width: 0;
+  color: #10282E;
+  font-size: 10px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+
+@media (max-width: 680px) {
+  .home-primary,
+  .home-secondary {
+    border-radius: 10px;
+    padding: 12px;
+  }
+
+  .wall-memory-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+  }
+
+  .wall-memory-entry {
+    min-height: 92px;
+    grid-template-columns: 48px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .wall-memory-copy strong {
+    font-size: 16px;
+  }
+
+  .shortcut-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .shortcut-list button,
+  .shortcut-list button:last-child {
+    min-height: 54px;
+    padding: 7px;
+  }
+
+  .home-upcoming-entry {
+    min-height: 55px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall-memory-entry,
+  .home-upcoming-entry {
+    transition: none;
+  }
+
+  .wall-memory-entry:hover,
+  .home-upcoming-entry:hover {
+    transform: none;
+  }
+}
