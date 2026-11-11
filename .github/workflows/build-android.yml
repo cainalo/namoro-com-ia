@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: morados-android-\${{ github.ref }}
+  group: morados-android-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -66,8 +66,8 @@ jobs:
       - name: Publish APK download release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: morados-android-\${{ github.run_number }}
-          name: Morados para Android — build \${{ github.run_number }}
+          tag_name: morados-android-${{ github.run_number }}
+          name: Morados para Android — build ${{ github.run_number }}
           body: |
             APK de instalação direta para testes do Morados.
 
@@ -81,4 +81,4 @@ jobs:
           make_latest: true
           fail_on_unmatched_files: true
         env:
-          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
