@@ -535,3 +535,27 @@ O usuário configurou a URL de redirecionamento e confirmou cadastro, confirmaç
 - Atualizados os títulos e metadados globais, Open Graph, marca na navegação, tela de autenticação e cabeçalho do Assistente de IA.
 - O nome técnico do repositório `cainalo/namoro-com-ia`, as branches `main` e `prod` e o histórico Git foram preservados.
 - Commits de interface: `bf0b6979da065405dd040247713b7baf6cd91657`, `f58e651dd37585e3e52e4e7ea74c539d31c18aed`, `65884a3305243ba4fc6153a02d901b5d0ca115c4`, `6887317977828888ccc481a6d8e5f1d36433e0d5`.
+
+
+## Reformulação visual — Morados (2026-11-11)
+
+### Direção visual
+- Nova linguagem contemporânea e expressiva: ameixa, violeta, lavanda e rosa suave; fundos com luzes difusas; camadas translúcidas; superfícies arredondadas; sombras suaves; gradientes pontuais; movimento discreto.
+- Mantida a identidade própria da Casa medieval-fantástica e dos tabuleiros de jogos, agora integrados à nova linguagem de superfícies e profundidade.
+- A interface continua mobile-first e respeita `prefers-reduced-motion`.
+
+### Tela Hoje
+- Adicionado painel editorial de boas-vindas com imagem de lavanda, sobreposição translúcida, texto de identidade e ações diretas para Memórias e Casa.
+- Imagem: Egor Myznik / Unsplash, sob Unsplash License. Atribuição visível no rodapé do painel.
+- Cartões do Mural e da coluna lateral agora têm superfícies translúcidas e maior hierarquia visual.
+
+### Aplicação geral
+- Nova base de cores para os modos claro e escuro, arredondamentos e sombras.
+- Sidebar ameixa com estados ativos destacados e navegação mobile em vidro fosco.
+- Conversas, composer, balões, Memórias, formulários, calendário, eventos, jogos e painéis de Casa receberam superfícies, hierarquia, estados e responsividade atualizados.
+- Login e cadastro agora usam painel translúcido, fundo de luzes difusas e campos arredondados.
+- Bloco de vínculo e convites recebeu tratamento de cartão de destaque.
+- Arquivos: `src/routes/index.tsx`, `src/styles.css`.
+- Commits: painel Hoje `baa79de5a7fad891d1ee7ec20cab6af3ea94afbf`, sistema visual global `3e80b0c24f50243e3288d5d42ba66210dcb57d31`, painel de vínculo `813d9dea43b409801511f5bc5f6b82a50004d8ec`.
+- A reformulação está somente na `main`; não foi promovida à `prod`.
+- Build/testes devem ser conferidos após o último commit. A captura da prévia não substitui a validação visual em dispositivo.
