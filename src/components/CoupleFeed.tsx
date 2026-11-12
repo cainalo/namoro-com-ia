@@ -351,20 +351,43 @@ export function CoupleFeed({
         }
       }
 
-      const mediaResults = await Promise.all(
-        rows.map(async (post) => {
-          if (!post.media_path) return [post.id, null] as const;
-          const signed = await createCoupleMediaUrl(post.media_path);
-          return [post.id, signed.url] as const;
-        }),
-      );
-      const mediaMap = new Map(mediaResults);
-      const posts: FeedPostView[] = rows.map((post) => ({
-        ...post,
-        author_name:
-          profileMap.get(post.author_id) ||
-          (post.author_id === userId ? "Você" : "Sua pessoa"),
-        media_url: mediaMap.get(post.id) ?? null,
+      const posts: FeedPostView[] = await Promise.all(rows.map(async (post) => {
+        const savedBlocks = Array.isArray(post.content_blocks) ? post.content_blocks : [];
+        const sourceBlocks: CouplePostBlock[] = savedBlocks.length > 0
+          ? savedBlocks
+          : [
+              ...(post.title ? [{ id: "legacy-title", type: "title" as const, value: post.title }] : []),
+              ...(post.body ? [{ id: "legacy-text", type: "text" as const, value: post.body }] : []),
+              ...(post.media_path ? [{
+                id: "legacy-media",
+                type: post.media_mime?.startsWith("video/") ? "video" as const
+                  : post.media_mime?.startsWith("audio/") ? "audio" as const
+                  : "photo" as const,
+                media_path: post.media_path,
+                media_name: post.media_name,
+                media_mime: post.media_mime,
+              }] : []),
+            ];
+
+        const blocks: FeedBlockView[] = await Promise.all(sourceBlocks.map(async (block) => {
+          if (!block.media_path) return { ...block, media_url: null };
+          const signed = await createCoupleMediaUrl(block.media_path);
+          return { ...block, media_url: signed.url };
+        }));
+        const primaryImage = blocks.find((block) => block.type === "photo" && block.media_url);
+        const primaryMedia = blocks.find((block) => block.media_path && block.media_url);
+        const legacySigned = post.media_path
+          ? await createCoupleMediaUrl(post.media_path)
+          : null;
+
+        return {
+          ...post,
+          author_name:
+            profileMap.get(post.author_id) ||
+            (post.author_id === userId ? "Você" : "Sua pessoa"),
+          blocks,
+          media_url: primaryImage?.media_url ?? primaryMedia?.media_url ?? legacySigned?.url ?? null,
+        };
       }));
 
       setState({ status: "ready", coupleId: couple.id, posts });
@@ -408,9 +431,10 @@ export function CoupleFeed({
   const visiblePosts = useMemo(() => {
     if (state.status !== "ready") return [];
     return state.posts.filter((post) => {
-      if (postFilter === "photos") return post.media_mime?.startsWith("image/") ?? false;
-      if (postFilter === "videos") return post.media_mime?.startsWith("video/") ?? false;
-      if (postFilter === "text") return Boolean(post.body?.trim()) && !post.media_mime;
+      if (postFilter === "photos") return post.blocks.some((block) => block.type === "photo");
+      if (postFilter === "videos") return post.blocks.some((block) => block.type === "video");
+      if (postFilter === "text") return post.blocks.some((block) => block.type === "text" || block.type === "title");
+      if (postFilter === "audio") return post.blocks.some((block) => block.type === "audio" || block.type === "music");
       return true;
     });
   }, [state, postFilter]);
