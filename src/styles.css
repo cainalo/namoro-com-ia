@@ -15053,3 +15053,18 @@ h3,
     transition: none !important;
   }
 }
+
+
+/* A wordmark é uma peça tipográfica única; evita que o span interno herde o tamanho antigo do logo. */
+.topbar-wordmark .morados-wordmark-text {
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.055em;
+}
+.topbar-wordmark .morados-wordmark-text span {
+  color: var(--color-accent);
+}
+.mobile-nav,
+.mobile-nav * {
+  box-sizing: border-box;
+}
