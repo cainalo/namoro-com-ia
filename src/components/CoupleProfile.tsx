@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
-import { Camera, ImagePlus, LoaderCircle, Save, UserRound } from "lucide-react";
+import { Camera, Check, Circle, ImagePlus, LoaderCircle, Save, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
 
@@ -162,7 +162,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
             <div className="profile-completion-items">
               {["Nome", "Foto", "Sobre mim", "Capa"].map((label, index) => (
                 <span key={label} className={profileChecklist[index] ? "is-complete" : ""}>
-                  <span aria-hidden="true">{profileChecklist[index] ? "✓" : "•"}</span>{label}
+                  <span aria-hidden="true">{profileChecklist[index] ? <Check /> : <Circle />}</span>{label}
                 </span>
               ))}
             </div>
