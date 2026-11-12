@@ -24,10 +24,10 @@ public class MainActivity extends BridgeActivity {
         // exactly one set of system/IME insets to the WebView.
         EdgeToEdge.enable(this);
 
-        // The patched Capacitor SystemBars owns IME handling. Overlay the keyboard instead of
-        // shrinking Android's window and Chromium's visual viewport at the same time.
+        // The patched Capacitor SystemBars owns IME handling. Keep the standard Android keyboard behavior for the rest of the app.
+        // The login fields use read-only inputs and the in-app Morados keyboard.
         getWindow().setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
         );
     }
 }
