@@ -9,7 +9,6 @@ import {
   type CoupleMemory,
   type MemoryVisibility,
 } from "@/lib/couple-memories";
-import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 type MemoryFilter = "all" | "private" | "shared";
 
@@ -359,11 +358,8 @@ export function CoupleMemories({ userId }: { userId: string }) {
   }
 
   return (
-    <section className="memories-screen" aria-labelledby="memories-title">
-      <header className="memories-heading">
-        <div>
-          <p className="date-kicker">Lembranças de vocês</p>
-          <h1 id="memories-title">Memórias</h1>
+    <section className="memories-screen">
+      <div className="memories-toolbar">
           <span className={activeCoupleId && realtimeStatus === "connected" ? "memories-live-status is-connected" : "memories-live-status"} role="status">
             {!activeCoupleId
               ? "Biblioteca privada"
@@ -373,8 +369,6 @@ export function CoupleMemories({ userId }: { userId: string }) {
                   ? "Conectando memórias…"
                   : "Atualização manual"}
           </span>
-        </div>
-        <MoradosSectionArt variant="memories" />
         <div className="memories-heading-actions">
           <button
             type="button"
@@ -395,7 +389,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
             Atualizar
           </button>
         </div>
-      </header>
+      </div>
 
       {state.status === "loading" && (
         <p className="memories-state" role="status">Carregando lembranças…</p>
