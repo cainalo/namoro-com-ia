@@ -166,7 +166,7 @@ function initials(name: string) {
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0]?.toLocaleUpperCase("pt-BR") ?? "")
-    .join("") || "♡";
+    .join("") || "M";
 }
 
 function findAnniversaryMoments(posts: FeedPostView[]): AnniversaryMoment[] {
@@ -671,7 +671,7 @@ export function CoupleFeed({
           </div>
 
           <form className="feed-publisher-form" onSubmit={publishPost}>
-            <article className="feed-post-card editorial-post-card is-composer-card" data-post-tone="petrol">
+            <article className="feed-post-card is-composer-card">
               <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
                 <span className="feed-author-avatar is-you">{initials("Você")}</span>
                 <div>
@@ -1088,8 +1088,6 @@ function FeedPostPhoto({
   caption?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [ratio, setRatio] = useState<number | null>(null);
-  const maxHeight = "var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem))";
 
   useEffect(() => {
     if (!open) return;
@@ -1112,13 +1110,11 @@ function FeedPostPhoto({
           type="button"
           onClick={() => setOpen(true)}
           aria-label={"Ampliar imagem: " + alt}
-          style={ratio ? { maxWidth: `calc(${maxHeight} * ${ratio})` } : undefined}
           className="post-image feed-post-photo-trigger mx-auto my-4 block w-full cursor-zoom-in overflow-hidden rounded-2xl p-0 shadow-sm"
         >
           <img
             src={src}
             alt={alt}
-            onLoad={(event) => setRatio(event.currentTarget.naturalWidth / event.currentTarget.naturalHeight)}
             className="feed-post-image block h-auto w-full rounded-[inherit]"
             loading="lazy"
           />
