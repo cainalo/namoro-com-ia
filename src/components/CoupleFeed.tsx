@@ -583,6 +583,7 @@ export function CoupleFeed({
           ["photos", "Fotos"],
           ["videos", "Vídeos"],
           ["text", "Textos"],
+          ["audio", "Música e áudio"],
         ] as const).map(([filter, label]) => (
           <button
             key={filter}
@@ -853,7 +854,10 @@ export function CoupleFeed({
 
               return (
                 <div className="feed-sequence" key={post.id}>
-                  <article className="feed-post-card">
+                  <article
+                    className="feed-post-card editorial-post-card"
+                    data-post-tone={(["petrol", "terracotta", "olive", "plum"] as const)[index % 4]}
+                  >
                     <header className="feed-post-header">
                       <span className={post.author_id === userId ? "feed-author-avatar is-you" : "feed-author-avatar"}>
                         {initials(post.author_name)}
@@ -864,17 +868,55 @@ export function CoupleFeed({
                       </div>
                       <span className="feed-post-private">A dois</span>
                     </header>
-                    {post.body && <p className="feed-post-body">{post.body}</p>}
-                    {post.media_url && post.media_mime?.startsWith("image/") && (
-                      <img className="feed-post-image" src={post.media_url} alt={post.media_name || "Foto compartilhada"} loading="lazy" />
-                    )}
-                    {post.media_url && post.media_mime?.startsWith("video/") && (
-                      <video className="feed-post-video" src={post.media_url} controls playsInline preload="metadata" />
-                    )}
+
+                    <div className="feed-post-content">
+                      {post.blocks.map((block) => (
+                        <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
+                          {block.type === "title" && block.value && (
+                            <h2 className="feed-post-title">{block.value}</h2>
+                          )}
+                          {block.type === "text" && block.value && (
+                            <p className="feed-post-body">{block.value}</p>
+                          )}
+                          {block.type === "photo" && block.media_url && (
+                            <figure className="feed-post-media">
+                              <img className="feed-post-image" src={block.media_url} alt={block.caption || block.media_name || "Foto compartilhada"} loading="lazy" />
+                              {block.caption && <figcaption>{block.caption}</figcaption>}
+                            </figure>
+                          )}
+                          {block.type === "video" && block.media_url && (
+                            <figure className="feed-post-media">
+                              <video className="feed-post-video" src={block.media_url} controls playsInline preload="metadata" />
+                              {block.caption && <figcaption>{block.caption}</figcaption>}
+                            </figure>
+                          )}
+                          {block.type === "music" && block.url && (
+                            <a className="feed-post-music" href={block.url} target="_blank" rel="noreferrer">
+                              <span className="feed-post-music-icon"><Music2 aria-hidden="true" /></span>
+                              <span className="feed-post-music-copy">
+                                <strong>{block.value || "Música compartilhada"}</strong>
+                                {block.caption && <small>{block.caption}</small>}
+                              </span>
+                              <span className="feed-post-music-open">Ouvir <ArrowRight aria-hidden="true" /></span>
+                            </a>
+                          )}
+                          {block.type === "audio" && block.media_url && (
+                            <div className="feed-post-audio">
+                              <span className="feed-post-audio-icon"><AudioLines aria-hidden="true" /></span>
+                              <div>
+                                {block.caption && <strong>{block.caption}</strong>}
+                                <audio src={block.media_url} controls preload="metadata" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
                     <footer className="feed-post-footer">
                       <span><Camera aria-hidden="true" /> Um momento de vocês</span>
                       <button type="button" onClick={onOpenConversation}>
-                        <MessageCircle aria-hidden="true" /> Comentar na conversa
+                        <MessageCircle aria-hidden="true" /> Conversar sobre isso
                       </button>
                     </footer>
                   </article>
