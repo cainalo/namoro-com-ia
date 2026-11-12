@@ -1101,7 +1101,7 @@ function FeedPostPhoto({
             src={src}
             alt={alt}
             onLoad={(event) => setRatio(event.currentTarget.naturalWidth / event.currentTarget.naturalHeight)}
-            className="block h-auto w-full rounded-[inherit]"
+            className="feed-post-image block h-auto w-full rounded-[inherit]"
             loading="lazy"
           />
         </button>
