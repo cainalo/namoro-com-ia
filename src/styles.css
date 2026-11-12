@@ -18793,9 +18793,9 @@ body {
    uma janela ampla. O clique continua abrindo o arquivo integral. */
 .feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-media-photo {
   display: block;
-  width: calc(100% + (2 * var(--post-px)));
+  width: calc(100% + var(--post-px) + var(--post-px));
   max-width: none;
-  margin: 0.35rem calc(-1 * var(--post-px)) 0.15rem !important;
+  margin: 0.35rem calc(0px - var(--post-px)) 0.15rem !important;
   overflow: hidden;
   border: 0;
   border-radius: 0;
