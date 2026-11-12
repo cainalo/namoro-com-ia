@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { RotateCcw, Trophy } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 
 const CONNECT_WIDTH = 7;
 const CONNECT_HEIGHT = 6;
 
 function findConnectWinner(board: number[], row: number, column: number, player: number) {
-  const directions = [[1,0],[0,1],[1,1],[1,-1]];
+  const directions: Array<[number, number]> = [[1,0],[0,1],[1,1],[1,-1]];
   return directions.some(([dx,dy]) => {
     let count = 1;
     for (const sign of [-1,1]) {
@@ -118,7 +118,6 @@ export function LocalThisOrThatGame() {
   const [handoff,setHandoff]=useState(false);
   const [showResults,setShowResults]=useState(false);
   const question=choiceQuestions[index];
-  const pair=answers[question.id]??{first:null,second:null};
   const firstAnswers=choiceQuestions.filter((item)=>answers[item.id]?.first).length;
   const secondAnswers=choiceQuestions.filter((item)=>answers[item.id]?.second).length;
   const matched=choiceQuestions.filter((item)=>answers[item.id]?.first&&answers[item.id]?.first===answers[item.id]?.second).length;
