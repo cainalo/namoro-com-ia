@@ -30,6 +30,7 @@ import { MoradosHeroScene } from "@/components/MoradosHeroScene";
 import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
+import { MoradosMark } from "@/components/MoradosMark";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -350,8 +351,9 @@ const NAV_ACCENTS: Record<SectionId, string> = {
 
 function MoradosWordmark() {
   return (
-    <span className="morados-wordmark-text">
-      Mora<span>dos</span>
+    <span className="morados-wordmark-lockup">
+      <MoradosMark size={30} />
+      <span className="morados-wordmark-text">morados</span>
     </span>
   );
 }
