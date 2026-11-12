@@ -76,7 +76,6 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-  const [canGoBack, setCanGoBack] = useState(false);
   const [postComposerRequest, setPostComposerRequest] = useState(0);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
@@ -87,7 +86,6 @@ function Index() {
     sectionHistory.current = [...sectionHistory.current, activeSectionRef.current].slice(-20);
     activeSectionRef.current = section;
     setActiveSection(section);
-    setCanGoBack(sectionHistory.current.length > 0);
   };
 
   const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
@@ -120,14 +118,12 @@ function Index() {
     sectionHistory.current = [];
     activeSectionRef.current = "home";
     setActiveSection("home");
-    setCanGoBack(false);
   };
 
   const goBack = () => {
     const previous = sectionHistory.current.pop() ?? "home";
     activeSectionRef.current = previous;
     setActiveSection(previous);
-    setCanGoBack(sectionHistory.current.length > 0);
   };
 
   useEffect(() => {
@@ -141,8 +137,7 @@ function Index() {
         const previous = sectionHistory.current.pop() ?? "home";
         activeSectionRef.current = previous;
         setActiveSection(previous);
-        setCanGoBack(sectionHistory.current.length > 0);
-      } else {
+          } else {
         void App.exitApp();
       }
     }).then((handle) => {
