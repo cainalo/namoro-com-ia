@@ -86,7 +86,8 @@ export function TrucoGame(){
       setGame({...game,hands,table,turn:other(game.turn),phase:"handoff"});
       return;
     }
-    const result=trickWinner(table[0].card,table[1].card,game.manilha);
+    const resultPosition=trickWinner(table[0].card,table[1].card,game.manilha);
+    const result:TrickWinner=resultPosition==="tie"?"tie":table[resultPosition].player;
     const tricks=[...game.tricks,result];
     const handWinner=decideHand(tricks,game.handStarter);
     const nextState={...game,hands,table,tricks,lastTrick:result};
@@ -115,7 +116,8 @@ export function TrucoGame(){
   function continueHandoff(){if(game.phase==="handoff")setGame({...game,phase:"play"});}
   function continueTrick(){
     if(game.phase!=="trick-result"||game.lastTrick===null)return;
-    const starter=game.lastTrick==="tie"?(game.tricks.length===1?game.handStarter:game.turn):game.lastTrick;
+    const previousDecisive=[...game.tricks].reverse().find(result=>result!=="tie");
+    const starter=game.lastTrick==="tie"?(previousDecisive??game.handStarter):game.lastTrick;
     setGame({...game,turn:starter,table:[],lastTrick:null,phase:"play"});
   }
   function nextHand(){
