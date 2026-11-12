@@ -8,14 +8,23 @@ import {
 } from "react";
 import {
   ArrowRight,
+  AudioLines,
   CalendarHeart,
   Camera,
   Gamepad2,
+  GripVertical,
   ImagePlus,
   LoaderCircle,
   MessageCircle,
+  MoveDown,
+  MoveUp,
+  Music2,
+  Plus,
   Send,
   Sparkles,
+  Trash2,
+  Type,
+  X,
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import {
@@ -31,11 +40,26 @@ import {
   createCouplePost,
   listCouplePosts,
   type CouplePost,
+  type CouplePostBlock,
+  type CouplePostBlockType,
 } from "@/lib/couple-feed";
+
+type FeedBlockView = CouplePostBlock & { media_url: string | null };
 
 type FeedPostView = CouplePost & {
   author_name: string;
   media_url: string | null;
+  blocks: FeedBlockView[];
+};
+
+type PostDraftBlock = {
+  id: string;
+  type: CouplePostBlockType;
+  value: string;
+  caption: string;
+  url: string;
+  file: File | null;
+  previewUrl: string | null;
 };
 
 type FeedState =
@@ -44,7 +68,7 @@ type FeedState =
   | { status: "no-couple" }
   | { status: "ready"; coupleId: string; posts: FeedPostView[] };
 
-type FeedFilter = "all" | "photos" | "videos" | "text";
+type FeedFilter = "all" | "photos" | "videos" | "text" | "audio";
 
 type CoupleFeedProps = {
   userId: string;
@@ -168,28 +192,119 @@ export function CoupleFeed({
 }: CoupleFeedProps) {
   const [state, setState] = useState<FeedState>({ status: "loading" });
   const [refreshKey, setRefreshKey] = useState(0);
-  const [draft, setDraft] = useState("");
-  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
-  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [draftBlocks, setDraftBlocks] = useState<PostDraftBlock[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [postFilter, setPostFilter] = useState<FeedFilter>("all");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const dragBlockRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (postComposerRequest > 0) setComposerOpen(true);
   }, [postComposerRequest]);
 
-  useEffect(() => {
-    if (!selectedMedia) {
-      setMediaPreview(null);
-      return;
-    }
-    const preview = URL.createObjectURL(selectedMedia);
-    setMediaPreview(preview);
-    return () => URL.revokeObjectURL(preview);
-  }, [selectedMedia]);
+  const createDraftBlock = (type: CouplePostBlockType): PostDraftBlock => ({
+    id: typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2),
+    type,
+    value: "",
+    caption: "",
+    url: "",
+    file: null,
+    previewUrl: null,
+  });
+
+  function addDraftBlock(type: CouplePostBlockType) {
+    setDraftBlocks((current) => [...current, createDraftBlock(type)]);
+  }
+
+  function updateDraftBlock(id: string, patch: Partial<PostDraftBlock>) {
+    setDraftBlocks((current) => current.map((block) => block.id === id ? { ...block, ...patch } : block));
+  }
+
+  function removeDraftBlock(id: string) {
+    setDraftBlocks((current) => {
+      const block = current.find((item) => item.id === id);
+      if (block?.previewUrl) URL.revokeObjectURL(block.previewUrl);
+      return current.filter((item) => item.id !== id);
+    });
+  }
+
+  function moveDraftBlock(id: string, direction: -1 | 1) {
+    setDraftBlocks((current) => {
+      const from = current.findIndex((block) => block.id === id);
+      const to = from + direction;
+      if (from < 0 || to < 0 || to >= current.length) return current;
+      const next = [...current];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }
+
+  function reorderDraftBlock(draggedId: string, targetId: string) {
+    if (draggedId === targetId) return;
+    setDraftBlocks((current) => {
+      const from = current.findIndex((block) => block.id === draggedId);
+      const to = current.findIndex((block) => block.id === targetId);
+      if (from < 0 || to < 0 || from === to) return current;
+      const next = [...current];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }
+
+  function handleBlockPointerDown(id: string, event: React.PointerEvent<HTMLButtonElement>) {
+    dragBlockRef.current = id;
+    setDraggedBlockId(id);
+    event.currentTarget.setPointerCapture(event.pointerId);
+  }
+
+  function handleBlockPointerMove(event: React.PointerEvent<HTMLButtonElement>) {
+    const draggedId = dragBlockRef.current;
+    if (!draggedId) return;
+    const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-post-block-id]");
+    const targetId = target?.getAttribute("data-post-block-id");
+    if (targetId && targetId !== draggedId) reorderDraftBlock(draggedId, targetId);
+  }
+
+  function handleBlockPointerEnd() {
+    dragBlockRef.current = null;
+    setDraggedBlockId(null);
+  }
+
+  function handleBlockFile(id: string, file: File | null) {
+    setDraftBlocks((current) => current.map((block) => {
+      if (block.id !== id) return block;
+      if (block.previewUrl) URL.revokeObjectURL(block.previewUrl);
+      return {
+        ...block,
+        file,
+        previewUrl: file ? URL.createObjectURL(file) : null,
+        value: file?.name ?? block.value,
+      };
+    }));
+  }
+
+  function resetComposer() {
+    setDraftBlocks((current) => {
+      current.forEach((block) => {
+        if (block.previewUrl) URL.revokeObjectURL(block.previewUrl);
+      });
+      return [];
+    });
+    setPublishError(null);
+  }
+
+  const canPublishDraft = draftBlocks.some((block) => {
+    if (block.type === "title" || block.type === "text") return Boolean(block.value.trim());
+    if (block.type === "photo" || block.type === "video" || block.type === "audio") return Boolean(block.file);
+    if (block.type === "music") return Boolean(block.url.trim());
+    return false;
+  });
 
   const loadFeed = useCallback(async () => {
     setState({ status: "loading" });
