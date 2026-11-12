@@ -934,10 +934,10 @@ export function CoupleFeed({
                   >
                     <header className="feed-post-header">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className={"grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
+                        <span className={"feed-author-avatar grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
                           {initials(post.author_name)}
                         </span>
-                        <div className="min-w-0">
+                        <div className="feed-post-author-meta min-w-0">
                           <strong>{post.author_name}</strong>
                           <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
                         </div>
@@ -973,7 +973,7 @@ export function CoupleFeed({
                       {post.blocks.map((block) => (
                         <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
                           {block.type === "title" && block.value && (
-                            <h3 className="mb-2 text-base font-bold font-display leading-snug text-foreground sm:text-lg">{block.value}</h3>
+                            <h3 className="feed-post-title mb-2 text-base font-bold font-display leading-snug text-left text-foreground sm:text-lg">{block.value}</h3>
                           )}
                           {block.type === "text" && block.value && (
                             <p className="mb-4 whitespace-pre-line text-left text-sm leading-relaxed text-foreground/90">{block.value}</p>
@@ -1206,9 +1206,10 @@ function MoradosPostCardFrame({
   return (
     <article
       ref={articleRef}
+      data-post-tone={tone}
       data-post-type={tone}
       style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }) }}
-      className="post-card flex min-w-0 flex-col overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition hover:shadow-md"
+      className="post-card feed-post-card flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:shadow-md"
     >
       <div ref={regionRef} className="relative min-h-0 overflow-hidden px-[var(--post-px)] pt-[var(--post-pt)]">
         <div ref={innerRef} className="flow-root">{children}</div>
