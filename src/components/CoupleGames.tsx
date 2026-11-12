@@ -7,6 +7,7 @@ import {
   Crown,
   Gamepad2,
   Search,
+  LockKeyhole,
   Shield,
   Sparkles,
   Swords,
@@ -18,13 +19,19 @@ import { ConnectFourGame } from "@/components/ConnectFourGame";
 import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
 import { CoupleGame } from "@/components/CoupleGame";
 import { CoupleInvestigationGame } from "@/components/CoupleInvestigationGame";
+import { ChessGame } from "@/components/ChessGame";
+import { BattleshipGame } from "@/components/BattleshipGame";
+import { DominoGame } from "@/components/DominoGame";
+import { TrucoGame } from "@/components/TrucoGame";
+import { QuizGame } from "@/components/QuizGame";
+import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import {
   LocalConnectFourGame,
   LocalDailyChallengeGame,
   LocalThisOrThatGame,
 } from "@/components/LocalCoupleGames";
 
-type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room";
 type GameMode = "local" | "online";
 
 const catalogue: Array<{
@@ -83,6 +90,12 @@ const catalogue: Array<{
     tone: "noir",
     new: true,
   },
+  { id: "chess", name: "Xadrez", category: "Estratégia", description: "Partidas clássicas com movimentos legais, xeque, roque, en passant e histórico.", players: "2 pessoas", icon: Crown, tone: "plum" },
+  { id: "battleship", name: "Batalha Naval", category: "Estratégia", description: "Posicionem frotas secretas e encontrem os navios da outra pessoa.", players: "2 pessoas", icon: Target, tone: "petrol" },
+  { id: "domino", name: "Dominó", category: "Estratégia", description: "Joguem, comprem peças, bloqueiem a mesa e somem os pontos.", players: "2 pessoas", icon: Gamepad2, tone: "olive" },
+  { id: "truco", name: "Truco Paulista", category: "Cartas", description: "Vira, manilhas e blefe. Aumentem a aposta até doze pontos.", players: "2 pessoas", icon: Swords, tone: "terracotta" },
+  { id: "quiz", name: "Quiz dos dois", category: "Conhecimento", description: "Perguntas por categoria, tempo limitado e placar alternado.", players: "2 pessoas", icon: Brain, tone: "plum" },
+  { id: "escape-room", name: "A sala do relógio", category: "Escape room", description: "Investiguem uma sala, encontrem objetos e descubram o código para escapar.", players: "Cooperativo · 1–2", icon: LockKeyhole, tone: "noir", new: true },
 ];
 
 function GamePage({
@@ -142,8 +155,20 @@ function GamePage({
             mode === "local" ? <LocalThisOrThatGame /> : <CoupleGame userId={userId} />
           ) : gameId === "daily-challenge" ? (
             mode === "local" ? <LocalDailyChallengeGame /> : <CoupleDailyChallenge userId={userId} />
-          ) : (
+          ) : gameId === "investigation" ? (
             <CoupleInvestigationGame />
+          ) : gameId === "chess" ? (
+            <ChessGame />
+          ) : gameId === "battleship" ? (
+            <BattleshipGame />
+          ) : gameId === "domino" ? (
+            <DominoGame />
+          ) : gameId === "truco" ? (
+            <TrucoGame />
+          ) : gameId === "quiz" ? (
+            <QuizGame />
+          ) : (
+            <EscapeRoomGame />
           )}
         </div>
       </main>
@@ -157,8 +182,8 @@ export function CoupleGames({ userId }: { userId: string }) {
 
   const visibleGames = catalogue.filter((game) => {
     if (filter === "strategy") return game.category === "Estratégia";
-    if (filter === "cooperation") return game.category !== "Estratégia" && game.id !== "investigation";
-    if (filter === "investigation") return game.id === "investigation";
+    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room"].includes(game.category);
+    if (filter === "investigation") return game.category === "Investigação policial" || game.category === "Escape room";
     return true;
   });
 
@@ -224,11 +249,8 @@ export function CoupleGames({ userId }: { userId: string }) {
           <div><h2>Clássicos em desenvolvimento</h2><p>Os próximos jogos de mesa que já estavam previstos.</p></div>
         </div>
         <div className="games-hub-next-grid">
-          <article><Crown aria-hidden="true"/><div><strong>Xadrez</strong><small>Partidas completas, relógio e histórico de lances</small></div><span>Em produção</span></article>
-          <article><Target aria-hidden="true"/><div><strong>Batalha naval</strong><small>Frotas ocultas, tiros e estratégia</small></div><span>Em produção</span></article>
-          <article><Gamepad2 aria-hidden="true"/><div><strong>Dominó</strong><small>Compra, bloqueio e pontuação por rodada</small></div><span>Planejado</span></article>
-          <article><Swords aria-hidden="true"/><div><strong>Truco</strong><small>Duplas, blefe, manilhas e tentos</small></div><span>Planejado</span></article>
-          <article><Brain aria-hidden="true"/><div><strong>Quiz</strong><small>Rodadas por tema, tempo e placar</small></div><span>Planejado</span></article>
+          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos, exploração e decisões com consequências</small></div><span>Próximo</span></article>
+          <article><Sparkles aria-hidden="true"/><div><strong>Histórias interativas</strong><small>Mistérios com escolhas, personagens e caminhos diferentes</small></div><span>Próximo</span></article>
         </div>
       </section>
 
@@ -239,7 +261,7 @@ export function CoupleGames({ userId }: { userId: string }) {
         </div>
         <div className="games-hub-next-grid">
           <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios além do Caso 001</small></div><span>Em produção</span></article>
-          <article><AudioLines aria-hidden="true"/><div><strong>Escape rooms</strong><small>Enigmas, códigos, objetos e ambientes secretos</small></div><span>Planejado</span></article>
+          <article><AudioLines aria-hidden="true"/><div><strong>Novas salas de fuga</strong><small>Ambientes, enigmas e mecanismos em sequência</small></div><span>Próximo</span></article>
           <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos e decisões com consequências</small></div><span>Planejado</span></article>
         </div>
       </section>
