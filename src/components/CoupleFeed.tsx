@@ -35,6 +35,8 @@ import {
   Send,
   Share2,
   Sparkles,
+  RefreshCw,
+  Video,
   Ship,
   Target,
   Type,
@@ -65,6 +67,7 @@ import {
   type CouplePostBlockType,
 } from "@/lib/couple-feed";
 import { getMoradosMusicTrack, MORADOS_MUSIC_TRACKS, renderMoradosMusic } from "@/lib/morados-music-library";
+import { openMoradosAppSettings } from "@/lib/device-settings";
 
 type FeedBlockView = CouplePostBlock & { media_url: string | null };
 
@@ -223,6 +226,9 @@ export function CoupleFeed({
   const [postFilter, setPostFilter] = useState<FeedFilter>("all");
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
   const [renderingMusicBlockId, setRenderingMusicBlockId] = useState<string | null>(null);
+  const [musicPickerBlockId, setMusicPickerBlockId] = useState<string | null>(null);
+  const [activeMusicPostId, setActiveMusicPostId] = useState<string | null>(null);
+  const feedMusicRef = useRef<HTMLAudioElement>(null);
   const dragBlockRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -481,6 +487,95 @@ export function CoupleFeed({
     });
   }, [state, postFilter]);
 
+  useEffect(() => {
+    if (state.status !== "ready" || typeof IntersectionObserver === "undefined") {
+      setActiveMusicPostId(null);
+      return;
+    }
+
+    const cards = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-feed-post-id]"),
+    );
+    const ratios = new Map<HTMLElement, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          ratios.set(
+            entry.target as HTMLElement,
+            entry.isIntersecting ? entry.intersectionRatio : 0,
+          );
+        }
+
+        const mostVisible = cards
+          .filter((card) => card.dataset.hasMusic === "true")
+          .map((card) => ({
+            id: card.dataset.feedPostId ?? "",
+            ratio: ratios.get(card) ?? 0,
+          }))
+          .filter((item) => item.id && item.ratio >= 0.18)
+          .sort((left, right) => right.ratio - left.ratio)[0];
+
+        setActiveMusicPostId(mostVisible?.id ?? null);
+      },
+      { threshold: [0, 0.12, 0.18, 0.3, 0.45, 0.6, 0.8, 1] },
+    );
+
+    cards.forEach((card) => observer.observe(card));
+    return () => observer.disconnect();
+  }, [state.status, visiblePosts]);
+
+  const activeMusicBlock =
+    state.status === "ready" && activeMusicPostId
+      ? state.posts
+          .find((post) => post.id === activeMusicPostId)
+          ?.blocks.find((block) => block.type === "music" && block.media_url)
+      : undefined;
+
+  useEffect(() => {
+    const audio = feedMusicRef.current;
+    if (!audio) return;
+
+    const source = activeMusicBlock?.media_url;
+    if (!source) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+      return;
+    }
+
+    audio.pause();
+    audio.src = source;
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.load();
+
+    let disposed = false;
+    let retryInstalled = false;
+    const retryPlayback = () => {
+      if (disposed || retryInstalled) return;
+      retryInstalled = true;
+      document.removeEventListener("pointerdown", retryPlayback, true);
+      document.removeEventListener("touchstart", retryPlayback, true);
+      void audio.play().catch(() => undefined);
+    };
+
+    void audio.play().catch((error: unknown) => {
+      if (error instanceof DOMException && error.name === "NotAllowedError") {
+        // Browsers may wait for the first user gesture before allowing audio.
+        document.addEventListener("pointerdown", retryPlayback, true);
+        document.addEventListener("touchstart", retryPlayback, true);
+      }
+    });
+
+    return () => {
+      disposed = true;
+      document.removeEventListener("pointerdown", retryPlayback, true);
+      document.removeEventListener("touchstart", retryPlayback, true);
+      audio.pause();
+      audio.currentTime = 0;
+    };
+  }, [activeMusicPostId, activeMusicBlock?.media_url]);
+
   async function publishPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (state.status !== "ready" || publishing || !canPublishDraft) return;
@@ -628,6 +723,7 @@ export function CoupleFeed({
 
   return (
     <section className="social-feed">
+      <audio ref={feedMusicRef} className="feed-ambient-audio" aria-hidden="true" preload="none" loop />
       <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
         {([
           ["all", "Tudo"],
@@ -751,18 +847,22 @@ export function CoupleFeed({
 
                       {block.type === "photo" && (
                         <div className="feed-composer-media-block">
+                          <InAppMediaCapture
+                            kind="photo"
+                            onCaptured={(file) => handleBlockFile(block.id, file)}
+                          />
                           {block.previewUrl ? (
                             <img src={block.previewUrl} alt="Prévia da foto" />
                           ) : (
                             <label className="feed-composer-file-pick">
                               <ImagePlus aria-hidden="true" />
-                              <span>Escolher foto</span>
+                              <span>Escolher da galeria</span>
                               <input type="file" accept="image/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
                             </label>
                           )}
                           {block.previewUrl && (
                             <label className="feed-composer-replace-file">
-                              Trocar foto
+                              Substituir pela galeria
                               <input type="file" accept="image/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
                             </label>
                           )}
@@ -778,12 +878,16 @@ export function CoupleFeed({
 
                       {block.type === "video" && (
                         <div className="feed-composer-media-block">
+                          <InAppMediaCapture
+                            kind="video"
+                            onCaptured={(file) => handleBlockFile(block.id, file)}
+                          />
                           {block.previewUrl ? (
                             <video src={block.previewUrl} controls playsInline />
                           ) : (
                             <label className="feed-composer-file-pick">
-                              <Camera aria-hidden="true" />
-                              <span>Escolher vídeo</span>
+                              <ImagePlus aria-hidden="true" />
+                              <span>Escolher vídeo da galeria</span>
                               <input type="file" accept="video/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
                             </label>
                           )}
@@ -802,26 +906,51 @@ export function CoupleFeed({
                           <Music2 aria-hidden="true" />
                           <label className="feed-composer-track-label">
                             Trilha original do Morados
-                            <select
-                              value={block.trackId ?? ""}
-                              onChange={(event) => {
-                                const track = getMoradosMusicTrack(event.target.value);
-                                if (block.previewUrl) URL.revokeObjectURL(block.previewUrl);
-                                updateDraftBlock(block.id, {
-                                  trackId: track?.id ?? null,
-                                  value: track?.title ?? "",
-                                  file: null,
-                                  previewUrl: null,
-                                  url: "",
-                                });
-                              }}
-                              aria-label="Escolha uma música Morados"
-                            >
-                              <option value="">Escolha uma música</option>
-                              {MORADOS_MUSIC_TRACKS.map((track) => (
-                                <option key={track.id} value={track.id}>{track.title} · {track.mood}</option>
-                              ))}
-                            </select>
+                            <div className="feed-track-picker">
+                              <button
+                                type="button"
+                                className="feed-track-picker-trigger"
+                                aria-expanded={musicPickerBlockId === block.id}
+                                aria-haspopup="listbox"
+                                onClick={() => setMusicPickerBlockId((current) => current === block.id ? null : block.id)}
+                              >
+                                <span>{getMoradosMusicTrack(block.trackId)?.title ?? "Escolher uma música"}</span>
+                                <ChevronDown aria-hidden="true" />
+                              </button>
+                              {musicPickerBlockId === block.id && (
+                                <div className="feed-track-picker-options" role="listbox" aria-label="Biblioteca de músicas Morados">
+                                  {MORADOS_MUSIC_TRACKS.map((track) => (
+                                    <button
+                                      key={track.id}
+                                      type="button"
+                                      role="option"
+                                      aria-selected={block.trackId === track.id}
+                                      className={block.trackId === track.id ? "is-selected" : ""}
+                                      onClick={() => {
+                                        if (block.previewUrl) URL.revokeObjectURL(block.previewUrl);
+                                        updateDraftBlock(block.id, {
+                                          trackId: track.id,
+                                          value: track.title,
+                                          file: null,
+                                          previewUrl: null,
+                                          url: "",
+                                        });
+                                        setMusicPickerBlockId(null);
+                                      }}
+                                    >
+                                      <span className="feed-track-picker-art" style={{ backgroundColor: track.color }}>
+                                        <Music2 aria-hidden="true" />
+                                      </span>
+                                      <span className="feed-track-picker-copy">
+                                        <strong>{track.title}</strong>
+                                        <small>{track.mood}</small>
+                                      </span>
+                                      {block.trackId === track.id && <Check aria-hidden="true" />}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </label>
                           <button
                             type="button"
@@ -919,11 +1048,16 @@ export function CoupleFeed({
               const showGameCard = postFilter === "all" && (index === 1 || (index > 1 && index % 4 === 1));
               const showMemoryCards = postFilter === "all" && index === 0 && anniversaryMoments.length > 0;
               const GameIcon = game.icon;
+              const postMusic = post.blocks.find(
+                (block) => block.type === "music" && Boolean(block.media_url),
+              );
 
               return (
                 <div className="feed-sequence" key={post.id}>
                   <MoradosPostCardFrame
-                    tone={(["petrol", "terracotta", "olive", "plum"] as const)[index % 4]}
+                    tone={getPostToneForId(post.id)}
+                    postId={post.id}
+                    hasMusic={post.blocks.some((block) => block.type === "music" && Boolean(block.media_url))}
                     footer={
                       <div className="feed-post-footer mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
                         <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
@@ -955,8 +1089,14 @@ export function CoupleFeed({
                           <div className="flex items-center gap-1.5">
                             <strong className="truncate text-sm font-semibold text-foreground">{post.author_name}</strong>
                           </div>
-                          <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
+                          <p className="feed-post-meta-line flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
                             <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
+                            {postMusic && (
+                              <span className="feed-post-music-meta" title={postMusic.value || "Trilha desta publicação"}>
+                                <Music2 aria-hidden="true" />
+                                <span>{postMusic.value || "Música"}</span>
+                              </span>
+                            )}
                           </p>
                         </div>
                       </div>
@@ -1008,26 +1148,6 @@ export function CoupleFeed({
                               <video className="feed-post-video" src={block.media_url} controls playsInline preload="metadata" />
                               {block.caption && <figcaption>{block.caption}</figcaption>}
                             </figure>
-                          )}
-                          {block.type === "music" && block.media_url && (
-                            <div className="feed-post-audio feed-post-music-player">
-                              <span className="feed-post-audio-icon"><Music2 aria-hidden="true" /></span>
-                              <div>
-                                <strong>{block.value || "Música original Morados"}</strong>
-                                {block.caption && <small>{block.caption}</small>}
-                                <audio src={block.media_url} controls preload="metadata" />
-                              </div>
-                            </div>
-                          )}
-                          {block.type === "music" && !block.media_url && block.url && (
-                            <a className="feed-post-music" href={block.url} target="_blank" rel="noreferrer">
-                              <span className="feed-post-music-icon"><Music2 aria-hidden="true" /></span>
-                              <span className="feed-post-music-copy">
-                                <strong>{block.value || "Música compartilhada"}</strong>
-                                {block.caption && <small>{block.caption}</small>}
-                              </span>
-                              <span className="feed-post-music-open">Ouvir <ArrowRight aria-hidden="true" /></span>
-                            </a>
                           )}
                           {block.type === "audio" && block.media_url && (
                             <div className="feed-post-audio">
@@ -1134,41 +1254,55 @@ function FeedPostPhoto({
 }
 
 const POST_TYPE_COLORS = {
-  terracotta: { light: "#C8402A", dark: "#C8402A" },
-  olive: { light: "#556B2F", dark: "#556B2F" },
-  petrol: { light: "#0F4C5C", dark: "#0F4C5C" },
-  plum: { light: "#6B3A6E", dark: "#6B3A6E" },
+  red: "#C6283B",
+  blue: "#155ADB",
+  green: "#237A43",
+  orange: "#C54B1C",
+  teal: "#087985",
+  plum: "#663A92",
+  rose: "#A72F69",
+  amber: "#865A00",
 } as const;
 
-function useMoradosPostTypeStyle(tone: keyof typeof POST_TYPE_COLORS) {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const root = document.documentElement;
-    const sync = () => setDark(root.classList.contains("dark"));
-    sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  const color = dark ? POST_TYPE_COLORS[tone].dark : POST_TYPE_COLORS[tone].light;
-  const tinted = `color-mix(in srgb, ${color} 15%, var(--card))`;
+type PostTone = keyof typeof POST_TYPE_COLORS;
+
+function getPostToneForId(postId: string): PostTone {
+  // O ID UUID criado pelo banco dá a cada publicação uma cor estável e pseudoaleatória.
+  let hash = 2166136261;
+  for (let index = 0; index < postId.length; index += 1) {
+    hash ^= postId.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  const tones = Object.keys(POST_TYPE_COLORS) as PostTone[];
+  return tones[(hash >>> 0) % tones.length];
+}
+
+function useMoradosPostTypeStyle(tone: PostTone) {
+  const color = POST_TYPE_COLORS[tone];
   return {
     ["--pt" as string]: color,
-    ["--post-fade" as string]: tinted,
+    ["--post-fade" as string]: color,
+    ["--morados-post-bg" as string]: color,
+    ["--morados-post-ink" as string]: "#fffaf1",
     borderColor: color,
-    borderWidth: 2,
-    backgroundColor: tinted,
-    boxShadow: `0 6px 22px -10px color-mix(in srgb, ${color} 70%, transparent)`,
+    borderWidth: 1,
+    backgroundColor: color,
+    color: "#fffaf1",
+    boxShadow: `0 9px 28px -17px color-mix(in srgb, ${color} 70%, transparent)`,
   } as CSSProperties;
 }
 
 /** Copiado do PostCardFrame do NutriConnect, com seletores do cabeçalho do Morados. */
 function MoradosPostCardFrame({
   tone,
+  postId,
+  hasMusic,
   children,
   footer,
 }: {
-  tone: "petrol" | "terracotta" | "olive" | "plum";
+  tone: PostTone;
+  postId: string;
+  hasMusic: boolean;
   children: ReactNode;
   footer: ReactNode;
 }) {
@@ -1195,15 +1329,13 @@ function MoradosPostCardFrame({
       }
     };
     const measure = () => {
-      const top = document.querySelector<HTMLElement>(".app-chrome")?.offsetHeight ?? 0;
-      const isMobile = window.matchMedia("(max-width: 1023px)").matches;
-      const bottom = isMobile ? document.querySelector<HTMLElement>(".mobile-nav")?.offsetHeight ?? 0 : 0;
-      const limit = Math.max(240, window.innerHeight - top - bottom - 32);
+      // A altura máxima depende apenas da largura, nunca da visibilidade das barras
+      // nem da altura dinâmica da viewport ao rolar no Android.
+      const compact = window.matchMedia("(max-width: 680px)").matches;
+      const limit = compact ? 680 : 820;
       const chrome = article.offsetHeight - region.offsetHeight - (toggleRef.current?.offsetHeight ?? 0);
       setMaxHeight(limit);
       setOverflowing(inner.offsetHeight + chrome > limit + 1);
-      watch(document.querySelector(".app-chrome"));
-      watch(document.querySelector(".mobile-nav"));
     };
     watch(inner);
     watch(article);
@@ -1222,6 +1354,8 @@ function MoradosPostCardFrame({
       ref={articleRef}
       data-post-tone={tone}
       data-post-type={tone}
+      data-feed-post-id={postId}
+      data-has-music={hasMusic ? "true" : "false"}
       style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }) }}
       className="post-card feed-post-card flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:shadow-md"
     >
