@@ -19294,3 +19294,346 @@ body {
     transition: none !important;
   }
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   Morados · paleta viva, foto estável, música contextual e câmera interna
+   ───────────────────────────────────────────────────────────── */
+
+/* Paleta saturada. Cada card recebe --pt a partir do UUID da publicação. */
+.feed-post-card[data-post-tone]:not(.is-composer-card) {
+  --morados-post-ink: #fffaf1;
+  --morados-post-bg: var(--pt);
+  --post-fade: var(--pt);
+  --color-foreground: #fffaf1;
+  --color-muted-foreground: rgb(255 250 241 / 75%);
+  --foreground: #fffaf1;
+  --muted-foreground: rgb(255 250 241 / 75%);
+  --card-foreground: #fffaf1;
+  background: var(--pt) !important;
+  background-color: var(--pt) !important;
+  border: 1px solid color-mix(in srgb, #fffaf1 24%, var(--pt)) !important;
+  color: #fffaf1 !important;
+  box-shadow: 0 12px 30px -21px color-mix(in srgb, var(--pt) 82%, transparent) !important;
+}
+.feed-post-card[data-post-tone="red"] { --pt: #C6283B; }
+.feed-post-card[data-post-tone="blue"] { --pt: #155ADB; }
+.feed-post-card[data-post-tone="green"] { --pt: #237A43; }
+.feed-post-card[data-post-tone="orange"] { --pt: #C54B1C; }
+.feed-post-card[data-post-tone="teal"] { --pt: #087985; }
+.feed-post-card[data-post-tone="plum"] { --pt: #663A92; }
+.feed-post-card[data-post-tone="rose"] { --pt: #A72F69; }
+.feed-post-card[data-post-tone="amber"] { --pt: #865A00; }
+
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-frame-region,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-content {
+  background: transparent !important;
+  color: #fffaf1 !important;
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-header {
+  border-bottom: 1px solid rgb(255 250 241 / 22%);
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-header strong,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-header time,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-content :is(h3, p, strong, small),
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-private,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-more,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-footer,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-footer span,
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-footer button {
+  color: #fffaf1 !important;
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-private {
+  border-color: rgb(255 250 241 / 35%);
+  background: rgb(255 250 241 / 13%);
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-footer {
+  border-top-color: rgb(255 250 241 / 24%);
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-footer button {
+  border-color: rgb(255 250 241 / 34%);
+  background: rgb(255 250 241 / 12%);
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-footer button:hover {
+  background: rgb(255 250 241 / 23%);
+}
+
+/* Mídia com altura fixa por largura, não por vh. Recolher as barras do
+   Android ou rolar a página não altera as dimensões do enquadramento. */
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-media-photo {
+  display: block;
+  width: calc(100% + var(--post-px) + var(--post-px));
+  max-width: none;
+  margin: 0.55rem calc(0px - var(--post-px)) 0.2rem !important;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, #000 8%, var(--pt));
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-media-photo .feed-post-photo-trigger {
+  display: block;
+  width: 100%;
+  max-width: none !important;
+  height: clamp(24rem, 42vw, 34rem);
+  max-height: none !important;
+  margin: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-media-photo .feed-post-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none !important;
+  margin: 0;
+  border-radius: 0;
+  object-fit: cover !important;
+  object-position: center;
+}
+.feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-media-photo figcaption {
+  margin: 0;
+  padding: 0.7rem var(--post-px);
+  color: rgb(255 250 241 / 85%) !important;
+  font-size: 0.78rem;
+  text-align: left;
+}
+@media (max-width: 680px) {
+  .feed-post-card[data-post-tone]:not(.is-composer-card) .feed-post-media-photo .feed-post-photo-trigger {
+    height: clamp(21rem, 88vw, 28rem);
+  }
+}
+
+/* A faixa aparece no cabeçalho como metadado editorial, sem controles. */
+.feed-post-meta-line {
+  min-width: 0;
+  align-items: center;
+  row-gap: 0.22rem;
+}
+.feed-post-card[data-post-tone] .feed-post-music-meta {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.28rem;
+  color: rgb(255 250 241 / 88%) !important;
+  font-size: 0.67rem;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.feed-post-card[data-post-tone] .feed-post-music-meta svg {
+  width: 0.78rem;
+  height: 0.78rem;
+  flex: 0 0 auto;
+}
+.feed-ambient-audio {
+  display: none !important;
+}
+
+/* Escolha musical em menu próprio do Morados, sem <select> do Android. */
+.feed-track-picker {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 0.45rem;
+}
+.feed-track-picker-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.75rem;
+  background: var(--color-card);
+  padding: 0.7rem 0.85rem;
+  color: var(--color-foreground);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-align: left;
+}
+.feed-track-picker-trigger svg { width: 1rem; height: 1rem; flex: 0 0 auto; }
+.feed-track-picker-options {
+  display: grid;
+  max-height: 17rem;
+  gap: 0.35rem;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 0.85rem;
+  background: var(--color-card);
+  padding: 0.4rem;
+  box-shadow: 0 12px 28px -20px rgb(28 26 20 / 45%);
+}
+.feed-track-picker-options > button {
+  display: grid;
+  width: 100%;
+  min-height: 3.7rem;
+  grid-template-columns: 2.35rem minmax(0, 1fr) 1.2rem;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  background: transparent;
+  padding: 0.45rem 0.55rem;
+  color: var(--color-foreground);
+  text-align: left;
+}
+.feed-track-picker-options > button:hover,
+.feed-track-picker-options > button.is-selected {
+  border-color: var(--color-border);
+  background: var(--color-secondary);
+}
+.feed-track-picker-art {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  color: white;
+}
+.feed-track-picker-art svg { width: 1.05rem; height: 1.05rem; }
+.feed-track-picker-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.12rem;
+}
+.feed-track-picker-copy strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-track-picker-copy small {
+  overflow: hidden;
+  color: var(--color-muted-foreground);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Captura de foto e vídeo dentro da interface do Morados. */
+.morados-media-capture {
+  display: grid;
+  gap: 0.55rem;
+}
+.morados-media-capture-trigger {
+  display: inline-flex;
+  width: 100%;
+  min-height: 2.9rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+  border-radius: 0.75rem;
+  background: var(--color-primary-soft);
+  padding: 0.65rem 0.8rem;
+  color: var(--color-primary);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+.morados-media-capture-trigger svg { width: 1.1rem; height: 1.1rem; }
+.morados-media-capture-trigger:disabled { opacity: 0.6; cursor: progress; }
+.morados-camera-panel {
+  display: grid;
+  gap: 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.9rem;
+  background: var(--color-card);
+  padding: 0.7rem;
+}
+.morados-camera-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: var(--color-foreground);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+.morados-camera-panel-head button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-background);
+  color: var(--color-muted-foreground);
+}
+.morados-camera-panel-head button svg { width: 1rem; height: 1rem; }
+.morados-camera-preview {
+  display: block;
+  width: 100%;
+  max-height: min(65vw, 27rem);
+  aspect-ratio: 4 / 3;
+  border-radius: 0.7rem;
+  background: #161616;
+  object-fit: cover;
+}
+.morados-camera-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.morados-camera-actions button {
+  display: inline-flex;
+  min-height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+.morados-camera-actions button svg { width: 1rem; height: 1rem; }
+.morados-camera-secondary {
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+.morados-camera-primary {
+  border-color: var(--color-primary) !important;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+.morados-camera-primary.is-recording {
+  border-color: #c6283b !important;
+  background: #c6283b;
+  color: #fffaf1;
+}
+.morados-camera-hint {
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+.morados-capture-error,
+.feed-audio-record-error {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, #c6283b 26%, var(--color-border));
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, #c6283b 6%, var(--color-card));
+  padding: 0.7rem 0.8rem;
+  color: #a32632;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.morados-capture-error button,
+.feed-audio-record-error button {
+  justify-self: start;
+  border: 0;
+  border-radius: 0.55rem;
+  background: #c6283b;
+  padding: 0.45rem 0.7rem;
+  color: #fffaf1;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
