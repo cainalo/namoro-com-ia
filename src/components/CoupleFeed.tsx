@@ -1641,7 +1641,7 @@ function MoradosPostCardFrame({
       data-post-type={tone}
       data-feed-post-id={postId}
       data-has-music={hasMusic ? "true" : "false"}
-      style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }) }}
+      style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)", ...(overflowing && maxHeight ? { height: maxHeight } : {}) }) }}
       className="post-card feed-post-card flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:shadow-md"
     >
       <div ref={regionRef} className="feed-post-frame-region relative min-h-0 overflow-hidden px-[var(--post-px)] pt-[var(--post-pt)]">
