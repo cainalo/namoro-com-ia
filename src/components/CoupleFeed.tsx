@@ -6,7 +6,8 @@ import {
   useState,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
-  type ReactNode,\n  type CSSProperties,
+  type ReactNode,
+  type CSSProperties,
 } from "react";
 import {
   ArrowRight,
