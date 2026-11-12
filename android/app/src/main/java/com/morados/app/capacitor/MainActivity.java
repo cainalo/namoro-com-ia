@@ -3,6 +3,7 @@ package com.morados.app.capacitor;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -21,6 +22,8 @@ public class MainActivity extends BridgeActivity {
     protected void onCreate(Bundle savedInstanceState) {
         registerPlugin(DeviceSettingsPlugin.class);
         super.onCreate(savedInstanceState);
+        // Explicitly resize the WebView when Android opens the software keyboard.
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         applyImmersiveMode();
     }
 
@@ -28,14 +31,6 @@ public class MainActivity extends BridgeActivity {
     public void onResume() {
         super.onResume();
         getWindow().getDecorView().post(this::applyImmersiveMode);
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) {
-            getWindow().getDecorView().post(this::applyImmersiveMode);
-        }
     }
 
     private void applyImmersiveMode() {
