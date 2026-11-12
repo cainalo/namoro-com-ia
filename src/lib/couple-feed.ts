@@ -11,6 +11,7 @@ export type CouplePostBlock = {
   media_path?: string | null;
   media_name?: string | null;
   media_mime?: string | null;
+  track_id?: string | null;
 };
 
 export type CouplePost = {
