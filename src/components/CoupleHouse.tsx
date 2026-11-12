@@ -1,5 +1,5 @@
 import { useRef, useState, type PointerEvent } from "react";
-import { Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
+import { House, Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
 import { HouseInterior } from "@/components/HouseInterior";
 
 const houseLocations = [
@@ -110,6 +110,18 @@ export function CoupleHouse() {
     <section className="house-screen">
       {houseView === "grounds" ? (
         <>
+      <div className="house-page-intro">
+        <span className="section-intro-icon"><House aria-hidden="true" /></span>
+        <div className="section-intro-copy">
+          <span className="section-intro-kicker">Nosso refúgio</span>
+          <h1>Casa</h1>
+          <p>Um lugar para explorar, decorar e construir aos poucos.</p>
+        </div>
+        <div className="section-intro-stat">
+          <strong>{houseLocations.length}</strong>
+          <span>áreas para explorar</span>
+        </div>
+      </div>
       <div className={`house-map-shell is-${lighting}`}>
         <div
           className={[
