@@ -219,15 +219,29 @@ export function CoupleGames({ userId }: { userId: string }) {
         })}
       </div>
 
-      <section className="games-hub-next">
+      <section className="games-hub-next games-hub-next-classics">
         <div className="games-hub-next-title">
-          <span><Swords aria-hidden="true" /></span>
-          <div><h2>Próximas experiências</h2><p>Novos gêneros além dos jogos de tabuleiro.</p></div>
+          <span><Crown aria-hidden="true" /></span>
+          <div><h2>Clássicos em desenvolvimento</h2><p>Os próximos jogos de mesa que já estavam previstos.</p></div>
         </div>
         <div className="games-hub-next-grid">
-          <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios</small></div><span>Em produção</span></article>
-          <article><AudioLines aria-hidden="true"/><div><strong>Escape rooms</strong><small>Enigmas, códigos e objetos escondidos</small></div><span>Planejado</span></article>
-          <article><Brain aria-hidden="true"/><div><strong>Jogos de estratégia</strong><small>Gestão, sobrevivência e decisões</small></div><span>Planejado</span></article>
+          <article><Crown aria-hidden="true"/><div><strong>Xadrez</strong><small>Partidas completas, relógio e histórico de lances</small></div><span>Em produção</span></article>
+          <article><Target aria-hidden="true"/><div><strong>Batalha naval</strong><small>Frotas ocultas, tiros e estratégia</small></div><span>Em produção</span></article>
+          <article><Gamepad2 aria-hidden="true"/><div><strong>Dominó</strong><small>Compra, bloqueio e pontuação por rodada</small></div><span>Planejado</span></article>
+          <article><Swords aria-hidden="true"/><div><strong>Truco</strong><small>Duplas, blefe, manilhas e tentos</small></div><span>Planejado</span></article>
+          <article><Brain aria-hidden="true"/><div><strong>Quiz</strong><small>Rodadas por tema, tempo e placar</small></div><span>Planejado</span></article>
+        </div>
+      </section>
+
+      <section className="games-hub-next">
+        <div className="games-hub-next-title">
+          <span><Sparkles aria-hidden="true" /></span>
+          <div><h2>Novos gêneros</h2><p>Jogos que vão além dos tabuleiros.</p></div>
+        </div>
+        <div className="games-hub-next-grid">
+          <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios além do Caso 001</small></div><span>Em produção</span></article>
+          <article><AudioLines aria-hidden="true"/><div><strong>Escape rooms</strong><small>Enigmas, códigos, objetos e ambientes secretos</small></div><span>Planejado</span></article>
+          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos e decisões com consequências</small></div><span>Planejado</span></article>
         </div>
       </section>
     </section>
