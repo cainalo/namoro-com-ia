@@ -7,7 +7,7 @@ import android.provider.Settings;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import com.getcapacitor.annotation.PluginMethod;
+import com.getcapacitor.PluginMethod;
 
 @CapacitorPlugin(name = "DeviceSettings")
 public class DeviceSettingsPlugin extends Plugin {
