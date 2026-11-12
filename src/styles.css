@@ -20786,3 +20786,136 @@ body {
     transition: none !important;
   }
 }
+
+
+/* Oficina de presentes — prévia editorial, mídia e envio com estado explícito */
+.conversation-gift-live-preview {
+  display: grid;
+  grid-template-columns: 5.1rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--morados-gold) 43%, var(--color-border));
+  border-radius: 0.95rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(213 154 50 / 15%), transparent 9rem),
+    linear-gradient(135deg, #fffaf0, #f4ecdc);
+  padding: 0.75rem;
+  box-shadow: 0 9px 24px -20px rgb(81 57 28 / 40%);
+}
+.conversation-gift-live-art {
+  display: grid;
+  width: 5.1rem;
+  height: 5.1rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(189 72 47 / 20%);
+  border-radius: 0.8rem;
+  background: linear-gradient(145deg, #f0dfc2, #f7eee0);
+  color: var(--morados-terracotta);
+}
+.conversation-gift-live-art > svg { width: 2.3rem; height: 2.3rem; stroke-width: 1.55; }
+.conversation-gift-live-art img,
+.conversation-gift-live-art video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.conversation-gift-live-copy { display: grid; min-width: 0; gap: 0.22rem; }
+.conversation-gift-live-copy small {
+  color: #9a6b18;
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.57rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.conversation-gift-live-copy strong {
+  overflow-wrap: anywhere;
+  color: #30291f;
+  font-family: "Fraunces", var(--font-display), Georgia, serif;
+  font-size: clamp(1rem, 3.2vw, 1.22rem);
+  font-weight: 650;
+  line-height: 1.12;
+}
+.conversation-gift-live-copy p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #655a4b;
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.69rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+.conversation-gift-media-picker {
+  min-height: 2.8rem;
+  border-color: color-mix(in srgb, var(--morados-petrol) 32%, var(--color-border));
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--morados-petrol) 5%, var(--color-card));
+  color: var(--morados-petrol);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.73rem;
+  font-weight: 750;
+}
+.conversation-gift-media-picker > span { flex: 1; }
+.conversation-gift-media-selected {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  border: 1px solid var(--morados-line);
+  border-radius: 0.65rem;
+  background: var(--color-background);
+  padding: 0.55rem 0.65rem;
+}
+.conversation-gift-media-selected > span {
+  display: grid;
+  min-width: 0;
+  gap: 0.16rem;
+}
+.conversation-gift-media-selected strong {
+  overflow: hidden;
+  color: var(--color-foreground);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conversation-gift-media-selected small {
+  color: var(--color-muted-foreground);
+  font-size: 0.6rem;
+}
+.conversation-gift-media-selected button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 2rem;
+  place-items: center;
+  border: 1px solid var(--morados-line);
+  border-radius: 50%;
+  background: var(--color-card);
+  color: var(--morados-terracotta);
+}
+.conversation-gift-media-selected button svg { width: 0.9rem; height: 0.9rem; }
+.conversation-gift-send {
+  min-height: 2.75rem;
+  border-radius: 0.75rem;
+  background: var(--morados-petrol);
+  font-family: "Inter Tight", var(--font-sans);
+  font-weight: 800;
+  transition: background 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+.conversation-gift-send:hover:not(:disabled) {
+  background: var(--morados-petrol-deep);
+  transform: translateY(-1px);
+}
+.conversation-gift-send:disabled { cursor: wait; opacity: 0.58; }
+.conversation-gift-send svg { width: 1rem; height: 1rem; }
+@media (max-width: 560px) {
+  .conversation-gift-live-preview { grid-template-columns: 4.25rem minmax(0, 1fr); gap: 0.65rem; padding: 0.65rem; }
+  .conversation-gift-live-art { width: 4.25rem; height: 4.25rem; }
+}
