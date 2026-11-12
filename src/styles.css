@@ -18331,3 +18331,392 @@ html[data-morados-game-open="true"] .page-frame {
   .conversation-gift-artworks { grid-template-columns: repeat(3,minmax(0,1fr)); }
   .is-conversation-mode .conversation-composer-hint { display: none; }
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   MORADOS / EDITORIAL VIBRANTE — camada de refinamento 2026-11-12
+   Mantém a estrutura e os fluxos existentes; reforça o sistema
+   editorial do feed e a consistência visual entre módulos.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --morados-petrol: #07566a;
+  --morados-petrol-deep: #073f50;
+  --morados-coral: #e34f36;
+  --morados-terracotta: #bd482f;
+  --morados-olive: #586f32;
+  --morados-plum: #713d79;
+  --morados-gold: #d59a32;
+  --morados-paper: #faf6ed;
+  --morados-ink: #30291f;
+}
+body {
+  background:
+    radial-gradient(ellipse at 8% 0%, rgb(213 154 50 / 5%), transparent 32rem),
+    var(--color-background);
+}
+.page-frame {
+  width: min(100%, 1180px);
+  padding-top: clamp(1rem, 2.2vw, 2rem);
+}
+.social-feed {
+  width: min(100%, 920px);
+  gap: clamp(0.8rem, 1.7vw, 1.35rem);
+}
+.feed-filter-bar {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0.15rem 0.1rem 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+  margin-bottom: 0.15rem;
+}
+.feed-filter-bar button {
+  min-height: 2.45rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  background: transparent;
+  padding-inline: 1rem;
+  color: var(--color-muted-foreground);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+.feed-filter-bar button:hover {
+  border-color: color-mix(in srgb, var(--morados-petrol) 25%, transparent);
+  background: color-mix(in srgb, var(--morados-petrol) 7%, var(--color-card));
+  color: var(--morados-petrol);
+}
+.feed-filter-bar button.is-active,
+.feed-filter-bar button[aria-pressed="true"] {
+  border-color: var(--morados-petrol);
+  background: var(--morados-petrol);
+  color: #fffaf1;
+  box-shadow: 0 5px 14px -9px var(--morados-petrol);
+}
+.social-feed-list {
+  width: min(100%, 820px);
+  gap: clamp(1.15rem, 2.2vw, 1.8rem);
+}
+.feed-sequence {
+  gap: clamp(1.15rem, 2vw, 1.55rem);
+}
+.feed-post-card.editorial-post-card {
+  --post-px: clamp(1rem, 3.1vw, 1.65rem);
+  --post-pt: clamp(1rem, 2.8vw, 1.45rem);
+  --post-pb: 1.1rem;
+  --editorial-bg: var(--morados-petrol);
+  --editorial-ink: #fffaf1;
+  isolation: isolate;
+  position: relative;
+  border: 0;
+  border-radius: 1.05rem;
+  box-shadow: 0 16px 36px -27px rgb(25 35 31 / 45%);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.feed-post-card.editorial-post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px -28px rgb(25 35 31 / 58%);
+}
+.feed-post-card.editorial-post-card[data-post-tone="terracotta"] {
+  --editorial-bg: var(--morados-terracotta);
+}
+.feed-post-card.editorial-post-card[data-post-tone="olive"] {
+  --editorial-bg: var(--morados-olive);
+}
+.feed-post-card.editorial-post-card[data-post-tone="plum"] {
+  --editorial-bg: var(--morados-plum);
+}
+.feed-post-card.editorial-post-card .feed-post-header {
+  min-height: 4.5rem;
+  padding: var(--post-pt) var(--post-px) 0.9rem;
+  border-bottom: 1px solid rgb(255 250 241 / 19%);
+}
+.feed-post-card.editorial-post-card .feed-post-header strong {
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.93rem;
+  font-weight: 750;
+  letter-spacing: -0.015em;
+}
+.feed-post-card.editorial-post-card .feed-post-header time {
+  color: color-mix(in srgb, var(--editorial-ink) 72%, transparent);
+  font-size: 0.72rem;
+}
+.feed-post-card.editorial-post-card .feed-author-avatar {
+  width: 2.7rem;
+  height: 2.7rem;
+  flex-basis: 2.7rem;
+  border: 2px solid rgb(255 250 241 / 68%);
+  border-radius: 0.85rem;
+  background: rgb(255 250 241 / 15%);
+  color: var(--editorial-ink);
+  box-shadow: 0 3px 10px rgb(0 0 0 / 10%);
+}
+.feed-post-card.editorial-post-card .feed-post-private {
+  border: 1px solid rgb(255 250 241 / 30%);
+  border-radius: 999px;
+  background: rgb(255 250 241 / 12%);
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", var(--font-sans);
+}
+.feed-post-card.editorial-post-card .feed-post-more {
+  color: var(--editorial-ink);
+}
+.feed-post-card.editorial-post-card .feed-post-content {
+  gap: 1rem;
+  padding: 1.15rem var(--post-px) 1.25rem;
+}
+.feed-post-card.editorial-post-card .feed-post-title {
+  margin: 0 0 0.5rem;
+  color: var(--editorial-ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.65rem, 4.5vw, 2.65rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.06;
+}
+.feed-post-card.editorial-post-card .feed-post-content p {
+  color: color-mix(in srgb, var(--editorial-ink) 94%, transparent);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: clamp(0.96rem, 1.6vw, 1.08rem);
+  line-height: 1.7;
+}
+.feed-post-card.editorial-post-card .feed-post-media {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 250 241 / 17%);
+  border-radius: 0.9rem;
+  background: rgb(0 0 0 / 12%);
+}
+.feed-post-card.editorial-post-card .feed-post-media-photo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+}
+.feed-post-card.editorial-post-card .feed-post-photo-trigger {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  max-height: var(--post-image-max, min(68dvh, 38rem));
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  background: transparent;
+}
+.feed-post-card.editorial-post-card .feed-post-image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: var(--post-image-max, min(68dvh, 38rem));
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center;
+}
+.feed-post-card.editorial-post-card .feed-post-video,
+.feed-post-card.editorial-post-card .feed-post-media > video {
+  display: block;
+  width: 100%;
+  max-height: var(--post-image-max, min(68dvh, 38rem));
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center;
+}
+.feed-post-card.editorial-post-card .feed-post-media figcaption {
+  padding: 0.7rem 0.9rem;
+  color: color-mix(in srgb, var(--editorial-ink) 85%, transparent);
+  font-family: "Inter Tight", var(--font-sans);
+}
+.feed-post-card.editorial-post-card .feed-post-footer {
+  display: flex;
+  min-height: 4.3rem;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(1.2rem, 8vw, 4rem);
+  margin: 0;
+  border-top: 1px solid rgb(255 250 241 / 19%);
+  padding: 0.8rem var(--post-px) 0.2rem;
+  color: var(--editorial-ink);
+}
+.feed-post-card.editorial-post-card .feed-post-footer > div {
+  width: 5.25rem;
+}
+.feed-post-card.editorial-post-card .feed-post-footer button {
+  width: 2.65rem;
+  height: 2.65rem;
+  border: 1px solid rgb(255 250 241 / 32%);
+  border-radius: 0.85rem;
+  background: rgb(255 250 241 / 12%);
+  color: var(--editorial-ink);
+  transition: background 150ms ease, transform 150ms ease;
+}
+.feed-post-card.editorial-post-card .feed-post-footer button:hover {
+  background: rgb(255 250 241 / 23%);
+  transform: translateY(-2px);
+}
+.feed-post-card.editorial-post-card .feed-post-footer span {
+  color: color-mix(in srgb, var(--editorial-ink) 82%, transparent);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.feed-game-card {
+  min-height: 13rem;
+  border: 0;
+  border-radius: 1.05rem;
+  box-shadow: 0 16px 34px -26px rgb(25 35 31 / 48%);
+}
+.feed-game-card .feed-game-art {
+  width: 5.5rem;
+  height: 5.5rem;
+  flex: 0 0 5.5rem;
+  border-radius: 1.3rem;
+  background: rgb(255 250 241 / 16%);
+}
+.feed-empty-state {
+  border: 1px solid var(--color-border);
+  border-radius: 1.1rem;
+  background: var(--color-card);
+  padding: clamp(1.5rem, 5vw, 3rem);
+}
+.profile-page {
+  width: min(100%, 880px);
+  margin-inline: auto;
+  animation: morados-page-in 260ms ease both;
+}
+.profile-cover {
+  min-height: clamp(9rem, 25vw, 16rem);
+  border-radius: 1.1rem;
+  background:
+    radial-gradient(circle at 18% 25%, rgb(255 255 255 / 16%) 0 2px, transparent 3px),
+    linear-gradient(125deg, var(--morados-petrol), var(--morados-olive) 55%, var(--morados-terracotta));
+  background-size: 24px 24px, auto;
+}
+.profile-main-card {
+  position: relative;
+  margin: -1.2rem 1rem 0;
+  border: 1px solid var(--color-border);
+  border-radius: 1.1rem;
+  background: var(--color-card);
+  padding: clamp(1rem, 3vw, 1.7rem);
+  box-shadow: 0 18px 38px -30px rgb(25 35 31 / 42%);
+}
+.profile-avatar-large {
+  width: 6rem;
+  height: 6rem;
+  overflow: hidden;
+  border: 4px solid var(--color-card);
+  border-radius: 1.15rem;
+  background: var(--morados-plum);
+  box-shadow: 0 5px 18px -10px rgb(0 0 0 / 45%);
+}
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.profile-avatar-placeholder {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  color: #fffaf1;
+}
+.profile-editor-grid {
+  display: grid;
+  gap: 1.1rem;
+  margin-top: 1.6rem;
+}
+.profile-editor-grid > label {
+  display: grid;
+  gap: 0.5rem;
+  color: var(--color-foreground);
+  font-family: "Inter Tight", var(--font-sans);
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+.profile-editor-grid input,
+.profile-editor-grid textarea {
+  width: 100%;
+  min-height: 2.9rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.7rem;
+  background: var(--color-background);
+  padding: 0.75rem 0.9rem;
+  color: var(--color-foreground);
+  font-weight: 450;
+}
+.profile-upload-button,
+.profile-save-button {
+  border-radius: 0.7rem;
+  font-family: "Inter Tight", var(--font-sans);
+  font-weight: 700;
+}
+.conversation-screen {
+  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  gap: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.conversation-screen .conversation-thread {
+  max-height: none;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 1.2rem clamp(0.9rem, 3vw, 2rem) 7.5rem;
+}
+.conversation-screen .conversation-composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 12;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--morados-petrol) 18%, var(--color-border));
+  border-radius: 1.15rem;
+  background: color-mix(in srgb, var(--color-card) 92%, transparent);
+  padding: 0.7rem;
+  box-shadow: 0 12px 34px -20px rgb(25 35 31 / 40%);
+  backdrop-filter: blur(18px);
+}
+.conversation-screen .conversation-composer textarea {
+  min-height: 2.8rem;
+  max-height: 9rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: transparent;
+  resize: none;
+}
+@media (max-width: 680px) {
+  .page-frame {
+    padding: 0.8rem 0.75rem calc(6.7rem + env(safe-area-inset-bottom));
+  }
+  .social-feed-list {
+    width: 100%;
+  }
+  .feed-post-card.editorial-post-card {
+    border-radius: 0.9rem;
+  }
+  .feed-post-card.editorial-post-card .feed-post-content {
+    padding-inline: 0.9rem;
+  }
+  .feed-post-card.editorial-post-card .feed-post-header {
+    padding-inline: 0.9rem;
+  }
+  .feed-post-card.editorial-post-card .feed-post-footer {
+    padding-inline: 0.9rem;
+  }
+  .profile-main-card {
+    margin-inline: 0.45rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feed-post-card.editorial-post-card,
+  .feed-post-card.editorial-post-card .feed-post-footer button {
+    transition: none !important;
+  }
+}
