@@ -53,8 +53,8 @@ export function BattleshipGame(){
   const enemyFleet=game.fleets[enemy];
   const myIncoming=game.shots[enemy];
   const myShots=game.shots[active];
-  const sunken=shipSpecs.filter(ship=>shipSunk(enemyFleet,myIncoming,ship.id));
-  const enemySunken=shipSpecs.filter(ship=>shipSunk(myFleet,myShots,ship.id));
+  const sunken=shipSpecs.filter(ship=>shipSunk(myFleet,myIncoming,ship.id));
+  const enemySunken=shipSpecs.filter(ship=>shipSunk(enemyFleet,myShots,ship.id));
   const hitCount=game.hitCount[active];
   const fleetRows=Array.from({length:SIZE},(_,row)=>row);
   const sunkCount=enemySunken.length;
