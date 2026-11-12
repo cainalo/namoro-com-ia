@@ -1,98 +1,234 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  AudioLines,
+  Brain,
+  CalendarHeart,
+  Crown,
+  Gamepad2,
+  Search,
+  Shield,
+  Sparkles,
+  Swords,
+  Target,
+  Users,
+} from "lucide-react";
 import { CheckersGame } from "@/components/CheckersGame";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
 import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
 import { CoupleGame } from "@/components/CoupleGame";
+import { CoupleInvestigationGame } from "@/components/CoupleInvestigationGame";
+import {
+  LocalConnectFourGame,
+  LocalDailyChallengeGame,
+  LocalThisOrThatGame,
+} from "@/components/LocalCoupleGames";
 
-type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation";
+type GameMode = "local" | "online";
 
-const plannedGames = [
-  { name: "Xadrez", type: "Estratégia", detail: "Partidas completas com relógio e histórico de lances." },
-  { name: "Batalha naval", type: "Dedução", detail: "Frotas escondidas e tiros alternados." },
-  { name: "Dominó", type: "Mesa", detail: "Compra, bloqueio e contagem de pontos." },
-  { name: "Truco", type: "Cartas", detail: "Rodadas, blefes e disputa por pontos." },
-  { name: "Quiz", type: "Conhecimento", detail: "Perguntas por tema, tempo e placar." },
+const catalogue: Array<{
+  id: GameId;
+  name: string;
+  category: string;
+  description: string;
+  players: string;
+  icon: typeof Gamepad2;
+  tone: string;
+  new?: boolean;
+}> = [
+  {
+    id: "connect-four",
+    name: "Lig 4",
+    category: "Estratégia",
+    description: "Conecte quatro peças antes da outra pessoa. Planeje, bloqueie e mude de estratégia.",
+    players: "2 pessoas",
+    icon: Target,
+    tone: "petrol",
+  },
+  {
+    id: "checkers",
+    name: "Damas brasileiras",
+    category: "Estratégia",
+    description: "Capturas obrigatórias, sequências, damas voadoras e partidas completas.",
+    players: "2 pessoas",
+    icon: Crown,
+    tone: "terracotta",
+  },
+  {
+    id: "this-or-that",
+    name: "Isto ou aquilo?",
+    category: "Preferências",
+    description: "Respondam separadamente e descubram quantas escolhas combinam.",
+    players: "2 pessoas",
+    icon: Brain,
+    tone: "plum",
+  },
+  {
+    id: "daily-challenge",
+    name: "Desafio do dia",
+    category: "Cooperação",
+    description: "Uma missão nova para fazer em conjunto, com conclusão individual.",
+    players: "2 pessoas",
+    icon: CalendarHeart,
+    tone: "olive",
+  },
+  {
+    id: "investigation",
+    name: "A Carta Celeste",
+    category: "Investigação policial",
+    description: "Examine evidências, interrogue quatro suspeitos e descubra quem furtou a peça do museu.",
+    players: "Cooperativo · 1–2",
+    icon: Search,
+    tone: "noir",
+    new: true,
+  },
 ];
 
+function GamePage({
+  gameId,
+  userId,
+  onBack,
+}: {
+  gameId: GameId;
+  userId: string;
+  onBack: () => void;
+}) {
+  const [mode, setMode] = useState<GameMode>("local");
+  const game = catalogue.find((item) => item.id === gameId)!;
+  const isRemoteSupported = gameId === "connect-four" || gameId === "this-or-that" || gameId === "daily-challenge";
+
+  useEffect(() => {
+    document.documentElement.dataset.moradosGameOpen = "true";
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onBack();
+    };
+    const onHardwareBack = () => onBack();
+    window.addEventListener("keydown", onEscape);
+    window.addEventListener("morados:game-back", onHardwareBack);
+    return () => {
+      delete document.documentElement.dataset.moradosGameOpen;
+      window.removeEventListener("keydown", onEscape);
+      window.removeEventListener("morados:game-back", onHardwareBack);
+    };
+  }, [onBack]);
+
+  return (
+    <div className={"games-fullscreen-page tone-" + game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
+      <header className="games-fullscreen-header">
+        <button type="button" className="games-fullscreen-back" onClick={onBack} aria-label="Voltar para os jogos">
+          <ArrowLeft aria-hidden="true" />
+        </button>
+        <div className="games-fullscreen-heading">
+          <span>{game.category}</span>
+          <strong>{game.name}</strong>
+        </div>
+        {isRemoteSupported ? (
+          <div className="games-mode-switch" role="group" aria-label="Modo de jogo">
+            <button type="button" className={mode === "local" ? "is-active" : ""} onClick={() => setMode("local")}>Neste aparelho</button>
+            <button type="button" className={mode === "online" ? "is-active" : ""} onClick={() => setMode("online")}>Online</button>
+          </div>
+        ) : (
+          <span className="games-fullscreen-mode"><Users aria-hidden="true" /> {game.players}</span>
+        )}
+      </header>
+      <main className="games-fullscreen-scroll">
+        <div className="games-fullscreen-content">
+          {gameId === "connect-four" ? (
+            mode === "local" ? <LocalConnectFourGame /> : <ConnectFourGame userId={userId} />
+          ) : gameId === "checkers" ? (
+            <CheckersGame />
+          ) : gameId === "this-or-that" ? (
+            mode === "local" ? <LocalThisOrThatGame /> : <CoupleGame userId={userId} />
+          ) : gameId === "daily-challenge" ? (
+            mode === "local" ? <LocalDailyChallengeGame /> : <CoupleDailyChallenge userId={userId} />
+          ) : (
+            <CoupleInvestigationGame />
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}
+
 export function CoupleGames({ userId }: { userId: string }) {
-  const [activeGame, setActiveGame] = useState<GameId>("connect-four");
+  const [activeGame, setActiveGame] = useState<GameId | null>(null);
+  const [filter, setFilter] = useState<"all" | "strategy" | "cooperation" | "investigation">("all");
+
+  const visibleGames = catalogue.filter((game) => {
+    if (filter === "strategy") return game.category === "Estratégia";
+    if (filter === "cooperation") return game.category !== "Estratégia" && game.id !== "investigation";
+    if (filter === "investigation") return game.id === "investigation";
+    return true;
+  });
+
+  if (activeGame) {
+    return (
+      <GamePage
+        gameId={activeGame}
+        userId={userId}
+        onBack={() => setActiveGame(null)}
+      />
+    );
+  }
 
   return (
     <section className="games-hub">
-      <div className="games-hub-categories">
-        <section className="games-hub-category" aria-labelledby="games-competition-title">
-          <h2 id="games-competition-title">Competir e cooperar</h2>
-          <p>Jogos clássicos, estratégia e desafios para jogar junto.</p>
-          <div className="games-hub-selectors" role="group" aria-label="Jogos para competir ou cooperar">
-            <button
-              type="button"
-              className={activeGame === "connect-four" ? "is-active" : ""}
-              aria-pressed={activeGame === "connect-four"}
-              onClick={() => setActiveGame("connect-four")}
-            >
-              Lig 4
-            </button>
-            <button
-              type="button"
-              className={activeGame === "checkers" ? "is-active" : ""}
-              aria-pressed={activeGame === "checkers"}
-              onClick={() => setActiveGame("checkers")}
-            >
-              Damas
-            </button>
-          </div>
-        </section>
-
-        <section className="games-hub-category" aria-labelledby="games-couple-title">
-          <h2 id="games-couple-title">Jogos de casal</h2>
-          <p>Jogos próprios para vocês se conhecerem, conversarem e se divertirem.</p>
-          <div className="games-hub-selectors" role="group" aria-label="Jogos de casal">
-            <button
-              type="button"
-              className={activeGame === "this-or-that" ? "is-active" : ""}
-              aria-pressed={activeGame === "this-or-that"}
-              onClick={() => setActiveGame("this-or-that")}
-            >
-              Isto ou aquilo?
-            </button>
-            <button
-              type="button"
-              className={activeGame === "daily-challenge" ? "is-active" : ""}
-              aria-pressed={activeGame === "daily-challenge"}
-              onClick={() => setActiveGame("daily-challenge")}
-            >
-              Desafio do dia
-            </button>
-          </div>
-        </section>
+      <div className="games-hub-intro">
+        <div>
+          <p className="date-kicker">Escolham uma experiência</p>
+          <h1>Jogos</h1>
+          <p>Partidas rápidas, desafios em conjunto e histórias para investigar.</p>
+        </div>
+        <span className="games-hub-mark"><Gamepad2 aria-hidden="true" /></span>
       </div>
 
-      <div className="games-hub-active" aria-live="polite">
-        {activeGame === "connect-four" ? (
-          <ConnectFourGame userId={userId} />
-        ) : activeGame === "checkers" ? (
-          <CheckersGame />
-        ) : activeGame === "this-or-that" ? (
-          <CoupleGame userId={userId} />
-        ) : (
-          <CoupleDailyChallenge userId={userId} />
-        )}
-      </div>
+      <nav className="games-hub-filters" aria-label="Filtrar jogos">
+        {([
+          ["all", "Todos"],
+          ["strategy", "Estratégia"],
+          ["cooperation", "Cooperação"],
+          ["investigation", "Investigação"],
+        ] as const).map(([id, label]) => (
+          <button key={id} type="button" className={filter === id ? "is-active" : ""} aria-pressed={filter === id} onClick={() => setFilter(id)}>
+            {label}
+          </button>
+        ))}
+      </nav>
 
-      <section className="games-hub-planned" aria-labelledby="games-planned-title">
-        <h2 id="games-planned-title">Mais jogos a caminho</h2>
-        <ul>
-          {plannedGames.map((game) => (
-            <li key={game.name}>
-              <div>
-                <p className="games-hub-game-type">{game.type}</p>
-                <h3>{game.name}</h3>
-                <p>{game.detail}</p>
+      <div className="games-hub-grid">
+        {visibleGames.map((game) => {
+          const Icon = game.icon;
+          return (
+            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone} onClick={() => setActiveGame(game.id)}>
+              <div className="games-hub-card-art">
+                <Icon aria-hidden="true" />
+                {game.new && <span><Sparkles aria-hidden="true" /> Novo</span>}
               </div>
-              <span>Em desenvolvimento</span>
-            </li>
-          ))}
-        </ul>
+              <div className="games-hub-card-copy">
+                <span>{game.category}</span>
+                <h2>{game.name}</h2>
+                <p>{game.description}</p>
+                <div className="games-hub-card-footer">
+                  <small><Users aria-hidden="true" /> {game.players}</small>
+                  <strong>Jogar <ArrowLeft aria-hidden="true" /></strong>
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <section className="games-hub-next">
+        <div className="games-hub-next-title">
+          <span><Swords aria-hidden="true" /></span>
+          <div><h2>Próximas experiências</h2><p>Novos gêneros além dos jogos de tabuleiro.</p></div>
+        </div>
+        <div className="games-hub-next-grid">
+          <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios</small></div><span>Em produção</span></article>
+          <article><AudioLines aria-hidden="true"/><div><strong>Escape rooms</strong><small>Enigmas, códigos e objetos escondidos</small></div><span>Planejado</span></article>
+          <article><Brain aria-hidden="true"/><div><strong>Jogos de estratégia</strong><small>Gestão, sobrevivência e decisões</small></div><span>Planejado</span></article>
+        </div>
       </section>
     </section>
   );
