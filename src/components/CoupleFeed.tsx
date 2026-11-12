@@ -508,15 +508,15 @@ export function CoupleFeed({
         }
 
         const mostVisible = cards
-          .filter((card) => card.dataset.hasMusic === "true")
           .map((card) => ({
             id: card.dataset.feedPostId ?? "",
+            hasMusic: card.dataset.hasMusic === "true",
             ratio: ratios.get(card) ?? 0,
           }))
           .filter((item) => item.id && item.ratio >= 0.18)
           .sort((left, right) => right.ratio - left.ratio)[0];
 
-        setActiveMusicPostId(mostVisible?.id ?? null);
+        setActiveMusicPostId(mostVisible?.hasMusic ? mostVisible.id : null);
       },
       { threshold: [0, 0.12, 0.18, 0.3, 0.45, 0.6, 0.8, 1] },
     );
@@ -1309,6 +1309,12 @@ function InAppMediaCapture({
     const next = facingMode === "environment" ? "user" : "environment";
     setFacingMode(next);
     await startCamera(next);
+    if (streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      void videoRef.current.play().catch(() => {
+        setCameraError("Não foi possível alternar a câmera.");
+      });
+    }
   }
 
   function capturePhoto() {
