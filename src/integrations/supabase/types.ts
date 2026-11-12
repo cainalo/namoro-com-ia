@@ -262,24 +262,39 @@ export type Database = {
       }
       couple_messages: {
         Row: {
+          attachment_mime: string | null
+          attachment_name: string | null
+          attachment_path: string | null
           body: string
           couple_id: string
           created_at: string
           id: string
+          message_type: string
+          metadata: Json
           sender_id: string
         }
         Insert: {
+          attachment_mime?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
           body: string
           couple_id: string
           created_at?: string
           id?: string
+          message_type?: string
+          metadata?: Json
           sender_id: string
         }
         Update: {
+          attachment_mime?: string | null
+          attachment_name?: string | null
+          attachment_path?: string | null
           body?: string
           couple_id?: string
           created_at?: string
           id?: string
+          message_type?: string
+          metadata?: Json
           sender_id?: string
         }
         Relationships: [
@@ -341,6 +356,50 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "couple_plan_events_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_posts: {
+        Row: {
+          author_id: string
+          body: string
+          couple_id: string
+          created_at: string
+          id: string
+          media_mime: string | null
+          media_name: string | null
+          media_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          body?: string
+          couple_id: string
+          created_at?: string
+          id?: string
+          media_mime?: string | null
+          media_name?: string | null
+          media_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          couple_id?: string
+          created_at?: string
+          id?: string
+          media_mime?: string | null
+          media_name?: string | null
+          media_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_posts_couple_id_fkey"
             columns: ["couple_id"]
             isOneToOne: false
             referencedRelation: "couples"
