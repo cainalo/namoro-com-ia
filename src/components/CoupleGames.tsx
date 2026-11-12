@@ -3,7 +3,6 @@ import { CheckersGame } from "@/components/CheckersGame";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
 import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
 import { CoupleGame } from "@/components/CoupleGame";
-import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge";
 
@@ -19,15 +18,7 @@ export function CoupleGames({ userId }: { userId: string }) {
   const [activeGame, setActiveGame] = useState<GameId>("connect-four");
 
   return (
-    <section className="games-hub" aria-labelledby="games-hub-title">
-      <header className="games-hub-heading">
-        <div>
-          <p className="date-kicker">Jogos para dois · online e local</p>
-          <h1 id="games-hub-title">Jogos</h1>
-        </div>
-        <MoradosSectionArt variant="games" />
-      </header>
-
+    <section className="games-hub">
       <div className="games-hub-categories">
         <section className="games-hub-category" aria-labelledby="games-competition-title">
           <h2 id="games-competition-title">Competir e cooperar</h2>
