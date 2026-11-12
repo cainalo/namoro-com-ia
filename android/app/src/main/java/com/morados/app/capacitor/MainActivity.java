@@ -24,9 +24,10 @@ public class MainActivity extends BridgeActivity {
         // exactly one set of system/IME insets to the WebView.
         EdgeToEdge.enable(this);
 
-        // Keep Android's standard IME resize behavior for focused web inputs.
+        // The patched Capacitor SystemBars owns IME handling. Overlay the keyboard instead of
+        // shrinking Android's window and Chromium's visual viewport at the same time.
         getWindow().setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
         );
     }
 }
