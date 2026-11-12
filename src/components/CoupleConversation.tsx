@@ -140,6 +140,20 @@ function initials(value: string) {
     .join("") || "♡";
 }
 
+function getLiveStatusText(
+  status: ConversationState["status"],
+  realtimeStatus: "connecting" | "connected" | "offline",
+) {
+  if (status === "active") {
+    if (realtimeStatus === "connected") return "online agora";
+    if (realtimeStatus === "connecting") return "conectando…";
+    return "reconectando";
+  }
+  if (status === "pending") return "aguardando convite";
+  if (status === "no-couple") return "sem vínculo ativo";
+  return " ";
+}
+
 export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
