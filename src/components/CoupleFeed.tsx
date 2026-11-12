@@ -913,33 +913,37 @@ export function CoupleFeed({
                   <MoradosPostCardFrame
                     tone={(["petrol", "terracotta", "olive", "plum"] as const)[index % 4]}
                     footer={
-                      <div className="feed-post-footer">
-                        <button type="button" className="feed-post-action" onClick={onOpenConversation}>
-                          <span className="feed-post-action-icon"><MessageCircle aria-hidden="true" /></span>
-                          <span>Conversa</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="feed-post-action"
-                          onClick={() => {
+                      <div className="feed-post-footer mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
+                        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
+                          <button type="button" onClick={onOpenConversation} aria-label="Conversa" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Conversa</span>
+                        </div>
+                        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
+                          <button type="button" aria-label="Copiar texto" onClick={() => {
                             const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
                             void navigator.clipboard?.writeText(copy);
-                          }}
-                        >
-                          <span className="feed-post-action-icon"><Share2 aria-hidden="true" /></span>
-                          <span>Copiar texto</span>
-                        </button>
+                          }} className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                            <Share2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Copiar texto</span>
+                        </div>
                       </div>
                     }
                   >
-                    <header className="feed-post-header">
+                    <header className="feed-post-header mb-4 flex flex-wrap items-start justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-3">
                         <span className={"feed-author-avatar grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
                           {initials(post.author_name)}
                         </span>
                         <div className="feed-post-author-meta min-w-0">
-                          <strong>{post.author_name}</strong>
-                          <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
+                          <div className="flex items-center gap-1.5">
+                            <strong className="truncate text-sm font-semibold text-foreground">{post.author_name}</strong>
+                          </div>
+                          <p className="flex flex-wrap items-center gap-x-1 text-xs text-muted-foreground">
+                            <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
+                          </p>
                         </div>
                       </div>
                       <div className="ml-auto flex shrink-0 items-center gap-1.5">
@@ -1211,7 +1215,7 @@ function MoradosPostCardFrame({
       style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }) }}
       className="post-card feed-post-card flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition hover:shadow-md"
     >
-      <div ref={regionRef} className="relative min-h-0 overflow-hidden px-[var(--post-px)] pt-[var(--post-pt)]">
+      <div ref={regionRef} className="feed-post-frame-region relative min-h-0 overflow-hidden px-[var(--post-px)] pt-[var(--post-pt)]">
         <div ref={innerRef} className="flow-root">{children}</div>
         {clamped && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
