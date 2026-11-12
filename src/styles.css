@@ -20928,3 +20928,40 @@ body {
 .app-shell:not(.is-conversation-mode) :is(button, a) {
   -webkit-tap-highlight-color: transparent;
 }
+
+
+/* Login nativo: acompanhar a altura real do WebView quando o teclado abre. */
+.auth-shell {
+  box-sizing: border-box;
+  min-height: 100dvh;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-block: 24px;
+}
+.auth-field input {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 52px;
+  font-size: 16px !important;
+  touch-action: auto;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+@media (max-width: 680px) {
+  .auth-shell {
+    min-height: 100dvh;
+    padding: max(18px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    align-content: center;
+  }
+  .auth-panel {
+    width: min(100%, 460px);
+    margin-block: auto;
+  }
+  .auth-field input {
+    min-height: 54px;
+    font-size: 16px !important;
+  }
+}
