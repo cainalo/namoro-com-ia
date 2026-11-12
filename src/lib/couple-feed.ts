@@ -1,10 +1,25 @@
 import { supabase } from "@/integrations/supabase/client";
 
+export type CouplePostBlockType = "title" | "text" | "photo" | "music" | "audio";
+
+export type CouplePostBlock = {
+  id: string;
+  type: CouplePostBlockType;
+  value?: string;
+  caption?: string;
+  url?: string;
+  media_path?: string | null;
+  media_name?: string | null;
+  media_mime?: string | null;
+};
+
 export type CouplePost = {
   id: string;
   couple_id: string;
   author_id: string;
+  title: string | null;
   body: string;
+  content_blocks: CouplePostBlock[];
   media_path: string | null;
   media_name: string | null;
   media_mime: string | null;
@@ -30,7 +45,9 @@ type CouplePostTable = {
   insert: (values: {
     couple_id: string;
     author_id: string;
+    title: string | null;
     body: string;
+    content_blocks: CouplePostBlock[];
     media_path: string | null;
     media_name: string | null;
     media_mime: string | null;
@@ -44,7 +61,7 @@ const feedClient = supabase as unknown as {
 export function listCouplePosts(coupleId: string) {
   return feedClient
     .from("couple_posts")
-    .select("id, couple_id, author_id, body, media_path, media_name, media_mime, created_at, updated_at")
+    .select("id, couple_id, author_id, title, body, content_blocks, media_path, media_name, media_mime, created_at, updated_at")
     .eq("couple_id", coupleId)
     .order("created_at", { ascending: false })
     .limit(80);
@@ -53,7 +70,9 @@ export function listCouplePosts(coupleId: string) {
 export function createCouplePost(input: {
   coupleId: string;
   authorId: string;
+  title: string | null;
   body: string;
+  contentBlocks: CouplePostBlock[];
   mediaPath: string | null;
   mediaName: string | null;
   mediaMime: string | null;
@@ -61,7 +80,9 @@ export function createCouplePost(input: {
   return feedClient.from("couple_posts").insert({
     couple_id: input.coupleId,
     author_id: input.authorId,
+    title: input.title,
     body: input.body,
+    content_blocks: input.contentBlocks,
     media_path: input.mediaPath,
     media_name: input.mediaName,
     media_mime: input.mediaMime,
