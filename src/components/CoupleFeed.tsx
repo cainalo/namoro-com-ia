@@ -22,6 +22,13 @@ import {
   Video,
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, uploadCoupleMedia } from "@/lib/couple-media";
 import {
@@ -41,10 +48,13 @@ type FeedState =
   | { status: "no-couple" }
   | { status: "ready"; coupleId: string; posts: FeedPostView[] };
 
+type FeedFilter = "all" | "photos" | "videos" | "text";
+
 type CoupleFeedProps = {
   userId: string;
   onNavigate: (section: "games" | "memories") => void;
   onOpenConversation: () => void;
+  postComposerRequest: number;
 };
 
 type AnniversaryMoment = {
@@ -158,6 +168,7 @@ export function CoupleFeed({
   userId,
   onNavigate,
   onOpenConversation,
+  postComposerRequest,
 }: CoupleFeedProps) {
   const [state, setState] = useState<FeedState>({ status: "loading" });
   const [refreshKey, setRefreshKey] = useState(0);
@@ -166,7 +177,13 @@ export function CoupleFeed({
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [postFilter, setPostFilter] = useState<FeedFilter>("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (postComposerRequest > 0) setComposerOpen(true);
+  }, [postComposerRequest]);
 
   useEffect(() => {
     if (!selectedMedia) {
@@ -277,6 +294,16 @@ export function CoupleFeed({
     [state],
   );
 
+  const visiblePosts = useMemo(() => {
+    if (state.status !== "ready") return [];
+    return state.posts.filter((post) => {
+      if (postFilter === "photos") return post.media_mime?.startsWith("image/") ?? false;
+      if (postFilter === "videos") return post.media_mime?.startsWith("video/") ?? false;
+      if (postFilter === "text") return Boolean(post.body?.trim()) && !post.media_mime;
+      return true;
+    });
+  }, [state, postFilter]);
+
   async function publishPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (state.status !== "ready" || publishing) return;
@@ -310,6 +337,7 @@ export function CoupleFeed({
       if (result.error) throw result.error;
 
       setDraft("");
+      setComposerOpen(false);
       setSelectedMedia(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setRefreshKey((current) => current + 1);
@@ -328,16 +356,6 @@ export function CoupleFeed({
   if (state.status === "loading") {
     return (
       <section className="social-feed" aria-busy="true">
-        <div className="social-feed-heading">
-          <div>
-            <p className="date-kicker">O espaço que vocês compartilham</p>
-            <h1>Nosso feed</h1>
-          </div>
-          <button type="button" className="feed-chat-shortcut" onClick={onOpenConversation}>
-            <MessageCircle aria-hidden="true" />
-            <span>Conversar</span>
-          </button>
-        </div>
         <div className="feed-loading"><LoaderCircle aria-hidden="true" /> Preparando as publicações…</div>
       </section>
     );
@@ -346,16 +364,6 @@ export function CoupleFeed({
   if (state.status === "error") {
     return (
       <section className="social-feed">
-        <div className="social-feed-heading">
-          <div>
-            <p className="date-kicker">O espaço que vocês compartilham</p>
-            <h1>Nosso feed</h1>
-          </div>
-          <button type="button" className="feed-chat-shortcut" onClick={onOpenConversation}>
-            <MessageCircle aria-hidden="true" />
-            <span>Conversar</span>
-          </button>
-        </div>
         <div className="feed-empty-state">
           <Sparkles aria-hidden="true" />
           <h2>Não foi possível abrir o feed.</h2>
@@ -371,16 +379,6 @@ export function CoupleFeed({
   if (state.status === "no-couple") {
     return (
       <section className="social-feed">
-        <div className="social-feed-heading">
-          <div>
-            <p className="date-kicker">O espaço que vocês compartilham</p>
-            <h1>Nosso feed</h1>
-          </div>
-          <button type="button" className="feed-chat-shortcut" onClick={onOpenConversation}>
-            <MessageCircle aria-hidden="true" />
-            <span>Conversar</span>
-          </button>
-        </div>
         <div className="feed-empty-state">
           <div className="feed-empty-illustration">♡</div>
           <h2>O feed de vocês começa aqui.</h2>
@@ -392,19 +390,32 @@ export function CoupleFeed({
   }
 
   return (
-    <section className="social-feed" aria-labelledby="social-feed-title">
-      <header className="social-feed-heading">
-        <div>
-          <p className="date-kicker">O espaço que vocês compartilham</p>
-          <h1 id="social-feed-title">Nosso feed</h1>
-          <p className="feed-subtitle">Pequenos momentos que fazem parte da história de vocês.</p>
-        </div>
-        <button type="button" className="feed-chat-shortcut" onClick={onOpenConversation}>
-          <MessageCircle aria-hidden="true" />
-          <span>Conversar</span>
-        </button>
-      </header>
+    <section className="social-feed">
+      <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
+        {([
+          ["all", "Tudo"],
+          ["photos", "Fotos"],
+          ["videos", "Vídeos"],
+          ["text", "Textos"],
+        ] as const).map(([filter, label]) => (
+          <button
+            key={filter}
+            type="button"
+            className={postFilter === filter ? "is-active" : ""}
+            aria-pressed={postFilter === filter}
+            onClick={() => setPostFilter(filter)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
+      <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+        <DialogContent className="feed-publisher-dialog">
+          <DialogHeader className="feed-publisher-header">
+            <DialogTitle>Compartilhar um momento</DialogTitle>
+            <DialogDescription>Uma foto, um vídeo ou algumas palavras para guardar entre vocês.</DialogDescription>
+          </DialogHeader>
       <form className="feed-composer" onSubmit={publishPost}>
         <div className="feed-composer-top">
           <span className="feed-composer-avatar">{initials("Você")}</span>
@@ -464,6 +475,8 @@ export function CoupleFeed({
         </div>
         {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
       </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="social-feed-list">
         {state.posts.length === 0 ? (
@@ -472,12 +485,17 @@ export function CoupleFeed({
             <h2>Uma história ainda em branco.</h2>
             <p>Publique a primeira foto ou um pequeno momento para começar a preencher o feed.</p>
           </div>
+        ) : visiblePosts.length === 0 ? (
+          <div className="feed-empty-state feed-filter-empty">
+            <h2>Nenhuma publicação neste filtro.</h2>
+            <button type="button" className="secondary-action" onClick={() => setPostFilter("all")}>Mostrar tudo</button>
+          </div>
         ) : (
           <>
-            {state.posts.map((post, index) => {
+            {visiblePosts.map((post, index) => {
               const game = gameSuggestions[index % gameSuggestions.length];
-              const showGameCard = index === 1 || (index > 1 && index % 4 === 1);
-              const showMemoryCards = index === 0 && anniversaryMoments.length > 0;
+              const showGameCard = postFilter === "all" && (index === 1 || (index > 1 && index % 4 === 1));
+              const showMemoryCards = postFilter === "all" && index === 0 && anniversaryMoments.length > 0;
 
               return (
                 <div className="feed-sequence" key={post.id}>
@@ -527,7 +545,7 @@ export function CoupleFeed({
                 </div>
               );
             })}
-            {anniversaryMoments.length > 0 && state.posts.length > 1 && (
+            {postFilter === "all" && anniversaryMoments.length > 0 && state.posts.length > 1 && (
               <div className="feed-anniversary-more">
                 {anniversaryMoments.map((moment) => (
                   <AnniversaryCard key={"later-" + moment.monthDay} moment={moment} compact />
