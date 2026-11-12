@@ -69,6 +69,16 @@ export function CoupleProfile({ userId }: { userId: string }) {
   }, [userId]);
   useEffect(() => { void load(); }, [load]);
 
+  const profileChecklist = [
+    Boolean(name.trim()),
+    Boolean(avatarUrl),
+    Boolean(bio.trim()),
+    Boolean(bannerUrl),
+  ];
+  const completedProfileItems = profileChecklist.filter(Boolean).length;
+  const profileCompletion = Math.round((completedProfileItems / profileChecklist.length) * 100);
+
+
   async function saveProfile() {
     if (!profile) return;
     setSaving(true); setError(null); setMessage(null);
@@ -137,6 +147,25 @@ export function CoupleProfile({ userId }: { userId: string }) {
             <label className="profile-upload-button"><Camera className="h-4 w-4" aria-hidden="true" /> Alterar foto
               <input className="sr-only" type="file" accept="image/*" disabled={!coupleId || uploading !== null} onChange={(event) => void uploadProfileImage("avatar", event)} />
             </label>
+          </div>
+          <div className="profile-completion-card" aria-label={`Perfil preenchido em ${profileCompletion}%`}>
+            <div className="profile-completion-copy">
+              <div>
+                <span className="profile-section-kicker">Identidade pessoal</span>
+                <strong>Seu perfil</strong>
+              </div>
+              <span className="profile-completion-value">{profileCompletion}%</span>
+            </div>
+            <div className="profile-completion-track" aria-hidden="true">
+              <span style={{ width: `${profileCompletion}%` }} />
+            </div>
+            <div className="profile-completion-items">
+              {["Nome", "Foto", "Sobre mim", "Capa"].map((label, index) => (
+                <span key={label} className={profileChecklist[index] ? "is-complete" : ""}>
+                  <span aria-hidden="true">{profileChecklist[index] ? "✓" : "•"}</span>{label}
+                </span>
+              ))}
+            </div>
           </div>
           <div className="profile-editor-grid">
             <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
