@@ -458,7 +458,11 @@ export function CoupleFeed({
     const textBlocks = draftBlocks
       .filter((block) => block.type === "text" && block.value.trim())
       .map((block) => block.value.trim());
-    const body = textBlocks.join("\n\n").slice(0, 5000);
+    const body = textBlocks.join("\n\n");
+    if (body.length > 5000) {
+      setPublishError("O texto total da publicação deve ter até 5.000 caracteres.");
+      return;
+    }
 
     setPublishing(true);
     setPublishError(null);
