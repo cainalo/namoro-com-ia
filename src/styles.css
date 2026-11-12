@@ -20919,3 +20919,12 @@ body {
   .conversation-gift-live-preview { grid-template-columns: 4.25rem minmax(0, 1fr); gap: 0.65rem; padding: 0.65rem; }
   .conversation-gift-live-art { width: 4.25rem; height: 4.25rem; }
 }
+
+
+/* Gesto de navegação: rolagem vertical nativa, navegação horizontal pelo app. */
+.app-shell:not(.is-conversation-mode) {
+  touch-action: pan-y pinch-zoom;
+}
+.app-shell:not(.is-conversation-mode) :is(button, a) {
+  -webkit-tap-highlight-color: transparent;
+}
