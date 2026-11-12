@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 type AuthGateProps = {
   children: (session: Session) => ReactNode;
   emailRedirectTo?: () => string;
- };
+};
 
 type AuthMode = "signin" | "signup";
 
@@ -29,8 +29,7 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
       setChecking(false);
     });
 
-    // Never leave the whole app trapped behind the loading mark if an embedded
-    // browser rejects a storage read or the auth endpoint is temporarily slow.
+    // Keep the login screen reachable if a WebView storage read or auth request stalls.
     const fallbackTimer = window.setTimeout(() => {
       if (active) setChecking(false);
     }, 5000);
@@ -73,8 +72,6 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
 
 function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
   const [mode, setMode] = useState<AuthMode>("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -83,7 +80,12 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
     event.preventDefault();
     if (busy) return;
 
-    const normalizedEmail = email.trim().toLowerCase();
+    // Uncontrolled native inputs: typing stays inside the browser's input
+    // editor and does not require a React render for every character.
+    const formData = new FormData(event.currentTarget);
+    const normalizedEmail = String(formData.get("email") ?? "").trim().toLowerCase();
+    const password = String(formData.get("password") ?? "");
+
     if (!normalizedEmail || !password) {
       setError("Informe o e-mail e a senha.");
       return;
@@ -167,8 +169,6 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
               spellCheck={false}
               required
               maxLength={254}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
               placeholder="voce@exemplo.com"
             />
           </label>
@@ -182,8 +182,6 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
               required
               minLength={mode === "signup" ? 8 : undefined}
               maxLength={128}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
               placeholder="Sua senha"
             />
           </label>
