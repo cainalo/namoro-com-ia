@@ -596,71 +596,239 @@ export function CoupleFeed({
         ))}
       </div>
 
-      <Dialog open={composerOpen} onOpenChange={setComposerOpen}>
+      <Dialog
+        open={composerOpen}
+        onOpenChange={(open) => {
+          setComposerOpen(open);
+          if (!open && !publishing) resetComposer();
+        }}
+      >
         <DialogContent className="feed-publisher-dialog">
           <DialogHeader className="feed-publisher-header">
-            <DialogTitle>Compartilhar um momento</DialogTitle>
-            <DialogDescription>Uma foto, um vídeo ou algumas palavras para guardar entre vocês.</DialogDescription>
+            <DialogTitle>Monte sua publicação</DialogTitle>
+            <DialogDescription>Adicione partes ao card e arraste-as para escolher a ordem.</DialogDescription>
           </DialogHeader>
-      <form className="feed-composer" onSubmit={publishPost}>
-        <div className="feed-composer-top">
-          <span className="feed-composer-avatar">{initials("Você")}</span>
-          <textarea
-            value={draft}
-            onChange={(event) => setDraft(event.target.value)}
-            placeholder="O que você quer compartilhar com ela?"
-            rows={2}
-            maxLength={5000}
-            aria-label="Escreva uma publicação"
-            disabled={publishing}
-          />
-        </div>
-        {selectedMedia && mediaPreview && (
-          <div className="feed-media-preview">
-            {selectedMedia.type.startsWith("video/") ? (
-              <video src={mediaPreview} controls playsInline />
-            ) : (
-              <img src={mediaPreview} alt="Prévia da publicação" />
-            )}
-            <button
-              type="button"
-              onClick={() => {
-                setSelectedMedia(null);
-                if (fileInputRef.current) fileInputRef.current.value = "";
-              }}
-              aria-label="Remover mídia"
-            >
-              ×
-            </button>
+
+          <div className="feed-block-toolbox" role="toolbar" aria-label="Adicionar partes à publicação">
+            <button type="button" onClick={() => addDraftBlock("photo")}><ImagePlus aria-hidden="true" /> Foto</button>
+            <button type="button" onClick={() => addDraftBlock("title")}><Type aria-hidden="true" /> Título</button>
+            <button type="button" onClick={() => addDraftBlock("text")}><span className="toolbox-text-icon">T</span> Texto</button>
+            <button type="button" onClick={() => addDraftBlock("music")}><Music2 aria-hidden="true" /> Música</button>
+            <button type="button" onClick={() => addDraftBlock("audio")}><AudioLines aria-hidden="true" /> Áudio</button>
+            <button type="button" onClick={() => addDraftBlock("video")}><Camera aria-hidden="true" /> Vídeo</button>
           </div>
-        )}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,video/mp4,video/webm,video/quicktime"
-          className="sr-only"
-          onChange={(event) => {
-            const file = event.target.files?.[0] ?? null;
-            if (file) setSelectedMedia(file);
-          }}
-        />
-        <div className="feed-composer-footer">
-          <button type="button" className="feed-composer-media" onClick={() => fileInputRef.current?.click()}>
-            <ImagePlus aria-hidden="true" />
-            <span>Foto ou vídeo</span>
-          </button>
-          <span className="feed-composer-private"><span /> Só vocês dois</span>
-          <button
-            type="submit"
-            className="feed-publish-button"
-            disabled={publishing || (!draft.trim() && !selectedMedia)}
-          >
-            {publishing ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
-            Publicar
-          </button>
-        </div>
-        {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
-      </form>
+
+          <form className="feed-publisher-form" onSubmit={publishPost}>
+            <article className="feed-post-card editorial-post-card is-composer-card" data-post-tone="petrol">
+              <header className="feed-post-header">
+                <span className="feed-author-avatar is-you">{initials("Você")}</span>
+                <div>
+                  <strong>Você</strong>
+                  <time>Agora · rascunho</time>
+                </div>
+                <span className="feed-post-private">Só vocês dois</span>
+              </header>
+
+              {draftBlocks.length === 0 ? (
+                <button
+                  type="button"
+                  className="feed-composer-empty"
+                  onClick={() => addDraftBlock("text")}
+                >
+                  <span className="feed-composer-empty-symbol"><Plus aria-hidden="true" /></span>
+                  <strong>Este card ainda está vazio</strong>
+                  <span>Adicione foto, título, texto, música ou áudio. Depois, arraste cada parte para organizar a publicação.</span>
+                </button>
+              ) : (
+                <div className="feed-composer-blocks">
+                  {draftBlocks.map((block, index) => (
+                    <article
+                      key={block.id}
+                      data-post-block-id={block.id}
+                      className={"feed-composer-block" + (draggedBlockId === block.id ? " is-dragging" : "")}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        if (dragBlockRef.current) reorderDraftBlock(dragBlockRef.current, block.id);
+                        handleBlockPointerEnd();
+                      }}
+                    >
+                      <div className="feed-composer-block-toolbar">
+                        <button
+                          type="button"
+                          className="feed-block-drag-handle"
+                          aria-label={"Arrastar bloco " + (index + 1)}
+                          title="Arraste para reorganizar"
+                          draggable
+                          onDragStart={(event) => {
+                            dragBlockRef.current = block.id;
+                            setDraggedBlockId(block.id);
+                            event.dataTransfer.effectAllowed = "move";
+                            event.dataTransfer.setData("text/plain", block.id);
+                          }}
+                          onDragEnd={handleBlockPointerEnd}
+                          onPointerDown={(event) => handleBlockPointerDown(block.id, event)}
+                          onPointerMove={handleBlockPointerMove}
+                          onPointerUp={handleBlockPointerEnd}
+                          onPointerCancel={handleBlockPointerEnd}
+                        >
+                          <GripVertical aria-hidden="true" />
+                        </button>
+                        <span className="feed-composer-block-type">
+                          {block.type === "photo" ? "Foto" :
+                           block.type === "video" ? "Vídeo" :
+                           block.type === "title" ? "Título" :
+                           block.type === "text" ? "Texto" :
+                           block.type === "music" ? "Música" : "Áudio"}
+                        </span>
+                        <div className="feed-composer-block-actions">
+                          <button type="button" onClick={() => moveDraftBlock(block.id, -1)} disabled={index === 0} aria-label="Mover para cima"><MoveUp aria-hidden="true" /></button>
+                          <button type="button" onClick={() => moveDraftBlock(block.id, 1)} disabled={index === draftBlocks.length - 1} aria-label="Mover para baixo"><MoveDown aria-hidden="true" /></button>
+                          <button type="button" onClick={() => removeDraftBlock(block.id)} aria-label="Remover parte"><X aria-hidden="true" /></button>
+                        </div>
+                      </div>
+
+                      {block.type === "title" && (
+                        <input
+                          className="feed-composer-title-input"
+                          value={block.value}
+                          onChange={(event) => updateDraftBlock(block.id, { value: event.target.value })}
+                          placeholder="Escreva o título da publicação"
+                          aria-label="Título da publicação"
+                          maxLength={180}
+                        />
+                      )}
+
+                      {block.type === "text" && (
+                        <textarea
+                          className="feed-composer-text-input"
+                          value={block.value}
+                          onChange={(event) => updateDraftBlock(block.id, { value: event.target.value })}
+                          placeholder="Escreva alguma coisa..."
+                          aria-label="Texto da publicação"
+                          rows={3}
+                          maxLength={5000}
+                        />
+                      )}
+
+                      {block.type === "photo" && (
+                        <div className="feed-composer-media-block">
+                          {block.previewUrl ? (
+                            <img src={block.previewUrl} alt="Prévia da foto" />
+                          ) : (
+                            <label className="feed-composer-file-pick">
+                              <ImagePlus aria-hidden="true" />
+                              <span>Escolher foto</span>
+                              <input type="file" accept="image/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
+                            </label>
+                          )}
+                          {block.previewUrl && (
+                            <label className="feed-composer-replace-file">
+                              Trocar foto
+                              <input type="file" accept="image/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
+                            </label>
+                          )}
+                          <input
+                            className="feed-composer-caption"
+                            value={block.caption}
+                            onChange={(event) => updateDraftBlock(block.id, { caption: event.target.value })}
+                            placeholder="Legenda da foto (opcional)"
+                            aria-label="Legenda da foto"
+                          />
+                        </div>
+                      )}
+
+                      {block.type === "video" && (
+                        <div className="feed-composer-media-block">
+                          {block.previewUrl ? (
+                            <video src={block.previewUrl} controls playsInline />
+                          ) : (
+                            <label className="feed-composer-file-pick">
+                              <Camera aria-hidden="true" />
+                              <span>Escolher vídeo</span>
+                              <input type="file" accept="video/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
+                            </label>
+                          )}
+                          <input
+                            className="feed-composer-caption"
+                            value={block.caption}
+                            onChange={(event) => updateDraftBlock(block.id, { caption: event.target.value })}
+                            placeholder="Legenda do vídeo (opcional)"
+                            aria-label="Legenda do vídeo"
+                          />
+                        </div>
+                      )}
+
+                      {block.type === "music" && (
+                        <div className="feed-composer-music-block">
+                          <Music2 aria-hidden="true" />
+                          <input
+                            value={block.value}
+                            onChange={(event) => updateDraftBlock(block.id, { value: event.target.value })}
+                            placeholder="Nome da música ou artista"
+                            aria-label="Nome da música"
+                          />
+                          <input
+                            type="url"
+                            value={block.url}
+                            onChange={(event) => updateDraftBlock(block.id, { url: event.target.value })}
+                            placeholder="Link da música (Spotify, YouTube...)"
+                            aria-label="Link da música"
+                          />
+                          <input
+                            className="feed-composer-caption"
+                            value={block.caption}
+                            onChange={(event) => updateDraftBlock(block.id, { caption: event.target.value })}
+                            placeholder="Por que essa música? (opcional)"
+                            aria-label="Legenda da música"
+                          />
+                        </div>
+                      )}
+
+                      {block.type === "audio" && (
+                        <div className="feed-composer-audio-block">
+                          {block.previewUrl ? (
+                            <audio controls src={block.previewUrl} />
+                          ) : (
+                            <label className="feed-composer-file-pick">
+                              <AudioLines aria-hidden="true" />
+                              <span>Escolher áudio</span>
+                              <input type="file" accept="audio/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
+                            </label>
+                          )}
+                          <input
+                            className="feed-composer-caption"
+                            value={block.caption}
+                            onChange={(event) => updateDraftBlock(block.id, { caption: event.target.value })}
+                            placeholder="Descrição do áudio (opcional)"
+                            aria-label="Descrição do áudio"
+                          />
+                        </div>
+                      )}
+                    </article>
+                  ))}
+                </div>
+              )}
+
+              <div className="feed-composer-add-another">
+                <span>Adicionar outra parte</span>
+                <div>
+                  <button type="button" onClick={() => addDraftBlock("text")}><Plus aria-hidden="true" /> Texto</button>
+                  <button type="button" onClick={() => addDraftBlock("photo")}><Plus aria-hidden="true" /> Foto</button>
+                  <button type="button" onClick={() => addDraftBlock("music")}><Plus aria-hidden="true" /> Música</button>
+                </div>
+              </div>
+
+              <footer className="feed-composer-footer">
+                <span className="feed-composer-private"><span /> Só vocês dois</span>
+                <button type="submit" className="feed-publish-button" disabled={publishing || !canPublishDraft}>
+                  {publishing ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                  Publicar
+                </button>
+              </footer>
+              {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
+            </article>
+          </form>
         </DialogContent>
       </Dialog>
 
