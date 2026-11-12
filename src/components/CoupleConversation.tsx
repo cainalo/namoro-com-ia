@@ -639,9 +639,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             <h1 id="conversation-title">{state.status === "active" ? state.otherName : "Conversa"}</h1>
             <p className={"conversation-live-status is-" + realtimeStatus} role="status">
               <span className="conversation-live-indicator" aria-hidden="true" />
-              {state.status === "active"
-                ? realtimeStatus === "connected" ? "online agora" : realtimeStatus === "connecting" ? "conectando…" : "reconectando"}
-                : state.status === "pending" ? "aguardando convite" : state.status === "no-couple" ? "sem vínculo ativo" : " "}
+              {getLiveStatusText(state.status, realtimeStatus)}
             </p>
           </div>
         </div>
