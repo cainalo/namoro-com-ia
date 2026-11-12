@@ -9,7 +9,6 @@ import {
   type CouplePlanEvent,
   type PlanEventVisibility,
 } from "@/lib/couple-plan-events";
-import { MoradosSectionArt } from "@/components/MoradosSectionArt";
 
 const weekdays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
@@ -455,11 +454,8 @@ export function CouplePlans({ userId }: { userId: string }) {
   }
 
   return (
-    <section className="plans-screen" aria-labelledby="plans-title">
-      <header className="plans-heading">
-        <div>
-          <p className="date-kicker">Datas e compromissos</p>
-          <h1 id="plans-title">Planos</h1>
+    <section className="plans-screen">
+      <div className="plans-toolbar">
           <span className={coupleId && realtimeStatus === "connected" ? "plans-live-status is-connected" : "plans-live-status"} role="status">
             {!coupleId
               ? "Agenda individual"
@@ -469,12 +465,10 @@ export function CouplePlans({ userId }: { userId: string }) {
                   ? "Conectando agenda…"
                   : "Atualização manual"}
           </span>
-        </div>
-        <MoradosSectionArt variant="plans" />
         <button type="button" className="inline-action" onClick={goToToday}>
           Hoje
         </button>
-      </header>
+      </div>
 
       <section className="plans-calendar" aria-label="Calendário">
         <div className="plans-calendar-toolbar">
