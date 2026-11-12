@@ -6,10 +6,14 @@ import {
   useState,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
 } from "react";
 import {
   ArrowRight,
   AudioLines,
+  ChevronDown,
+  ChevronUp,
+  Copy,
   Mic,
   Square,
   CalendarHeart,
@@ -19,11 +23,13 @@ import {
   ImagePlus,
   LoaderCircle,
   MessageCircle,
+  MoreHorizontal,
   MoveDown,
   MoveUp,
   Music2,
   Plus,
   Send,
+  Share2,
   Sparkles,
   Type,
   X,
@@ -36,6 +42,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
 import {
@@ -896,19 +909,56 @@ export function CoupleFeed({
 
               return (
                 <div className="feed-sequence" key={post.id}>
-                  <article
-                    className="feed-post-card editorial-post-card"
-                    data-post-tone={(["petrol", "terracotta", "olive", "plum"] as const)[index % 4]}
+                  <MoradosPostCardFrame
+                    tone={(["petrol", "terracotta", "olive", "plum"] as const)[index % 4]}
+                    footer={
+                      <div className="feed-post-footer">
+                        <button type="button" onClick={onOpenConversation}>
+                          <MessageCircle aria-hidden="true" /> Conversa
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                            void navigator.clipboard?.writeText(copy);
+                          }}
+                        >
+                          <Share2 aria-hidden="true" /> Copiar publicação
+                        </button>
+                      </div>
+                    }
                   >
                     <header className="feed-post-header">
                       <span className={post.author_id === userId ? "feed-author-avatar is-you" : "feed-author-avatar"}>
                         {initials(post.author_name)}
                       </span>
-                      <div>
+                      <div className="feed-post-author-meta">
                         <strong>{post.author_name}</strong>
                         <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
                       </div>
                       <span className="feed-post-private">A dois</span>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="feed-post-more" aria-label="Mais opções da publicação">
+                            <MoreHorizontal aria-hidden="true" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="nc-menu">
+                          <DropdownMenuItem
+                            className="nc-menu-item"
+                            onSelect={() => {
+                              const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                              void navigator.clipboard?.writeText(copy);
+                            }}
+                          >
+                            <Copy aria-hidden="true" /> Copiar texto
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="nc-menu-sep" />
+                          <DropdownMenuItem className="nc-menu-item" onSelect={onOpenConversation}>
+                            <MessageCircle aria-hidden="true" /> Abrir conversa
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </header>
 
                     <div className="feed-post-content">
@@ -932,7 +982,17 @@ export function CoupleFeed({
                               {block.caption && <figcaption>{block.caption}</figcaption>}
                             </figure>
                           )}
-                          {block.type === "music" && block.url && (
+                          {block.type === "music" && block.media_url && (
+                            <div className="feed-post-audio feed-post-music-player">
+                              <span className="feed-post-audio-icon"><Music2 aria-hidden="true" /></span>
+                              <div>
+                                <strong>{block.value || "Música original Morados"}</strong>
+                                {block.caption && <small>{block.caption}</small>}
+                                <audio src={block.media_url} controls preload="metadata" />
+                              </div>
+                            </div>
+                          )}
+                          {block.type === "music" && !block.media_url && block.url && (
                             <a className="feed-post-music" href={block.url} target="_blank" rel="noreferrer">
                               <span className="feed-post-music-icon"><Music2 aria-hidden="true" /></span>
                               <span className="feed-post-music-copy">
@@ -955,13 +1015,7 @@ export function CoupleFeed({
                       ))}
                     </div>
 
-                    <footer className="feed-post-footer">
-                      <span><Camera aria-hidden="true" /> Um momento de vocês</span>
-                      <button type="button" onClick={onOpenConversation}>
-                        <MessageCircle aria-hidden="true" /> Conversar sobre isso
-                      </button>
-                    </footer>
-                  </article>
+                  </MoradosPostCardFrame>
 
                   {showMemoryCards && anniversaryMoments.map((moment) => (
                     <AnniversaryCard key={moment.monthDay} moment={moment} />
@@ -994,6 +1048,86 @@ export function CoupleFeed({
         )}
       </div>
     </section>
+  );
+}
+
+function MoradosPostCardFrame({
+  tone,
+  children,
+  footer,
+}: {
+  tone: "petrol" | "terracotta" | "olive" | "plum";
+  children: ReactNode;
+  footer: ReactNode;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [overflowing, setOverflowing] = useState(false);
+  const [maxHeight, setMaxHeight] = useState<number | null>(null);
+  const articleRef = useRef<HTMLElement>(null);
+  const regionRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const toggleRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const article = articleRef.current;
+    const region = regionRef.current;
+    const content = contentRef.current;
+    if (!article || !region || !content) return;
+
+    const observer = new ResizeObserver(() => measure());
+    const watch = (element: Element | null) => {
+      if (element) observer.observe(element);
+    };
+    const measure = () => {
+      const top = document.querySelector<HTMLElement>(".app-chrome")?.offsetHeight ?? 0;
+      const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+      const bottom = isMobile
+        ? document.querySelector<HTMLElement>(".mobile-nav")?.offsetHeight ?? 0
+        : 0;
+      const limit = Math.max(240, window.innerHeight - top - bottom - 32);
+      const fixedContent = article.offsetHeight - region.offsetHeight - (toggleRef.current?.offsetHeight ?? 0);
+      setMaxHeight(limit);
+      setOverflowing(content.scrollHeight + fixedContent > limit + 1);
+    };
+
+    watch(article);
+    watch(content);
+    watch(document.querySelector(".app-chrome"));
+    watch(document.querySelector(".mobile-nav"));
+    measure();
+    window.addEventListener("resize", measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
+
+  const clamped = !expanded && overflowing;
+  return (
+    <article
+      ref={articleRef}
+      className="feed-post-card editorial-post-card"
+      data-post-tone={tone}
+      style={expanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
+    >
+      <div ref={regionRef} className="feed-post-frame-region">
+        <div ref={contentRef} className="feed-post-frame-content">
+          {children}
+        </div>
+        {clamped && <div className="feed-post-frame-fade" aria-hidden="true" />}
+      </div>
+
+      {overflowing && (
+        <div ref={toggleRef} className="feed-post-expand-row">
+          <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
+            {expanded ? "Ver menos" : "Ver mais"}
+            {expanded ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
+          </button>
+        </div>
+      )}
+
+      <div className="feed-post-frame-footer">{footer}</div>
+    </article>
   );
 }
 
