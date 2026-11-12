@@ -8,18 +8,20 @@ import {
   ArrowUpRight,
   Compass,
   Download,
-  ArrowLeft,
   Heart,
   Home,
   Gamepad2,
   Images,
   MessageCircle,
+  MoreHorizontal,
+  Plus,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
-import { AuthGate, SignOutButton } from "@/components/AuthGate";
+import { AuthGate } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
 import { CoupleFeed } from "@/components/CoupleFeed";
@@ -31,7 +33,13 @@ import { MoradosHeroScene } from "@/components/MoradosHeroScene";
 import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
-import { MoradosMark } from "@/components/MoradosMark";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
 
@@ -48,6 +56,8 @@ const navigation: NavigationItem[] = [
   { id: "organize", label: "Planos", icon: CalendarDays },
   { id: "universe", label: "Casa", icon: Compass },
 ];
+
+const bottomNavigation = navigation.filter((item) => item.id !== "universe");
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -67,6 +77,7 @@ function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [canGoBack, setCanGoBack] = useState(false);
+  const [postComposerRequest, setPostComposerRequest] = useState(0);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
   const chromeHidden = useHideOnScroll(activeSection);
@@ -150,67 +161,113 @@ function Index() {
     <AuthGate>
       {(session) => (
         <div className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-          {activeSection !== "messages" && <header className="app-chrome" data-hidden={chromeHidden}>
-            <div className="app-topbar">
-              <div className="topbar-inner">
-                <div className="topbar-side topbar-side-leading">
-                  <button
-                    type="button"
-                    className="topbar-icon-button"
-                    onClick={goBack}
-                    disabled={!canGoBack}
-                    aria-label="Voltar à seção anterior"
-                    title="Voltar"
-                  >
-                    <ArrowLeft aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    className="topbar-icon-button"
-                    onClick={goHome}
-                    aria-label="Ir para Hoje"
-                    title="Início"
-                  >
-                    <Home aria-hidden="true" />
-                  </button>
+          {activeSection !== "messages" && (
+            <>
+              <header className="app-chrome" data-hidden={chromeHidden}>
+                <div className="app-topbar">
+                  <div className="topbar-inner">
+                    <div className="topbar-side topbar-side-leading">
+                      <button
+                        type="button"
+                        className="topbar-icon-button"
+                        onClick={goHome}
+                        aria-label="Ir para o Feed"
+                        title="Feed"
+                      >
+                        <Home aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        className={"topbar-icon-button" + (activeSection === "universe" ? " is-active" : "")}
+                        onClick={() => goToSection("universe")}
+                        aria-label="Abrir Casa"
+                        title="Casa"
+                      >
+                        <Compass aria-hidden="true" />
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="topbar-wordmark"
+                      onClick={goHome}
+                      aria-label="Morados — Feed"
+                    >
+                      <MoradosWordmark />
+                    </button>
+
+                    <div className="topbar-side topbar-side-trailing">
+                      <button
+                        type="button"
+                        className="topbar-icon-button"
+                        onClick={() => goToSection("messages")}
+                        aria-label="Abrir conversa"
+                        title="Conversa"
+                      >
+                        <MessageCircle aria-hidden="true" />
+                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button
+                            type="button"
+                            className="topbar-icon-button topbar-menu-trigger"
+                            aria-label="Mais opções"
+                            title="Mais opções"
+                          >
+                            <MoreHorizontal aria-hidden="true" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" sideOffset={8} className="morados-nav-menu nc-menu">
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("games")}>
+                            <Gamepad2 aria-hidden="true" />
+                            Jogos
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("memories")}>
+                            <Images aria-hidden="true" />
+                            Memórias
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("organize")}>
+                            <CalendarDays aria-hidden="true" />
+                            Planos
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="nc-menu-sep" />
+                          <DropdownMenuItem asChild className="nc-menu-item">
+                            <Link to="/download">
+                              <Download aria-hidden="true" />
+                              Baixar aplicativo
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="nc-menu-item"
+                            onSelect={() => {
+                              void supabase.auth.signOut().then(({ error }) => {
+                                if (error) console.error("Não foi possível sair da conta.", error);
+                              }).catch((error) => console.error("Não foi possível sair da conta.", error));
+                            }}
+                          >
+                            <LogOut aria-hidden="true" />
+                            Sair da conta
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
                 </div>
+              </header>
 
-                <button
-                  type="button"
-                  className="topbar-wordmark"
-                  onClick={goHome}
-                  aria-label="Morados — início"
-                >
-                  <MoradosMark size={34} />
-                  <span>Morados</span>
-                </button>
-
-                <div className="topbar-side topbar-side-trailing">
-                  <Link
-                    to="/download"
-                    className="topbar-icon-button"
-                    aria-label="Baixar ou instalar o Morados"
-                    title="Instalar o aplicativo"
-                  >
-                    <Download aria-hidden="true" />
-                  </Link>
-                  <SignOutButton compact />
-                </div>
-              </div>
-            </div>
-
-            <nav aria-label="Navegação principal" className="desktop-nav">
-              {navigation.map((item) => (
-                <NavigationButton
-                  key={item.id}
-                  item={item}
-                  active={activeSection === item.id}
-                  onClick={() => goToSection(item.id)}
-                  desktop
-                />
-              ))}
-            </nav>
-          </header>}
+              <button
+                type="button"
+                className="morados-floating-wordmark"
+                data-visible={chromeHidden}
+                aria-label="Voltar ao Feed"
+                aria-hidden={!chromeHidden}
+                tabIndex={chromeHidden ? 0 : -1}
+                onClick={goHome}
+              >
+                <MoradosWordmark />
+              </button>
+            </>
+          )}
 
           <main className={activeSection === "messages" ? "app-main app-main-conversation" : "app-main"}>
             {activeSection === "messages" ? (
@@ -218,7 +275,12 @@ function Index() {
             ) : (
               <div className="page-frame">
               {activeSection === "home" ? (
-                <HomeScreen userId={session.user.id} onNavigate={goToSection} onOpenConversation={() => goToSection("messages")} />
+                <HomeScreen
+                  userId={session.user.id}
+                  onNavigate={goToSection}
+                  onOpenConversation={() => goToSection("messages")}
+                  postComposerRequest={postComposerRequest}
+                />
               ) : activeSection === "games" ? (
                 <CoupleGames userId={session.user.id} />
               ) : activeSection === "universe" ? (
@@ -232,21 +294,50 @@ function Index() {
             )}
           </main>
 
-          {activeSection !== "messages" && <nav
-            aria-label="Navegação principal"
-            className="mobile-nav"
-            data-hidden={chromeHidden}
-          >
-            {navigation.map((item) => (
+          {activeSection !== "messages" && (
+            <nav
+              aria-label="Navegação principal"
+              className="mobile-nav"
+              data-hidden={chromeHidden}
+            >
               <NavigationButton
-                key={item.id}
-                item={item}
-                active={activeSection === item.id}
-                onClick={() => goToSection(item.id)}
+                item={bottomNavigation[0]}
+                active={activeSection === bottomNavigation[0].id}
+                onClick={() => goToSection(bottomNavigation[0].id)}
                 mobile
               />
-            ))}
-          </nav>}
+              <NavigationButton
+                item={bottomNavigation[1]}
+                active={activeSection === bottomNavigation[1].id}
+                onClick={() => goToSection(bottomNavigation[1].id)}
+                mobile
+              />
+              <button
+                type="button"
+                className="mobile-nav-create"
+                onClick={() => {
+                  if (activeSectionRef.current !== "home") goToSection("home");
+                  setPostComposerRequest((current) => current + 1);
+                }}
+                aria-label="Criar publicação"
+                title="Criar publicação"
+              >
+                <Plus aria-hidden="true" />
+              </button>
+              <NavigationButton
+                item={bottomNavigation[2]}
+                active={activeSection === bottomNavigation[2].id}
+                onClick={() => goToSection(bottomNavigation[2].id)}
+                mobile
+              />
+              <NavigationButton
+                item={bottomNavigation[3]}
+                active={activeSection === bottomNavigation[3].id}
+                onClick={() => goToSection(bottomNavigation[3].id)}
+                mobile
+              />
+            </nav>
+          )}
 
           {activeSection !== "messages" && <AiChat />}
         </div>
@@ -264,6 +355,14 @@ const NAV_ACCENTS: Record<SectionId, string> = {
   games: "#6f7b4b",
 
 };
+
+function MoradosWordmark() {
+  return (
+    <span className="morados-wordmark-text">
+      Mora<span>dos</span>
+    </span>
+  );
+}
 
 function NavigationButton({
   item,
@@ -308,10 +407,12 @@ function HomeScreen({
   userId,
   onNavigate,
   onOpenConversation,
+  postComposerRequest,
 }: {
   userId: string;
   onNavigate: (section: SectionId) => void;
   onOpenConversation: () => void;
+  postComposerRequest: number;
 }) {
   return (
     <div className="home-screen">
@@ -319,6 +420,7 @@ function HomeScreen({
         userId={userId}
         onNavigate={onNavigate}
         onOpenConversation={onOpenConversation}
+        postComposerRequest={postComposerRequest}
       />
     </div>
   );
