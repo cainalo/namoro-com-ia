@@ -849,7 +849,7 @@ export function CoupleFeed({
                           <label className="feed-composer-file-pick">
                             <AudioLines aria-hidden="true" />
                             <span>{block.file ? "Trocar arquivo de áudio" : "Enviar arquivo de áudio"}</span>
-                            <input type="file" accept="audio/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
+                            <input type="file" accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,audio/webm" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
                           </label>
                           <AudioRecorderControls onRecorded={(file) => handleBlockFile(block.id, file)} />
                           <input
@@ -1182,9 +1182,9 @@ function AudioRecorderControls({ onRecorded }: { onRecorded: (file: File) => voi
       streamRef.current = stream;
       chunksRef.current = [];
       const mimeType = [
-        "audio/webm;codecs=opus",
         "audio/webm",
         "audio/mp4",
+        "audio/webm;codecs=opus",
       ].find((type) => MediaRecorder.isTypeSupported(type));
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       recorderRef.current = recorder;
@@ -1198,10 +1198,11 @@ function AudioRecorderControls({ onRecorded }: { onRecorded: (file: File) => voi
       };
       recorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
-        const extension = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+        const normalizedMime = (blob.type || "audio/webm").split(";")[0].trim();
+        const extension = normalizedMime.includes("mp4") ? "m4a" : normalizedMime.includes("ogg") ? "ogg" : "webm";
         if (blob.size > 0) {
           const file = new File([blob], `morados-gravacao-${Date.now()}.${extension}`, {
-            type: blob.type || "audio/webm",
+            type: normalizedMime,
           });
           onRecorded(file);
         } else {
