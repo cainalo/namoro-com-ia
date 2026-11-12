@@ -17934,6 +17934,7 @@ h3,
 
 /* ───── NutriConnect PostCard / PostCardFrame — estrutura tradicional copiada ───── */
 .feed-post-card.editorial-post-card{
+ min-height:0;
  --post-px:1.5rem;--post-pt:1.5rem;--post-pb:1.5rem;--post-px-sm:1.25rem;--post-pt-sm:1.25rem;--post-pb-sm:1.25rem;
  --post-image-max:clamp(10rem,calc(100dvh - 32rem),26rem);
  --ev-card-bg:var(--color-card)!important;--ev-card-ink:var(--color-card-foreground)!important;
