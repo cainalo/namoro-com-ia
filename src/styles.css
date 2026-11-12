@@ -12428,68 +12428,6 @@ h3,
 }
 
 
-/* Auth interactivity: keep controls above decorative layers in mobile WebViews
-   and embedded preview frames. */
-.auth-shell {
-  position: relative;
-  isolation: isolate;
-  min-height: 100svh;
-  pointer-events: auto;
-}
-
-.auth-panel,
-.auth-form,
-.auth-field {
-  position: relative;
-  z-index: 1;
-}
-
-.auth-field input {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  min-height: 48px;
-  pointer-events: auto !important;
-  touch-action: manipulation;
-  user-select: text;
-  -webkit-user-select: text;
-  -webkit-appearance: none;
-  appearance: none;
-  caret-color: var(--color-foreground);
-}
-
-.auth-submit,
-.auth-switch button,
-.auth-download-link {
-  position: relative;
-  z-index: 2;
-  pointer-events: auto !important;
-  touch-action: manipulation;
-}
-
-.auth-field input:focus-visible,
-.auth-submit:focus-visible,
-.auth-switch button:focus-visible,
-.auth-download-link:focus-visible {
-  outline: 2px solid var(--color-ring);
-  outline-offset: 3px;
-}
-
-@media (max-width: 680px) {
-  .auth-shell {
-    min-height: 100svh;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-    padding-bottom: calc(22px + env(safe-area-inset-bottom));
-  }
-
-  .auth-panel {
-    width: min(100%, 460px);
-  }
-}
-
 
 /* MORADOS — feed social */
 .social-feed {
@@ -20920,70 +20858,27 @@ body {
   .conversation-gift-live-art { width: 4.25rem; height: 4.25rem; }
 }
 
-
-/* Gesto de navegação: rolagem vertical nativa, navegação horizontal pelo app. */
-.app-shell:not(.is-conversation-mode) {
-  touch-action: pan-y pinch-zoom;
-}
-.app-shell:not(.is-conversation-mode) :is(button, a) {
-  -webkit-tap-highlight-color: transparent;
-}
-
-
-/* Login nativo: acompanhar a altura real do WebView quando o teclado abre. */
+ 
+/* Login nativo: o WebView/Android controla a área visível; o formulário
+   permanece simples e sem um segundo contêiner de rolagem. */
 .auth-shell {
   box-sizing: border-box;
   min-height: 100dvh;
   height: auto;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-padding-block: 24px;
+  overflow: visible;
+  padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+}
+.auth-panel {
+  width: min(100%, 450px);
+  margin-inline: auto;
 }
 .auth-field input {
   box-sizing: border-box;
-  min-width: 0;
-  min-height: 52px;
-  font-size: 16px !important;
-  touch-action: auto;
-  pointer-events: auto;
-  user-select: text;
-  -webkit-user-select: text;
-}
-@media (max-width: 680px) {
-  .auth-shell {
-    min-height: 100dvh;
-    padding: max(18px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
-    align-content: center;
-  }
-  .auth-panel {
-    width: min(100%, 460px);
-    margin-block: auto;
-  }
-  .auth-field input {
-    min-height: 54px;
-    font-size: 16px !important;
-  }
-}
-
-
-/* Login: restore native touch handling and document scrolling.
-   The app shell normally reserves vertical gestures for horizontal navigation;
-   that restriction must not be inherited by text fields or the login surface. */
-.app-shell:has(.auth-shell) {
-  touch-action: auto !important;
-  overflow: visible !important;
-}
-.app-shell:has(.auth-shell) .auth-shell,
-.app-shell:has(.auth-shell) .auth-shell *,
-.auth-shell,
-.auth-shell * {
-  touch-action: auto !important;
-}
-.auth-shell {
-  min-height: 100dvh;
-  height: auto;
-  overflow: visible !important;
-  overscroll-behavior: auto !important;
-  -webkit-overflow-scrolling: auto;
+  min-height: 54px;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--color-foreground);
+  -webkit-text-fill-color: var(--color-foreground);
+  caret-color: var(--color-foreground);
+  background: var(--color-card);
 }
