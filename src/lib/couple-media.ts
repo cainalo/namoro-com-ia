@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type CoupleMediaScope = "chat" | "feed";
+export type CoupleMediaScope = "chat" | "feed" | "profile";
 
 export const COUPLE_MEDIA_BUCKET = "couple-media";
 export const MAX_COUPLE_MEDIA_BYTES = 35 * 1024 * 1024;

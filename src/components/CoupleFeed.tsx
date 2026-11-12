@@ -12,6 +12,9 @@ import {
 import {
   ArrowRight,
   AudioLines,
+  Brain,
+  Crown,
+  Heart,
   ChevronDown,
   ChevronUp,
   Copy,
@@ -32,6 +35,8 @@ import {
   Send,
   Share2,
   Sparkles,
+  Ship,
+  Target,
   Type,
   X,
 } from "lucide-react";
@@ -65,6 +70,7 @@ type FeedBlockView = CouplePostBlock & { media_url: string | null };
 
 type FeedPostView = CouplePost & {
   author_name: string;
+  author_avatar_url: string | null;
   media_url: string | null;
   blocks: FeedBlockView[];
 };
@@ -107,7 +113,7 @@ const gameSuggestions = [
     detail: "Uma disputa rápida, colorida e perfeita para um intervalo",
     label: "Estratégia",
     game: "Lig 4",
-    emoji: "🔴",
+    icon: Target,
     accent: "coral",
   },
   {
@@ -115,7 +121,7 @@ const gameSuggestions = [
     detail: "Preparem as peças e vejam quem pensa alguns lances à frente",
     label: "Clássico",
     game: "Damas",
-    emoji: "♟️",
+    icon: Crown,
     accent: "green",
   },
   {
@@ -123,7 +129,7 @@ const gameSuggestions = [
     detail: "Descubram como cada um pensa e comparem as respostas",
     label: "Desafio",
     game: "Isto ou aquilo?",
-    emoji: "💭",
+    icon: Brain,
     accent: "violet",
   },
   {
@@ -131,7 +137,7 @@ const gameSuggestions = [
     detail: "Escolham suas frotas e tentem descobrir onde o outro se escondeu",
     label: "Dedução",
     game: "Batalha naval",
-    emoji: "🚢",
+    icon: Ship,
     accent: "gold",
   },
 ];
@@ -369,16 +375,16 @@ export function CoupleFeed({
       if (result.error) throw result.error;
       const rows = result.data ?? [];
       const authorIds = [...new Set(rows.map((post) => post.author_id))];
-      const profileMap = new Map<string, string>();
+      const profileMap = new Map<string, { name: string; avatarPath: string | null }>();
 
       if (authorIds.length > 0) {
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select("id, display_name")
+          .select("id, display_name, avatar_path")
           .in("id", authorIds);
         if (profilesError) throw profilesError;
         for (const profile of profiles ?? []) {
-          profileMap.set(profile.id, profile.display_name?.trim() || "");
+          profileMap.set(profile.id, { name: profile.display_name?.trim() || "", avatarPath: profile.avatar_path ?? null });
         }
       }
 
@@ -411,11 +417,16 @@ export function CoupleFeed({
           ? await createCoupleMediaUrl(post.media_path)
           : null;
 
+        const authorProfile = profileMap.get(post.author_id);
+        const authorAvatar = authorProfile?.avatarPath
+          ? await createCoupleMediaUrl(authorProfile.avatarPath)
+          : null;
         return {
           ...post,
           author_name:
-            profileMap.get(post.author_id) ||
+            authorProfile?.name ||
             (post.author_id === userId ? "Você" : "Sua pessoa"),
+          author_avatar_url: authorAvatar?.url ?? null,
           blocks,
           media_url: primaryImage?.media_url ?? primaryMedia?.media_url ?? legacySigned?.url ?? null,
         };
@@ -606,7 +617,7 @@ export function CoupleFeed({
     return (
       <section className="social-feed">
         <div className="feed-empty-state">
-          <div className="feed-empty-illustration">♡</div>
+          <div className="feed-empty-illustration"><Heart aria-hidden="true" /></div>
           <h2>O feed de vocês começa aqui.</h2>
           <p>Vincule a outra pessoa para criar um espaço compartilhado de publicações, fotos e lembranças.</p>
         </div>
@@ -892,7 +903,7 @@ export function CoupleFeed({
       <div className="social-feed-list">
         {state.posts.length === 0 ? (
           <div className="feed-empty-state">
-            <div className="feed-empty-illustration">✿</div>
+            <div className="feed-empty-illustration"><Images aria-hidden="true" /></div>
             <h2>Uma história ainda em branco.</h2>
             <p>Publique a primeira foto ou um pequeno momento para começar a preencher o feed.</p>
           </div>
@@ -907,6 +918,7 @@ export function CoupleFeed({
               const game = gameSuggestions[index % gameSuggestions.length];
               const showGameCard = postFilter === "all" && (index === 1 || (index > 1 && index % 4 === 1));
               const showMemoryCards = postFilter === "all" && index === 0 && anniversaryMoments.length > 0;
+              const GameIcon = game.icon;
 
               return (
                 <div className="feed-sequence" key={post.id}>
@@ -935,7 +947,9 @@ export function CoupleFeed({
                     <header className="feed-post-header mb-4 flex flex-wrap items-start justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-3">
                         <span className={"feed-author-avatar grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
-                          {initials(post.author_name)}
+                          {post.author_avatar_url ? (
+                            <img src={post.author_avatar_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                          ) : initials(post.author_name)}
                         </span>
                         <div className="feed-post-author-meta min-w-0">
                           <div className="flex items-center gap-1.5">
@@ -1036,7 +1050,7 @@ export function CoupleFeed({
 
                   {showGameCard && (
                     <article className={"feed-game-card is-" + game.accent}>
-                      <div className="feed-game-art" aria-hidden="true">{game.emoji}</div>
+                      <div className="feed-game-art" aria-hidden="true"><GameIcon /></div>
                       <div className="feed-game-copy">
                         <span className="feed-game-kicker"><Gamepad2 aria-hidden="true" /> Sugestão para vocês · {game.label}</span>
                         <h2>{game.title}</h2>
@@ -1124,10 +1138,10 @@ function FeedPostPhoto({
 }
 
 const POST_TYPE_COLORS = {
-  terracotta: { light: "#d9692a", dark: "#f08a4b" },
-  olive: { light: "#4f8a4b", dark: "#78b873" },
-  petrol: { light: "#3b7bbf", dark: "#6aa6e6" },
-  plum: { light: "#8a5fb0", dark: "#b48ad6" },
+  terracotta: { light: "#C8402A", dark: "#C8402A" },
+  olive: { light: "#556B2F", dark: "#556B2F" },
+  petrol: { light: "#0F4C5C", dark: "#0F4C5C" },
+  plum: { light: "#6B3A6E", dark: "#6B3A6E" },
 } as const;
 
 function useMoradosPostTypeStyle(tone: keyof typeof POST_TYPE_COLORS) {

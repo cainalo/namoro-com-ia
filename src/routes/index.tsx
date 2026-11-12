@@ -9,8 +9,7 @@ import {
   Home,
   Gamepad2,
   Images,
-  MessageCircle,
-  MoreHorizontal,
+  Menu,
   Plus,
   LogOut,
   type LucideIcon,
@@ -26,6 +25,7 @@ import { CoupleGames } from "@/components/CoupleGames";
 import { CoupleHouse } from "@/components/CoupleHouse";
 import { CouplePlans } from "@/components/CouplePlans";
 import { CoupleMemories } from "@/components/CoupleMemories";
+import { CoupleProfile, ProfileAvatarButton } from "@/components/CoupleProfile";
 import { MoradosHeroScene } from "@/components/MoradosHeroScene";
 import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games";
+type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile";
 
 type NavigationItem = {
   id: SectionId;
@@ -164,89 +164,34 @@ function Index() {
                 <div className="app-topbar">
                   <div className="topbar-inner">
                     <div className="topbar-side topbar-side-leading">
-                      <button
-                        type="button"
-                        className="topbar-icon-button"
-                        onClick={goHome}
-                        aria-label="Ir para o Feed"
-                        title="Feed"
-                      >
-                        <Home aria-hidden="true" />
-                      </button>
-                      <button
-                        type="button"
-                        className={"topbar-icon-button" + (activeSection === "universe" ? " is-active" : "")}
-                        onClick={() => goToSection("universe")}
-                        aria-label="Abrir Casa"
-                        title="Casa"
-                      >
-                        <Compass aria-hidden="true" />
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="topbar-icon-button" aria-label="Abrir menu de navegação" title="Menu">
+                            <Menu aria-hidden="true" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" sideOffset={8} className="morados-nav-menu nc-menu">
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("games")}><Gamepad2 aria-hidden="true" /> Jogos</DropdownMenuItem>
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("memories")}><Images aria-hidden="true" /> Memórias</DropdownMenuItem>
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("organize")}><CalendarDays aria-hidden="true" /> Planos</DropdownMenuItem>
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("universe")}><Compass aria-hidden="true" /> Casa</DropdownMenuItem>
+                          <DropdownMenuSeparator className="nc-menu-sep" />
+                          <DropdownMenuItem asChild className="nc-menu-item"><Link to="/download"><Download aria-hidden="true" /> Baixar aplicativo</Link></DropdownMenuItem>
+                          <DropdownMenuItem className="nc-menu-item" onSelect={() => {
+                            void supabase.auth.signOut().then(({ error }) => {
+                              if (error) console.error("Não foi possível sair da conta.", error);
+                            }).catch((error) => console.error("Não foi possível sair da conta.", error));
+                          }}><LogOut aria-hidden="true" /> Sair da conta</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
 
-                    <button
-                      type="button"
-                      className="topbar-wordmark"
-                      onClick={goHome}
-                      aria-label="Morados — Feed"
-                    >
+                    <button type="button" className="topbar-wordmark" onClick={goHome} aria-label="Morados — voltar ao Feed" title="Feed">
                       <MoradosWordmark />
                     </button>
 
                     <div className="topbar-side topbar-side-trailing">
-                      <button
-                        type="button"
-                        className="topbar-icon-button"
-                        onClick={() => goToSection("messages")}
-                        aria-label="Abrir conversa"
-                        title="Conversa"
-                      >
-                        <MessageCircle aria-hidden="true" />
-                      </button>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button
-                            type="button"
-                            className="topbar-icon-button topbar-menu-trigger"
-                            aria-label="Mais opções"
-                            title="Mais opções"
-                          >
-                            <MoreHorizontal aria-hidden="true" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" sideOffset={8} className="morados-nav-menu nc-menu">
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("games")}>
-                            <Gamepad2 aria-hidden="true" />
-                            Jogos
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("memories")}>
-                            <Images aria-hidden="true" />
-                            Memórias
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("organize")}>
-                            <CalendarDays aria-hidden="true" />
-                            Planos
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="nc-menu-sep" />
-                          <DropdownMenuItem asChild className="nc-menu-item">
-                            <Link to="/download">
-                              <Download aria-hidden="true" />
-                              Baixar aplicativo
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="nc-menu-item"
-                            onSelect={() => {
-                              void supabase.auth.signOut().then(({ error }) => {
-                                if (error) console.error("Não foi possível sair da conta.", error);
-                              }).catch((error) => console.error("Não foi possível sair da conta.", error));
-                            }}
-                          >
-                            <LogOut aria-hidden="true" />
-                            Sair da conta
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <ProfileAvatarButton userId={session.user.id} onClick={() => goToSection("profile")} />
                     </div>
                   </div>
                 </div>
@@ -280,6 +225,8 @@ function Index() {
                 />
               ) : activeSection === "games" ? (
                 <CoupleGames userId={session.user.id} />
+              ) : activeSection === "profile" ? (
+                <CoupleProfile userId={session.user.id} />
               ) : activeSection === "universe" ? (
                 <CoupleHouse />
               ) : activeSection === "organize" ? (
@@ -350,7 +297,7 @@ const NAV_ACCENTS: Record<SectionId, string> = {
   organize: "#d88e5b",
   universe: "#657551",
   games: "#6f7b4b",
-
+  profile: "#0F4C5C",
 };
 
 function MoradosWordmark() {
