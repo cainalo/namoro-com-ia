@@ -57,6 +57,7 @@ import {
 } from "@/lib/couple-messages";
 import {
   createCoupleMediaUrl,
+  MAX_COUPLE_MEDIA_BYTES,
   removeCoupleMedia,
   uploadCoupleMedia,
 } from "@/lib/couple-media";
@@ -199,6 +200,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [giftNote, setGiftNote] = useState("");
   const [giftArtwork, setGiftArtwork] = useState("flowers");
   const [giftMediaFile, setGiftMediaFile] = useState<File | null>(null);
+  const [giftMediaPreview, setGiftMediaPreview] = useState<string | null>(null);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingStreamRef = useRef<MediaStream | null>(null);
@@ -217,6 +219,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     }
     recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
   }, []);
+
+  useEffect(() => {
+    if (!giftMediaFile) {
+      setGiftMediaPreview(null);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(giftMediaFile);
+    setGiftMediaPreview(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [giftMediaFile]);
 
   const messageCount = state.status === "active" ? state.messages.length : 0;
   const activeCoupleId = state.status === "active" ? state.coupleId : null;
@@ -286,6 +298,9 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       active = false;
     };
   }, [state.status, state.status === "active" ? state.messages : []]);
+
+  const selectedGiftArtwork = giftArtworks.find((item) => item.id === giftArtwork) ?? giftArtworks[0];
+  const SelectedGiftArtworkIcon = selectedGiftArtwork.Icon;
 
   const visibleMessages =
     state.status === "active"
@@ -561,6 +576,22 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     if (file) await sendFile(file);
   }
 
+  function handleGiftMediaChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
+      setError("Escolha uma foto ou um vídeo para o presente.");
+      return;
+    }
+    if (file.size > MAX_COUPLE_MEDIA_BYTES) {
+      setError("A mídia do presente deve ter no máximo 35 MB.");
+      return;
+    }
+    setError(null);
+    setGiftMediaFile(file);
+  }
+
   function openAttachmentPicker(accept: string, capture?: "environment") {
     setAttachmentAccept(accept);
     setAttachmentCapture(capture);
@@ -626,31 +657,60 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
   async function sendGift() {
     if (!giftTitle.trim() || state.status !== "active" || busy) return;
-    let attachmentPath: string | null = null;
-    let attachmentName: string | null = null;
-    let attachmentMime: string | null = null;
-    if (giftMediaFile) {
-      const uploaded = await uploadCoupleMedia({ coupleId: state.coupleId, userId, scope: "chat", file: giftMediaFile });
-      if (uploaded.error || !uploaded.path) {
-        setError(uploaded.error?.message ?? "Não foi possível adicionar a mídia ao presente.");
-        return;
+    setBusy(true);
+    setError(null);
+    let uploadedPath: string | null = null;
+    try {
+      let attachmentName: string | null = null;
+      let attachmentMime: string | null = null;
+      if (giftMediaFile) {
+        const uploaded = await uploadCoupleMedia({ coupleId: state.coupleId, userId, scope: "chat", file: giftMediaFile });
+        if (uploaded.error || !uploaded.path) {
+          throw uploaded.error ?? new Error("Não foi possível adicionar a mídia ao presente.");
+        }
+        uploadedPath = uploaded.path;
+        attachmentName = giftMediaFile.name;
+        attachmentMime = giftMediaFile.type;
       }
-      attachmentPath = uploaded.path;
-      attachmentName = giftMediaFile.name;
-      attachmentMime = giftMediaFile.type;
+
+      const result = await sendCoupleMessage({
+        coupleId: state.coupleId,
+        senderId: userId,
+        body: giftTitle.trim(),
+        messageType: "gift",
+        attachmentPath: uploadedPath,
+        attachmentName,
+        attachmentMime,
+        metadata: {
+          artwork: selectedGiftArtwork.id,
+          title: giftTitle.trim(),
+          note: giftNote.trim() || "Um presente criado especialmente para você.",
+        },
+      });
+      if (result.error) throw result.error;
+
+      uploadedPath = null;
+      setGiftTitle("");
+      setGiftNote("");
+      setGiftMediaFile(null);
+      setGiftOpen(false);
+      setRefreshKey((key) => key + 1);
+      if (Capacitor.isNativePlatform()) {
+        void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+      }
+    } catch (cause) {
+      console.error("Falha ao enviar presente.", cause);
+      if (uploadedPath) {
+        try {
+          await removeCoupleMedia(uploadedPath);
+        } catch {
+          // Não substitui o erro original de envio.
+        }
+      }
+      setError("Não foi possível enviar o presente. Seu texto e sua mídia foram mantidos para tentar novamente.");
+    } finally {
+      setBusy(false);
     }
-    const artwork = giftArtworks.find((item) => item.id === giftArtwork) ?? giftArtworks[0];
-    await saveMessage({
-      body: giftTitle.trim(),
-      messageType: "gift",
-      attachmentPath,
-      attachmentName,
-      attachmentMime,
-      metadata: { artwork: artwork.id, title: giftTitle.trim(), note: giftNote.trim() || "Um presente criado especialmente para você." },
-    });
-    setGiftTitle("");
-    setGiftNote("");
-    setGiftMediaFile(null);
   }
 
   async function copyMessage(messageId: string, body: string) {
@@ -947,6 +1007,22 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                     <Gift aria-hidden="true" />
                     <div><strong>Oficina de presentes</strong><small>Monte um cartão com texto e mídia para enviar na conversa.</small></div>
                   </div>
+                  <div className="conversation-gift-live-preview" aria-label="Prévia do cartão de presente">
+                    <span className="conversation-gift-live-art">
+                      {giftMediaPreview && giftMediaFile?.type.startsWith("image/") ? (
+                        <img src={giftMediaPreview} alt="Prévia da foto do presente" />
+                      ) : giftMediaPreview && giftMediaFile?.type.startsWith("video/") ? (
+                        <video src={giftMediaPreview} controls playsInline preload="metadata" aria-label="Prévia do vídeo do presente" />
+                      ) : (
+                        <SelectedGiftArtworkIcon aria-hidden="true" />
+                      )}
+                    </span>
+                    <div className="conversation-gift-live-copy">
+                      <small>Prévia do cartão</small>
+                      <strong>{giftTitle.trim() || "Um presente para você"}</strong>
+                      <p>{giftNote.trim() || "Sua mensagem especial aparecerá aqui."}</p>
+                    </div>
+                  </div>
                   <div className="conversation-gift-artworks">
                     {giftArtworks.map((artwork) => {
                       const ArtworkIcon = artwork.Icon;
@@ -957,10 +1033,23 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                   </div>
                   <label className="conversation-gift-field">Título<input value={giftTitle} onChange={(event) => setGiftTitle(event.target.value)} maxLength={70} placeholder="Um presente para você" /></label>
                   <label className="conversation-gift-field">Mensagem<textarea value={giftNote} onChange={(event) => setGiftNote(event.target.value)} maxLength={360} rows={3} placeholder="Escreva algo especial…" /></label>
-                  <label className="conversation-gift-media-picker"><Image aria-hidden="true" /> {giftMediaFile ? giftMediaFile.name : "Adicionar foto ou vídeo"}
-                    <input type="file" accept="image/*,video/*" onChange={(event) => setGiftMediaFile(event.target.files?.[0] ?? null)} />
+                  <label className="conversation-gift-media-picker">
+                    <Image aria-hidden="true" />
+                    <span>{giftMediaFile ? "Trocar foto ou vídeo" : "Adicionar foto ou vídeo"}</span>
+                    <input className="sr-only" type="file" accept="image/*,video/*" onChange={handleGiftMediaChange} />
                   </label>
-                  <button type="button" className="conversation-gift-send" onClick={() => void sendGift()} disabled={busy || !giftTitle.trim()}><Send aria-hidden="true" /> Enviar presente</button>
+                  {giftMediaFile && (
+                    <div className="conversation-gift-media-selected">
+                      <span><strong>{giftMediaFile.name}</strong><small>{(giftMediaFile.size / (1024 * 1024)).toFixed(1)} MB</small></span>
+                      <button type="button" onClick={() => setGiftMediaFile(null)} aria-label="Remover mídia do presente" title="Remover mídia" disabled={busy}>
+                        <X aria-hidden="true" />
+                      </button>
+                    </div>
+                  )}
+                  <button type="button" className="conversation-gift-send" onClick={() => void sendGift()} disabled={busy || !giftTitle.trim()}>
+                    {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                    {busy ? "Enviando presente…" : "Enviar presente"}
+                  </button>
                 </div>
               )}
             </div>
