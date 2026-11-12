@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Archive,
   CheckCircle2,
@@ -176,6 +176,10 @@ export function CoupleInvestigationGame() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
   }, [progress]);
 
+  useEffect(() => {
+    if (progress.solved) setShowSolution(true);
+  }, [progress.solved]);
+
   const selectedSuspect = suspects.find((suspect) => suspect.id === progress.selectedSuspect) ?? suspects[0];
   const reviewedCount = progress.reviewedEvidence.length;
   const interviewedCount = progress.interviewed.length;
@@ -187,11 +191,6 @@ export function CoupleInvestigationGame() {
 
   const progressPercent = Math.round(
     ((reviewedCount + interviewedCount) / (evidence.length + suspects.length)) * 100,
-  );
-
-  const evidenceById = useMemo(
-    () => new Map(evidence.map((item) => [item.id, item])),
-    [],
   );
 
   function update(patch: Partial<SavedProgress>) {
@@ -451,7 +450,7 @@ export function CoupleInvestigationGame() {
               <div>
                 <h4>{verdictCorrect ? "Caso solucionado!" : "Conclusão incorreta"}</h4>
                 <p>{verdictCorrect ? "Vocês identificaram a pessoa responsável e reconstruíram o método e o motivo." : "A acusação não explica todas as evidências. Releia os registros de acesso, a imagem do corredor e o tubo encontrado na sala da curadoria."}</p>
-                <button type="button" onClick={() => setShowSolution((value) => !value)}>{verdictCorrect ? "Ver relatório do caso" : "Voltar às pistas"}</button>
+                <button type="button" onClick={() => setTab("evidence")}>{verdictCorrect ? "Revisar evidências" : "Voltar às evidências"}</button>
               </div>
             </article>
           )}
