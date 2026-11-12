@@ -26,13 +26,14 @@ import { DominoGame } from "@/components/DominoGame";
 import { TrucoGame } from "@/components/TrucoGame";
 import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
+import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
 import {
   LocalConnectFourGame,
   LocalDailyChallengeGame,
   LocalThisOrThatGame,
 } from "@/components/LocalCoupleGames";
 
-type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room" | "island-survival";
 type GameMode = "local" | "online";
 
 const catalogue: Array<{
@@ -107,6 +108,7 @@ const catalogue: Array<{
   { id: "truco", name: "Truco Paulista", category: "Cartas", description: "Vira, manilhas e blefe. Aumentem a aposta até doze pontos.", players: "2 pessoas", icon: Swords, tone: "terracotta" },
   { id: "quiz", name: "Quiz dos dois", category: "Conhecimento", description: "Perguntas por categoria, tempo limitado e placar alternado.", players: "2 pessoas", icon: Brain, tone: "plum" },
   { id: "escape-room", name: "A sala do relógio", category: "Escape room", description: "Investiguem uma sala, encontrem objetos e descubram o código para escapar.", players: "Cooperativo · 1–2", icon: LockKeyhole, tone: "noir", new: true },
+  { id: "island-survival", name: "Depois da tempestade", category: "Sobrevivência", description: "Administrem recursos, dividam tarefas e sobrevivam cinco dias numa ilha até o resgate.", players: "Cooperativo · 1–2", icon: Shield, tone: "olive", new: true },
 ];
 
 function GamePage({
@@ -180,8 +182,10 @@ function GamePage({
             <TrucoGame />
           ) : gameId === "quiz" ? (
             <QuizGame />
-          ) : (
+          ) : gameId === "escape-room" ? (
             <EscapeRoomGame />
+          ) : (
+            <IslandSurvivalGame />
           )}
         </div>
       </main>
@@ -195,7 +199,7 @@ export function CoupleGames({ userId }: { userId: string }) {
 
   const visibleGames = catalogue.filter((game) => {
     if (filter === "strategy") return game.category === "Estratégia";
-    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room"].includes(game.category);
+    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room","Sobrevivência"].includes(game.category);
     if (filter === "investigation") return game.category === "Investigação policial" || game.category === "Escape room";
     return true;
   });
