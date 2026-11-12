@@ -20965,3 +20965,25 @@ body {
     font-size: 16px !important;
   }
 }
+
+
+/* Login: restore native touch handling and document scrolling.
+   The app shell normally reserves vertical gestures for horizontal navigation;
+   that restriction must not be inherited by text fields or the login surface. */
+.app-shell:has(.auth-shell) {
+  touch-action: auto !important;
+  overflow: visible !important;
+}
+.app-shell:has(.auth-shell) .auth-shell,
+.app-shell:has(.auth-shell) .auth-shell *,
+.auth-shell,
+.auth-shell * {
+  touch-action: auto !important;
+}
+.auth-shell {
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible !important;
+  overscroll-behavior: auto !important;
+  -webkit-overflow-scrolling: auto;
+}
