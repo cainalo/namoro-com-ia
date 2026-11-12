@@ -19,6 +19,7 @@ import { ConnectFourGame } from "@/components/ConnectFourGame";
 import { CoupleDailyChallenge } from "@/components/CoupleDailyChallenge";
 import { CoupleGame } from "@/components/CoupleGame";
 import { CoupleInvestigationGame } from "@/components/CoupleInvestigationGame";
+import { CoupleInvestigationTrainGame } from "@/components/CoupleInvestigationTrainGame";
 import { ChessGame } from "@/components/ChessGame";
 import { BattleshipGame } from "@/components/BattleshipGame";
 import { DominoGame } from "@/components/DominoGame";
@@ -31,7 +32,7 @@ import {
   LocalThisOrThatGame,
 } from "@/components/LocalCoupleGames";
 
-type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room";
 type GameMode = "local" | "online";
 
 const catalogue: Array<{
@@ -85,6 +86,16 @@ const catalogue: Array<{
     name: "A Carta Celeste",
     category: "Investigação policial",
     description: "Examine evidências, interrogue quatro suspeitos e descubra quem furtou a peça do museu.",
+    players: "Cooperativo · 1–2",
+    icon: Search,
+    tone: "noir",
+    new: true,
+  },
+  {
+    id: "investigation-train",
+    name: "O Último Trem",
+    category: "Investigação policial",
+    description: "Um roubo na Plataforma 4: reconstrua horários, rastros e depoimentos para encontrar a maleta.",
     players: "Cooperativo · 1–2",
     icon: Search,
     tone: "noir",
@@ -157,6 +168,8 @@ function GamePage({
             mode === "local" ? <LocalDailyChallengeGame /> : <CoupleDailyChallenge userId={userId} />
           ) : gameId === "investigation" ? (
             <CoupleInvestigationGame />
+          ) : gameId === "investigation-train" ? (
+            <CoupleInvestigationTrainGame />
           ) : gameId === "chess" ? (
             <ChessGame />
           ) : gameId === "battleship" ? (
