@@ -37,6 +37,7 @@ import {
   Sparkles,
   RefreshCw,
   Video,
+  Check,
   Ship,
   Target,
   Type,
@@ -1198,6 +1199,284 @@ export function CoupleFeed({
   );
 }
 
+function InAppMediaCapture({
+  kind,
+  onCaptured,
+}: {
+  kind: "photo" | "video";
+  onCaptured: (file: File) => void;
+}) {
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [opening, setOpening] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const keepRecordingRef = useRef(false);
+
+  const stopStream = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  };
+
+  useEffect(() => {
+    if (!cameraOpen || !videoRef.current || !streamRef.current) return;
+    videoRef.current.srcObject = streamRef.current;
+    void videoRef.current.play().catch(() => {
+      setCameraError("Não foi possível iniciar a prévia da câmera.");
+    });
+  }, [cameraOpen]);
+
+  useEffect(() => {
+    if (!recording) return;
+    const timer = window.setInterval(() => {
+      setSeconds((current) => {
+        if (current + 1 >= 120) {
+          recorderRef.current?.stop();
+          return 120;
+        }
+        return current + 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [recording]);
+
+  useEffect(() => () => {
+    keepRecordingRef.current = false;
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    stopStream();
+  }, []);
+
+  async function startCamera(nextFacing: "environment" | "user" = facingMode) {
+    setCameraError(null);
+    setOpening(true);
+    stopStream();
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("A câmera não está disponível neste navegador ou nesta origem.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: nextFacing },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
+        audio: kind === "video" ? { echoCancellation: true, noiseSuppression: true } : false,
+      });
+      streamRef.current = stream;
+      setCameraOpen(true);
+    } catch (cause) {
+      const name = cause instanceof DOMException ? cause.name : "";
+      setCameraError(
+        name === "NotAllowedError" || name === "PermissionDeniedError"
+          ? kind === "video"
+            ? "O Android precisa liberar a câmera e o microfone para gravar. Permita quando o pedido aparecer."
+            : "Permita o acesso à câmera quando o Android solicitar."
+          : name === "NotFoundError"
+            ? "Não encontramos uma câmera compatível neste dispositivo."
+            : name === "NotReadableError"
+              ? "A câmera está sendo usada por outro aplicativo. Feche-o e tente novamente."
+              : cause instanceof Error
+                ? cause.message
+                : "Não foi possível abrir a câmera do Morados.",
+      );
+    } finally {
+      setOpening(false);
+    }
+  }
+
+  function closeCamera() {
+    keepRecordingRef.current = false;
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+    }
+    stopStream();
+    setCameraOpen(false);
+    setRecording(false);
+    setSeconds(0);
+  }
+
+  async function flipCamera() {
+    const next = facingMode === "environment" ? "user" : "environment";
+    setFacingMode(next);
+    await startCamera(next);
+  }
+
+  function capturePhoto() {
+    const video = videoRef.current;
+    if (!video || video.videoWidth === 0 || video.videoHeight === 0) {
+      setCameraError("A câmera ainda está preparando a imagem. Tente novamente.");
+      return;
+    }
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      setCameraError("Não foi possível preparar a foto.");
+      return;
+    }
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setCameraError("Não foi possível gerar o arquivo da foto.");
+        return;
+      }
+      const file = new File([blob], `morados-foto-${Date.now()}.jpg`, { type: "image/jpeg" });
+      if (file.size > 35 * 1024 * 1024) {
+        setCameraError("A foto ficou maior que o limite de 35 MB.");
+        return;
+      }
+      onCaptured(file);
+      closeCamera();
+    }, "image/jpeg", 0.92);
+  }
+
+  function startVideoRecording() {
+    const stream = streamRef.current;
+    if (!stream || typeof MediaRecorder === "undefined") {
+      setCameraError("A gravação de vídeo não é suportada neste dispositivo.");
+      return;
+    }
+    try {
+      chunksRef.current = [];
+      keepRecordingRef.current = true;
+      const mimeType = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+        "video/mp4",
+      ].find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        keepRecordingRef.current = false;
+        setCameraError("A gravação foi interrompida. Tente novamente.");
+        setRecording(false);
+        stopStream();
+      };
+      recorder.onstop = () => {
+        const shouldSave = keepRecordingRef.current;
+        keepRecordingRef.current = false;
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" });
+        if (shouldSave && blob.size > 0) {
+          if (blob.size > 35 * 1024 * 1024) {
+            setCameraError("O vídeo ultrapassou o limite de 35 MB. Grave um trecho menor.");
+          } else {
+            const mime = (blob.type || "video/webm").split(";")[0];
+            const extension = mime.includes("mp4") ? "mp4" : "webm";
+            onCaptured(new File([blob], `morados-video-${Date.now()}.${extension}`, { type: mime }));
+            setCameraOpen(false);
+          }
+        } else if (shouldSave) {
+          setCameraError("Nenhum vídeo foi capturado. Tente novamente.");
+        }
+        stopStream();
+        setRecording(false);
+        setSeconds(0);
+      };
+      recorder.start(500);
+      setRecording(true);
+      setCameraError(null);
+    } catch (cause) {
+      keepRecordingRef.current = false;
+      setCameraError(cause instanceof Error ? cause.message : "Não foi possível iniciar o vídeo.");
+    }
+  }
+
+  function stopVideoRecording() {
+    keepRecordingRef.current = true;
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+  }
+
+  async function openPermissionSettings() {
+    try {
+      const opened = await openMoradosAppSettings();
+      if (!opened) {
+        setCameraError("No navegador, permita câmera e microfone nas permissões do site e tente novamente.");
+      }
+    } catch {
+      setCameraError("Abra as configurações do Android, entre em Aplicativos, Morados e Permissões.");
+    }
+  }
+
+  return (
+    <div className="morados-media-capture">
+      {!cameraOpen && (
+        <button
+          type="button"
+          className="morados-media-capture-trigger"
+          onClick={() => void startCamera()}
+          disabled={opening}
+        >
+          {opening ? <LoaderCircle aria-hidden="true" /> : kind === "photo" ? <Camera aria-hidden="true" /> : <Video aria-hidden="true" />}
+          {opening
+            ? "Abrindo câmera…"
+            : kind === "photo"
+              ? "Tirar foto no Morados"
+              : "Gravar vídeo no Morados"}
+        </button>
+      )}
+
+      {cameraOpen && (
+        <div className="morados-camera-panel" role="region" aria-label={kind === "photo" ? "Câmera do Morados" : "Gravação de vídeo do Morados"}>
+          <div className="morados-camera-panel-head">
+            <strong>{kind === "photo" ? "Câmera do Morados" : "Gravador de vídeo"}</strong>
+            <button type="button" onClick={closeCamera} aria-label="Fechar câmera">
+              <X aria-hidden="true" />
+            </button>
+          </div>
+          <video ref={videoRef} className="morados-camera-preview" autoPlay muted playsInline />
+          <div className="morados-camera-actions">
+            <button type="button" className="morados-camera-secondary" onClick={() => void flipCamera()} disabled={recording}>
+              <RefreshCw aria-hidden="true" /> Virar câmera
+            </button>
+            {kind === "photo" ? (
+              <button type="button" className="morados-camera-primary" onClick={capturePhoto}>
+                <Camera aria-hidden="true" /> Capturar foto
+              </button>
+            ) : recording ? (
+              <button type="button" className="morados-camera-primary is-recording" onClick={stopVideoRecording}>
+                <Square aria-hidden="true" /> Parar e usar · {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+              </button>
+            ) : (
+              <button type="button" className="morados-camera-primary" onClick={startVideoRecording}>
+                <Video aria-hidden="true" /> Começar a gravar
+              </button>
+            )}
+          </div>
+          <p className="morados-camera-hint">
+            {kind === "photo" ? "A imagem é capturada aqui, sem abrir outro aplicativo." : "Gravação de até 2 minutos, salva diretamente no rascunho da publicação."}
+          </p>
+        </div>
+      )}
+
+      {cameraError && (
+        <div className="morados-capture-error" role="alert">
+          <span>{cameraError}</span>
+          <button type="button" onClick={() => void openPermissionSettings()}>
+            Permissões do aplicativo
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FeedPostPhoto({
   src,
   alt,
@@ -1488,7 +1767,24 @@ function AudioRecorderControls({ onRecorded }: { onRecorded: (file: File) => voi
         </button>
       )}
       <span className="feed-audio-record-hint">Até 3 minutos · a gravação fica privada entre vocês</span>
-      {recordError && <span className="feed-audio-record-error" role="alert">{recordError}</span>}
+      {recordError && (
+        <div className="feed-audio-record-error" role="alert">
+          <span>{recordError}</span>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const opened = await openMoradosAppSettings();
+                if (!opened) setRecordError("No navegador, permita o microfone nas permissões do site e tente novamente.");
+              } catch {
+                setRecordError("Abra as configurações do Android, entre em Aplicativos, Morados e Permissões.");
+              }
+            }}
+          >
+            Permissões do aplicativo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
