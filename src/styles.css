@@ -14437,3 +14437,190 @@ h3,
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* ───── Acabamento final Natural para módulos próprios do Morados ─────
+   Mantém a estrutura e as interações existentes; normaliza apenas a estética. */
+
+/* Sugestões de jogos no feed: o card deixa de usar pôsteres em gradiente. */
+.feed-game-card,
+.feed-game-card.is-coral,
+.feed-game-card.is-green,
+.feed-game-card.is-violet,
+.feed-game-card.is-gold {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  box-shadow: var(--shadow-card);
+}
+.feed-game-card::before,
+.feed-game-card::after {
+  display: none;
+}
+.feed-game-art {
+  border: 0;
+  border-radius: 1rem;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  box-shadow: none;
+}
+.feed-game-card.is-coral .feed-game-art {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.feed-game-card.is-violet .feed-game-art,
+.feed-game-card.is-gold .feed-game-art {
+  background: var(--color-secondary);
+  color: var(--color-primary);
+}
+.feed-game-kicker {
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.feed-game-copy h2 {
+  color: var(--color-foreground);
+  letter-spacing: 0;
+}
+.feed-game-copy p {
+  color: var(--color-muted-foreground);
+}
+.feed-game-copy button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+/* Memórias e planos: remover listras grossas e superfícies internas duras. */
+.memory-composer,
+.memory-entry,
+.plans-calendar,
+.plans-selected-day,
+.plans-event-composer,
+.plans-event-entry {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  box-shadow: var(--shadow-card);
+}
+.memory-entry:nth-child(4n + 1),
+.memory-entry:nth-child(4n + 2),
+.memory-entry:nth-child(4n + 3),
+.memory-entry:nth-child(4n + 4),
+.plans-event-entry:nth-child(2n) {
+  border-top: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+}
+.plans-day {
+  border-radius: 0.75rem;
+}
+.plans-day.is-today {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 1px;
+}
+.games-hub-selectors button {
+  border-radius: 999px;
+}
+
+/* Casa: controles flutuantes em papel, sem caixas escuras sobre o mapa. */
+.house-map-zoom-controls,
+.house-map-lighting-controls {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-background) 94%, transparent);
+  color: var(--color-foreground);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+.house-map-zoom-controls button,
+.house-map-lighting-controls button {
+  border: 0;
+  border-radius: 999px;
+  color: var(--color-foreground);
+}
+.house-map-zoom-controls button:hover:not(:disabled),
+.house-map-lighting-controls button:hover,
+.house-map-lighting-controls button.is-selected {
+  border-color: transparent;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.house-map-zoom-controls > span {
+  color: var(--color-muted-foreground);
+}
+.house-map-zoom-controls button:focus-visible,
+.house-map-lighting-controls button:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Conversa: painéis, papel de parede e composer seguem a mesma superfície. */
+.conversation-wallpaper-panel,
+.conversation-search-panel,
+.conversation-tools-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-card);
+  color: var(--color-card-foreground);
+  box-shadow: var(--shadow-card);
+}
+.conversation-wallpaper-choice {
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+  background: var(--color-background);
+  color: var(--color-foreground);
+}
+.conversation-wallpaper-choice.is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.conversation-composer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-card);
+}
+.conversation-input-shell {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-background);
+}
+.conversation-send-button {
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+@media (max-width: 680px) {
+  .feed-game-card {
+    gap: 0.875rem;
+    padding: 1rem;
+  }
+  .feed-game-art {
+    width: 4.5rem;
+    height: 4.5rem;
+    flex-basis: 4.5rem;
+    font-size: 2rem;
+  }
+  .plans-event-entry {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .plans-event-entry > time {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-game-card,
+  .memory-entry,
+  .plans-event-entry,
+  .house-map-zoom-controls,
+  .house-map-lighting-controls,
+  .conversation-wallpaper-choice {
+    transition: none !important;
+    animation: none !important;
+  }
+}
