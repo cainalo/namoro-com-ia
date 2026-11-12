@@ -17732,3 +17732,72 @@ h3,
     repeating-linear-gradient(90deg,transparent 0 7%,rgba(223,192,142,.14) 7.2% 7.5%,transparent 7.7% 15%);
   box-shadow:none;
 }
+
+
+/* Sobrevivência cooperativa — Depois da tempestade */
+.island-survival-game{width:min(100%,52rem);margin:0 auto}
+.island-survival-hero{position:relative;overflow:hidden;border:1px solid #344a4d;border-radius:.9rem;background:linear-gradient(140deg,#193b45,#345e59 52%,#1a3441);padding:1.1rem 1.2rem 1rem;color:#f7f2df}
+.island-survival-kicker{color:#d9bf83;font-size:.6rem;font-weight:850;letter-spacing:.14em}
+.island-survival-hero h2{position:relative;z-index:1;margin:.3rem 0;color:#fff9eb;font-family:"Fraunces",Georgia,serif;font-size:clamp(1.8rem,5vw,2.7rem);letter-spacing:-.05em}
+.island-survival-hero>p{position:relative;z-index:1;max-width:34rem;margin:0;color:rgb(247 242 223 / 82%);font-size:.78rem;line-height:1.5}
+.island-survival-scene{position:relative;height:8.5rem;overflow:hidden;margin:.5rem -1.2rem 0;background:linear-gradient(180deg,#8bb2b4 0%,#bad0bb 47%,#e5d2a0 48%,#ddc18c 58%,#4d8178 59%,#1e4c56 100%)}
+.island-sun{position:absolute;top:1rem;right:18%;display:grid;width:2.7rem;height:2.7rem;place-items:center;border-radius:50%;background:#f3d48d;color:#b67a43;box-shadow:0 0 35px rgb(243 212 141 / 45%)}
+.island-sun svg{width:1.3rem;height:1.3rem}
+.island-islet{position:absolute;right:15%;bottom:2rem;left:15%;height:4.2rem;border-radius:50% 50% 12% 12%;background:linear-gradient(180deg,#557a51,#345941 70%,#243f3d);clip-path:polygon(0 100%,7% 66%,20% 47%,31% 19%,41% 32%,52% 0,61% 27%,76% 42%,87% 63%,100% 100%)}
+.island-water{position:absolute;right:0;bottom:0;left:0;height:2rem;background:repeating-linear-gradient(0deg,transparent 0 .42rem,rgba(219,237,216,.15) .46rem .53rem),linear-gradient(90deg,#376c70,#1f535d)}
+.island-survival-day{position:relative;z-index:1;display:flex;justify-content:space-between;gap:.5rem;margin-top:.7rem;color:rgb(247 242 223 / 75%);font-size:.62rem;font-weight:800;letter-spacing:.1em}
+.island-survival-day strong{color:#fff9eb;font-size:.7rem}
+.island-survival-progress{height:.3rem;overflow:hidden;border-radius:999px;background:rgb(255 249 235 / 18%);margin-top:.35rem}
+.island-survival-progress span{display:block;height:100%;border-radius:inherit;background:#e0bf7d;transition:width 200ms ease}
+.island-resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.5rem;margin:.75rem 0}
+.island-resource{display:grid;grid-template-columns:1.4rem 1fr auto;align-items:center;gap:.4rem;border:1px solid var(--border);border-radius:.65rem;background:var(--card);padding:.6rem}
+.island-resource svg{width:1rem;height:1rem;color:var(--primary)}
+.island-resource span{color:var(--muted-foreground);font-size:.66rem;font-weight:750}
+.island-resource strong{color:var(--foreground);font-family:"Fraunces",Georgia,serif;font-size:1.1rem}
+.island-health-row{display:flex;align-items:center;justify-content:space-between;gap:.6rem;border:1px solid var(--border);border-radius:.65rem;background:var(--card);padding:.65rem .75rem}
+.island-health-row>div{display:flex;align-items:center;gap:.45rem;color:var(--foreground);font-size:.68rem;font-weight:750}
+.island-health-row>div>div{display:flex;gap:.13rem}
+.island-health-row svg{width:.95rem;height:.95rem;color:#b64b34}
+.island-health-row svg.is-empty{color:var(--border);opacity:.55}
+.island-health-row>span{color:var(--muted-foreground);font-size:.65rem}
+.island-actions-panel{border:1px solid var(--border);border-radius:.8rem;background:var(--card);margin-top:.75rem;padding:.85rem}
+.island-actions-heading .date-kicker{margin:0;color:var(--muted-foreground);font-size:.62rem;font-weight:850;letter-spacing:.1em}
+.island-actions-heading h3{margin:.2rem 0;color:var(--foreground);font-family:"Fraunces",Georgia,serif;font-size:1.35rem}
+.island-actions-heading p{margin:0;color:var(--muted-foreground);font-size:.73rem;line-height:1.5}
+.island-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem;margin-top:.75rem}
+.island-action-grid>button{display:flex;min-width:0;align-items:flex-start;gap:.55rem;border:1px solid var(--border);border-radius:.65rem;background:var(--background);padding:.65rem;text-align:left;color:var(--foreground);transition:border-color 150ms ease,background 150ms ease}
+.island-action-grid>button.is-selected{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,var(--card))}
+.island-action-grid>button:disabled{opacity:.35;cursor:not-allowed}
+.island-action-icon{display:grid;width:2rem;height:2rem;flex:0 0 2rem;place-items:center;border-radius:.55rem;background:var(--secondary);color:var(--primary)}
+.island-action-icon svg{width:1rem;height:1rem}
+.island-action-grid>button>span:last-child{display:flex;min-width:0;flex:1;flex-direction:column;gap:.15rem}
+.island-action-grid strong{color:var(--foreground);font-size:.72rem;line-height:1.25}
+.island-action-grid small{color:var(--muted-foreground);font-size:.64rem;line-height:1.4}
+.island-action-grid em{margin-top:.15rem;color:var(--primary);font-size:.59rem;font-style:normal;font-weight:750}
+.island-confirm-action,.island-night-panel button,.island-ending button{display:inline-flex;min-height:2.6rem;align-items:center;justify-content:center;border:0;border-radius:999px;background:var(--primary);padding:.5rem 1rem;color:var(--primary-foreground);font-size:.75rem;font-weight:800}
+.island-confirm-action{width:100%;margin-top:.65rem}
+.island-confirm-action:disabled{opacity:.35;cursor:not-allowed}
+.island-handoff,.island-night-panel{display:flex;min-height:48vh;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:.8rem;background:var(--card);margin-top:.75rem;padding:1.1rem;text-align:center}
+.island-handoff>span,.island-night-panel>span{display:grid;width:3.6rem;height:3.6rem;place-items:center;border-radius:1rem;background:var(--secondary);color:var(--primary)}
+.island-handoff>span svg,.island-night-panel>span svg{width:1.65rem;height:1.65rem}
+.island-handoff h3,.island-night-panel h3{max-width:28rem;margin:.3rem 0;color:var(--foreground);font-family:"Fraunces",Georgia,serif;font-size:1.55rem}
+.island-handoff p:not(.date-kicker),.island-night-panel p:not(.date-kicker){max-width:27rem;color:var(--muted-foreground);font-size:.8rem;line-height:1.55}
+.island-handoff button{min-height:2.6rem;border:0;border-radius:999px;background:var(--primary);padding:.5rem 1rem;color:var(--primary-foreground);font-size:.75rem;font-weight:800}
+.island-ending{display:flex;min-height:45vh;flex-direction:column;align-items:center;justify-content:center;border:1px solid var(--primary);border-radius:.8rem;background:color-mix(in srgb,var(--primary) 8%,var(--card));margin-top:.75rem;padding:1rem;text-align:center}
+.island-ending.is-lost{border-color:#b64b34;background:color-mix(in srgb,#b64b34 8%,var(--card))}
+.island-ending>svg{width:2.1rem;height:2.1rem;color:var(--primary)}
+.island-ending.is-lost>svg{color:#b64b34}
+.island-ending h3{margin:.3rem 0;color:var(--foreground);font-family:"Fraunces",Georgia,serif;font-size:1.6rem}
+.island-ending>p{max-width:29rem;color:var(--muted-foreground);font-size:.78rem;line-height:1.55}
+.island-ending>div{display:flex;flex-direction:column;gap:.2rem;margin:.55rem 0;color:var(--muted-foreground);font-size:.68rem}
+.island-ending>div strong{color:var(--foreground)}
+.island-feedback{display:flex;align-items:flex-start;gap:.45rem;border:1px solid var(--border);border-radius:.65rem;background:var(--card);margin-top:.7rem;padding:.7rem}
+.island-feedback svg{width:.95rem;height:.95rem;flex:0 0 .95rem;color:var(--primary)}
+.island-feedback p{margin:0;color:var(--foreground);font-size:.72rem;line-height:1.5}
+.island-log{border:1px solid var(--border);border-radius:.65rem;background:var(--card);margin-top:.65rem;padding:.65rem .75rem;color:var(--foreground);font-size:.7rem}
+.island-log summary{font-weight:750;cursor:pointer}
+.island-log ol{display:grid;gap:.3rem;margin:.6rem 0 0;padding-left:1.1rem;color:var(--muted-foreground);line-height:1.45}
+.island-footer{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-top:.75rem;color:var(--muted-foreground);font-size:.64rem}
+.island-footer button{display:inline-flex;align-items:center;gap:.3rem;border:0;background:transparent;color:var(--muted-foreground);font-size:.68rem;font-weight:750}
+.island-footer svg{width:.85rem;height:.85rem}
+@media(max-width:520px){.island-resource-grid{gap:.35rem}.island-resource{grid-template-columns:1rem 1fr auto;gap:.25rem;padding:.5rem}.island-resource span{font-size:.6rem}.island-action-grid{grid-template-columns:1fr}.island-survival-hero{padding:.9rem}.island-survival-scene{margin-inline:-.9rem}.island-health-row{flex-wrap:wrap}.island-health-row>span{width:100%}}
