@@ -18154,3 +18154,77 @@ h3,
 .profile-save-button { display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 9px; background: #0F4C5C; padding: 0 18px; color: #FFF9EF; cursor: pointer; font-size: 13px; font-weight: 750; }
 .profile-save-button:disabled { opacity: .55; cursor: wait; }
 .profile-note { color: var(--color-muted-foreground); font-size: 12px; line-height: 1.55; }
+
+
+/* A navegação inferior acompanha todas as larguras, não apenas o breakpoint móvel. */
+.mobile-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 55;
+  display: grid !important;
+  width: 100%;
+  max-width: none;
+  min-height: 72px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 2px;
+  margin: 0;
+  border: 1px solid var(--color-border);
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--color-card) 97%, transparent);
+  padding: 6px clamp(10px, 3vw, 42px) calc(6px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 22px -22px rgb(16 40 46 / 45%);
+  transition: transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.mobile-nav .nav-button-mobile {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  padding: 3px 2px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 650;
+}
+.mobile-nav .nav-button-mobile .nav-icon-wrap { width: 30px; height: 30px; }
+.mobile-nav .nav-button-mobile .nav-label { max-width: 100%; overflow: hidden; font-size: 10px; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+.mobile-nav .nav-button-mobile.is-active { background: transparent; color: var(--color-primary); }
+.mobile-nav .nav-button-mobile.is-active .nav-icon-wrap { background: var(--color-primary-soft); }
+.mobile-nav .mobile-nav-create {
+  align-self: start;
+  justify-self: center;
+  margin-top: 1px;
+  transform: translateY(-9px);
+}
+.mobile-nav .mobile-nav-create:active { transform: translateY(-9px) scale(.96); }
+.mobile-nav[data-hidden="true"] { transform: translateY(110%); pointer-events: none; }
+.page-frame { padding-bottom: calc(112px + env(safe-area-inset-bottom)); }
+@media (max-width: 680px) {
+  .mobile-nav { min-height: 68px; padding-inline: 8px; }
+  .page-frame { padding-bottom: calc(118px + env(safe-area-inset-bottom)); }
+}
+@media (min-width: 1024px) {
+  .mobile-nav { display: grid !important; }
+}
+
+/* Jogos em modo imersivo: o próprio jogo mantém apenas seu botão de retorno. */
+html[data-morados-game-open="true"] .app-chrome,
+html[data-morados-game-open="true"] .mobile-nav,
+html[data-morados-game-open="true"] .morados-floating-wordmark {
+  display: none !important;
+}
+html[data-morados-game-open="true"] .app-main,
+html[data-morados-game-open="true"] .page-frame {
+  padding: 0 !important;
+}

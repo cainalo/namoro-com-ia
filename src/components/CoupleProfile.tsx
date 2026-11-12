@@ -35,6 +35,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"avatar" | "banner" | null>(null);
+  const [profileExtrasAvailable, setProfileExtrasAvailable] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const load = useCallback(async () => {
@@ -42,12 +43,22 @@ export function CoupleProfile({ userId }: { userId: string }) {
     try {
       const [{ data: membership, error: membershipError }, { data: row, error: profileError }] = await Promise.all([
         supabase.from("couple_members").select("couple_id").eq("user_id", userId).is("ended_at", null).maybeSingle(),
-        supabase.from("profiles").select("id,display_name,avatar_path,banner_path,bio").eq("id", userId).maybeSingle(),
+        supabase.from("profiles").select("id,display_name,avatar_path").eq("id", userId).maybeSingle(),
       ]);
       if (membershipError) throw membershipError;
       if (profileError) throw profileError;
       if (!row) throw new Error("O perfil da conta ainda não foi criado. Saia e entre novamente para sincronizar sua conta.");
-      const next = row as ProfileRecord;
+      const { data: extraFields, error: extraFieldsError } = await supabase
+        .from("profiles")
+        .select("bio,banner_path")
+        .eq("id", userId)
+        .maybeSingle();
+      const next: ProfileRecord = {
+        ...row,
+        bio: extraFieldsError ? null : extraFields?.bio ?? null,
+        banner_path: extraFieldsError ? null : extraFields?.banner_path ?? null,
+      };
+      setProfileExtrasAvailable(!extraFieldsError);
       setProfile(next); setCoupleId(membership?.couple_id ?? null);
       setName(next.display_name ?? ""); setBio(next.bio ?? "");
       const [avatar, banner] = await Promise.all([signedMedia(next.avatar_path), signedMedia(next.banner_path)]);
@@ -62,10 +73,13 @@ export function CoupleProfile({ userId }: { userId: string }) {
     if (!profile) return;
     setSaving(true); setError(null); setMessage(null);
     try {
-      const { error: updateError } = await supabase.from("profiles").update({ display_name: name.trim() || null, bio: bio.trim() || null }).eq("id", userId);
+      const update = profileExtrasAvailable
+        ? await supabase.from("profiles").update({ display_name: name.trim() || null, bio: bio.trim() || null }).eq("id", userId)
+        : await supabase.from("profiles").update({ display_name: name.trim() || null }).eq("id", userId);
+      const updateError = update.error;
       if (updateError) throw updateError;
-      setProfile({ ...profile, display_name: name.trim() || null, bio: bio.trim() || null });
-      setMessage("Perfil atualizado.");
+      setProfile({ ...profile, display_name: name.trim() || null, ...(profileExtrasAvailable ? { bio: bio.trim() || null } : {}) });
+      setMessage(profileExtrasAvailable ? "Perfil atualizado." : "Nome atualizado. A descrição e a capa serão liberadas após a migração do perfil.");
       window.dispatchEvent(new Event("morados:profile-updated"));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Não foi possível salvar o perfil.");
@@ -76,6 +90,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
     const file = event.target.files?.[0] ?? null; event.target.value = "";
     if (!file) return;
     if (!coupleId) { setError("Vincule a outra pessoa antes de adicionar imagens privadas ao perfil."); return; }
+    if (kind === "banner" && !profileExtrasAvailable) { setError("A capa será liberada após a migração de personalização do perfil."); return; }
     if (!file.type.startsWith("image/")) { setError("Escolha um arquivo de imagem."); return; }
     setUploading(kind); setError(null); setMessage(null);
     const uploaded = await uploadCoupleMedia({ coupleId, userId, scope: "profile", file });
@@ -105,7 +120,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
         <div className="profile-cover">
           {bannerUrl && <img src={bannerUrl} alt="" />}
           <label className="profile-upload-button profile-edit-cover"><ImagePlus className="h-4 w-4" aria-hidden="true" /> Alterar capa
-            <input className="sr-only" type="file" accept="image/*" disabled={!coupleId || uploading !== null} onChange={(event) => void uploadProfileImage("banner", event)} />
+            <input className="sr-only" type="file" accept="image/*" disabled={!coupleId || !profileExtrasAvailable || uploading !== null} onChange={(event) => void uploadProfileImage("banner", event)} />
           </label>
         </div>
         <div className="profile-main-card">
@@ -125,8 +140,9 @@ export function CoupleProfile({ userId }: { userId: string }) {
           </div>
           <div className="profile-editor-grid">
             <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
-            <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} placeholder="Escreva algo sobre você…" /></label>
-            {!coupleId && <p className="profile-note">Você pode editar nome e descrição agora. Depois de vincular a outra pessoa, poderá adicionar foto e capa ao armazenamento privado do casal.</p>}
+            <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} disabled={!profileExtrasAvailable} maxLength={500} placeholder="Escreva algo sobre você…" /></label>
+            {!coupleId && <p className="profile-note">Você pode editar seu nome agora. Depois de vincular a outra pessoa, poderá adicionar foto e capa ao armazenamento privado do casal.</p>}
+            {!profileExtrasAvailable && <p className="profile-note">A descrição e a capa estão preparadas na interface, mas dependem da migração de perfil ainda não aplicada ao banco conectado.</p>}
             {uploading && <p className="profile-note">Enviando {uploading === "avatar" ? "foto de perfil" : "capa"}…</p>}
             {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
             {message && <p className="text-sm text-primary" role="status">{message}</p>}
@@ -137,6 +153,6 @@ export function CoupleProfile({ userId }: { userId: string }) {
         </div>
       </>
     )}
-    {error && loading && <p className="profile-note mt-4" role="alert">{error}</p>}
+    {error && !profile && !loading && <p className="profile-note mt-4" role="alert">{error}</p>}
   </section>;
 }
