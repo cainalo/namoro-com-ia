@@ -832,15 +832,13 @@ export function CoupleFeed({
 
                       {block.type === "audio" && (
                         <div className="feed-composer-audio-block">
-                          {block.previewUrl ? (
-                            <audio controls src={block.previewUrl} />
-                          ) : (
-                            <label className="feed-composer-file-pick">
-                              <AudioLines aria-hidden="true" />
-                              <span>Escolher áudio</span>
-                              <input type="file" accept="audio/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
-                            </label>
-                          )}
+                          {block.previewUrl && <audio controls src={block.previewUrl} />}
+                          <label className="feed-composer-file-pick">
+                            <AudioLines aria-hidden="true" />
+                            <span>{block.file ? "Trocar arquivo de áudio" : "Enviar arquivo de áudio"}</span>
+                            <input type="file" accept="audio/*" onChange={(event) => handleBlockFile(block.id, event.target.files?.[0] ?? null)} />
+                          </label>
+                          <AudioRecorderControls onRecorded={(file) => handleBlockFile(block.id, file)} />
                           <input
                             className="feed-composer-caption"
                             value={block.caption}
@@ -996,6 +994,118 @@ export function CoupleFeed({
         )}
       </div>
     </section>
+  );
+}
+
+function AudioRecorderControls({ onRecorded }: { onRecorded: (file: File) => void }) {
+  const [recording, setRecording] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [recordError, setRecordError] = useState<string | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if (!recording) return;
+    const timer = window.setInterval(() => {
+      setSeconds((current) => {
+        if (current + 1 >= 180) {
+          recorderRef.current?.stop();
+          return 180;
+        }
+        return current + 1;
+      });
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [recording]);
+
+  useEffect(() => () => {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = null;
+      recorder.stop();
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
+  const stopRecording = () => {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      recorderRef.current.stop();
+    }
+  };
+
+  async function startRecording() {
+    setRecordError(null);
+    setSeconds(0);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+        throw new Error("A gravação pelo microfone não está disponível neste navegador.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      chunksRef.current = [];
+      const mimeType = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+      ].find((type) => MediaRecorder.isTypeSupported(type));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recorderRef.current = recorder;
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onerror = () => {
+        setRecordError("A gravação foi interrompida. Tente novamente.");
+        setRecording(false);
+        stream.getTracks().forEach((track) => track.stop());
+      };
+      recorder.onstop = () => {
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        const extension = blob.type.includes("mp4") ? "m4a" : blob.type.includes("ogg") ? "ogg" : "webm";
+        if (blob.size > 0) {
+          const file = new File([blob], `morados-gravacao-${Date.now()}.${extension}`, {
+            type: blob.type || "audio/webm",
+          });
+          onRecorded(file);
+        } else {
+          setRecordError("Nenhum som foi capturado. Confira a permissão do microfone.");
+        }
+        stream.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
+        setRecording(false);
+      };
+      recorder.start(250);
+      setRecording(true);
+    } catch (error) {
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      setRecording(false);
+      setRecordError(
+        error instanceof Error && error.name === "NotAllowedError"
+          ? "Permita o acesso ao microfone para gravar."
+          : error instanceof Error
+            ? error.message
+            : "Não foi possível iniciar a gravação.",
+      );
+    }
+  }
+
+  return (
+    <div className="feed-audio-recorder">
+      {recording ? (
+        <button type="button" className="feed-audio-record-button is-recording" onClick={stopRecording}>
+          <Square aria-hidden="true" />
+          Parar gravação · {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}
+        </button>
+      ) : (
+        <button type="button" className="feed-audio-record-button" onClick={() => void startRecording()}>
+          <Mic aria-hidden="true" />
+          {seconds > 0 ? "Gravar novamente" : "Gravar agora"}
+        </button>
+      )}
+      <span className="feed-audio-record-hint">Até 3 minutos · a gravação fica privada entre vocês</span>
+      {recordError && <span className="feed-audio-record-error" role="alert">{recordError}</span>}
+    </div>
   );
 }
 
