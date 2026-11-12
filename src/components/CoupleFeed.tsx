@@ -913,17 +913,20 @@ export function CoupleFeed({
                     tone={(["petrol", "terracotta", "olive", "plum"] as const)[index % 4]}
                     footer={
                       <div className="feed-post-footer">
-                        <button type="button" onClick={onOpenConversation}>
-                          <MessageCircle aria-hidden="true" /> Conversa
+                        <button type="button" className="feed-post-action" onClick={onOpenConversation}>
+                          <span className="feed-post-action-icon"><MessageCircle aria-hidden="true" /></span>
+                          <span>Conversa</span>
                         </button>
                         <button
                           type="button"
+                          className="feed-post-action"
                           onClick={() => {
                             const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
                             void navigator.clipboard?.writeText(copy);
                           }}
                         >
-                          <Share2 aria-hidden="true" /> Copiar publicação
+                          <span className="feed-post-action-icon"><Share2 aria-hidden="true" /></span>
+                          <span>Copiar texto</span>
                         </button>
                       </div>
                     }
