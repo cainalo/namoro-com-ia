@@ -17701,3 +17701,34 @@ h3,
 @media(max-width:740px){.chess-board{border-width:.22rem}.chess-piece{font-size:clamp(1.2rem,8vw,2.5rem)}.truco-table{grid-template-columns:1fr}.truco-played-cards{min-height:6.5rem}.escape-room-hero{align-items:flex-start}.escape-room-door svg{width:2rem;height:2rem}}
 @media(max-width:480px){.investigation-scene-visual{min-height:19rem}.scene-hotspot{max-width:8.5rem;min-height:2rem;font-size:.58rem}.hotspot-vitrine{top:47%;left:3%}.hotspot-corredor{top:31%;right:3%}.hotspot-tubo{right:3%;bottom:20%}.hotspot-computador{bottom:8%;left:4%}.investigation-interview-portrait.portrait{height:14rem}.quiz-options{grid-template-columns:1fr}.quiz-options button{min-height:3.5rem}.domino-hand{gap:.2rem;padding:.6rem .2rem}.domino-hand-tile .domino-tile{width:3.4rem;height:1.75rem;flex-basis:3.4rem}.domino-tile i{width:.18rem;height:.18rem}.truco-card{width:3.25rem;height:4.65rem;flex-basis:3.25rem}.truco-hand{gap:.35rem;padding:.65rem}.escape-room-hotspot{max-width:7.7rem;padding:.3rem .42rem;font-size:.56rem}.escape-room-lock{grid-template-columns:1fr}.escape-room-lock label{grid-column:auto}.escape-room-lock button{width:100%}}
 @media(prefers-reduced-motion:reduce){.chess-piece,.quiz-progress span,.escape-room-hotspot,.investigation-scene-visual,.scene-hotspot{transition:none!important;animation:none!important}}
+
+
+/* Cenários ilustrados por caso */
+.investigation-scene-visual{
+  background-image:linear-gradient(180deg,rgba(12,18,31,.2),rgba(12,18,31,.72)),url("/images/investigation-observatory.webp");
+  background-size:cover;background-position:center 54%;
+}
+.investigation-scene-visual:before{
+  inset:0;border:0;border-radius:0;background:linear-gradient(90deg,rgba(13,20,31,.18),transparent 38%,rgba(13,20,31,.16));
+  box-shadow:none;pointer-events:none;
+}
+.investigation-scene-visual:after{display:none}
+.investigation-train-cover{
+  background:
+    linear-gradient(90deg,rgba(24,29,40,.28),rgba(24,29,40,.68)),
+    repeating-linear-gradient(90deg,transparent 0 3.3rem,rgba(229,205,165,.1) 3.35rem 3.5rem),
+    linear-gradient(160deg,#202b3b,#51402f 52%,#151d2b);
+}
+.investigation-train-scene{
+  background:
+    linear-gradient(180deg,rgba(10,16,28,.2),rgba(10,16,28,.72)),
+    repeating-linear-gradient(90deg,transparent 0 12%,rgba(215,186,139,.1) 12.2% 12.7%,transparent 13% 25%),
+    radial-gradient(ellipse at 52% 25%,rgba(72,121,164,.5),transparent 34%),
+    linear-gradient(150deg,#29394d,#564334 58%,#171d27);
+}
+.investigation-train-scene:before{
+  inset:18% 0 12%;border:0;border-radius:0;
+  background:linear-gradient(180deg,transparent 0 69%,rgba(188,160,121,.26) 70% 73%,transparent 74%),
+    repeating-linear-gradient(90deg,transparent 0 7%,rgba(223,192,142,.14) 7.2% 7.5%,transparent 7.7% 15%);
+  box-shadow:none;
+}
