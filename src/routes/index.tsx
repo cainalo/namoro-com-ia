@@ -256,12 +256,13 @@ function Index() {
 }
 
 const NAV_ACCENTS: Record<SectionId, string> = {
-  home: "#0F4C5C",
-  messages: "#C8402A",
-  memories: "#6B3A6E",
-  organize: "#D4A017",
-  universe: "#556B2F",
-  games: "#27675A",
+  home: "#555f36",
+  messages: "#a64b24",
+  memories: "#8a8848",
+  organize: "#d88e5b",
+  universe: "#657551",
+  games: "#6f7b4b",
+
 };
 
 function NavigationButton({
