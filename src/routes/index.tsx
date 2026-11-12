@@ -4,11 +4,8 @@ import { App } from "@capacitor/app";
 import {
   CalendarDays,
   ChevronRight,
-  Sparkles,
-  ArrowUpRight,
   Compass,
   Download,
-  Heart,
   Home,
   Gamepad2,
   Images,
