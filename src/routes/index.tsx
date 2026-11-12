@@ -131,11 +131,15 @@ function Index() {
     let listener: { remove: () => Promise<void> } | undefined;
 
     void App.addListener("backButton", () => {
+      if (document.documentElement.dataset.moradosGameOpen === "true") {
+        window.dispatchEvent(new Event("morados:game-back"));
+        return;
+      }
       if (activeSectionRef.current !== "home") {
         const previous = sectionHistory.current.pop() ?? "home";
         activeSectionRef.current = previous;
         setActiveSection(previous);
-          } else {
+      } else {
         void App.exitApp();
       }
     }).then((handle) => {
