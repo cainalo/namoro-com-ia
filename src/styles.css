@@ -15743,3 +15743,454 @@ h3,
     transition: none !important;
   }
 }
+
+
+
+/* ───── Reprodução fiel do PostCard / PostCardFrame do NutriConnect ─────
+   Reaplica no Morados a estrutura real: cartão tipado, padding responsivo,
+   limite entre as barras de navegação, fade/Ver mais e rodapé fixo. */
+.feed-post-card.editorial-post-card {
+  --post-px: 1.5rem;
+  --post-pt: 1.5rem;
+  --post-pb: 1.5rem;
+  --post-px-sm: 1.25rem;
+  --post-pt-sm: 1.25rem;
+  --post-pb-sm: 1.25rem;
+  --ev-card-bg: #0f4c5c;
+  --ev-card-ink: #fff9ef;
+  --post-fade: var(--ev-card-bg);
+  display: flex;
+  min-width: 0;
+  min-height: 15rem;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--ev-card-ink) 22%, var(--ev-card-bg));
+  border-radius: 0.75rem;
+  background: var(--ev-card-bg);
+  color: var(--ev-card-ink);
+  box-shadow: none;
+  font-family: "Inter Tight", "IBM Plex Sans", sans-serif;
+  --background: var(--ev-card-bg);
+  --foreground: var(--ev-card-ink);
+  --card: var(--ev-card-bg);
+  --card-foreground: var(--ev-card-ink);
+  --popover: var(--ev-card-bg);
+  --popover-foreground: var(--ev-card-ink);
+  --primary: var(--ev-card-ink);
+  --primary-foreground: var(--ev-card-bg);
+  --primary-soft: color-mix(in srgb, var(--ev-card-ink) 17%, var(--ev-card-bg));
+  --accent: var(--ev-card-ink);
+  --accent-foreground: var(--ev-card-bg);
+  --accent-soft: color-mix(in srgb, var(--ev-card-ink) 16%, var(--ev-card-bg));
+  --secondary: color-mix(in srgb, var(--ev-card-ink) 12%, var(--ev-card-bg));
+  --secondary-foreground: var(--ev-card-ink);
+  --muted: color-mix(in srgb, var(--ev-card-ink) 12%, var(--ev-card-bg));
+  --muted-foreground: color-mix(in srgb, var(--ev-card-ink) 86%, var(--ev-card-bg));
+  --border: color-mix(in srgb, var(--ev-card-ink) 22%, var(--ev-card-bg));
+  --input: color-mix(in srgb, var(--ev-card-ink) 32%, var(--ev-card-bg));
+}
+.feed-post-card.editorial-post-card[data-post-tone="petrol"] {
+  --ev-card-bg: #0f4c5c;
+  --ev-card-ink: #fff9ef;
+}
+.feed-post-card.editorial-post-card[data-post-tone="terracotta"] {
+  --ev-card-bg: #c8402a;
+  --ev-card-ink: #fff9ef;
+}
+.feed-post-card.editorial-post-card[data-post-tone="olive"] {
+  --ev-card-bg: #556b2f;
+  --ev-card-ink: #fff9ef;
+}
+.feed-post-card.editorial-post-card[data-post-tone="plum"] {
+  --ev-card-bg: #6b3a6e;
+  --ev-card-ink: #fff9ef;
+}
+.feed-post-frame-region {
+  position: relative;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: var(--post-pt) var(--post-px) 0;
+}
+.feed-post-frame-content {
+  min-width: 0;
+  display: flow-root;
+}
+.feed-post-frame-fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 5rem;
+  pointer-events: none;
+  background: linear-gradient(to top, var(--ev-card-bg), transparent);
+}
+.feed-post-expand-row {
+  flex: 0 0 auto;
+  padding: 0.75rem var(--post-px) 0;
+}
+.feed-post-expand-row button {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.25rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--ev-card-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.feed-post-expand-row button:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.feed-post-expand-row svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.feed-post-frame-footer {
+  flex: 0 0 auto;
+  padding: 0 var(--post-px) var(--post-pb);
+}
+.feed-post-card.editorial-post-card .feed-post-header {
+  display: flex;
+  min-width: 0;
+  min-height: 2.5rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--ev-card-ink);
+}
+.feed-post-card.editorial-post-card .feed-post-header strong,
+.feed-post-card.editorial-post-card .feed-post-header time {
+  color: var(--ev-card-ink);
+}
+.feed-post-author-meta {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+}
+.feed-post-card.editorial-post-card .feed-post-header strong {
+  max-width: 100%;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+}
+.feed-post-card.editorial-post-card .feed-post-header time {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  opacity: 0.76;
+}
+.feed-post-card.editorial-post-card .feed-author-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  border: 1px solid color-mix(in srgb, var(--ev-card-ink) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ev-card-ink) 13%, transparent);
+  color: var(--ev-card-ink);
+}
+.feed-post-card.editorial-post-card .feed-post-private {
+  align-self: center;
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--ev-card-ink) 27%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ev-card-ink) 13%, transparent);
+  padding: 0.25rem 0.55rem;
+  color: var(--ev-card-ink);
+  font-size: 0.65rem;
+  font-weight: 650;
+}
+.feed-post-more {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ev-card-ink);
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+.feed-post-more:hover {
+  background: color-mix(in srgb, var(--ev-card-ink) 15%, transparent);
+}
+.feed-post-more svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.feed-post-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+}
+.feed-post-title {
+  margin: 0 0 0.5rem;
+  color: var(--ev-card-ink);
+  font-family: "Fraunces", "Libre Baskerville", ui-serif, Georgia, serif;
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  text-transform: none;
+}
+.feed-post-card.editorial-post-card .feed-post-body {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  color: color-mix(in srgb, var(--ev-card-ink) 90%, transparent);
+  font-family: "Inter Tight", "IBM Plex Sans", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  text-align: start;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.feed-post-media {
+  overflow: hidden;
+  margin: 1rem 0;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--ev-card-ink) 8%, var(--ev-card-bg));
+}
+.feed-post-media img,
+.feed-post-media video {
+  display: block;
+  width: 100%;
+  max-height: var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem));
+  border-radius: inherit;
+  background: transparent;
+  object-fit: contain;
+}
+.feed-post-media figcaption {
+  border-top: 1px solid color-mix(in srgb, var(--ev-card-ink) 18%, transparent);
+  padding: 0.55rem 0.75rem 0;
+  color: color-mix(in srgb, var(--ev-card-ink) 82%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.feed-post-card.editorial-post-card .feed-post-footer {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: flex-start;
+  justify-content: space-evenly;
+  gap: 0.5rem;
+  border-top: 1px solid color-mix(in srgb, var(--ev-card-ink) 23%, transparent);
+  background: transparent;
+  padding: 0.65rem 0 0;
+  color: var(--ev-card-ink);
+  font-family: "Inter Tight", sans-serif;
+}
+.feed-post-action {
+  display: flex;
+  width: 4rem;
+  min-width: 4rem;
+  flex: 0 0 4rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  color: color-mix(in srgb, var(--ev-card-ink) 83%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow: none;
+  cursor: pointer;
+}
+.feed-post-action-icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ev-card-ink);
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.feed-post-action-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+.feed-post-action:hover .feed-post-action-icon {
+  background: color-mix(in srgb, var(--ev-card-ink) 15%, transparent);
+}
+.feed-post-music-player {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--ev-card-ink) 23%, transparent);
+  border-radius: 0.7rem;
+  background: color-mix(in srgb, var(--ev-card-ink) 10%, transparent);
+  padding: 0.75rem;
+}
+.feed-post-music-player > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.feed-post-music-player strong {
+  color: var(--ev-card-ink);
+  font-family: "Fraunces", serif;
+  font-size: 1rem;
+}
+.feed-post-music-player small {
+  color: color-mix(in srgb, var(--ev-card-ink) 78%, transparent);
+  font-size: 0.75rem;
+}
+.feed-post-music-player audio {
+  width: 100%;
+  max-width: 100%;
+  height: 2.25rem;
+}
+.feed-post-audio-recorder {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.feed-audio-recorder {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+}
+.feed-audio-record-button {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 30%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--editorial-ink) 10%, transparent);
+  padding: 0.5rem 0.85rem;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.feed-audio-record-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+.feed-audio-record-button.is-recording {
+  border-color: transparent;
+  background: var(--editorial-ink);
+  color: var(--editorial-bg);
+}
+.feed-audio-record-hint,
+.feed-audio-record-error {
+  color: color-mix(in srgb, var(--editorial-ink) 76%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.72rem;
+}
+.feed-audio-record-error {
+  color: #ffd3c8;
+}
+.feed-composer-track-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+.feed-composer-track-label select {
+  width: 100%;
+  min-height: 2.7rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 28%, transparent);
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--editorial-ink) 10%, transparent);
+  padding: 0.6rem 0.75rem;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+}
+.feed-composer-track-label option {
+  background: #fff9ef;
+  color: #342d24;
+}
+.feed-composer-generate-music {
+  display: inline-flex;
+  min-height: 2.45rem;
+  align-items: center;
+  align-self: flex-start;
+  gap: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 28%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--editorial-ink) 10%, transparent);
+  padding: 0.45rem 0.8rem;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.feed-composer-generate-music:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.feed-composer-generate-music svg {
+  width: 1rem;
+  height: 1rem;
+}
+.feed-composer-audio-preview {
+  width: 100%;
+  max-width: 100%;
+}
+.feed-audio-recorder {
+  --editorial-ink: var(--ev-card-ink);
+  --editorial-bg: var(--ev-card-bg);
+}
+.feed-composer-audio-block .feed-composer-file-pick {
+  width: 100%;
+}
+@media (max-width: 640px) {
+  .feed-post-card.editorial-post-card {
+    --post-px: var(--post-px-sm, 1.25rem);
+    --post-pt: var(--post-pt-sm, 1.25rem);
+    --post-pb: var(--post-pb-sm, 1.25rem);
+  }
+}
+@media (max-width: 420px) {
+  .feed-post-card.editorial-post-card {
+    --post-px: 1.1rem;
+    --post-pt: 1.1rem;
+    --post-pb: 1.1rem;
+  }
+  .feed-post-card.editorial-post-card .feed-post-private {
+    display: none;
+  }
+  .feed-post-action {
+    font-size: 0.62rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feed-post-expand-row button,
+  .feed-post-action-icon,
+  .feed-audio-record-button,
+  .feed-composer-generate-music {
+    transition: none !important;
+  }
+}
