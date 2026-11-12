@@ -651,24 +651,26 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 <MoreVertical aria-hidden="true" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="conversation-options-menu">
-              <DropdownMenuItem onSelect={() => setSearchOpen((open) => !open)}>
+            <DropdownMenuContent align="end" sideOffset={8} className="conversation-options-menu nc-menu">
+              <DropdownMenuItem className="nc-menu-item" onSelect={() => setSearchOpen((open) => !open)}>
                 <Search aria-hidden="true" />
                 {searchOpen ? "Ocultar pesquisa" : "Pesquisar mensagens"}
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setWallpaperOpen((open) => !open)}>
+              <DropdownMenuItem className="nc-menu-item" onSelect={() => setWallpaperOpen((open) => !open)}>
                 <Palette aria-hidden="true" />
                 Papel de parede
               </DropdownMenuItem>
               <DropdownMenuItem
+                className="nc-menu-item"
                 disabled={!hasOlderMessages || loadingOlderMessages || state.status !== "active"}
                 onSelect={() => void loadOlderMessages()}
               >
                 <History aria-hidden="true" />
                 {loadingOlderMessages ? "Carregando…" : "Mensagens anteriores"}
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="nc-menu-sep" />
               <DropdownMenuItem
+                className="nc-menu-item"
                 disabled={busy || state.status === "loading"}
                 onSelect={() => setRefreshKey((key) => key + 1)}
               >
