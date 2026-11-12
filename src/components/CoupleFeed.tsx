@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type FormEvent,
+  type PointerEvent as ReactPointerEvent,
 } from "react";
 import {
   ArrowRight,
@@ -22,7 +23,6 @@ import {
   Plus,
   Send,
   Sparkles,
-  Trash2,
   Type,
   X,
 } from "lucide-react";
@@ -217,6 +217,11 @@ export function CoupleFeed({
   });
 
   function addDraftBlock(type: CouplePostBlockType) {
+    if (draftBlocks.length >= 16) {
+      setPublishError("Uma publicação pode ter até 16 partes.");
+      return;
+    }
+    setPublishError(null);
     setDraftBlocks((current) => [...current, createDraftBlock(type)]);
   }
 
@@ -244,31 +249,37 @@ export function CoupleFeed({
     });
   }
 
-  function reorderDraftBlock(draggedId: string, targetId: string) {
+  function reorderDraftBlock(draggedId: string, targetId: string, insertAfter: boolean) {
     if (draggedId === targetId) return;
     setDraftBlocks((current) => {
       const from = current.findIndex((block) => block.id === draggedId);
-      const to = current.findIndex((block) => block.id === targetId);
-      if (from < 0 || to < 0 || from === to) return current;
+      const targetIndex = current.findIndex((block) => block.id === targetId);
+      if (from < 0 || targetIndex < 0) return current;
+      const insertionIndex = targetIndex + (insertAfter ? 1 : 0);
+      const destination = from < insertionIndex ? insertionIndex - 1 : insertionIndex;
+      if (destination === from) return current;
       const next = [...current];
       const [item] = next.splice(from, 1);
-      next.splice(to, 0, item);
+      next.splice(destination, 0, item);
       return next;
     });
   }
 
-  function handleBlockPointerDown(id: string, event: React.PointerEvent<HTMLButtonElement>) {
+  function handleBlockPointerDown(id: string, event: ReactPointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
     dragBlockRef.current = id;
     setDraggedBlockId(id);
     event.currentTarget.setPointerCapture(event.pointerId);
   }
 
-  function handleBlockPointerMove(event: React.PointerEvent<HTMLButtonElement>) {
+  function handleBlockPointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
     const draggedId = dragBlockRef.current;
     if (!draggedId) return;
     const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-post-block-id]");
     const targetId = target?.getAttribute("data-post-block-id");
-    if (targetId && targetId !== draggedId) reorderDraftBlock(draggedId, targetId);
+    if (!targetId || targetId === draggedId || !target) return;
+    const bounds = target.getBoundingClientRect();
+    reorderDraftBlock(draggedId, targetId, event.clientY > bounds.top + bounds.height / 2);
   }
 
   function handleBlockPointerEnd() {
@@ -507,7 +518,6 @@ export function CoupleFeed({
       }
 
       if (contentBlocks.length === 0) return;
-      if (body.length > 5000) throw new Error("O texto da publicação ultrapassa 5.000 caracteres.");
 
       const primaryMedia = contentBlocks.find((block) => block.type === "photo" || block.type === "video")
         ?? contentBlocks.find((block) => block.type === "audio");
@@ -647,12 +657,6 @@ export function CoupleFeed({
                       key={block.id}
                       data-post-block-id={block.id}
                       className={"feed-composer-block" + (draggedBlockId === block.id ? " is-dragging" : "")}
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => {
-                        event.preventDefault();
-                        if (dragBlockRef.current) reorderDraftBlock(dragBlockRef.current, block.id);
-                        handleBlockPointerEnd();
-                      }}
                     >
                       <div className="feed-composer-block-toolbar">
                         <button
@@ -660,14 +664,6 @@ export function CoupleFeed({
                           className="feed-block-drag-handle"
                           aria-label={"Arrastar bloco " + (index + 1)}
                           title="Arraste para reorganizar"
-                          draggable
-                          onDragStart={(event) => {
-                            dragBlockRef.current = block.id;
-                            setDraggedBlockId(block.id);
-                            event.dataTransfer.effectAllowed = "move";
-                            event.dataTransfer.setData("text/plain", block.id);
-                          }}
-                          onDragEnd={handleBlockPointerEnd}
                           onPointerDown={(event) => handleBlockPointerDown(block.id, event)}
                           onPointerMove={handleBlockPointerMove}
                           onPointerUp={handleBlockPointerEnd}
