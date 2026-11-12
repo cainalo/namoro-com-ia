@@ -22,6 +22,7 @@ import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
+import { CoupleFeed } from "@/components/CoupleFeed";
 import { CoupleGames } from "@/components/CoupleGames";
 import { CoupleHouse } from "@/components/CoupleHouse";
 import { CouplePlans } from "@/components/CouplePlans";
@@ -41,8 +42,8 @@ type NavigationItem = {
 };
 
 const navigation: NavigationItem[] = [
-  { id: "home", label: "Hoje", icon: Home },
-  { id: "messages", label: "Conversas", icon: MessageCircle },
+  { id: "home", label: "Feed", icon: Home },
+  { id: "games", label: "Jogos", icon: Gamepad2 },
   { id: "memories", label: "Memórias", icon: Images },
   { id: "organize", label: "Planos", icon: CalendarDays },
   { id: "universe", label: "Casa", icon: Compass },
@@ -64,6 +65,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
@@ -75,6 +77,32 @@ function Index() {
     activeSectionRef.current = section;
     setActiveSection(section);
     setCanGoBack(sectionHistory.current.length > 0);
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("button, a, input, textarea, select, [data-no-swipe]")) {
+      touchStartRef.current = null;
+      return;
+    }
+    const touch = event.changedTouches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = touchStartRef.current;
+    touchStartRef.current = null;
+    if (!start) return;
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 88 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+
+    if (activeSectionRef.current === "home" && dx > 0) {
+      goToSection("messages");
+    } else if (activeSectionRef.current === "messages" && dx < 0) {
+      goBack();
+    }
   };
 
   const goHome = () => {
@@ -118,20 +146,10 @@ function Index() {
   }, [activeSection]);
 
 
-  const date = useMemo(
-    () =>
-      new Intl.DateTimeFormat("pt-BR", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-      }).format(new Date()),
-    [],
-  );
-
   return (
     <AuthGate>
       {(session) => (
-        <div className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`}>
+        <div className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
           {activeSection !== "messages" && <header className="app-chrome" data-hidden={chromeHidden}>
             <div className="app-topbar">
               <div className="topbar-inner">
@@ -200,7 +218,7 @@ function Index() {
             ) : (
               <div className="page-frame">
               {activeSection === "home" ? (
-                <HomeScreen date={date} userId={session.user.id} onNavigate={goToSection} />
+                <HomeScreen userId={session.user.id} onNavigate={goToSection} onOpenConversation={() => goToSection("messages")} />
               ) : activeSection === "games" ? (
                 <CoupleGames userId={session.user.id} />
               ) : activeSection === "universe" ? (
@@ -286,115 +304,21 @@ function NavigationButton({
 }
 
 function HomeScreen({
-  date,
   userId,
   onNavigate,
+  onOpenConversation,
 }: {
-  date: string;
   userId: string;
   onNavigate: (section: SectionId) => void;
+  onOpenConversation: () => void;
 }) {
   return (
     <div className="home-screen">
-      <div className="home-heading">
-        <div>
-          <p className="date-kicker">{date}</p>
-          <h1>Hoje</h1>
-        </div>
-        <button
-          type="button"
-          className="text-action"
-          onClick={() => onNavigate("memories")}
-        >
-          <Images aria-hidden="true" />
-          <span>Guardar lembrança</span>
-        </button>
-      </div>
-
-      <section className="morados-hero" aria-label="Bem-vindos ao Morados">
-        <div className="morados-hero-copy">
-          <span className="morados-hero-kicker">
-            <Sparkles aria-hidden="true" />
-            Um espaço de vocês
-          </span>
-          <h2>
-            Um mundo inteiro
-            <span> para viver a dois.</span>
-          </h2>
-          <p>
-            Guardem histórias, combinem o próximo encontro e criem pequenos rituais
-            que só fazem sentido para vocês.
-          </p>
-          <div className="morados-hero-actions">
-            <button type="button" className="morados-hero-primary" onClick={() => onNavigate("memories")}>
-              Guardar uma memória
-              <ArrowUpRight aria-hidden="true" />
-            </button>
-            <button type="button" className="morados-hero-secondary" onClick={() => onNavigate("universe")}>
-              Conhecer a casa
-            </button>
-          </div>
-        </div>
-        <MoradosHeroScene />
-      </section>
-
-      <CoupleSetup userId={userId} />
-
-      <div className="home-columns">
-        <section className="home-primary" aria-labelledby="wall-title">
-          <div className="section-heading">
-            <h2 id="wall-title">Mural</h2>
-            <button type="button" className="subtle-action" onClick={() => onNavigate("memories")}>
-              Memórias <ChevronRight aria-hidden="true" />
-            </button>
-          </div>
-          <HomeMemoriesPreview
-            userId={userId}
-            onNavigate={onNavigate}
-          />
-        </section>
-
-        <aside className="home-secondary">
-          <section aria-labelledby="dates-title">
-            <div className="section-heading">
-              <h2 id="dates-title">Próximas datas</h2>
-              <CalendarDays aria-hidden="true" className="heading-icon" />
-            </div>
-            <HomeUpcomingPlans userId={userId} onNavigate={onNavigate} />
-          </section>
-
-          <div className="sidebar-divider" />
-
-          <section aria-labelledby="together-title">
-            <div className="section-heading">
-              <h2 id="together-title">Por perto</h2>
-              <Heart aria-hidden="true" className="heading-icon" />
-            </div>
-            <div className="shortcut-list">
-              <button type="button" onClick={() => onNavigate("messages")}>
-                <MessageCircle aria-hidden="true" />
-                <span>Conversar</span>
-                <ChevronRight aria-hidden="true" />
-              </button>
-              <button type="button" onClick={() => onNavigate("organize")}>
-                <CalendarDays aria-hidden="true" />
-                <span>Combinar alguma coisa</span>
-                <ChevronRight aria-hidden="true" />
-              </button>
-              <button type="button" onClick={() => onNavigate("universe")}>
-                <Compass aria-hidden="true" />
-                <span>Visitar a casa</span>
-                <ChevronRight aria-hidden="true" />
-              </button>
-              <button type="button" onClick={() => onNavigate("games")}>
-                <Gamepad2 aria-hidden="true" />
-                <span>Jogar a dois</span>
-                <ChevronRight aria-hidden="true" />
-              </button>
-            </div>
-          </section>
-        </aside>
-      </div>
+      <CoupleFeed
+        userId={userId}
+        onNavigate={onNavigate}
+        onOpenConversation={onOpenConversation}
+      />
     </div>
   );
 }
