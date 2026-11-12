@@ -6,7 +6,7 @@ import {
   useState,
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
-  type ReactNode,
+  type ReactNode,\n  type CSSProperties,
 } from "react";
 import {
   ArrowRight,
@@ -932,15 +932,18 @@ export function CoupleFeed({
                     }
                   >
                     <header className="feed-post-header">
-                      <span className={post.author_id === userId ? "feed-author-avatar is-you" : "feed-author-avatar"}>
-                        {initials(post.author_name)}
-                      </span>
-                      <div className="feed-post-author-meta">
-                        <strong>{post.author_name}</strong>
-                        <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
+                      <div className="feed-post-author-identity">
+                        <span className={post.author_id === userId ? "feed-author-avatar is-you" : "feed-author-avatar"}>
+                          {initials(post.author_name)}
+                        </span>
+                        <div className="feed-post-author-meta">
+                          <strong>{post.author_name}</strong>
+                          <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
+                        </div>
                       </div>
-                      <span className="feed-post-private">A dois</span>
-                      <DropdownMenu>
+                      <div className="feed-post-header-actions">
+                        <span className="feed-post-private">A dois</span>
+                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <button type="button" className="feed-post-more" aria-label="Mais opções da publicação">
                             <MoreHorizontal aria-hidden="true" />
@@ -961,17 +964,18 @@ export function CoupleFeed({
                             <MessageCircle aria-hidden="true" /> Abrir conversa
                           </DropdownMenuItem>
                         </DropdownMenuContent>
-                      </DropdownMenu>
+                        </DropdownMenu>
+                      </div>
                     </header>
 
                     <div className="feed-post-content">
                       {post.blocks.map((block) => (
                         <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
                           {block.type === "title" && block.value && (
-                            <h2 className="feed-post-title">{block.value}</h2>
+                            <h3 className="feed-post-title text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">{block.value}</h3>
                           )}
                           {block.type === "text" && block.value && (
-                            <p className="feed-post-body">{block.value}</p>
+                            <p className="feed-post-body mb-4 text-sm text-foreground/90 leading-relaxed text-left whitespace-pre-line">{block.value}</p>
                           )}
                           {block.type === "photo" && block.media_url && (
                             <FeedPostPhoto
@@ -1137,7 +1141,7 @@ function useMoradosPostTypeStyle(tone: keyof typeof POST_TYPE_COLORS) {
     borderWidth: 2,
     backgroundColor: tinted,
     boxShadow: `0 6px 22px -10px color-mix(in srgb, ${color} 70%, transparent)`,
-  } as React.CSSProperties;
+  } as CSSProperties;
 }
 
 /** Copiado do PostCardFrame do NutriConnect, com seletores do cabeçalho do Morados. */
