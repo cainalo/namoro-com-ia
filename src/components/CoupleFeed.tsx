@@ -1129,7 +1129,7 @@ export function CoupleFeed({
                     </header>
 
                     <div className="feed-post-content px-0">
-                      {post.blocks.map((block) => (
+                      {post.blocks.filter((block) => block.type !== "music").map((block) => (
                         <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
                           {block.type === "title" && block.value && (
                             <h3 className="feed-post-title mb-2 text-base font-bold font-display leading-snug text-left text-foreground sm:text-lg">{block.value}</h3>
