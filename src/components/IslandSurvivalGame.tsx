@@ -7,7 +7,7 @@ import {
 type ActionId="forage"|"fish"|"wood"|"rain"|"shelter"|"signal"|"rest"|"treat";
 type Action={id:ActionId;title:string;description:string;cost:string;disabled?:boolean};
 type SurvivalState={
- day:number;player:1|2;phase:"action"|"handoff"|"won"|"lost";
+ day:number;player:1|2;phase:"action"|"handoff"|"night"|"won"|"lost";
  food:number;water:number;wood:number;medicine:number;signal:number;shelter:number;
  health:[number,number];morale:number;log:string[];ending:string;
 };
@@ -72,7 +72,7 @@ export function IslandSurvivalGame(){
   if(id==="rest"){next.health[game.player-1]=Math.min(3,next.health[game.player-1]+1);next.morale=limit(next.morale+1);}
   if(id==="treat"&&next.medicine>=1){next.medicine-=1;next.health[game.player-1]=Math.min(3,next.health[game.player-1]+2);}
   next.log=[`Dia ${game.day} · Pessoa ${game.player}: ${messages[id]}`,...next.log].slice(0,8);
-  setGame({...next,phase:game.player===1?"handoff":"action",player:game.player===1?2:1});
+  setGame({...next,phase:game.player===1?"handoff":"night",player:game.player===1?2:1});
   setFeedback(messages[id]);
   setChoice(null);
  }
@@ -98,7 +98,7 @@ export function IslandSurvivalGame(){
     <div className="island-survival-progress"><span style={{width:dayProgress+"%"}}/></div>
    </div>
    <div className="island-resource-grid">
-    <Resource icon={AppleIcon} label="Comida" value={game.food}/>
+    <Resource icon={Leaf} label="Comida" value={game.food}/>
     <Resource icon={Droplets} label="Água" value={game.water}/>
     <Resource icon={Trees} label="Madeira" value={game.wood}/>
     <Resource icon={Package} label="Remédios" value={game.medicine}/>
@@ -110,7 +110,8 @@ export function IslandSurvivalGame(){
     <span>Ânimo coletivo · {game.morale}/9</span>
    </div>
    {game.phase==="handoff"&&<div className="island-handoff"><span><Wind/></span><p className="date-kicker">Troca de turno</p><h3>Passe o aparelho para a Pessoa 2.</h3><p>A ação da Pessoa 1 foi registrada. A próxima decisão agora é da outra pessoa.</p><button type="button" onClick={continueTurn}>Estou pronto</button></div>}
-   {game.phase==="action"&&<div className="island-actions-panel"><div className="island-actions-heading"><span className="date-kicker">DECISÃO DO DIA · PESSOA {game.player}</span><h3>O que vocês vão fazer agora?</h3><p>Cada pessoa realiza uma ação por dia. Escolham considerando o que será necessário à noite.</p></div><div className="island-action-grid">{actions.map(action=><button type="button" key={action.id} className={choice===action.id?"is-selected":""} disabled={action.disabled} onClick={()=>setChoice(action.id)}><ActionIcon id={action.id}/><span><strong>{action.title}</strong><small>{action.description}</small><em>{action.cost}</em></span></button>)}</div><button type="button" className="island-confirm-action" disabled={!choice} onClick={()=>choice&&applyAction(choice)}>Confirmar ação</button>{game.player===2&&game.log[0]?.startsWith("Dia")&&<button type="button" className="island-night-action" onClick={endDay}>Encerrar o dia e passar a noite</button>}</div>}
+   {game.phase==="night"&&<div className="island-night-panel"><span><Wind/></span><p className="date-kicker">FIM DO DIA {game.day}</p><h3>Preparados para passar a noite?</h3><p>O consumo de água e comida será calculado, e o clima pode afetar a equipe e o abrigo.</p><button type="button" onClick={endDay}>Encerrar o dia e passar a noite</button></div>}
+   {game.phase==="action"&&<div className="island-actions-panel"><div className="island-actions-heading"><span className="date-kicker">DECISÃO DO DIA · PESSOA {game.player}</span><h3>O que vocês vão fazer agora?</h3><p>Cada pessoa realiza uma ação por dia. Escolham considerando o que será necessário à noite.</p></div><div className="island-action-grid">{actions.map(action=><button type="button" key={action.id} className={choice===action.id?"is-selected":""} disabled={action.disabled} onClick={()=>setChoice(action.id)}><ActionIcon id={action.id}/><span><strong>{action.title}</strong><small>{action.description}</small><em>{action.cost}</em></span></button>)}</div><button type="button" className="island-confirm-action" disabled={!choice} onClick={()=>choice&&applyAction(choice)}>Confirmar ação</button></div>}
    {(game.phase==="won"||game.phase==="lost")&&<div className={"island-ending "+(game.phase==="won"?"is-won":"is-lost")}><Anchor/><span className="date-kicker">{game.phase==="won"?"RESGATE CONCLUÍDO":"FIM DA EXPEDIÇÃO"}</span><h3>{game.phase==="won"?"Vocês conseguiram!":"A expedição terminou."}</h3><p>{game.ending}</p><div><strong>Recursos finais</strong><span>Comida {game.food} · Água {game.water} · Sinal {game.signal}</span></div><button type="button" onClick={restart}>Jogar novamente</button></div>}
    <div className="island-feedback"><Leaf/><p>{feedback}</p></div>
    <details className="island-log"><summary>Diário da expedição</summary><ol>{game.log.map((line,i)=><li key={i}>{line}</li>)}</ol></details>
