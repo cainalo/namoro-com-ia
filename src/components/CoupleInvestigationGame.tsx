@@ -180,6 +180,7 @@ export function CoupleInvestigationGame() {
   const [progress, setProgress] = useState<SavedProgress>(loadProgress);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
+  const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -237,6 +238,12 @@ export function CoupleInvestigationGame() {
     setTab("scene");
     setShowHint(false);
     setShowSolution(false);
+    setSelectedEvidenceId(null);
+  }
+
+  function openSceneEvidence(id: string) {
+    setSelectedEvidenceId(id);
+    setTab("evidence");
   }
 
   return (
@@ -297,6 +304,19 @@ export function CoupleInvestigationGame() {
             <h3>O que sabemos até agora</h3>
             <p>Leia o registro inicial e escolha por onde começar a investigação.</p>
           </div>
+          <div className="investigation-scene-visual">
+            <div className="investigation-scene-visual-caption">
+              <span>OBSERVATÓRIO AURORA</span>
+              <strong>Reconstrução da cena</strong>
+            </div>
+            <div className="investigation-scene-hotspots" aria-label="Pontos de interesse da cena do crime">
+              <button type="button" className="scene-hotspot hotspot-vitrine" onClick={() => openSceneEvidence("registro")}><span>01</span>Vitrine e arquivo</button>
+              <button type="button" className="scene-hotspot hotspot-corredor" onClick={() => openSceneEvidence("camera")}><span>02</span>Corredor leste</button>
+              <button type="button" className="scene-hotspot hotspot-tubo" onClick={() => openSceneEvidence("tubo")}><span>03</span>Tubo de plantas</button>
+              <button type="button" className="scene-hotspot hotspot-computador" onClick={() => openSceneEvidence("proposta")}><span>04</span>Computador da curadoria</button>
+            </div>
+            <p className="investigation-scene-visual-hint">Toquem nos marcadores para investigar cada local.</p>
+          </div>
           <div className="investigation-scene-grid">
             <article className="investigation-scene-note">
               <span>01 · Última confirmação</span>
@@ -323,7 +343,7 @@ export function CoupleInvestigationGame() {
             <div className="investigation-suspect-grid">
               {suspects.map((suspect) => (
                 <article key={suspect.id} className={progress.interviewed.includes(suspect.id) ? "is-interviewed" : ""}>
-                  <span className="investigation-suspect-avatar">{suspect.name.split(" ").map((part) => part[0]).slice(0,2).join("")}</span>
+                  <span className={"investigation-suspect-avatar portrait portrait-" + suspect.id} role="img" aria-label={"Retrato de " + suspect.name} />
                   <div><strong>{suspect.name}</strong><small>{suspect.role}</small></div>
                   {progress.interviewed.includes(suspect.id) && <CheckCircle2 aria-label="Depoimento colhido" />}
                 </article>
@@ -352,7 +372,12 @@ export function CoupleInvestigationGame() {
                   <h4>{item.title}</h4>
                   <p className="investigation-evidence-location">{item.location} · {item.time}</p>
                   <p>{item.summary}</p>
-                  <details onToggle={(event) => event.currentTarget.open && reviewEvidence(item.id)}>
+                  <details open={selectedEvidenceId === item.id} onToggle={(event) => {
+                    if (event.currentTarget.open) {
+                      setSelectedEvidenceId(item.id);
+                      reviewEvidence(item.id);
+                    }
+                  }}>
                     <summary>{reviewed ? "Rever documento" : "Examinar documento"}</summary>
                     <div className="investigation-evidence-detail">
                       <p>{item.detail}</p>
@@ -384,13 +409,14 @@ export function CoupleInvestigationGame() {
                   className={progress.selectedSuspect === suspect.id ? "is-active" : ""}
                   onClick={() => interviewSuspect(suspect.id)}
                 >
-                  <span className="investigation-suspect-avatar">{suspect.name.split(" ").map((part) => part[0]).slice(0,2).join("")}</span>
+                  <span className={"investigation-suspect-avatar portrait portrait-" + suspect.id} role="img" aria-label={"Retrato de " + suspect.name} />
                   <span><strong>{suspect.name}</strong><small>{suspect.role}</small></span>
                   {progress.interviewed.includes(suspect.id) && <CheckCircle2 aria-hidden="true" />}
                 </button>
               ))}
             </div>
             <article className="investigation-testimony">
+              <div className={"investigation-interview-portrait portrait portrait-" + selectedSuspect.id} role="img" aria-label={"Retrato de " + selectedSuspect.name} />
               <span className="investigation-kicker">Depoimento · {selectedSuspect.role}</span>
               <h4>{selectedSuspect.name}</h4>
               <p className="investigation-appearance">{selectedSuspect.appearance}</p>
