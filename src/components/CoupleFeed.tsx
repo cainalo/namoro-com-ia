@@ -661,7 +661,7 @@ export function CoupleFeed({
 
           <form className="feed-publisher-form" onSubmit={publishPost}>
             <article className="feed-post-card editorial-post-card is-composer-card" data-post-tone="petrol">
-              <header className="feed-post-header">
+              <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
                 <span className="feed-author-avatar is-you">{initials("Você")}</span>
                 <div>
                   <strong>Você</strong>
@@ -933,16 +933,16 @@ export function CoupleFeed({
                     }
                   >
                     <header className="feed-post-header">
-                      <div className="feed-post-author-identity">
-                        <span className={post.author_id === userId ? "feed-author-avatar is-you" : "feed-author-avatar"}>
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className={"grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
                           {initials(post.author_name)}
                         </span>
-                        <div className="feed-post-author-meta">
+                        <div className="min-w-0">
                           <strong>{post.author_name}</strong>
                           <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
                         </div>
                       </div>
-                      <div className="feed-post-header-actions">
+                      <div className="ml-auto flex shrink-0 items-center gap-1.5">
                         <span className="feed-post-private">A dois</span>
                         <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -969,14 +969,14 @@ export function CoupleFeed({
                       </div>
                     </header>
 
-                    <div className="feed-post-content">
+                    <div className="feed-post-content px-0">
                       {post.blocks.map((block) => (
                         <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
                           {block.type === "title" && block.value && (
-                            <h3 className="feed-post-title text-base sm:text-lg font-bold font-display leading-snug text-foreground mb-2">{block.value}</h3>
+                            <h3 className="mb-2 text-base font-bold font-display leading-snug text-foreground sm:text-lg">{block.value}</h3>
                           )}
                           {block.type === "text" && block.value && (
-                            <p className="feed-post-body mb-4 text-sm text-foreground/90 leading-relaxed text-left whitespace-pre-line">{block.value}</p>
+                            <p className="mb-4 whitespace-pre-line text-left text-sm leading-relaxed text-foreground/90">{block.value}</p>
                           )}
                           {block.type === "photo" && block.media_url && (
                             <FeedPostPhoto
@@ -1095,7 +1095,7 @@ function FeedPostPhoto({
           onClick={() => setOpen(true)}
           aria-label={"Ampliar imagem: " + alt}
           style={ratio ? { maxWidth: `calc(${maxHeight} * ${ratio})` } : undefined}
-          className="post-image feed-post-photo-trigger mx-auto block cursor-zoom-in overflow-hidden p-0"
+          className="post-image feed-post-photo-trigger mx-auto my-4 block w-full cursor-zoom-in overflow-hidden rounded-2xl p-0 shadow-sm"
         >
           <img
             src={src}
@@ -1208,9 +1208,9 @@ function MoradosPostCardFrame({
       ref={articleRef}
       data-post-type={tone}
       style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }) }}
-      className="post-card feed-post-card editorial-post-card flex min-w-0 flex-col overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition hover:shadow-md"
+      className="post-card flex min-w-0 flex-col overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition hover:shadow-md"
     >
-      <div ref={regionRef} className="feed-post-frame-region relative min-h-0 overflow-hidden">
+      <div ref={regionRef} className="relative min-h-0 overflow-hidden px-[var(--post-px)] pt-[var(--post-pt)]">
         <div ref={innerRef} className="flow-root">{children}</div>
         {clamped && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
@@ -1218,7 +1218,7 @@ function MoradosPostCardFrame({
         )}
       </div>
       {overflowing && (
-        <div ref={toggleRef} className="feed-post-expand-row shrink-0">
+        <div ref={toggleRef} className="shrink-0 px-[var(--post-px)] pt-3">
           <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}
             className="flex cursor-pointer items-center gap-1 text-xs font-bold text-accent hover:underline">
             {expanded ? "Ver menos" : "Ver mais"}
@@ -1226,7 +1226,7 @@ function MoradosPostCardFrame({
           </button>
         </div>
       )}
-      <div className="feed-post-frame-footer shrink-0">{footer}</div>
+      <div className="shrink-0 px-[var(--post-px)] pb-[var(--post-pb)]">{footer}</div>
     </article>
   );
 }
