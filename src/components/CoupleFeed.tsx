@@ -1069,6 +1069,8 @@ function FeedPostPhoto({
   caption?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [ratio, setRatio] = useState<number | null>(null);
+  const maxHeight = "var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem))";
 
   useEffect(() => {
     if (!open) return;
@@ -1089,16 +1091,17 @@ function FeedPostPhoto({
       <figure className="feed-post-media feed-post-media-photo">
         <button
           type="button"
-          className="feed-post-photo-trigger"
           onClick={() => setOpen(true)}
           aria-label={"Ampliar imagem: " + alt}
+          style={ratio ? { maxWidth: `calc(${maxHeight} * ${ratio})` } : undefined}
+          className="post-image feed-post-photo-trigger mx-auto block cursor-zoom-in overflow-hidden p-0"
         >
           <img
-            className="feed-post-image"
             src={src}
             alt={alt}
+            onLoad={(event) => setRatio(event.currentTarget.naturalWidth / event.currentTarget.naturalHeight)}
+            className="block h-auto w-full rounded-[inherit]"
             loading="lazy"
-            decoding="async"
           />
         </button>
         {caption && <figcaption>{caption}</figcaption>}
@@ -1107,7 +1110,7 @@ function FeedPostPhoto({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="feed-post-image-dialog">
           <DialogTitle className="sr-only">{alt}</DialogTitle>
-          <DialogDescription className="sr-only">Imagem da publicação em tamanho ampliado.</DialogDescription>
+          <DialogDescription className="sr-only">Imagem ampliada da publicação.</DialogDescription>
           <img src={src} alt={alt} className="feed-post-image-expanded" />
         </DialogContent>
       </Dialog>
