@@ -20,7 +20,7 @@ const config: CapacitorConfig = {
     },
     Keyboard: {
       resize: "native",
-      resizeOnFullScreen: true,
+      resizeOnFullScreen: false,
     },
   },
 };
