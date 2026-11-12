@@ -1111,6 +1111,36 @@ function FeedPostPhoto({
   );
 }
 
+const POST_TYPE_COLORS = {
+  terracotta: { light: "#d9692a", dark: "#f08a4b" },
+  olive: { light: "#4f8a4b", dark: "#78b873" },
+  petrol: { light: "#3b7bbf", dark: "#6aa6e6" },
+  plum: { light: "#8a5fb0", dark: "#b48ad6" },
+} as const;
+
+function useMoradosPostTypeStyle(tone: keyof typeof POST_TYPE_COLORS) {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const root = document.documentElement;
+    const sync = () => setDark(root.classList.contains("dark"));
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  const color = dark ? POST_TYPE_COLORS[tone].dark : POST_TYPE_COLORS[tone].light;
+  const tinted = `color-mix(in srgb, ${color} 15%, var(--card))`;
+  return {
+    ["--pt" as string]: color,
+    ["--post-fade" as string]: tinted,
+    borderColor: color,
+    borderWidth: 2,
+    backgroundColor: tinted,
+    boxShadow: `0 6px 22px -10px color-mix(in srgb, ${color} 70%, transparent)`,
+  } as React.CSSProperties;
+}
+
+/** Copiado do PostCardFrame do NutriConnect, com seletores do cabeçalho do Morados. */
 function MoradosPostCardFrame({
   tone,
   children,
@@ -1125,35 +1155,36 @@ function MoradosPostCardFrame({
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
   const articleRef = useRef<HTMLElement>(null);
   const regionRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const article = articleRef.current;
     const region = regionRef.current;
-    const content = contentRef.current;
-    if (!article || !region || !content) return;
+    const inner = innerRef.current;
+    if (!article || !region || !inner) return;
 
+    const observed = new Set<Element>();
     const observer = new ResizeObserver(() => measure());
     const watch = (element: Element | null) => {
-      if (element) observer.observe(element);
+      if (element && !observed.has(element)) {
+        observed.add(element);
+        observer.observe(element);
+      }
     };
     const measure = () => {
       const top = document.querySelector<HTMLElement>(".app-chrome")?.offsetHeight ?? 0;
       const isMobile = window.matchMedia("(max-width: 1023px)").matches;
-      const bottom = isMobile
-        ? document.querySelector<HTMLElement>(".mobile-nav")?.offsetHeight ?? 0
-        : 0;
+      const bottom = isMobile ? document.querySelector<HTMLElement>(".mobile-nav")?.offsetHeight ?? 0 : 0;
       const limit = Math.max(240, window.innerHeight - top - bottom - 32);
-      const fixedContent = article.offsetHeight - region.offsetHeight - (toggleRef.current?.offsetHeight ?? 0);
+      const chrome = article.offsetHeight - region.offsetHeight - (toggleRef.current?.offsetHeight ?? 0);
       setMaxHeight(limit);
-      setOverflowing(content.scrollHeight + fixedContent > limit + 1);
+      setOverflowing(inner.offsetHeight + chrome > limit + 1);
+      watch(document.querySelector(".app-chrome"));
+      watch(document.querySelector(".mobile-nav"));
     };
-
+    watch(inner);
     watch(article);
-    watch(content);
-    watch(document.querySelector(".app-chrome"));
-    watch(document.querySelector(".mobile-nav"));
     measure();
     window.addEventListener("resize", measure);
     return () => {
@@ -1163,30 +1194,31 @@ function MoradosPostCardFrame({
   }, []);
 
   const clamped = !expanded && overflowing;
+  const typeStyle = useMoradosPostTypeStyle(tone);
   return (
     <article
       ref={articleRef}
-      className="feed-post-card editorial-post-card"
-      data-post-tone={tone}
-      style={expanded ? undefined : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }}
+      data-post-type={tone}
+      style={{ ...typeStyle, ...(expanded ? {} : { maxHeight: maxHeight ?? "calc(100dvh - 8rem)" }) }}
+      className="post-card feed-post-card editorial-post-card flex min-w-0 flex-col overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm transition hover:shadow-md"
     >
-      <div ref={regionRef} className="feed-post-frame-region">
-        <div ref={contentRef} className="feed-post-frame-content">
-          {children}
-        </div>
-        {clamped && <div className="feed-post-frame-fade" aria-hidden="true" />}
+      <div ref={regionRef} className="feed-post-frame-region relative min-h-0 overflow-hidden">
+        <div ref={innerRef} className="flow-root">{children}</div>
+        {clamped && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
+            style={{ background: "linear-gradient(to top, var(--post-fade, var(--card)), transparent)" }} />
+        )}
       </div>
-
       {overflowing && (
-        <div ref={toggleRef} className="feed-post-expand-row">
-          <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}>
+        <div ref={toggleRef} className="feed-post-expand-row shrink-0">
+          <button type="button" onClick={() => setExpanded((value) => !value)} aria-expanded={expanded}
+            className="flex cursor-pointer items-center gap-1 text-xs font-bold text-accent hover:underline">
             {expanded ? "Ver menos" : "Ver mais"}
-            {expanded ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
+            {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </button>
         </div>
       )}
-
-      <div className="feed-post-frame-footer">{footer}</div>
+      <div className="feed-post-frame-footer shrink-0">{footer}</div>
     </article>
   );
 }
