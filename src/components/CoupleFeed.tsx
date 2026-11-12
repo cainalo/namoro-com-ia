@@ -10,16 +10,12 @@ import {
   ArrowRight,
   CalendarHeart,
   Camera,
-  ChevronRight,
   Gamepad2,
   ImagePlus,
   LoaderCircle,
   MessageCircle,
-  Play,
-  Plus,
   Send,
   Sparkles,
-  Video,
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import {
