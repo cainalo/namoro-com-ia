@@ -92,6 +92,15 @@ const evidence: Evidence[] = [
     detail: "O tubo cilíndrico está sobre a mesa da curadora. Há fibras de tecido azul presas na tampa e uma pequena quantidade de pó dourado, igual ao resíduo encontrado na moldura da Carta Celeste.",
     implication: "O recipiente visto na câmera pode ter sido usado para retirar a peça sem chamar atenção.",
   },
+  {
+    id: "proposta",
+    title: "Rascunho de proposta privada",
+    location: "Computador da curadoria",
+    time: "20h58",
+    summary: "Uma minuta menciona a venda de um mapa astronômico raro.",
+    detail: "O rascunho, salvo na conta de Helena, oferece uma peça do século XIX a um colecionador particular após o encerramento da exposição. O arquivo foi editado às 20h58 e não cita o nome da obra, mas registra dimensões idênticas às da Carta Celeste. Uma cobrança vencida de alto valor aparece anexada ao mesmo processo.",
+    implication: "A proposta liga a curadora a uma possível venda privada e apresenta um motivo financeiro.",
+  },
 ];
 
 const suspects: Suspect[] = [
@@ -459,7 +468,7 @@ export function CoupleInvestigationGame() {
               <span className="investigation-kicker">Relatório da corregedoria</span>
               <h4>Helena Duarte foi responsável pelo furto.</h4>
               <p>Ela retornou ao arquivo às 21h12 usando a chave-mestra 01, apesar de afirmar que havia deixado o museu às 20h50. A câmera a registrou no corredor às 21h16, com o lenço vermelho e o tubo de plantas. A Carta Celeste foi escondida no tubo e o resíduo dourado, junto das fibras azuis, confirmou a ligação.</p>
-              <p>O objetivo era vender a peça a um colecionador privado para quitar uma dívida. Os registros do café, do laboratório e do rádio afastam os outros três suspeitos no horário decisivo.</p>
+              <p>O rascunho de proposta privada, editado às 20h58 e acompanhado de uma cobrança vencida, revela o motivo financeiro. Helena pretendia vender a peça a um colecionador para quitar a dívida. Os registros do café, do laboratório e do rádio afastam os outros três suspeitos no horário decisivo.</p>
             </article>
           )}
           {showHint && (
