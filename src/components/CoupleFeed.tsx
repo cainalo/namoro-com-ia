@@ -974,10 +974,11 @@ export function CoupleFeed({
                             <p className="feed-post-body">{block.value}</p>
                           )}
                           {block.type === "photo" && block.media_url && (
-                            <figure className="feed-post-media">
-                              <img className="feed-post-image" src={block.media_url} alt={block.caption || block.media_name || "Foto compartilhada"} loading="lazy" />
-                              {block.caption && <figcaption>{block.caption}</figcaption>}
-                            </figure>
+                            <FeedPostPhoto
+                              src={block.media_url}
+                              alt={block.caption || block.media_name || "Foto compartilhada"}
+                              caption={block.caption}
+                            />
                           )}
                           {block.type === "video" && block.media_url && (
                             <figure className="feed-post-media">
@@ -1051,6 +1052,62 @@ export function CoupleFeed({
         )}
       </div>
     </section>
+  );
+}
+
+function FeedPostPhoto({
+  src,
+  alt,
+  caption,
+}: {
+  src: string;
+  alt: string;
+  caption?: string;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <figure className="feed-post-media feed-post-media-photo">
+        <button
+          type="button"
+          className="feed-post-photo-trigger"
+          onClick={() => setOpen(true)}
+          aria-label={"Ampliar imagem: " + alt}
+        >
+          <img
+            className="feed-post-image"
+            src={src}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+          />
+        </button>
+        {caption && <figcaption>{caption}</figcaption>}
+      </figure>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="feed-post-image-dialog">
+          <DialogTitle className="sr-only">{alt}</DialogTitle>
+          <DialogDescription className="sr-only">Imagem da publicação em tamanho ampliado.</DialogDescription>
+          <img src={src} alt={alt} className="feed-post-image-expanded" />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
