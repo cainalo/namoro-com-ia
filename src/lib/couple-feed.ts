@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type CouplePostBlockType = "title" | "text" | "photo" | "music" | "audio";
+export type CouplePostBlockType = "title" | "text" | "photo" | "video" | "music" | "audio";
 
 export type CouplePostBlock = {
   id: string;
