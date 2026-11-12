@@ -17801,3 +17801,133 @@ h3,
 .island-footer button{display:inline-flex;align-items:center;gap:.3rem;border:0;background:transparent;color:var(--muted-foreground);font-size:.68rem;font-weight:750}
 .island-footer svg{width:.85rem;height:.85rem}
 @media(max-width:520px){.island-resource-grid{gap:.35rem}.island-resource{grid-template-columns:1rem 1fr auto;gap:.25rem;padding:.5rem}.island-resource span{font-size:.6rem}.island-action-grid{grid-template-columns:1fr}.island-survival-hero{padding:.9rem}.island-survival-scene{margin-inline:-.9rem}.island-health-row{flex-wrap:wrap}.island-health-row>span{width:100%}}
+
+/* ───── Ajuste fiel do card editorial do Nutri-Connect: fotos centradas e sem distorção ───── */
+.feed-post-card.editorial-post-card {
+  --post-px: 0px;
+  --post-px-sm: 0px;
+  --post-pt: 1.1rem;
+  --post-pb: 1rem;
+  --post-pt-sm: 1rem;
+  --post-pb-sm: 0.9rem;
+  --post-image-max: clamp(10rem, calc(100dvh - 32rem), 26rem);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.feed-post-frame-region { padding-inline: 0 !important; }
+.feed-post-content {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0;
+  box-sizing: border-box;
+  padding-inline: 1rem;
+}
+.feed-post-block { width: 100%; min-width: 0; box-sizing: border-box; }
+.feed-post-title,
+.feed-post-card.editorial-post-card .feed-post-body {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.feed-post-media {
+  display: flex;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+  margin: 1rem -1rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ev-card-ink) 7%, var(--ev-card-bg));
+  box-sizing: border-box;
+}
+.feed-post-media-photo .feed-post-photo-trigger {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  align-self: center;
+  overflow: hidden;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  padding: 0;
+  cursor: zoom-in;
+  line-height: 0;
+}
+.feed-post-media-photo .feed-post-image {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem)) !important;
+  margin: 0 auto;
+  border-radius: inherit;
+  background: transparent;
+  object-fit: contain !important;
+  object-position: center;
+}
+.feed-post-media figcaption {
+  align-self: stretch;
+  box-sizing: border-box;
+  border-top: 1px solid color-mix(in srgb, var(--ev-card-ink) 18%, transparent);
+  padding: 0.55rem 0.75rem;
+  color: color-mix(in srgb, var(--ev-card-ink) 82%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.feed-post-media:not(.feed-post-media-photo) > video,
+.feed-post-media .feed-post-video {
+  display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: var(--post-image-max, clamp(10rem, calc(100dvh - 32rem), 26rem)) !important;
+  margin: 0 auto;
+  border-radius: inherit;
+  object-fit: contain !important;
+  object-position: center;
+}
+.feed-post-image-dialog {
+  display: flex !important;
+  width: min(calc(100vw - 1rem), 70rem) !important;
+  max-width: min(calc(100vw - 1rem), 70rem) !important;
+  max-height: 94dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem !important;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 15%) !important;
+  border-radius: 12px !important;
+  background: #171717 !important;
+  padding: 0.75rem !important;
+  color: white !important;
+}
+.feed-post-image-expanded {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 86dvh;
+  margin: auto;
+  border-radius: 6px;
+  object-fit: contain;
+}
+@media (max-width: 560px) {
+  .feed-post-card.editorial-post-card {
+    --post-px: 0px;
+    --post-px-sm: 0px;
+    --post-pt: 0.95rem;
+    --post-pb: 0.85rem;
+    --post-pt-sm: 0.95rem;
+    --post-pb-sm: 0.85rem;
+  }
+  .feed-post-content { padding-inline: 0.85rem; }
+  .feed-post-media { margin-inline: -0.85rem; }
+}
