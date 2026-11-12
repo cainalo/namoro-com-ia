@@ -17923,3 +17923,118 @@ h3,
   }
   .feed-post-content { padding-inline: var(--post-px-sm); }
 }
+
+/* Feed: alinhamento do cartão reproduzido do PostCard/PostCardFrame do Nutri-Connect */
+.feed-post-card {
+  --post-px: 1.25rem; --post-pt: 1.25rem; --post-pb: 1rem;
+  --post-px-sm: 1rem; --post-pt-sm: 1rem; --post-pb-sm: .85rem;
+  --post-image-max: clamp(10rem,calc(100dvh - 32rem),26rem);
+  --ev-card-bg: color-mix(in srgb,var(--pt,var(--primary)) 13%,var(--card));
+  --ev-card-ink: var(--foreground); --post-fade: var(--ev-card-bg);
+  color: var(--foreground);
+}
+.feed-post-frame-region {
+  display: flow-root; min-width: 0; flex: 1 1 auto;
+  padding: var(--post-pt) var(--post-px) 0;
+}
+.feed-post-card .feed-post-header {
+  display:flex; width:100%; min-width:0; min-height:2.5rem;
+  flex-direction:row; align-items:flex-start; justify-content:space-between;
+  flex-wrap:wrap; gap:.5rem; margin:0 0 1rem; border:0;
+  background:transparent; padding:0; color:var(--foreground); text-align:left;
+}
+.feed-post-card .feed-post-header > div:first-child {
+  display:flex; min-width:0; flex:1 1 auto; flex-direction:row;
+  align-items:center; justify-content:flex-start; gap:.75rem; text-align:left;
+}
+.feed-post-card .feed-post-header > div:first-child > div {
+  display:flex; min-width:0; flex-direction:column; align-items:flex-start;
+  justify-content:center; gap:.05rem; text-align:left;
+}
+.feed-post-card .feed-post-header strong {
+  display:block; max-width:100%; color:var(--foreground);
+  font-size:.875rem; font-weight:650; line-height:1.25rem; text-align:left;
+}
+.feed-post-card .feed-post-header time {
+  display:block; color:var(--muted-foreground); font-size:.75rem;
+  line-height:1rem; text-align:left;
+}
+.feed-post-card .feed-author-avatar {
+  width:2.5rem; height:2.5rem; flex:0 0 2.5rem;
+  border:1px solid color-mix(in srgb,var(--pt,var(--foreground)) 32%,transparent);
+  border-radius:999px; background:color-mix(in srgb,var(--pt,var(--foreground)) 13%,var(--card));
+  color:var(--foreground);
+}
+.feed-post-card .feed-post-private {
+  align-self:center; flex:0 0 auto; border:1px solid color-mix(in srgb,var(--pt,var(--foreground)) 27%,transparent);
+  border-radius:999px; background:color-mix(in srgb,var(--pt,var(--foreground)) 10%,var(--card));
+  padding:.25rem .55rem; color:var(--foreground); font-size:.65rem; font-weight:650;
+}
+.feed-post-content {
+  display:flex; width:100%; min-width:0; flex-direction:column; align-items:stretch;
+  gap:0; padding:0; box-sizing:border-box; text-align:left;
+}
+.feed-post-block { display:block; width:100%; min-width:0; box-sizing:border-box; text-align:left; }
+.feed-post-title {
+  display:block; width:100%; margin:0 0 .5rem; color:var(--foreground);
+  font-family:"Fraunces","Libre Baskerville",Georgia,serif; font-size:1rem;
+  font-weight:650; letter-spacing:-.02em; line-height:1.2; text-align:left; overflow-wrap:anywhere;
+}
+.feed-post-card .feed-post-body {
+  margin:0 0 1.25rem; padding:0; color:color-mix(in srgb,var(--foreground) 90%,transparent);
+  font-family:"Inter Tight","IBM Plex Sans",sans-serif; font-size:.875rem;
+  line-height:1.65; text-align:left; white-space:pre-line; overflow-wrap:anywhere;
+}
+.feed-post-media {
+  display:flex; width:100%; min-width:0; flex-direction:column; align-items:center;
+  justify-content:center; overflow:hidden; margin:1rem 0; border-radius:1rem;
+  background:color-mix(in srgb,var(--pt,var(--foreground)) 6%,var(--card)); box-sizing:border-box;
+}
+.feed-post-media-photo .feed-post-photo-trigger {
+  display:block; width:100%; max-width:100%; height:auto; min-width:0; align-self:center;
+  overflow:hidden; margin-inline:auto; border:0; border-radius:1rem;
+  background:transparent; padding:0; line-height:0;
+}
+.feed-post-media-photo .feed-post-image {
+  display:block; width:100%; height:auto; max-width:100%;
+  max-height:var(--post-image-max); margin:0 auto; border-radius:inherit;
+  object-fit:contain; object-position:center;
+}
+.feed-post-media .feed-post-video,.feed-post-media > video {
+  display:block; width:100%; max-height:var(--post-image-max); margin:0 auto;
+  border-radius:1rem; object-fit:contain; object-position:center;
+}
+.feed-post-media figcaption {
+  align-self:stretch; border-top:1px solid color-mix(in srgb,var(--foreground) 15%,transparent);
+  padding:.55rem .75rem 0; color:var(--muted-foreground);
+  font-family:"Inter Tight",sans-serif; font-size:.75rem; line-height:1.5; text-align:left;
+}
+.feed-post-card .feed-post-footer {
+  display:flex; width:100%; min-height:3.5rem; align-items:flex-start;
+  justify-content:space-evenly; flex-wrap:nowrap; gap:.5rem; margin-top:1rem;
+  border-top:1px solid color-mix(in srgb,var(--foreground) 14%,transparent);
+  background:transparent; padding:.75rem 0 0; color:var(--muted-foreground);
+  font-family:"Inter Tight",sans-serif;
+}
+.feed-post-card .feed-post-footer > div {
+  display:flex; width:4rem; min-width:4rem; flex:0 0 4rem;
+  flex-direction:column; align-items:center; gap:.125rem; text-align:center;
+}
+.feed-post-card .feed-post-footer button {
+  display:grid; width:2.5rem; height:2.5rem; min-height:2.5rem;
+  place-items:center; border:0; border-radius:999px; background:transparent;
+  padding:0; color:var(--muted-foreground); box-shadow:none;
+}
+.feed-post-card .feed-post-footer button svg { width:1rem; height:1rem; }
+.feed-post-card .feed-post-footer span {
+  display:block; color:var(--muted-foreground); font-size:.625rem;
+  font-weight:500; line-height:1.1; text-align:center;
+}
+.feed-post-card .feed-post-footer button:hover {
+  background:color-mix(in srgb,var(--foreground) 8%,transparent); color:var(--foreground);
+}
+@media(max-width:640px) {
+  .feed-post-card { --post-px:var(--post-px-sm,1rem); --post-pt:var(--post-pt-sm,1rem); --post-pb:var(--post-pb-sm,.85rem); }
+  .feed-post-frame-region { padding-inline:var(--post-px); }
+  .feed-post-card .feed-post-header { align-items:flex-start; flex-direction:row; }
+}
