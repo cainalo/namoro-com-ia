@@ -9,26 +9,19 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
   },
   plugins: {
-    StatusBar: {
-      backgroundColor: "#0F4C5C",
-      style: "LIGHT",
-    },
     SplashScreen: {
       launchShowDuration: 0,
       backgroundColor: "#0F4C5C",
       showSpinner: false,
     },
-    // Capacitor 8.6's SystemBars IME insets listener can double-resize
-    // the Android WebView when viewport-fit=cover is active. The native
-    // Activity uses adjustResize, so leave inset/keyboard resizing to Android.
+    // Use the Capacitor 8 native insets owner for Android 15/16. Do not
+    // disable this: the SystemBars plugin must coordinate WebView and IME.
+    // native mode avoids injecting CSS variables and keeps the native WebView
+    // responsible for safe-area layout on modern Chromium.
     SystemBars: {
-      insetsHandling: "disable",
+      insetsHandling: "native",
       style: "LIGHT",
       hidden: false,
-    },
-    Keyboard: {
-      resize: "native",
-      resizeOnFullScreen: false,
     },
   },
 };
