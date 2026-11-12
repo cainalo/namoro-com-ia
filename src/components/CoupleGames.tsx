@@ -177,7 +177,6 @@ export function CoupleGames({ userId }: { userId: string }) {
       <div className="games-hub-intro">
         <div>
           <p className="date-kicker">Escolham uma experiência</p>
-          <h1>Jogos</h1>
           <p>Partidas rápidas, desafios em conjunto e histórias para investigar.</p>
         </div>
         <span className="games-hub-mark"><Gamepad2 aria-hidden="true" /></span>
