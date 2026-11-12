@@ -35,7 +35,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { createCoupleMediaUrl, uploadCoupleMedia } from "@/lib/couple-media";
+import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
 import {
   createCouplePost,
   listCouplePosts,
@@ -441,42 +441,93 @@ export function CoupleFeed({
 
   async function publishPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (state.status !== "ready" || publishing) return;
-    const body = draft.trim();
-    if (!body && !selectedMedia) return;
+    if (state.status !== "ready" || publishing || !canPublishDraft) return;
+
+    const title = draftBlocks.find((block) => block.type === "title")?.value.trim().slice(0, 180) || null;
+    const textBlocks = draftBlocks
+      .filter((block) => block.type === "text" && block.value.trim())
+      .map((block) => block.value.trim());
+    const body = textBlocks.join("\n\n").slice(0, 5000);
 
     setPublishing(true);
     setPublishError(null);
-    let mediaPath: string | null = null;
+    const uploadedPaths: string[] = [];
 
     try {
-      if (selectedMedia) {
-        const upload = await uploadCoupleMedia({
-          coupleId: state.coupleId,
-          userId,
-          scope: "feed",
-          file: selectedMedia,
+      const contentBlocks: CouplePostBlock[] = [];
+      for (const block of draftBlocks) {
+        if ((block.type === "title" || block.type === "text") && !block.value.trim()) continue;
+        if (block.type === "music") {
+          let parsedUrl: URL;
+          try {
+            parsedUrl = new URL(block.url.trim());
+          } catch {
+            throw new Error("Informe um link válido para a música.");
+          }
+          if (parsedUrl.protocol !== "https:") {
+            throw new Error("O link da música precisa começar com https://.");
+          }
+          contentBlocks.push({
+            id: block.id,
+            type: "music",
+            value: block.value.trim() || "Música compartilhada",
+            url: parsedUrl.toString(),
+            caption: block.caption.trim() || undefined,
+          });
+          continue;
+        }
+
+        if (block.type === "photo" || block.type === "video" || block.type === "audio") {
+          if (!block.file) continue;
+          const upload = await uploadCoupleMedia({
+            coupleId: state.coupleId,
+            userId,
+            scope: "feed",
+            file: block.file,
+          });
+          if (upload.error || !upload.path) throw upload.error ?? new Error("upload_failed");
+          uploadedPaths.push(upload.path);
+          contentBlocks.push({
+            id: block.id,
+            type: block.type,
+            value: block.value,
+            caption: block.caption.trim() || undefined,
+            media_path: upload.path,
+            media_name: block.file.name,
+            media_mime: block.file.type,
+          });
+          continue;
+        }
+
+        contentBlocks.push({
+          id: block.id,
+          type: block.type,
+          value: block.value.trim(),
         });
-        if (upload.error || !upload.path) throw upload.error ?? new Error("upload_failed");
-        mediaPath = upload.path;
       }
 
+      if (contentBlocks.length === 0) return;
+      if (body.length > 5000) throw new Error("O texto da publicação ultrapassa 5.000 caracteres.");
+
+      const primaryMedia = contentBlocks.find((block) => block.type === "photo" || block.type === "video")
+        ?? contentBlocks.find((block) => block.type === "audio");
       const result = await createCouplePost({
         coupleId: state.coupleId,
         authorId: userId,
+        title,
         body,
-        mediaPath,
-        mediaName: selectedMedia?.name ?? null,
-        mediaMime: selectedMedia?.type ?? null,
+        contentBlocks,
+        mediaPath: primaryMedia?.media_path ?? null,
+        mediaName: primaryMedia?.media_name ?? null,
+        mediaMime: primaryMedia?.media_mime ?? null,
       });
       if (result.error) throw result.error;
 
-      setDraft("");
+      resetComposer();
       setComposerOpen(false);
-      setSelectedMedia(null);
-      if (fileInputRef.current) fileInputRef.current.value = "";
       setRefreshKey((current) => current + 1);
     } catch (error) {
+      await Promise.all(uploadedPaths.map((uploadedPath) => removeCoupleMedia(uploadedPath)));
       console.error("Não foi possível publicar no feed.", error);
       setPublishError(
         error instanceof Error
