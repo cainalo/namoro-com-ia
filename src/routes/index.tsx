@@ -16,7 +16,7 @@ import {
   MessageCircle,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate, SignOutButton } from "@/components/AuthGate";
@@ -79,7 +79,7 @@ function Index() {
     setCanGoBack(sectionHistory.current.length > 0);
   };
 
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+  const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
     const target = event.target;
     if (target instanceof Element && target.closest("button, a, input, textarea, select, [data-no-swipe]")) {
       touchStartRef.current = null;
