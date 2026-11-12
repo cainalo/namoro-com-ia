@@ -15,6 +15,17 @@ import {
   Gift,
   History,
   Image,
+  Camera,
+  Coffee,
+  Flower2,
+  HandHeart,
+  Mail,
+  Mic,
+  PawPrint,
+  Sparkles,
+  Square,
+  Sun,
+  UserRound,
   LoaderCircle,
   MoreVertical,
   Paperclip,
@@ -62,6 +73,7 @@ type ConversationState =
       coupleId: string;
       messages: CoupleMessage[];
       otherName: string;
+      otherAvatarUrl: string | null;
     };
 
 type ConversationProps = {
@@ -76,14 +88,21 @@ const wallpapers: { id: WallpaperId; title: string; description: string }[] = [
   { id: "night", title: "Noite estrelada", description: "Azul profundo e pequenas estrelas" },
 ];
 
-const stickers = ["🥰", "💗", "🌷", "🐻", "🐱", "🧸", "✨", "💕", "🫶", "🌼", "💌", "☀️"];
-const gifts = [
-  { emoji: "🌷", title: "Um buquê de flores", note: "Um carinho em forma de flores" },
-  { emoji: "🧸", title: "Um abraço de ursinho", note: "Um abraço para guardar" },
-  { emoji: "🍫", title: "Um chocolate", note: "Um docinho para alegrar o dia" },
-  { emoji: "💐", title: "Flores coloridas", note: "Só para lembrar que você é especial" },
-  { emoji: "🎁", title: "Uma surpresa", note: "Tem um presente esperando por você" },
-  { emoji: "💌", title: "Uma cartinha", note: "Uma pequena mensagem cheia de carinho" },
+const stickerOptions = [
+  { id: "affection", label: "Carinho", Icon: HandHeart },
+  { id: "flowers", label: "Flores", Icon: Flower2 },
+  { id: "company", label: "Companhia", Icon: PawPrint },
+  { id: "sparkle", label: "Brilho", Icon: Sparkles },
+  { id: "sunshine", label: "Bom dia", Icon: Sun },
+  { id: "letter", label: "Cartinha", Icon: Mail },
+];
+const giftArtworks = [
+  { id: "flowers", label: "Flores", Icon: Flower2 },
+  { id: "embrace", label: "Abraço", Icon: HandHeart },
+  { id: "coffee", label: "Café", Icon: Coffee },
+  { id: "letter", label: "Carta", Icon: Mail },
+  { id: "surprise", label: "Surpresa", Icon: Gift },
+  { id: "sunshine", label: "Luz do dia", Icon: Sun },
 ];
 
 function isCoupleMessage(value: unknown): value is CoupleMessage {
@@ -174,13 +193,30 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [stickerOpen, setStickerOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
   const [attachmentAccept, setAttachmentAccept] = useState("*/*");
+  const [attachmentCapture, setAttachmentCapture] = useState<"environment" | undefined>(undefined);
+  const [recordingAudio, setRecordingAudio] = useState(false);
+  const [giftTitle, setGiftTitle] = useState("");
+  const [giftNote, setGiftNote] = useState("");
+  const [giftArtwork, setGiftArtwork] = useState("flowers");
+  const [giftMediaFile, setGiftMediaFile] = useState<File | null>(null);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+  const recordingChunksRef = useRef<Blob[]>([]);
   const threadRef = useRef<HTMLDivElement>(null);
   const composerRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wasAtBottomRef = useRef(true);
   const previousMessageCountRef = useRef(0);
   const pendingScrollHeightRef = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.onstop = null;
+      mediaRecorderRef.current.stop();
+    }
+    recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
 
   const messageCount = state.status === "active" ? state.messages.length : 0;
   const activeCoupleId = state.status === "active" ? state.coupleId : null;
@@ -311,6 +347,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         }
 
         let otherName = "Sua pessoa";
+        let otherAvatarUrl: string | null = null;
         const { data: partner } = await supabase
           .from("couple_members")
           .select("user_id")
@@ -322,10 +359,14 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         if (partner?.user_id) {
           const { data: profile } = await supabase
             .from("profiles")
-            .select("display_name")
+            .select("display_name, avatar_path")
             .eq("id", partner.user_id)
             .maybeSingle();
           if (profile?.display_name?.trim()) otherName = profile.display_name.trim();
+          if (profile?.avatar_path) {
+            const avatar = await createCoupleMediaUrl(profile.avatar_path);
+            otherAvatarUrl = avatar.url;
+          }
         }
 
         const result = await listCoupleMessages(couple.id);
@@ -338,6 +379,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           coupleId: couple.id,
           messages,
           otherName,
+          otherAvatarUrl,
         });
       } catch (cause) {
         console.error("Não foi possível carregar a conversa.", cause);
@@ -474,50 +516,36 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     await saveMessage({ body, messageType: "text" });
   }
 
-  async function sendAttachment(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || state.status !== "active" || busy) return;
-
+  async function sendFile(file: File, messageTypeOverride?: CoupleMessageType, extraMetadata?: Record<string, unknown>) {
+    if (state.status !== "active" || busy) return;
     setBusy(true);
     setError(null);
     try {
-      const uploaded = await uploadCoupleMedia({
-        coupleId: state.coupleId,
-        userId,
-        scope: "chat",
-        file,
-      });
-      if (uploaded.error || !uploaded.path) {
-        throw uploaded.error ?? new Error("upload_failed");
-      }
-
-      const type: CoupleMessageType = file.type.startsWith("image/")
+      const uploaded = await uploadCoupleMedia({ coupleId: state.coupleId, userId, scope: "chat", file });
+      if (uploaded.error || !uploaded.path) throw uploaded.error ?? new Error("upload_failed");
+      const inferredType: CoupleMessageType = file.type.startsWith("image/")
         ? "image"
-        : file.type.startsWith("video/")
-          ? "video"
-          : file.type.startsWith("audio/")
-            ? "audio"
-            : "file";
+        : file.type.startsWith("video/") ? "video"
+          : file.type.startsWith("audio/") ? "audio" : "file";
       const result = await sendCoupleMessage({
         coupleId: state.coupleId,
         senderId: userId,
         body: file.name || "Arquivo enviado",
-        messageType: type,
+        messageType: messageTypeOverride ?? inferredType,
         attachmentPath: uploaded.path,
         attachmentName: file.name,
         attachmentMime: file.type,
-        metadata: { size: file.size },
+        metadata: { size: file.size, ...(extraMetadata ?? {}) },
       });
       if (result.error) {
         await removeCoupleMedia(uploaded.path);
         throw result.error;
       }
       setAttachmentOpen(false);
+      setGiftOpen(false);
+      setGiftMediaFile(null);
       setRefreshKey((key) => key + 1);
-      if (Capacitor.isNativePlatform()) {
-        void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
-      }
+      if (Capacitor.isNativePlatform()) void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
     } catch (cause) {
       console.error("Falha ao enviar arquivo.", cause);
       setError(cause instanceof Error ? cause.message : "Não foi possível enviar este arquivo.");
@@ -526,26 +554,103 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     }
   }
 
-  function openAttachmentPicker(accept: string) {
+  async function sendAttachment(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0] ?? null;
+    event.target.value = "";
+    setAttachmentCapture(undefined);
+    if (file) await sendFile(file);
+  }
+
+  function openAttachmentPicker(accept: string, capture?: "environment") {
     setAttachmentAccept(accept);
+    setAttachmentCapture(capture);
     setAttachmentOpen(false);
     window.setTimeout(() => fileInputRef.current?.click(), 0);
   }
 
-  async function sendSticker(emoji: string) {
+  async function toggleAudioRecording() {
+    if (recordingAudio && mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      setRecordingAudio(false);
+      return;
+    }
+    try {
+      if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+        throw new Error("Este dispositivo não oferece gravação de áudio neste navegador.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordingStreamRef.current = stream;
+      recordingChunksRef.current = [];
+      const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) => MediaRecorder.isTypeSupported(candidate));
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      mediaRecorderRef.current = recorder;
+      recorder.ondataavailable = (event) => { if (event.data.size > 0) recordingChunksRef.current.push(event.data); };
+      recorder.onerror = () => {
+        setError("A gravação de áudio foi interrompida.");
+        setRecordingAudio(false);
+        stream.getTracks().forEach((track) => track.stop());
+        recordingStreamRef.current = null;
+      };
+      recorder.onstop = () => {
+        const mime = recorder.mimeType || "audio/webm";
+        const extension = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
+        const blob = new Blob(recordingChunksRef.current, { type: mime });
+        stream.getTracks().forEach((track) => track.stop());
+        recordingStreamRef.current = null;
+        mediaRecorderRef.current = null;
+        recordingChunksRef.current = [];
+        setRecordingAudio(false);
+        if (blob.size > 0) void sendFile(new File([blob], "mensagem-de-voz." + extension, { type: mime }));
+        else setError("A gravação ficou vazia. Tente novamente.");
+      };
+      recorder.start(250);
+      setRecordingAudio(true);
+      setAttachmentOpen(false);
+      setStickerOpen(false);
+      setGiftOpen(false);
+    } catch (cause) {
+      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+      recordingStreamRef.current = null;
+      setRecordingAudio(false);
+      setError(cause instanceof Error ? cause.message : "Não foi possível acessar o microfone.");
+    }
+  }
+
+  async function sendSticker(sticker: (typeof stickerOptions)[number]) {
     await saveMessage({
-      body: emoji,
+      body: sticker.label,
       messageType: "sticker",
-      metadata: { sticker: emoji },
+      metadata: { sticker: sticker.id, label: sticker.label },
     });
   }
 
-  async function sendGift(gift: (typeof gifts)[number]) {
+  async function sendGift() {
+    if (!giftTitle.trim() || state.status !== "active" || busy) return;
+    let attachmentPath: string | null = null;
+    let attachmentName: string | null = null;
+    let attachmentMime: string | null = null;
+    if (giftMediaFile) {
+      const uploaded = await uploadCoupleMedia({ coupleId: state.coupleId, userId, scope: "chat", file: giftMediaFile });
+      if (uploaded.error || !uploaded.path) {
+        setError(uploaded.error?.message ?? "Não foi possível adicionar a mídia ao presente.");
+        return;
+      }
+      attachmentPath = uploaded.path;
+      attachmentName = giftMediaFile.name;
+      attachmentMime = giftMediaFile.type;
+    }
+    const artwork = giftArtworks.find((item) => item.id === giftArtwork) ?? giftArtworks[0];
     await saveMessage({
-      body: gift.title,
+      body: giftTitle.trim(),
       messageType: "gift",
-      metadata: { emoji: gift.emoji, title: gift.title, note: gift.note },
+      attachmentPath,
+      attachmentName,
+      attachmentMime,
+      metadata: { artwork: artwork.id, title: giftTitle.trim(), note: giftNote.trim() || "Um presente criado especialmente para você." },
     });
+    setGiftTitle("");
+    setGiftNote("");
+    setGiftMediaFile(null);
   }
 
   async function copyMessage(messageId: string, body: string) {
@@ -569,16 +674,27 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   function renderMessageContent(message: CoupleMessage) {
     const url = mediaUrls[message.id];
     if (message.message_type === "sticker") {
-      return <div className="conversation-sticker"><span>{message.body}</span></div>;
+      const stickerId = typeof message.metadata?.sticker === "string" ? message.metadata.sticker : "";
+      const sticker = stickerOptions.find((item) => item.id === stickerId) ?? stickerOptions[0];
+      const StickerIcon = sticker.Icon;
+      return <div className="conversation-sticker"><StickerIcon aria-hidden="true" /><span>{sticker.label}</span></div>;
     }
     if (message.message_type === "gift") {
-      const emoji = typeof message.metadata?.emoji === "string" ? message.metadata.emoji : "🎁";
+      const artworkId = typeof message.metadata?.artwork === "string" ? message.metadata.artwork : "";
+      const artwork = giftArtworks.find((item) => item.id === artworkId) ?? giftArtworks[4];
+      const GiftIcon = artwork.Icon;
       const title = typeof message.metadata?.title === "string" ? message.metadata.title : message.body;
       const note = typeof message.metadata?.note === "string" ? message.metadata.note : "Um presente para você";
       return (
         <div className="conversation-gift-card">
-          <span className="conversation-gift-art">{emoji}</span>
-          <span className="conversation-gift-kicker">Um carinho chegou</span>
+          {url && message.attachment_mime?.startsWith("image/") ? (
+            <img className="conversation-gift-media" src={url} alt={title} loading="lazy" />
+          ) : url && message.attachment_mime?.startsWith("video/") ? (
+            <video className="conversation-gift-media" src={url} controls playsInline preload="metadata" />
+          ) : (
+            <span className="conversation-gift-art"><GiftIcon aria-hidden="true" /></span>
+          )}
+          <span className="conversation-gift-kicker">Uma criação para você</span>
           <strong>{title}</strong>
           <span>{note}</span>
         </div>
@@ -633,7 +749,9 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
         <div className="conversation-person-copy">
           <span className="conversation-person-avatar" aria-hidden="true">
-            {state.status === "active" ? initials(state.otherName) : "♡"}
+            {state.status === "active" && state.otherAvatarUrl
+              ? <img src={state.otherAvatarUrl} alt="" />
+              : <UserRound aria-hidden="true" />}
           </span>
           <div className="conversation-person-text">
             <h1 id="conversation-title">{state.status === "active" ? state.otherName : "Conversa"}</h1>
@@ -754,7 +872,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             {olderMessagesError && <p className="conversation-history-error" role="alert">{olderMessagesError}</p>}
             {state.messages.length === 0 ? (
               <div className="conversation-first-message">
-                <span>♡</span>
+                <span><HandHeart aria-hidden="true" /></span>
                 <strong>Um cantinho só de vocês.</strong>
                 <p>Mandem mensagens, fotos, áudios e pequenos presentes para deixar esta conversa com a cara de vocês.</p>
               </div>
@@ -805,27 +923,44 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             <div className="conversation-tools-panel">
               {attachmentOpen && (
                 <div className="conversation-attachment-grid">
-                  <button type="button" onClick={() => openAttachmentPicker("image/*")}><Image aria-hidden="true" /><span>Fotos</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("video/mp4,video/webm,video/quicktime")}><Video aria-hidden="true" /><span>Vídeos</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("audio/*")}><Music2 aria-hidden="true" /><span>Áudios</span></button>
+                  <button type="button" onClick={() => openAttachmentPicker("image/*")}><Image aria-hidden="true" /><span>Galeria</span></button>
+                  <button type="button" onClick={() => openAttachmentPicker("image/*", "environment")}><Camera aria-hidden="true" /><span>Tirar foto</span></button>
+                  <button type="button" onClick={() => openAttachmentPicker("video/*")}><Video aria-hidden="true" /><span>Vídeo</span></button>
+                  <button type="button" onClick={() => openAttachmentPicker("video/*", "environment")}><Video aria-hidden="true" /><span>Gravar vídeo</span></button>
+                  <button type="button" onClick={() => openAttachmentPicker("audio/*")}><Music2 aria-hidden="true" /><span>Enviar áudio</span></button>
                   <button type="button" onClick={() => openAttachmentPicker("application/pdf,text/plain,application/zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}><File aria-hidden="true" /><span>Arquivos</span></button>
                 </div>
               )}
               {stickerOpen && (
                 <div className="conversation-sticker-grid">
-                  {stickers.map((emoji) => (
-                    <button type="button" key={emoji} onClick={() => void sendSticker(emoji)} disabled={busy}>{emoji}</button>
-                  ))}
+                  {stickerOptions.map((sticker) => {
+                    const StickerIcon = sticker.Icon;
+                    return <button type="button" key={sticker.id} onClick={() => void sendSticker(sticker)} disabled={busy} title={sticker.label}>
+                      <StickerIcon aria-hidden="true" /><span>{sticker.label}</span>
+                    </button>;
+                  })}
                 </div>
               )}
               {giftOpen && (
-                <div className="conversation-gift-grid">
-                  {gifts.map((gift) => (
-                    <button type="button" key={gift.title} onClick={() => void sendGift(gift)} disabled={busy}>
-                      <span>{gift.emoji}</span>
-                      <strong>{gift.title}</strong>
-                    </button>
-                  ))}
+                <div className="conversation-gift-workshop">
+                  <div className="conversation-gift-workshop-head">
+                    <Gift aria-hidden="true" />
+                    <div><strong>Oficina de presentes</strong><small>Monte um cartão com texto e mídia para enviar na conversa.</small></div>
+                  </div>
+                  <div className="conversation-gift-artworks">
+                    {giftArtworks.map((artwork) => {
+                      const ArtworkIcon = artwork.Icon;
+                      return <button type="button" key={artwork.id} className={giftArtwork === artwork.id ? "is-selected" : ""} onClick={() => setGiftArtwork(artwork.id)} aria-pressed={giftArtwork === artwork.id}>
+                        <ArtworkIcon aria-hidden="true" /><span>{artwork.label}</span>
+                      </button>;
+                    })}
+                  </div>
+                  <label className="conversation-gift-field">Título<input value={giftTitle} onChange={(event) => setGiftTitle(event.target.value)} maxLength={70} placeholder="Um presente para você" /></label>
+                  <label className="conversation-gift-field">Mensagem<textarea value={giftNote} onChange={(event) => setGiftNote(event.target.value)} maxLength={360} rows={3} placeholder="Escreva algo especial…" /></label>
+                  <label className="conversation-gift-media-picker"><Image aria-hidden="true" /> {giftMediaFile ? giftMediaFile.name : "Adicionar foto ou vídeo"}
+                    <input type="file" accept="image/*,video/*" onChange={(event) => setGiftMediaFile(event.target.files?.[0] ?? null)} />
+                  </label>
+                  <button type="button" className="conversation-gift-send" onClick={() => void sendGift()} disabled={busy || !giftTitle.trim()}><Send aria-hidden="true" /> Enviar presente</button>
                 </div>
               )}
             </div>
@@ -836,6 +971,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               ref={fileInputRef}
               type="file"
               accept={attachmentAccept}
+              capture={attachmentCapture}
               className="sr-only"
               onChange={(event) => void sendAttachment(event)}
               aria-label="Escolher arquivo para enviar"
@@ -861,10 +997,19 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               </button>
               <button
                 type="button"
+                className={recordingAudio ? "is-recording" : ""}
+                onClick={() => void toggleAudioRecording()}
+                aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
+                title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
+              >
+                {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
+              </button>
+              <button
+                type="button"
                 className={giftOpen ? "is-active" : ""}
                 onClick={() => { setGiftOpen((value) => !value); setAttachmentOpen(false); setStickerOpen(false); }}
-                aria-label="Enviar presente"
-                title="Presentes"
+                aria-label="Abrir oficina de presentes"
+                title="Oficina de presentes"
               >
                 <Gift aria-hidden="true" />
               </button>
@@ -891,7 +1036,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
               </button>
             </div>
-            <p className="conversation-composer-hint">Enter envia · Shift + Enter quebra a linha</p>
+            <p className="conversation-composer-hint">{recordingAudio ? "Gravando áudio… toque novamente para finalizar" : "Enter envia · Shift + Enter quebra a linha"}</p>
           </form>
         </>
       )}

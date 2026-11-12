@@ -18228,3 +18228,106 @@ html[data-morados-game-open="true"] .app-main,
 html[data-morados-game-open="true"] .page-frame {
   padding: 0 !important;
 }
+
+
+/* Morados · conversa imersiva com composer flutuante. */
+.is-conversation-mode .conversation-screen {
+  position: relative; display: flex; width: 100%;
+  height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  flex-direction: column; overflow: hidden;
+}
+.is-conversation-mode .conversation-heading {
+  position: relative; z-index: 30; min-height: 64px; flex: 0 0 64px;
+  grid-template-columns: 44px minmax(0,1fr) 44px; gap: 10px; padding: 7px 12px; background: var(--color-card);
+}
+.is-conversation-mode .conversation-person-copy { justify-self: center; max-width: min(70vw,420px); }
+.is-conversation-mode .conversation-person-avatar {
+  display: grid; width: 39px; height: 39px; flex: 0 0 39px; overflow: hidden; place-items: center;
+  border: 1px solid var(--color-border); border-radius: 50%; background: var(--color-secondary); color: var(--color-primary);
+}
+.is-conversation-mode .conversation-person-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.is-conversation-mode .conversation-thread { min-height: 0; flex: 1 1 auto; padding-bottom: calc(172px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
+.is-conversation-mode .conversation-composer {
+  position: absolute; z-index: 22; right: 0; bottom: 0; left: 0; display: grid; width: 100%;
+  grid-template-columns: 1fr; gap: 8px; border: 0; background: transparent;
+  padding: 10px clamp(10px,3vw,28px) calc(11px + env(safe-area-inset-bottom)); pointer-events: none;
+}
+.is-conversation-mode .conversation-composer > * { pointer-events: auto; }
+.is-conversation-mode .conversation-composer-tools {
+  display: flex; width: fit-content; max-width: 100%; align-items: center; gap: 5px; justify-self: start;
+  border: 1px solid var(--color-border); border-radius: 999px; background: var(--color-card); padding: 4px 7px;
+  box-shadow: 0 8px 24px -19px rgb(16 40 46 / 55%);
+}
+.is-conversation-mode .conversation-composer-tools button { width: 34px; height: 34px; border-radius: 50%; color: var(--color-primary); }
+.is-conversation-mode .conversation-composer-tools button.is-recording { background: #C8402A; color: #FFF9EF; animation: morados-record-pulse 1.3s ease-in-out infinite; }
+.is-conversation-mode .conversation-input-shell {
+  min-height: 52px; align-items: center; border: 1px solid color-mix(in srgb,var(--color-primary) 28%,var(--color-border));
+  border-radius: 24px; background: var(--color-card); padding: 5px 6px 5px 16px;
+  box-shadow: 0 10px 30px -18px rgb(16 40 46 / 50%);
+}
+.is-conversation-mode .conversation-input-shell textarea { min-height: 38px; max-height: 116px; padding-top: 9px; font-size: 14px; }
+.is-conversation-mode .conversation-send-button { width: 40px; height: 40px; min-height: 40px; flex: 0 0 40px; border-radius: 50%; background: #0F4C5C; color: #FFF9EF; }
+.is-conversation-mode .conversation-composer-hint { justify-self: end; color: var(--color-muted-foreground); font-size: 9px; }
+.is-conversation-mode .conversation-tools-panel {
+  position: absolute; z-index: 26; right: clamp(10px,3vw,28px); bottom: calc(130px + env(safe-area-inset-bottom));
+  left: clamp(10px,3vw,28px); max-height: min(52dvh,460px); overflow: auto;
+  border: 1px solid var(--color-border); border-radius: 15px; background: var(--color-card);
+  box-shadow: 0 16px 42px -22px rgb(16 40 46 / 50%);
+}
+.conversation-attachment-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.conversation-attachment-grid button { min-height: 68px; border-radius: 10px; background: var(--color-secondary); }
+.conversation-attachment-grid button svg { width: 21px; height: 21px; }
+.conversation-sticker-grid button {
+  display: flex; min-height: 72px; flex-direction: column; align-items: center; justify-content: center;
+  gap: 5px; border-radius: 10px; background: var(--color-secondary); color: var(--color-foreground);
+}
+.conversation-sticker-grid button svg { width: 26px; height: 26px; color: var(--color-primary); }
+.conversation-sticker-grid button span { font-size: 9px; }
+.conversation-sticker { display: grid; min-width: 86px; min-height: 83px; place-items: center; gap: 6px; }
+.conversation-sticker svg { width: 54px; height: 54px; stroke-width: 1.5; color: #C8402A; }
+.conversation-sticker span { font-size: 9px; font-weight: 700; filter: none; }
+.conversation-gift-workshop { display: grid; gap: 12px; }
+.conversation-gift-workshop-head { display: flex; align-items: center; gap: 10px; color: var(--color-primary); }
+.conversation-gift-workshop-head > svg { width: 26px; height: 26px; }
+.conversation-gift-workshop-head div { display: grid; gap: 3px; }
+.conversation-gift-workshop-head strong { font-family: var(--font-display); font-size: 17px; }
+.conversation-gift-workshop-head small { color: var(--color-muted-foreground); font-size: 10px; }
+.conversation-gift-artworks { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 6px; }
+.conversation-gift-artworks button {
+  display: grid; min-height: 58px; place-items: center; gap: 3px; border: 1px solid var(--color-border);
+  border-radius: 9px; background: var(--color-background); color: var(--color-muted-foreground); padding: 6px 3px;
+}
+.conversation-gift-artworks button svg { width: 19px; height: 19px; }
+.conversation-gift-artworks button span { font-size: 8px; }
+.conversation-gift-artworks button.is-selected { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.conversation-gift-field { display: grid; gap: 5px; color: var(--color-foreground); font-size: 11px; font-weight: 700; }
+.conversation-gift-field input,.conversation-gift-field textarea {
+  width: 100%; border: 1px solid var(--color-border); border-radius: 9px; background: var(--color-background);
+  padding: 10px; color: var(--color-foreground); font: inherit; font-size: 12px;
+}
+.conversation-gift-media-picker {
+  display: flex; min-height: 42px; align-items: center; gap: 8px; border: 1px dashed var(--color-border);
+  border-radius: 9px; padding: 8px 10px; color: var(--color-primary); cursor: pointer; font-size: 11px;
+}
+.conversation-gift-media-picker input { max-width: 100%; font-size: 10px; }
+.conversation-gift-send {
+  display: inline-flex; min-height: 42px; align-items: center; justify-content: center; gap: 8px; border: 0;
+  border-radius: 9px; background: #0F4C5C; color: #FFF9EF; font-size: 12px; font-weight: 750;
+}
+.conversation-gift-art {
+  display: grid; width: 53px; height: 53px; place-items: center; border: 1px solid var(--color-border);
+  border-radius: 50%; background: var(--color-secondary); color: var(--color-primary);
+}
+.conversation-gift-art svg { width: 28px; height: 28px; }
+.conversation-gift-media { display: block; max-width: min(64vw,370px); max-height: 260px; margin: 0 auto 8px; border-radius: 8px; object-fit: contain; }
+.conversation-first-message > span { display: grid; width: 54px; height: 54px; place-items: center; border-radius: 50%; background: var(--color-primary-soft); }
+.conversation-first-message > span svg { width: 28px; height: 28px; color: var(--color-accent); }
+@keyframes morados-record-pulse { 50% { box-shadow: 0 0 0 5px rgb(200 64 42 / 14%); } }
+@media (max-width:680px) {
+  .is-conversation-mode .conversation-composer { padding-inline: 10px; }
+  .is-conversation-mode .conversation-thread { padding-bottom: calc(188px + env(safe-area-inset-bottom)); }
+  .is-conversation-mode .conversation-tools-panel { left: 8px; right: 8px; bottom: calc(136px + env(safe-area-inset-bottom)); }
+  .conversation-gift-artworks { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .is-conversation-mode .conversation-composer-hint { display: none; }
+}
