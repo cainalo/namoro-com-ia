@@ -10,6 +10,8 @@ import {
 import {
   ArrowRight,
   AudioLines,
+  Mic,
+  Square,
   CalendarHeart,
   Camera,
   Gamepad2,
@@ -43,6 +45,7 @@ import {
   type CouplePostBlock,
   type CouplePostBlockType,
 } from "@/lib/couple-feed";
+import { getMoradosMusicTrack, MORADOS_MUSIC_TRACKS, renderMoradosMusic } from "@/lib/morados-music-library";
 
 type FeedBlockView = CouplePostBlock & { media_url: string | null };
 
@@ -60,6 +63,7 @@ type PostDraftBlock = {
   url: string;
   file: File | null;
   previewUrl: string | null;
+  trackId: string | null;
 };
 
 type FeedState =
@@ -198,6 +202,7 @@ export function CoupleFeed({
   const [composerOpen, setComposerOpen] = useState(false);
   const [postFilter, setPostFilter] = useState<FeedFilter>("all");
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const [renderingMusicBlockId, setRenderingMusicBlockId] = useState<string | null>(null);
   const dragBlockRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -214,6 +219,7 @@ export function CoupleFeed({
     url: "",
     file: null,
     previewUrl: null,
+    trackId: null,
   });
 
   function addDraftBlock(type: CouplePostBlockType) {
@@ -313,7 +319,7 @@ export function CoupleFeed({
   const canPublishDraft = draftBlocks.some((block) => {
     if (block.type === "title" || block.type === "text") return Boolean(block.value.trim());
     if (block.type === "photo" || block.type === "video" || block.type === "audio") return Boolean(block.file);
-    if (block.type === "music") return Boolean(block.url.trim());
+    if (block.type === "music") return Boolean(block.trackId);
     return false;
   });
 
@@ -473,21 +479,27 @@ export function CoupleFeed({
       for (const block of draftBlocks) {
         if ((block.type === "title" || block.type === "text") && !block.value.trim()) continue;
         if (block.type === "music") {
-          let parsedUrl: URL;
-          try {
-            parsedUrl = new URL(block.url.trim());
-          } catch {
-            throw new Error("Informe um link válido para a música.");
-          }
-          if (parsedUrl.protocol !== "https:") {
-            throw new Error("O link da música precisa começar com https://.");
-          }
+          if (!block.trackId) continue;
+          const track = getMoradosMusicTrack(block.trackId);
+          if (!track) throw new Error("A música escolhida não está disponível.");
+          const musicFile = block.file ?? await renderMoradosMusic(track.id);
+          const upload = await uploadCoupleMedia({
+            coupleId: state.coupleId,
+            userId,
+            scope: "feed",
+            file: musicFile,
+          });
+          if (upload.error || !upload.path) throw upload.error ?? new Error("Não foi possível preparar a música.");
+          uploadedPaths.push(upload.path);
           contentBlocks.push({
             id: block.id,
             type: "music",
-            value: block.value.trim() || "Música compartilhada",
-            url: parsedUrl.toString(),
+            value: track.title,
+            track_id: track.id,
             caption: block.caption.trim() || undefined,
+            media_path: upload.path,
+            media_name: musicFile.name,
+            media_mime: musicFile.type,
           });
           continue;
         }
@@ -524,7 +536,7 @@ export function CoupleFeed({
       if (contentBlocks.length === 0) return;
 
       const primaryMedia = contentBlocks.find((block) => block.type === "photo" || block.type === "video")
-        ?? contentBlocks.find((block) => block.type === "audio");
+        ?? contentBlocks.find((block) => block.type === "audio" || block.type === "music");
       const result = await createCouplePost({
         coupleId: state.coupleId,
         authorId: userId,
@@ -763,25 +775,57 @@ export function CoupleFeed({
                       {block.type === "music" && (
                         <div className="feed-composer-music-block">
                           <Music2 aria-hidden="true" />
-                          <input
-                            value={block.value}
-                            onChange={(event) => updateDraftBlock(block.id, { value: event.target.value })}
-                            placeholder="Nome da música ou artista"
-                            aria-label="Nome da música"
-                          />
-                          <input
-                            type="url"
-                            value={block.url}
-                            onChange={(event) => updateDraftBlock(block.id, { url: event.target.value })}
-                            placeholder="Link da música (Spotify, YouTube...)"
-                            aria-label="Link da música"
-                          />
+                          <label className="feed-composer-track-label">
+                            Trilha original do Morados
+                            <select
+                              value={block.trackId ?? ""}
+                              onChange={(event) => {
+                                const track = getMoradosMusicTrack(event.target.value);
+                                if (block.previewUrl) URL.revokeObjectURL(block.previewUrl);
+                                updateDraftBlock(block.id, {
+                                  trackId: track?.id ?? null,
+                                  value: track?.title ?? "",
+                                  file: null,
+                                  previewUrl: null,
+                                  url: "",
+                                });
+                              }}
+                              aria-label="Escolha uma música Morados"
+                            >
+                              <option value="">Escolha uma música</option>
+                              {MORADOS_MUSIC_TRACKS.map((track) => (
+                                <option key={track.id} value={track.id}>{track.title} · {track.mood}</option>
+                              ))}
+                            </select>
+                          </label>
+                          <button
+                            type="button"
+                            className="feed-composer-generate-music"
+                            disabled={!block.trackId || renderingMusicBlockId === block.id}
+                            onClick={async () => {
+                              if (!block.trackId) return;
+                              setRenderingMusicBlockId(block.id);
+                              setPublishError(null);
+                              try {
+                                const file = await renderMoradosMusic(block.trackId);
+                                handleBlockFile(block.id, file);
+                              } catch (error) {
+                                setPublishError(error instanceof Error ? error.message : "Não foi possível gerar a música.");
+                              } finally {
+                                setRenderingMusicBlockId(null);
+                              }
+                            }}
+                          >
+                            {renderingMusicBlockId === block.id ? <LoaderCircle aria-hidden="true" /> : <AudioLines aria-hidden="true" />}
+                            {renderingMusicBlockId === block.id ? "Produzindo faixa…" : block.previewUrl ? "Gerar prévia novamente" : "Produzir e ouvir prévia"}
+                          </button>
+                          {block.previewUrl && <audio className="feed-composer-audio-preview" controls src={block.previewUrl} />}
                           <input
                             className="feed-composer-caption"
                             value={block.caption}
                             onChange={(event) => updateDraftBlock(block.id, { caption: event.target.value })}
-                            placeholder="Por que essa música? (opcional)"
-                            aria-label="Legenda da música"
+                            placeholder="Uma dedicatória para acompanhar a música (opcional)"
+                            aria-label="Dedicatória da música"
                           />
                         </div>
                       )}
