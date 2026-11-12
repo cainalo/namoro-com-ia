@@ -15068,3 +15068,678 @@ h3,
 .mobile-nav * {
   box-sizing: border-box;
 }
+
+
+/* ───── Identidade autoral Morados ───── */
+.morados-wordmark-lockup {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.52rem;
+  color: var(--color-foreground);
+}
+.morados-wordmark-lockup > svg {
+  display: block;
+  width: 1.9rem;
+  height: 1.7rem;
+  flex: 0 0 auto;
+}
+.morados-wordmark-text {
+  display: inline-block;
+  color: var(--color-foreground);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.075em;
+  line-height: 1;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+.topbar-wordmark .morados-wordmark-lockup {
+  gap: 0.48rem;
+}
+.topbar-wordmark .morados-wordmark-lockup > svg {
+  width: 1.8rem;
+  height: 1.65rem;
+}
+.topbar-wordmark .morados-wordmark-text {
+  font-size: 1.35rem;
+}
+.morados-floating-wordmark .morados-wordmark-lockup {
+  gap: 0.38rem;
+}
+.morados-floating-wordmark .morados-wordmark-lockup > svg {
+  width: 1.5rem;
+  height: 1.4rem;
+}
+.morados-floating-wordmark .morados-wordmark-text {
+  font-size: 1.05rem;
+}
+
+/* ───── Publicações Morados no sistema Editorial Vibrante ─────
+   A identidade Natural continua no restante do app; somente os posts usam
+   superfícies cromáticas, tipografia Fraunces e conteúdo editorial. */
+.feed-post-card.editorial-post-card {
+  --editorial-bg: #0f4c5c;
+  --editorial-ink: #fff9ef;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 22%, var(--editorial-bg));
+  border-radius: 0.75rem;
+  background: var(--editorial-bg);
+  color: var(--editorial-ink);
+  box-shadow: none;
+  font-family: "Inter Tight", "IBM Plex Sans", sans-serif;
+}
+.feed-post-card.editorial-post-card[data-post-tone="terracotta"] {
+  --editorial-bg: #c8402a;
+  --editorial-ink: #fff9ef;
+}
+.feed-post-card.editorial-post-card[data-post-tone="olive"] {
+  --editorial-bg: #556b2f;
+  --editorial-ink: #fff9ef;
+}
+.feed-post-card.editorial-post-card[data-post-tone="plum"] {
+  --editorial-bg: #6b3a6e;
+  --editorial-ink: #fff9ef;
+}
+.feed-post-card.editorial-post-card .feed-post-header {
+  min-height: 4.4rem;
+  align-items: center;
+  gap: 0.8rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--editorial-ink) 17%, transparent);
+  background: transparent;
+  color: var(--editorial-ink);
+  padding: 0.9rem 1.1rem;
+}
+.feed-post-card.editorial-post-card .feed-post-header strong,
+.feed-post-card.editorial-post-card .feed-post-header time {
+  color: var(--editorial-ink);
+}
+.feed-post-card.editorial-post-card .feed-post-header time {
+  opacity: 0.74;
+  font-size: 0.75rem;
+}
+.feed-post-card.editorial-post-card .feed-author-avatar {
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 32%, transparent);
+  background: color-mix(in srgb, var(--editorial-ink) 13%, transparent);
+  color: var(--editorial-ink);
+}
+.feed-post-card.editorial-post-card .feed-post-private {
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 27%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--editorial-ink) 13%, transparent);
+  color: var(--editorial-ink);
+  padding: 0.32rem 0.65rem;
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.72rem;
+}
+.feed-post-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+.feed-post-block {
+  min-width: 0;
+}
+.feed-post-title {
+  margin: 0;
+  color: var(--editorial-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(1.5rem, 4vw, 2.15rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-wrap: pretty;
+}
+.feed-post-card.editorial-post-card .feed-post-body {
+  margin: 0;
+  padding: 0;
+  color: color-mix(in srgb, var(--editorial-ink) 92%, transparent);
+  font-family: "Inter Tight", "IBM Plex Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 450;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  text-shadow: none;
+}
+.feed-post-media {
+  overflow: hidden;
+  margin: 0 -1.1rem;
+  background: color-mix(in srgb, var(--editorial-ink) 10%, var(--editorial-bg));
+}
+.feed-post-media img,
+.feed-post-media video,
+.feed-post-card.editorial-post-card .feed-post-image,
+.feed-post-card.editorial-post-card .feed-post-video {
+  display: block;
+  width: 100%;
+  max-height: min(72vh, 42rem);
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  object-fit: contain;
+}
+.feed-post-media figcaption {
+  border-top: 1px solid color-mix(in srgb, var(--editorial-ink) 17%, transparent);
+  padding: 0.6rem 1.1rem 0.1rem;
+  color: color-mix(in srgb, var(--editorial-ink) 78%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.feed-post-music {
+  display: flex;
+  min-height: 4.7rem;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 24%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--editorial-ink) 11%, transparent);
+  padding: 0.75rem;
+  color: var(--editorial-ink);
+  text-decoration: none;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+.feed-post-music:hover {
+  background: color-mix(in srgb, var(--editorial-ink) 18%, transparent);
+  transform: translateY(-1px);
+}
+.feed-post-music-icon,
+.feed-post-audio-icon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: 0 0 2.75rem;
+  place-items: center;
+  border-radius: 0.45rem;
+  background: var(--editorial-ink);
+  color: var(--editorial-bg);
+}
+.feed-post-music-icon svg,
+.feed-post-audio-icon svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+.feed-post-music-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.feed-post-music-copy strong {
+  overflow: hidden;
+  color: var(--editorial-ink);
+  font-family: "Fraunces", serif;
+  font-size: 1rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-post-music-copy small {
+  color: color-mix(in srgb, var(--editorial-ink) 78%, transparent);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+.feed-post-music-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--editorial-ink);
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+.feed-post-music-open svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.feed-post-audio {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 23%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--editorial-ink) 10%, transparent);
+  padding: 0.75rem;
+}
+.feed-post-audio > div {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.feed-post-audio strong {
+  color: var(--editorial-ink);
+  font-family: "Fraunces", serif;
+  font-size: 0.95rem;
+}
+.feed-post-audio audio {
+  width: 100%;
+  max-width: 100%;
+  height: 2.5rem;
+}
+.feed-post-card.editorial-post-card .feed-post-footer {
+  min-height: 3.4rem;
+  border-top: 1px solid color-mix(in srgb, var(--editorial-ink) 19%, transparent);
+  background: transparent;
+  padding: 0.65rem 1.1rem;
+  color: color-mix(in srgb, var(--editorial-ink) 78%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.78rem;
+}
+.feed-post-card.editorial-post-card .feed-post-footer button {
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 30%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--editorial-ink) 12%, transparent);
+  color: var(--editorial-ink);
+  padding: 0.5rem 0.8rem;
+  font-size: 0.78rem;
+}
+.feed-post-card.editorial-post-card .feed-post-footer button:hover {
+  background: color-mix(in srgb, var(--editorial-ink) 20%, transparent);
+}
+
+/* Editor do post: card vazio com blocos independentes, reordenáveis por mouse e toque. */
+.feed-publisher-dialog {
+  width: min(calc(100vw - 1.25rem), 43rem) !important;
+  max-width: 43rem !important;
+  max-height: min(92dvh, 56rem);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.feed-publisher-dialog [data-slot="dialog-title"],
+.feed-publisher-dialog h2 {
+  font-family: "Fraunces", "Libre Baskerville", serif;
+}
+.feed-publisher-header {
+  flex: 0 0 auto;
+}
+.feed-block-toolbox {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  overflow-x: auto;
+  padding: 0.1rem 0.05rem 0.45rem;
+  scrollbar-width: none;
+}
+.feed-block-toolbox::-webkit-scrollbar {
+  display: none;
+}
+.feed-block-toolbox button {
+  display: inline-flex;
+  min-height: 2.45rem;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 0.42rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-secondary);
+  padding: 0.45rem 0.8rem;
+  color: var(--color-foreground);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.feed-block-toolbox button:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.feed-block-toolbox svg {
+  width: 1rem;
+  height: 1rem;
+}
+.toolbox-text-icon {
+  display: inline-grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  font-family: "Fraunces", serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.feed-publisher-form {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.1rem 0.2rem 0.4rem;
+}
+.feed-publisher-form .is-composer-card {
+  --editorial-bg: #0f4c5c;
+  --editorial-ink: #fff9ef;
+  border-radius: 0.7rem;
+  color: var(--editorial-ink);
+}
+.feed-composer-card-header {
+  display: flex;
+}
+.feed-composer-empty {
+  display: flex;
+  width: 100%;
+  min-height: 15rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: 1px dashed color-mix(in srgb, var(--editorial-ink) 42%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--editorial-ink) 7%, transparent);
+  margin: 0.9rem 1.1rem;
+  padding: 1.5rem;
+  color: var(--editorial-ink);
+  text-align: center;
+  cursor: pointer;
+}
+.feed-composer-empty-symbol {
+  display: grid;
+  width: 3.2rem;
+  height: 3.2rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 37%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--editorial-ink) 12%, transparent);
+}
+.feed-composer-empty-symbol svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+.feed-composer-empty strong {
+  color: var(--editorial-ink);
+  font-family: "Fraunces", serif;
+  font-size: 1.35rem;
+  font-weight: 650;
+}
+.feed-composer-empty > span:last-child {
+  max-width: 24rem;
+  color: color-mix(in srgb, var(--editorial-ink) 78%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+.feed-composer-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.75rem 1.1rem;
+}
+.feed-composer-block {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 32%, transparent);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--editorial-ink) 9%, transparent);
+  padding: 0.8rem;
+  transition: border-color 140ms ease, background-color 140ms ease, opacity 140ms ease;
+}
+.feed-composer-block.is-dragging {
+  border-color: var(--editorial-ink);
+  background: color-mix(in srgb, var(--editorial-ink) 17%, transparent);
+  opacity: 0.72;
+}
+.feed-composer-block-toolbar {
+  display: flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+.feed-block-drag-handle {
+  display: grid;
+  width: 2.1rem;
+  height: 2.1rem;
+  flex: 0 0 2.1rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 30%, transparent);
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, var(--editorial-ink) 9%, transparent);
+  color: var(--editorial-ink);
+  cursor: grab;
+  touch-action: none;
+}
+.feed-block-drag-handle:active {
+  cursor: grabbing;
+}
+.feed-block-drag-handle svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.feed-composer-block-type {
+  flex: 1;
+  color: color-mix(in srgb, var(--editorial-ink) 77%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.feed-composer-block-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.18rem;
+}
+.feed-composer-block-actions button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--editorial-ink);
+  cursor: pointer;
+}
+.feed-composer-block-actions button:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+.feed-composer-block-actions button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--editorial-ink) 15%, transparent);
+}
+.feed-composer-block-actions svg {
+  width: 1rem;
+  height: 1rem;
+}
+.feed-composer-title-input,
+.feed-composer-text-input,
+.feed-composer-music-block input,
+.feed-composer-caption {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 29%, transparent);
+  border-radius: 0.4rem;
+  outline: none;
+  background: color-mix(in srgb, var(--editorial-ink) 9%, transparent);
+  padding: 0.8rem 0.85rem;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+.feed-composer-title-input {
+  font-family: "Fraunces", serif;
+  font-size: 1.45rem;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+}
+.feed-composer-text-input {
+  min-height: 6rem;
+  resize: vertical;
+}
+.feed-composer-title-input::placeholder,
+.feed-composer-text-input::placeholder,
+.feed-composer-music-block input::placeholder,
+.feed-composer-caption::placeholder {
+  color: color-mix(in srgb, var(--editorial-ink) 62%, transparent);
+  opacity: 1;
+}
+.feed-composer-title-input:focus,
+.feed-composer-text-input:focus,
+.feed-composer-music-block input:focus,
+.feed-composer-caption:focus {
+  border-color: var(--editorial-ink);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--editorial-ink) 17%, transparent);
+}
+.feed-composer-media-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.feed-composer-media-block > img,
+.feed-composer-media-block > video {
+  display: block;
+  width: 100%;
+  max-height: 20rem;
+  border-radius: 0.4rem;
+  object-fit: contain;
+  background: rgb(0 0 0 / 12%);
+}
+.feed-composer-file-pick {
+  display: flex;
+  min-height: 6.8rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--editorial-ink) 40%, transparent);
+  border-radius: 0.45rem;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+}
+.feed-composer-file-pick svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.feed-composer-file-pick input,
+.feed-composer-replace-file input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+.feed-composer-replace-file {
+  align-self: flex-start;
+  color: var(--editorial-ink);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.feed-composer-music-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.feed-composer-music-block > svg {
+  width: 1.7rem;
+  height: 1.7rem;
+  color: var(--editorial-ink);
+}
+.feed-composer-audio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.feed-composer-audio-block audio {
+  width: 100%;
+}
+.feed-composer-add-another {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.1rem 1.1rem 0.8rem;
+  color: color-mix(in srgb, var(--editorial-ink) 75%, transparent);
+  font-family: "Inter Tight", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+.feed-composer-add-another > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.feed-composer-add-another button {
+  display: inline-flex;
+  min-height: 2.1rem;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-ink) 28%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--editorial-ink) 9%, transparent);
+  color: var(--editorial-ink);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+.feed-composer-add-another svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+.feed-publisher-form .feed-composer-footer {
+  margin-top: 0.3rem;
+  border-top: 1px solid color-mix(in srgb, var(--editorial-ink) 24%, transparent);
+  background: transparent;
+  padding: 0.85rem 1.1rem 1rem;
+}
+.feed-publisher-form .feed-composer-private {
+  color: var(--editorial-ink);
+}
+.feed-publisher-form .feed-publish-button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--editorial-ink);
+  color: var(--editorial-bg);
+}
+.feed-publisher-form .feed-publish-button:disabled {
+  opacity: 0.45;
+}
+.feed-publisher-form .feed-publish-error {
+  margin: 0.25rem 1.1rem 0.8rem;
+}
+@media (max-width: 560px) {
+  .feed-publisher-dialog {
+    width: calc(100vw - 0.75rem) !important;
+    max-height: 94dvh;
+    padding: 1rem !important;
+  }
+  .feed-block-toolbox {
+    gap: 0.35rem;
+  }
+  .feed-block-toolbox button {
+    min-height: 2.25rem;
+    padding-inline: 0.65rem;
+    font-size: 0.75rem;
+  }
+  .feed-composer-block {
+    padding: 0.6rem;
+  }
+  .feed-composer-block-actions button {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+  .feed-composer-blocks,
+  .feed-composer-add-another {
+    padding-inline: 0.7rem;
+  }
+  .feed-post-card.editorial-post-card .feed-post-header,
+  .feed-post-card.editorial-post-card .feed-post-footer {
+    padding-inline: 0.85rem;
+  }
+  .feed-post-content {
+    padding-inline: 0.85rem;
+  }
+  .feed-post-media {
+    margin-inline: -0.85rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feed-post-music,
+  .feed-composer-block,
+  .feed-block-toolbox button {
+    transition: none !important;
+  }
+}
