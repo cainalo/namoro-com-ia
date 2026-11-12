@@ -14,7 +14,7 @@ import {
   LogOut,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
@@ -73,7 +73,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const swipeStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const [postComposerRequest, setPostComposerRequest] = useState(0);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
@@ -86,30 +86,42 @@ function Index() {
     setActiveSection(section);
   };
 
-  const handleTouchStart = (event: ReactTouchEvent<HTMLDivElement>) => {
+  const handleSwipePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse") return;
     const target = event.target;
-    if (target instanceof Element && target.closest("button, a, input, textarea, select, [data-no-swipe]")) {
-      touchStartRef.current = null;
+    if (
+      target instanceof Element &&
+      target.closest("input, textarea, select, [contenteditable='true'], [data-no-swipe]")
+    ) {
+      swipeStartRef.current = null;
       return;
     }
-    const touch = event.changedTouches[0];
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    swipeStartRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId,
+    };
   };
 
-  const handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
-    const start = touchStartRef.current;
-    touchStartRef.current = null;
-    if (!start) return;
-    const touch = event.changedTouches[0];
-    const dx = touch.clientX - start.x;
-    const dy = touch.clientY - start.y;
-    if (Math.abs(dx) < 88 || Math.abs(dx) < Math.abs(dy) * 1.35) return;
+  const handleSwipePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = swipeStartRef.current;
+    swipeStartRef.current = null;
+    if (!start || start.pointerId !== event.pointerId) return;
+
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    // Um gesto curto e claramente horizontal evita competir com a rolagem do feed.
+    if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
 
     if (activeSectionRef.current === "home" && dx > 0) {
       goToSection("messages");
     } else if (activeSectionRef.current === "messages" && dx < 0) {
       goBack();
     }
+  };
+
+  const handleSwipePointerCancel = () => {
+    swipeStartRef.current = null;
   };
 
   const goHome = () => {
@@ -157,7 +169,12 @@ function Index() {
   return (
     <AuthGate>
       {(session) => (
-        <div className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+        <div
+          className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`}
+          onPointerDown={handleSwipePointerDown}
+          onPointerUp={handleSwipePointerUp}
+          onPointerCancel={handleSwipePointerCancel}
+        >
           {activeSection !== "messages" && (
             <>
               <header className="app-chrome" data-hidden={chromeHidden}>
