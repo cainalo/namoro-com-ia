@@ -707,7 +707,171 @@ export function CoupleFeed({
   const feedListContent = useMemo(() => {
     if (state.status !== "ready") return null;
     return (
-      {feedListContent}
+      <div className="social-feed-list">
+        {state.posts.length === 0 ? (
+          <div className="feed-empty-state">
+            <div className="feed-empty-illustration"><Images aria-hidden="true" /></div>
+            <h2>Uma história ainda em branco.</h2>
+            <p>Publique a primeira foto ou um pequeno momento para começar a preencher o feed.</p>
+          </div>
+        ) : visiblePosts.length === 0 ? (
+          <div className="feed-empty-state feed-filter-empty">
+            <h2>Nenhuma publicação neste filtro.</h2>
+            <button type="button" className="secondary-action" onClick={() => setPostFilter("all")}>Mostrar tudo</button>
+          </div>
+        ) : (
+          <>
+            {visiblePosts.map((post, index) => {
+              const game = gameSuggestions[index % gameSuggestions.length];
+              const showGameCard = postFilter === "all" && (index === 1 || (index > 1 && index % 4 === 1));
+              const showMemoryCards = postFilter === "all" && index === 0 && anniversaryMoments.length > 0;
+              const GameIcon = game.icon;
+              const postMusic = post.blocks.find(
+                (block) => block.type === "music" && Boolean(block.media_url),
+              );
+
+              return (
+                <div className="feed-sequence" key={post.id}>
+                  <MoradosPostCardFrame
+                    tone={getPostToneForId(post.id)}
+                    postId={post.id}
+                    hasMusic={post.blocks.some((block) => block.type === "music" && Boolean(block.media_url))}
+                    footer={
+                      <div className="feed-post-footer mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
+                        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
+                          <button type="button" onClick={onOpenConversation} aria-label="Conversa" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Conversa</span>
+                        </div>
+                        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
+                          <button type="button" aria-label="Copiar texto" onClick={() => {
+                            const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                            void navigator.clipboard?.writeText(copy);
+                          }} className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                            <Share2 className="h-4 w-4" aria-hidden="true" />
+                          </button>
+                          <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Copiar texto</span>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <header className="feed-post-header mb-4 flex flex-wrap items-start justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className={"feed-author-avatar grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
+                          {post.author_avatar_url ? (
+                            <img src={post.author_avatar_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                          ) : initials(post.author_name)}
+                        </span>
+                        <div className="feed-post-author-meta min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <strong className="truncate text-sm font-semibold text-foreground">{post.author_name}</strong>
+                          </div>
+                          <p className="feed-post-meta-line flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+                            <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
+                            {postMusic && (
+                              <span className="feed-post-music-meta" title={postMusic.value || "Trilha desta publicação"}>
+                                <Music2 aria-hidden="true" />
+                                <span>{postMusic.value || "Música"}</span>
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                        <span className="feed-post-private">A dois</span>
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button type="button" className="feed-post-more" aria-label="Mais opções da publicação">
+                            <MoreHorizontal aria-hidden="true" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="nc-menu">
+                          <DropdownMenuItem
+                            className="nc-menu-item"
+                            onSelect={() => {
+                              const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                              void navigator.clipboard?.writeText(copy);
+                            }}
+                          >
+                            <Copy aria-hidden="true" /> Copiar texto
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="nc-menu-sep" />
+                          <DropdownMenuItem className="nc-menu-item" onSelect={onOpenConversation}>
+                            <MessageCircle aria-hidden="true" /> Abrir conversa
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </header>
+
+                    <div className="feed-post-content px-0">
+                      {post.blocks.filter((block) => block.type !== "music").map((block) => (
+                        <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
+                          {block.type === "title" && block.value && (
+                            <h3 className="feed-post-title mb-2 text-base font-bold font-display leading-snug text-left text-foreground sm:text-lg">{block.value}</h3>
+                          )}
+                          {block.type === "text" && block.value && (
+                            <p className="mb-4 whitespace-pre-line text-left text-sm leading-relaxed text-foreground/90">{block.value}</p>
+                          )}
+                          {block.type === "photo" && block.media_url && (
+                            <FeedPostPhoto
+                              src={block.media_url}
+                              alt={block.caption || block.media_name || "Foto compartilhada"}
+                              caption={block.caption}
+                            />
+                          )}
+                          {block.type === "video" && block.media_url && (
+                            <figure className="feed-post-media">
+                              <video className="feed-post-video" src={block.media_url} controls playsInline preload="metadata" />
+                              {block.caption && <figcaption>{block.caption}</figcaption>}
+                            </figure>
+                          )}
+                          {block.type === "audio" && block.media_url && (
+                            <div className="feed-post-audio">
+                              <span className="feed-post-audio-icon"><AudioLines aria-hidden="true" /></span>
+                              <div>
+                                {block.caption && <strong>{block.caption}</strong>}
+                                <audio src={block.media_url} controls preload="metadata" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                  </MoradosPostCardFrame>
+
+                  {showMemoryCards && anniversaryMoments.map((moment) => (
+                    <AnniversaryCard key={moment.monthDay} moment={moment} />
+                  ))}
+
+                  {showGameCard && (
+                    <article className={"feed-game-card is-" + game.accent}>
+                      <div className="feed-game-art" aria-hidden="true"><GameIcon /></div>
+                      <div className="feed-game-copy">
+                        <span className="feed-game-kicker"><Gamepad2 aria-hidden="true" /> Sugestão para vocês · {game.label}</span>
+                        <h2>{game.title}</h2>
+                        <p>{game.detail}</p>
+                        <button type="button" onClick={() => onNavigate("games")}>
+                          Jogar juntos <ArrowRight aria-hidden="true" />
+                        </button>
+                      </div>
+                    </article>
+                  )}
+                </div>
+              );
+            })}
+            {postFilter === "all" && anniversaryMoments.length > 0 && state.posts.length > 1 && (
+              <div className="feed-anniversary-more">
+                {anniversaryMoments.map((moment) => (
+                  <AnniversaryCard key={"later-" + moment.monthDay} moment={moment} compact />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     );
   }, [state, visiblePosts, postFilter, anniversaryMoments, onOpenConversation, onNavigate, userId]);
 
@@ -1073,171 +1237,7 @@ export function CoupleFeed({
         document.body,
       )}
 
-      <div className="social-feed-list">
-        {state.posts.length === 0 ? (
-          <div className="feed-empty-state">
-            <div className="feed-empty-illustration"><Images aria-hidden="true" /></div>
-            <h2>Uma história ainda em branco.</h2>
-            <p>Publique a primeira foto ou um pequeno momento para começar a preencher o feed.</p>
-          </div>
-        ) : visiblePosts.length === 0 ? (
-          <div className="feed-empty-state feed-filter-empty">
-            <h2>Nenhuma publicação neste filtro.</h2>
-            <button type="button" className="secondary-action" onClick={() => setPostFilter("all")}>Mostrar tudo</button>
-          </div>
-        ) : (
-          <>
-            {visiblePosts.map((post, index) => {
-              const game = gameSuggestions[index % gameSuggestions.length];
-              const showGameCard = postFilter === "all" && (index === 1 || (index > 1 && index % 4 === 1));
-              const showMemoryCards = postFilter === "all" && index === 0 && anniversaryMoments.length > 0;
-              const GameIcon = game.icon;
-              const postMusic = post.blocks.find(
-                (block) => block.type === "music" && Boolean(block.media_url),
-              );
-
-              return (
-                <div className="feed-sequence" key={post.id}>
-                  <MoradosPostCardFrame
-                    tone={getPostToneForId(post.id)}
-                    postId={post.id}
-                    hasMusic={post.blocks.some((block) => block.type === "music" && Boolean(block.media_url))}
-                    footer={
-                      <div className="feed-post-footer mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
-                        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
-                          <button type="button" onClick={onOpenConversation} aria-label="Conversa" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
-                            <MessageCircle className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                          <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Conversa</span>
-                        </div>
-                        <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
-                          <button type="button" aria-label="Copiar texto" onClick={() => {
-                            const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
-                            void navigator.clipboard?.writeText(copy);
-                          }} className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
-                            <Share2 className="h-4 w-4" aria-hidden="true" />
-                          </button>
-                          <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Copiar texto</span>
-                        </div>
-                      </div>
-                    }
-                  >
-                    <header className="feed-post-header mb-4 flex flex-wrap items-start justify-between gap-2">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span className={"feed-author-avatar grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary " + (post.author_id === userId ? "is-you" : "")}>
-                          {post.author_avatar_url ? (
-                            <img src={post.author_avatar_url} alt="" className="h-full w-full object-cover" loading="lazy" />
-                          ) : initials(post.author_name)}
-                        </span>
-                        <div className="feed-post-author-meta min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <strong className="truncate text-sm font-semibold text-foreground">{post.author_name}</strong>
-                          </div>
-                          <p className="feed-post-meta-line flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                            <time dateTime={post.created_at}>{formatFeedDate(post.created_at)}</time>
-                            {postMusic && (
-                              <span className="feed-post-music-meta" title={postMusic.value || "Trilha desta publicação"}>
-                                <Music2 aria-hidden="true" />
-                                <span>{postMusic.value || "Música"}</span>
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                        <span className="feed-post-private">A dois</span>
-                        <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button type="button" className="feed-post-more" aria-label="Mais opções da publicação">
-                            <MoreHorizontal aria-hidden="true" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="nc-menu">
-                          <DropdownMenuItem
-                            className="nc-menu-item"
-                            onSelect={() => {
-                              const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
-                              void navigator.clipboard?.writeText(copy);
-                            }}
-                          >
-                            <Copy aria-hidden="true" /> Copiar texto
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="nc-menu-sep" />
-                          <DropdownMenuItem className="nc-menu-item" onSelect={onOpenConversation}>
-                            <MessageCircle aria-hidden="true" /> Abrir conversa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </header>
-
-                    <div className="feed-post-content px-0">
-                      {post.blocks.filter((block) => block.type !== "music").map((block) => (
-                        <div className={"feed-post-block feed-post-block-" + block.type} key={block.id}>
-                          {block.type === "title" && block.value && (
-                            <h3 className="feed-post-title mb-2 text-base font-bold font-display leading-snug text-left text-foreground sm:text-lg">{block.value}</h3>
-                          )}
-                          {block.type === "text" && block.value && (
-                            <p className="mb-4 whitespace-pre-line text-left text-sm leading-relaxed text-foreground/90">{block.value}</p>
-                          )}
-                          {block.type === "photo" && block.media_url && (
-                            <FeedPostPhoto
-                              src={block.media_url}
-                              alt={block.caption || block.media_name || "Foto compartilhada"}
-                              caption={block.caption}
-                            />
-                          )}
-                          {block.type === "video" && block.media_url && (
-                            <figure className="feed-post-media">
-                              <video className="feed-post-video" src={block.media_url} controls playsInline preload="metadata" />
-                              {block.caption && <figcaption>{block.caption}</figcaption>}
-                            </figure>
-                          )}
-                          {block.type === "audio" && block.media_url && (
-                            <div className="feed-post-audio">
-                              <span className="feed-post-audio-icon"><AudioLines aria-hidden="true" /></span>
-                              <div>
-                                {block.caption && <strong>{block.caption}</strong>}
-                                <audio src={block.media_url} controls preload="metadata" />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-
-                  </MoradosPostCardFrame>
-
-                  {showMemoryCards && anniversaryMoments.map((moment) => (
-                    <AnniversaryCard key={moment.monthDay} moment={moment} />
-                  ))}
-
-                  {showGameCard && (
-                    <article className={"feed-game-card is-" + game.accent}>
-                      <div className="feed-game-art" aria-hidden="true"><GameIcon /></div>
-                      <div className="feed-game-copy">
-                        <span className="feed-game-kicker"><Gamepad2 aria-hidden="true" /> Sugestão para vocês · {game.label}</span>
-                        <h2>{game.title}</h2>
-                        <p>{game.detail}</p>
-                        <button type="button" onClick={() => onNavigate("games")}>
-                          Jogar juntos <ArrowRight aria-hidden="true" />
-                        </button>
-                      </div>
-                    </article>
-                  )}
-                </div>
-              );
-            })}
-            {postFilter === "all" && anniversaryMoments.length > 0 && state.posts.length > 1 && (
-              <div className="feed-anniversary-more">
-                {anniversaryMoments.map((moment) => (
-                  <AnniversaryCard key={"later-" + moment.monthDay} moment={moment} compact />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      {feedListContent}
     </section>
   );
 }

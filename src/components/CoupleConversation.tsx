@@ -25,7 +25,6 @@ import {
   Sparkles,
   Square,
   Sun,
-  UserRound,
   LoaderCircle,
   MoreVertical,
   Paperclip,
@@ -162,20 +161,6 @@ function initials(value: string) {
     .join("") || "♡";
 }
 
-function getLiveStatusText(
-  status: ConversationState["status"],
-  realtimeStatus: "connecting" | "connected" | "offline",
-) {
-  if (status === "active") {
-    if (realtimeStatus === "connected") return "online agora";
-    if (realtimeStatus === "connecting") return "conectando…";
-    return "reconectando";
-  }
-  if (status === "pending") return "aguardando convite";
-  if (status === "no-couple") return "sem vínculo ativo";
-  return " ";
-}
-
 export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
@@ -189,7 +174,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
+  const [, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const [wallpaper, setWallpaper] = useState<WallpaperId>("paper");
   const [wallpaperOpen, setWallpaperOpen] = useState(false);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
@@ -815,7 +800,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   }
 
   return (
-    <section className={"conversation-screen wallpaper-" + wallpaper} aria-labelledby="conversation-title">
+    <section className={"conversation-screen wallpaper-" + wallpaper} aria-label="Conversa do casal">
       <header className="conversation-heading" data-no-swipe>
         <div className="conversation-heading-leading">
           <button
@@ -884,21 +869,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           </DropdownMenu>
         </div>
       </header>
-
-      <div className="conversation-person-context" data-no-swipe>
-        <span className="conversation-person-avatar" aria-hidden="true">
-          {state.status === "active" && state.otherAvatarUrl
-            ? <img src={state.otherAvatarUrl} alt="" />
-            : <UserRound aria-hidden="true" />}
-        </span>
-        <div className="conversation-person-text">
-          <h1 id="conversation-title">{state.status === "active" ? state.otherName : "Conversa"}</h1>
-          <p className={"conversation-live-status is-" + realtimeStatus} role="status">
-            <span className="conversation-live-indicator" aria-hidden="true" />
-            {getLiveStatusText(state.status, realtimeStatus)}
-          </p>
-        </div>
-      </div>
 
       {wallpaperOpen && (
         <div className="conversation-wallpaper-panel" role="group" aria-label="Escolher papel de parede">
@@ -1105,68 +1075,77 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               onChange={(event) => void sendAttachment(event)}
               aria-label="Escolher arquivo para enviar"
             />
-            <div className="conversation-composer-tools" aria-label="Ferramentas da conversa">
-              <button
-                type="button"
-                className={attachmentOpen ? "is-active" : ""}
-                onClick={() => { setAttachmentOpen((value) => !value); setStickerOpen(false); setGiftOpen(false); }}
-                aria-label="Anexar mídia"
-                title="Foto, vídeo, áudio ou arquivo"
-              >
-                <Paperclip aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={stickerOpen ? "is-active" : ""}
-                onClick={() => { setStickerOpen((value) => !value); setAttachmentOpen(false); setGiftOpen(false); }}
-                aria-label="Enviar figurinha"
-                title="Figurinhas"
-              >
-                <Sticker aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className={recordingAudio ? "is-recording" : ""}
-                onClick={() => void toggleAudioRecording()}
-                aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
-                title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
-              >
-                {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
-              </button>
-              <button
-                type="button"
-                className={giftOpen ? "is-active" : ""}
-                onClick={() => { setGiftOpen((value) => !value); setAttachmentOpen(false); setStickerOpen(false); }}
-                aria-label="Abrir oficina de presentes"
-                title="Oficina de presentes"
-              >
-                <Gift aria-hidden="true" />
-              </button>
-            </div>
-            <div className="conversation-input-shell">
-              {Capacitor.isNativePlatform() ? (
+            <div className="conversation-composer-row">
+              <div className="conversation-composer-tools" aria-label="Ferramentas da conversa">
                 <button
                   type="button"
-                  className="conversation-native-message-trigger flex min-h-[38px] min-w-0 flex-1 items-center bg-transparent px-0 py-2 text-left text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
-                  onClick={() => void openNativeMessageComposer()}
-                  disabled={busy || state.status !== "active"}
-                  aria-label="Escrever mensagem"
+                  className={attachmentOpen ? "is-active" : ""}
+                  onClick={() => { setAttachmentOpen((value) => !value); setStickerOpen(false); setGiftOpen(false); }}
+                  aria-label="Anexar mídia"
+                  title="Foto, vídeo, áudio ou arquivo"
+                  disabled={busy}
                 >
-                  {draft.trim() || "Escreva uma mensagem…"}
+                  <Paperclip aria-hidden="true" />
                 </button>
-              ) : (
-                <>
-                  <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
-                  <textarea
-                    id="conversation-draft"
-                    value={draft}
-                    onChange={(event) => setDraft(event.target.value)}
-                    placeholder="Escreva uma mensagem…"
-                    maxLength={2000}
-                    rows={1}
-                    onKeyDown={handleComposerKeyDown}
-                    disabled={busy}
-                  />
+                <button
+                  type="button"
+                  className={stickerOpen ? "is-active" : ""}
+                  onClick={() => { setStickerOpen((value) => !value); setAttachmentOpen(false); setGiftOpen(false); }}
+                  aria-label="Enviar figurinha"
+                  title="Figurinhas"
+                  disabled={busy}
+                >
+                  <Sticker aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className={giftOpen ? "is-active" : ""}
+                  onClick={() => { setGiftOpen((value) => !value); setAttachmentOpen(false); setStickerOpen(false); }}
+                  aria-label="Abrir oficina de presentes"
+                  title="Oficina de presentes"
+                  disabled={busy}
+                >
+                  <Gift aria-hidden="true" />
+                </button>
+              </div>
+              <div className="conversation-input-shell">
+                {Capacitor.isNativePlatform() ? (
+                  <button
+                    type="button"
+                    className="conversation-native-message-trigger flex min-h-[38px] min-w-0 flex-1 items-center bg-transparent px-0 py-2 text-left text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
+                    onClick={() => void openNativeMessageComposer()}
+                    disabled={busy || state.status !== "active"}
+                    aria-label="Escrever mensagem"
+                  >
+                    {draft.trim() || "Escreva uma mensagem…"}
+                  </button>
+                ) : (
+                  <>
+                    <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
+                    <textarea
+                      id="conversation-draft"
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      placeholder="Escreva uma mensagem…"
+                      maxLength={2000}
+                      rows={1}
+                      onKeyDown={handleComposerKeyDown}
+                      disabled={busy}
+                    />
+                  </>
+                )}
+                {(!draft.trim() || Capacitor.isNativePlatform()) ? (
+                  <button
+                    type="button"
+                    className={"conversation-audio-button" + (recordingAudio ? " is-recording" : "")}
+                    onClick={() => void toggleAudioRecording()}
+                    aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
+                    title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
+                    disabled={busy || state.status !== "active"}
+                  >
+                    {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
+                  </button>
+                ) : (
                   <button
                     type="submit"
                     className="conversation-send-button"
@@ -1176,8 +1155,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                   >
                     {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
                   </button>
-                </>
-              )}
+                )}
+              </div>
             </div>
             <p className="conversation-composer-hint">{recordingAudio ? "Gravando áudio… toque novamente para finalizar" : "Enter envia · Shift + Enter quebra a linha"}</p>
           </form>
