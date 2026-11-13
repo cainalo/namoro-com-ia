@@ -48,7 +48,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -745,18 +744,37 @@ export function CoupleFeed({
         ))}
       </div>
 
-      <Dialog
-        open={composerOpen}
-        onOpenChange={(open) => {
-          setComposerOpen(open);
-          if (!open && !publishing) resetComposer();
-        }}
-      >
-        <DialogContent className="feed-publisher-dialog">
-          <DialogHeader className="feed-publisher-header">
-            <DialogTitle>Monte sua publicação</DialogTitle>
-            <DialogDescription>Adicione partes ao card e arraste-as para escolher a ordem.</DialogDescription>
-          </DialogHeader>
+      {composerOpen && (
+        <div
+          className="feed-publisher-overlay"
+          role="presentation"
+          onClick={() => {
+            setComposerOpen(false);
+            if (!publishing) resetComposer();
+          }}
+        >
+          <section
+            className="feed-publisher-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feed-publisher-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="feed-publisher-header">
+              <h2 id="feed-publisher-title">Monte sua publicação</h2>
+              <p>Adicione partes ao card e arraste-as para escolher a ordem.</p>
+            </header>
+            <button
+              type="button"
+              className="feed-publisher-close"
+              aria-label="Fechar editor de publicação"
+              onClick={() => {
+                setComposerOpen(false);
+                if (!publishing) resetComposer();
+              }}
+            >
+              <X aria-hidden="true" />
+            </button>
 
           <div className="feed-block-toolbox" role="toolbar" aria-label="Adicionar partes à publicação">
             <button type="button" onClick={() => addDraftBlock("photo")}><ImagePlus aria-hidden="true" /> Foto</button>
@@ -1027,8 +1045,9 @@ export function CoupleFeed({
               {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
             </article>
           </form>
-        </DialogContent>
-      </Dialog>
+          </section>
+        </div>
+      )}
 
       <div className="social-feed-list">
         {state.posts.length === 0 ? (

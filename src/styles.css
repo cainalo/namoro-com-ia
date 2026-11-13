@@ -21622,3 +21622,60 @@ body {
     padding: 12px;
   }
 }
+
+
+/* Compositor do feed: camada simples, sem portal, FocusScope ou bloqueio de rolagem do Radix.
+   No WebView Android esses mecanismos podem deixar a interface sem resposta ao abrir o editor. */
+.feed-publisher-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: max(0.65rem, env(safe-area-inset-top))
+    max(0.45rem, env(safe-area-inset-right))
+    max(0.65rem, env(safe-area-inset-bottom))
+    max(0.45rem, env(safe-area-inset-left));
+  background: rgb(20 25 22 / 76%);
+}
+.feed-publisher-overlay .feed-publisher-dialog {
+  position: relative;
+  flex: 0 1 auto;
+  margin: auto;
+  width: min(calc(100vw - 0.9rem), 43rem) !important;
+  max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1.3rem);
+  transform: none !important;
+  animation: none !important;
+  transition: none !important;
+}
+.feed-publisher-close {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 2;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-secondary);
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+.feed-publisher-close svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.feed-publisher-overlay .feed-publisher-header {
+  padding-right: 2.5rem;
+}
+@media (max-width: 560px) {
+  .feed-publisher-overlay .feed-publisher-dialog {
+    width: calc(100vw - 0.9rem) !important;
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 1.3rem);
+  }
+}
