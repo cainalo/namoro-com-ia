@@ -81,7 +81,14 @@ jobs:
             -storepass android -alias androiddebugkey -v | grep "SHA256:"
 
       - name: Install application dependencies
-        run: bun install --no-save
+        run: bun install
+
+      - name: Confirm Capacitor includes the Android keyboard-insets fix
+        run: |
+          bun pm ls @capacitor/core @capacitor/android @capacitor/cli
+          SYSTEM_BARS="node_modules/@capacitor/android/capacitor/src/main/java/com/getcapacitor/plugin/SystemBars.java"
+          test -f "$SYSTEM_BARS"
+          grep -q "keyboardOverlaysWebView" "$SYSTEM_BARS"
 
       - name: Build the web interface into local Android assets
         run: bun run build:android-web
@@ -104,7 +111,7 @@ jobs:
           path = Path("android/app/build.gradle")
           content = path.read_text()
           content, code_count = re.subn(r"(?m)^(\s*versionCode)\s*=?\s*(\d+)", lambda match: f"{match.group(1)} {int(match.group(2)) + 1}", content, count=1)
-          content, name_count = re.subn(r'(?m)^(\s*versionName)\s*=?\s*"[^"]+"', r'\1 "1.4.3"', content)
+          content, name_count = re.subn(r'(?m)^(\s*versionName)\s*=?\s*"[^"]+"', r'\1 "1.4.4"', content)
           content = re.sub(r"(?m)^(\s*targetSdk(?:Version)?)\s*=?\s*\d+", r"\1 36", content)
           if code_count == 0 or name_count == 0:
               raise SystemExit("Não foi possível atualizar versionCode/versionName no Gradle.")
@@ -116,7 +123,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add android
+          git add android bun.lock
           if ! git diff --cached --quiet; then
             git commit -m "Generate Capacitor Android platform"
             git push origin HEAD:main
@@ -161,7 +168,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: morados-capacitor-${{ github.run_number }}
-          name: Morados Android nativo 1.4.3 — build ${{ github.run_number }}
+          name: Morados Android nativo 1.4.4 — build ${{ github.run_number }}
           body: |
             APK Android do Morados construído com Capacitor.
 
@@ -170,7 +177,7 @@ jobs:
             - O login no APK utiliza EditText nativos do Android; o fluxo Supabase, as contas existentes e os dados do aplicativo são preservados.
             - Navegação por toque capturado: deslizar para a esquerda no Feed abre a conversa; deslizar para a direita retorna.
             - SystemBars do Capacitor inicia oculto, usa insets nativos e revela as barras temporariamente por gesto do sistema.
-            - Os campos de texto usam o tratamento de teclado e insets nativo do Android, com edge-to-edge inicializado antes da WebView e ajuste explícito da janela para o teclado.
+            - Campos HTML usam a correção do Capacitor 8.6.2 para impedir o redimensionamento duplo da WebView; adjustNothing mantém a tela estável e o foco rola o campo acima do teclado.
             - No APK, a escrita de mensagens usa EditText nativo do Android, sem campo de texto HTML no WebView.
             - Autenticação e sincronização usam os serviços online do Morados.
           files: |

@@ -2,7 +2,6 @@ package com.morados.app.capacitor;
 
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
@@ -18,10 +17,10 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NativeAuthPlugin.class);
         registerPlugin(DeviceSettingsPlugin.class);
 
-        // Ativa edge-to-edge antes de a BridgeActivity criar a WebView e instalar
-        // os listeners de WindowInsets do Capacitor/SystemBars.
-        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
+
+        // Mantém o modo de tela cheia usado pela versão estável anterior.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
         WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(
             getWindow(),

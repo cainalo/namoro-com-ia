@@ -74,9 +74,9 @@
     "vaul": "^1.1.2",
     "vite-tsconfig-paths": "^6.0.2",
     "zod": "^3.25.76",
-    "@capacitor/android": "^8.0.0",
+    "@capacitor/android": "^8.6.2",
     "@capacitor/app": "^8.0.0",
-    "@capacitor/core": "^8.0.0",
+    "@capacitor/core": "^8.6.2",
     "@capacitor/haptics": "^8.0.0",
     "@capacitor/keyboard": "^8.0.0",
     "@capacitor/splash-screen": "^8.0.0",
@@ -104,6 +104,6 @@
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
     "vitest": "^4.1.10",
-    "@capacitor/cli": "^8.0.0"
+    "@capacitor/cli": "^8.6.2"
   }
 }
