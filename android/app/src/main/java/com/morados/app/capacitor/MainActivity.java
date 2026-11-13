@@ -3,6 +3,7 @@ package com.morados.app.capacitor;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.getcapacitor.BridgeActivity;
