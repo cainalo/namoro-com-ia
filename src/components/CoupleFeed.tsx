@@ -11,6 +11,7 @@ import {
 } from "react";
 import {
   ArrowRight,
+  ArrowLeft,
   AudioLines,
   Brain,
   Crown,
@@ -44,7 +45,6 @@ import {
   X,
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
-import { createPortal } from "react-dom";
 import {
   Dialog,
   DialogContent,
@@ -102,7 +102,8 @@ type CoupleFeedProps = {
   userId: string;
   onNavigate: (section: "games" | "memories") => void;
   onOpenConversation: () => void;
-  postComposerRequest: number;
+  isComposerPage: boolean;
+  onCloseComposerPage: () => void;
 };
 
 type AnniversaryMoment = {
@@ -216,14 +217,14 @@ export function CoupleFeed({
   userId,
   onNavigate,
   onOpenConversation,
-  postComposerRequest,
+  isComposerPage,
+  onCloseComposerPage,
 }: CoupleFeedProps) {
   const [state, setState] = useState<FeedState>({ status: "loading" });
   const [refreshKey, setRefreshKey] = useState(0);
   const [draftBlocks, setDraftBlocks] = useState<PostDraftBlock[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
-  const [composerOpen, setComposerOpen] = useState(false);
   const [postFilter, setPostFilter] = useState<FeedFilter>("all");
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
   const [renderingMusicBlockId, setRenderingMusicBlockId] = useState<string | null>(null);
@@ -231,10 +232,6 @@ export function CoupleFeed({
   const [activeMusicPostId, setActiveMusicPostId] = useState<string | null>(null);
   const feedMusicRef = useRef<HTMLAudioElement>(null);
   const dragBlockRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (postComposerRequest > 0) setComposerOpen(true);
-  }, [postComposerRequest]);
 
   const createDraftBlock = (type: CouplePostBlockType): PostDraftBlock => ({
     id: typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -345,12 +342,22 @@ export function CoupleFeed({
 
   function closeComposer() {
     if (publishing) return;
-    setComposerOpen(false);
     resetComposer();
+    onCloseComposerPage();
   }
 
   useEffect(() => {
-    if (!composerOpen) return;
+    if (!isComposerPage) {
+      setDraftBlocks((current) => {
+        current.forEach((block) => {
+          if (block.previewUrl) URL.revokeObjectURL(block.previewUrl);
+        });
+        return [];
+      });
+      setPublishError(null);
+      return;
+    }
+
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !publishing) {
         event.preventDefault();
@@ -359,7 +366,7 @@ export function CoupleFeed({
     };
     document.addEventListener("keydown", handleEscape);
     return () => document.removeEventListener("keydown", handleEscape);
-  }, [composerOpen, publishing]);
+  }, [isComposerPage, publishing]);
 
   const canPublishDraft = draftBlocks.some((block) => {
     if (block.type === "title" || block.type === "text") return Boolean(block.value.trim());
@@ -689,7 +696,7 @@ export function CoupleFeed({
       if (result.error) throw result.error;
 
       resetComposer();
-      setComposerOpen(false);
+      onCloseComposerPage();
       setRefreshKey((current) => current + 1);
     } catch (error) {
       await Promise.all(uploadedPaths.map((uploadedPath) => removeCoupleMedia(uploadedPath)));
@@ -875,94 +882,39 @@ export function CoupleFeed({
     );
   }, [state, visiblePosts, postFilter, anniversaryMoments, onOpenConversation, onNavigate, userId]);
 
-  if (state.status === "loading") {
-    return (
-      <section className="social-feed" aria-busy="true">
-        <div className="feed-loading"><LoaderCircle aria-hidden="true" /> Preparando as publicações…</div>
-      </section>
-    );
-  }
-
-  if (state.status === "error") {
-    return (
-      <section className="social-feed">
-        <div className="feed-empty-state">
-          <Sparkles aria-hidden="true" />
-          <h2>Não foi possível abrir o feed.</h2>
-          <p>Confira a conexão e tente novamente.</p>
-          <button type="button" className="primary-action" onClick={() => setRefreshKey((value) => value + 1)}>
-            Tentar novamente
-          </button>
-        </div>
-      </section>
-    );
-  }
-
-  if (state.status === "no-couple") {
-    return (
-      <section className="social-feed">
-        <div className="feed-empty-state">
-          <div className="feed-empty-illustration"><Heart aria-hidden="true" /></div>
-          <h2>O feed de vocês começa aqui.</h2>
-          <p>Vincule a outra pessoa para criar um espaço compartilhado de publicações, fotos e lembranças.</p>
-        </div>
-        <CoupleSetup userId={userId} />
-      </section>
-    );
-  }
-
-  return (
-    <section className="social-feed">
-      <audio ref={feedMusicRef} className="feed-ambient-audio" aria-hidden="true" preload="none" loop />
-      <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
-        {([
-          ["all", "Tudo"],
-          ["photos", "Fotos"],
-          ["videos", "Vídeos"],
-          ["text", "Textos"],
-          ["audio", "Música e áudio"],
-        ] as const).map(([filter, label]) => (
-          <button
-            key={filter}
-            type="button"
-            className={postFilter === filter ? "is-active" : ""}
-            aria-pressed={postFilter === filter}
-            onClick={() => setPostFilter(filter)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {composerOpen && typeof document !== "undefined" && createPortal(
-        <div
-          className="feed-composer-overlay"
-          data-no-swipe
-          role="presentation"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) closeComposer();
-          }}
+  const composerPageContent = (
+    <section className="feed-create-page" data-no-swipe aria-labelledby="feed-composer-title">
+      <header className="feed-create-page-topbar">
+        <button
+          type="button"
+          className="feed-create-back"
+          onClick={closeComposer}
+          disabled={publishing}
+          aria-label="Voltar ao Feed"
+          title="Voltar ao Feed"
         >
-          <section
-            className="feed-publisher-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="feed-composer-title"
-            aria-describedby="feed-composer-description"
-          >
-            <button
-              type="button"
-              className="feed-composer-close"
-              onClick={closeComposer}
-              aria-label="Fechar editor de publicação"
-              title="Fechar"
-            >
-              <X aria-hidden="true" />
-            </button>
-            <header className="feed-publisher-header">
-              <h2 id="feed-composer-title">Monte sua publicação</h2>
-              <p id="feed-composer-description">Adicione partes ao card e arraste-as para escolher a ordem.</p>
-            </header>
+          <ArrowLeft aria-hidden="true" />
+        </button>
+        <div className="feed-create-page-title">
+          <span>PUBLICAÇÃO PRIVADA</span>
+          <strong>Nova publicação</strong>
+        </div>
+        <span className="feed-create-page-status">Rascunho</span>
+      </header>
+      <div className="feed-create-page-main">
+        <div className="feed-create-page-intro">
+          <h1 id="feed-composer-title">Monte sua publicação</h1>
+          <p>Combine fotos, textos, vídeos, áudio e música. Organize cada parte para contar o momento do jeito de vocês.</p>
+        </div>
+        {state.status === "loading" && (
+          <p className="feed-create-state" role="status"><LoaderCircle aria-hidden="true" /> Preparando o editor…</p>
+        )}
+        {state.status === "error" && (
+          <p className="feed-create-state is-error" role="alert">Não foi possível confirmar o vínculo do casal. Volte ao Feed e tente novamente.</p>
+        )}
+        {state.status === "no-couple" && (
+          <p className="feed-create-state is-error" role="alert">Vincule a outra pessoa antes de publicar um momento compartilhado.</p>
+        )}
           <div className="feed-block-toolbox" role="toolbar" aria-label="Adicionar partes à publicação">
             <button type="button" onClick={() => addDraftBlock("photo")}><ImagePlus aria-hidden="true" /> Foto</button>
             <button type="button" onClick={() => addDraftBlock("title")}><Type aria-hidden="true" /> Título</button>
@@ -1232,10 +1184,70 @@ export function CoupleFeed({
               {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
             </article>
           </form>
-          </section>
-        </div>,
-        document.body,
-      )}
+      </div>
+    </section>
+  );
+
+  if (isComposerPage) return composerPageContent;
+
+  if (state.status === "loading") {
+    return (
+      <section className="social-feed" aria-busy="true">
+        <div className="feed-loading"><LoaderCircle aria-hidden="true" /> Preparando as publicações…</div>
+      </section>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <section className="social-feed">
+        <div className="feed-empty-state">
+          <Sparkles aria-hidden="true" />
+          <h2>Não foi possível abrir o feed.</h2>
+          <p>Confira a conexão e tente novamente.</p>
+          <button type="button" className="primary-action" onClick={() => setRefreshKey((value) => value + 1)}>
+            Tentar novamente
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (state.status === "no-couple") {
+    return (
+      <section className="social-feed">
+        <div className="feed-empty-state">
+          <div className="feed-empty-illustration"><Heart aria-hidden="true" /></div>
+          <h2>O feed de vocês começa aqui.</h2>
+          <p>Vincule a outra pessoa para criar um espaço compartilhado de publicações, fotos e lembranças.</p>
+        </div>
+        <CoupleSetup userId={userId} />
+      </section>
+    );
+  }
+
+  return (
+    <section className="social-feed">
+      <audio ref={feedMusicRef} className="feed-ambient-audio" aria-hidden="true" preload="none" loop />
+      <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
+        {([
+          ["all", "Tudo"],
+          ["photos", "Fotos"],
+          ["videos", "Vídeos"],
+          ["text", "Textos"],
+          ["audio", "Música e áudio"],
+        ] as const).map(([filter, label]) => (
+          <button
+            key={filter}
+            type="button"
+            className={postFilter === filter ? "is-active" : ""}
+            aria-pressed={postFilter === filter}
+            onClick={() => setPostFilter(filter)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
       {feedListContent}
     </section>

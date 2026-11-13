@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile";
+type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile" | "create-post";
 
 type NavigationItem = {
   id: SectionId;
@@ -73,7 +73,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
-  const [postComposerRequest, setPostComposerRequest] = useState(0);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
   const chromeHidden = useHideOnScroll(activeSection);
@@ -186,9 +185,9 @@ function Index() {
     <AuthGate>
       {(session) => (
         <div
-          className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`}
+          className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : activeSection === "create-post" ? "is-post-composer-mode" : ""}`}
         >
-          {activeSection !== "messages" && (
+          {activeSection !== "messages" && activeSection !== "create-post" && (
             <>
               <header className="app-chrome" data-hidden={chromeHidden}>
                 <div className="app-topbar">
@@ -241,17 +240,18 @@ function Index() {
             </>
           )}
 
-          <main className={activeSection === "messages" ? "app-main app-main-conversation" : "app-main"}>
+          <main className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
             {activeSection === "messages" ? (
               <CoupleConversation userId={session.user.id} onBack={goBack} />
             ) : (
               <div className="page-frame">
-              {activeSection === "home" ? (
+              {activeSection === "home" || activeSection === "create-post" ? (
                 <HomeScreen
                   userId={session.user.id}
                   onNavigate={goToSection}
                   onOpenConversation={openConversation}
-                  postComposerRequest={postComposerRequest}
+                  isComposerPage={activeSection === "create-post"}
+                  onCloseComposerPage={goBack}
                 />
               ) : activeSection === "games" ? (
                 <CoupleGames userId={session.user.id} />
@@ -268,7 +268,7 @@ function Index() {
             )}
           </main>
 
-          {activeSection !== "messages" && (
+          {activeSection !== "messages" && activeSection !== "create-post" && (
             <nav
               aria-label="Navegação principal"
               className="mobile-nav"
@@ -289,10 +289,7 @@ function Index() {
               <button
                 type="button"
                 className="mobile-nav-create"
-                onClick={() => {
-                  if (activeSectionRef.current !== "home") goToSection("home");
-                  setPostComposerRequest((current) => current + 1);
-                }}
+                onClick={() => goToSection("create-post")}
                 aria-label="Criar publicação"
                 title="Criar publicação"
               >
@@ -313,7 +310,7 @@ function Index() {
             </nav>
           )}
 
-          {activeSection !== "messages" && <AiChat />}
+          {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
         </div>
       )}
     </AuthGate>
@@ -328,6 +325,7 @@ const NAV_ACCENTS: Record<SectionId, string> = {
   universe: "#657551",
   games: "#6f7b4b",
   profile: "#0F4C5C",
+  "create-post": "#555f36",
 };
 
 function MoradosWordmark() {
@@ -382,12 +380,14 @@ function HomeScreen({
   userId,
   onNavigate,
   onOpenConversation,
-  postComposerRequest,
+  isComposerPage,
+  onCloseComposerPage,
 }: {
   userId: string;
   onNavigate: (section: SectionId) => void;
   onOpenConversation: () => void;
-  postComposerRequest: number;
+  isComposerPage: boolean;
+  onCloseComposerPage: () => void;
 }) {
   return (
     <div className="home-screen">
@@ -395,7 +395,8 @@ function HomeScreen({
         userId={userId}
         onNavigate={onNavigate}
         onOpenConversation={onOpenConversation}
-        postComposerRequest={postComposerRequest}
+        isComposerPage={isComposerPage}
+        onCloseComposerPage={onCloseComposerPage}
       />
     </div>
   );
