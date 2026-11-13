@@ -21622,3 +21622,355 @@ body {
     padding: 12px;
   }
 }
+
+
+/* Morados — conversa em composição imersiva, com controles flutuantes independentes. */
+.app-shell.is-conversation-mode .conversation-screen {
+  position: relative;
+  display: flex;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading {
+  position: fixed;
+  z-index: 90;
+  top: calc(env(safe-area-inset-top) + 10px);
+  right: 0;
+  left: 0;
+  display: grid;
+  min-height: 46px;
+  grid-template-columns: minmax(44px, 1fr) auto minmax(44px, 1fr);
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  background: transparent;
+  padding: 0 clamp(14px, 4vw, 26px);
+  box-shadow: none;
+  pointer-events: none;
+}
+.app-shell.is-conversation-mode .conversation-heading > * {
+  pointer-events: auto;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading,
+.app-shell.is-conversation-mode .conversation-heading-trailing {
+  display: flex;
+  align-items: center;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading { justify-content: flex-start; }
+.app-shell.is-conversation-mode .conversation-heading-trailing { justify-content: flex-end; }
+.app-shell.is-conversation-mode .conversation-floating-action {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-card) 88%, transparent);
+  color: var(--color-foreground);
+  box-shadow: 0 8px 24px -14px rgb(29 35 27 / 48%);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  cursor: pointer;
+  transition: transform 150ms ease, background-color 150ms ease;
+}
+.app-shell.is-conversation-mode .conversation-floating-action:active {
+  transform: scale(0.94);
+}
+.app-shell.is-conversation-mode .conversation-floating-action svg {
+  width: 20px;
+  height: 20px;
+}
+.app-shell.is-conversation-mode .conversation-floating-wordmark {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-card) 88%, transparent);
+  padding: 0 15px;
+  color: var(--color-foreground);
+  box-shadow: 0 8px 24px -14px rgb(29 35 27 / 48%);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+  cursor: pointer;
+}
+.app-shell.is-conversation-mode .conversation-floating-wordmark .morados-wordmark-lockup {
+  gap: 0.34rem;
+}
+.app-shell.is-conversation-mode .conversation-floating-wordmark .morados-wordmark-lockup > svg {
+  width: 1.42rem;
+  height: 1.28rem;
+}
+.app-shell.is-conversation-mode .conversation-floating-wordmark .morados-wordmark-text {
+  font-size: 1.02rem;
+}
+.app-shell.is-conversation-mode .conversation-person-context {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 40px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin: calc(env(safe-area-inset-top) + 62px) 0 5px;
+  padding: 0 16px;
+}
+.app-shell.is-conversation-mode .conversation-person-context .conversation-person-avatar {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  overflow: hidden;
+  border-radius: 50%;
+  font-size: 17px;
+}
+.app-shell.is-conversation-mode .conversation-person-context .conversation-person-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.app-shell.is-conversation-mode .conversation-person-context .conversation-person-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.app-shell.is-conversation-mode .conversation-person-context h1 {
+  overflow: hidden;
+  max-width: min(66vw, 360px);
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell.is-conversation-mode .conversation-person-context .conversation-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  line-height: 1.1;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-thread {
+  min-height: 0;
+  max-height: none;
+  flex: 1 1 auto;
+  gap: 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px clamp(12px, 3vw, 28px) 174px;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-composer {
+  position: fixed;
+  z-index: 80;
+  right: auto;
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  left: 50%;
+  display: flex;
+  width: min(920px, calc(100% - 24px));
+  min-height: 0;
+  flex: none;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 9px;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+.app-shell.is-conversation-mode .conversation-composer > * {
+  pointer-events: auto;
+}
+.app-shell.is-conversation-mode .conversation-composer-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 3px;
+}
+.app-shell.is-conversation-mode .conversation-composer-tools button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-card) 91%, transparent);
+  color: var(--color-foreground);
+  box-shadow: 0 8px 24px -14px rgb(29 35 27 / 48%);
+  backdrop-filter: blur(16px) saturate(125%);
+  -webkit-backdrop-filter: blur(16px) saturate(125%);
+}
+.app-shell.is-conversation-mode .conversation-composer-tools button.is-active,
+.app-shell.is-conversation-mode .conversation-composer-tools button.is-recording {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-composer-tools button svg {
+  width: 18px;
+  height: 18px;
+}
+.app-shell.is-conversation-mode .conversation-composer .conversation-input-shell {
+  min-height: 54px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 76%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-card) 94%, transparent);
+  padding: 5px 7px 5px 18px;
+  box-shadow: 0 12px 34px -18px rgb(29 35 27 / 46%);
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+}
+.app-shell.is-conversation-mode .conversation-native-message-trigger {
+  min-height: 42px;
+  color: var(--color-muted-foreground);
+  font-size: 13px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell textarea {
+  min-height: 40px;
+  max-height: 116px;
+  padding: 10px 2px;
+  font-size: 13px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-send-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 5px 14px -10px var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-composer-hint {
+  display: none;
+}
+.app-shell.is-conversation-mode .conversation-tools-panel {
+  position: fixed;
+  z-index: 75;
+  right: 16px;
+  bottom: calc(env(safe-area-inset-bottom) + 82px);
+  left: 16px;
+  max-height: min(44dvh, 360px);
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-card) 96%, transparent);
+  padding: 0.8rem;
+  box-shadow: 0 16px 38px -22px rgb(29 35 27 / 48%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+@media (max-width: 480px) {
+  .app-shell.is-conversation-mode .conversation-heading {
+    padding-inline: 12px;
+  }
+  .app-shell.is-conversation-mode .conversation-floating-action {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+  .app-shell.is-conversation-mode .conversation-floating-wordmark {
+    min-height: 42px;
+    padding-inline: 12px;
+  }
+  .app-shell.is-conversation-mode .conversation-composer {
+    width: calc(100% - 20px);
+    bottom: calc(env(safe-area-inset-bottom) + 9px);
+  }
+  .app-shell.is-conversation-mode .conversation-composer-tools {
+    gap: 6px;
+  }
+  .app-shell.is-conversation-mode .conversation-composer-tools button {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+  .app-shell.is-conversation-mode .conversation-tools-panel {
+    right: 10px;
+    left: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.is-conversation-mode .conversation-floating-action,
+  .app-shell.is-conversation-mode .conversation-floating-wordmark {
+    transition: none;
+  }
+}
+
+/* Editor de publicações: portal simples, sem bloqueio de foco/rolagem do Radix. */
+.feed-composer-overlay {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgb(22 28 22 / 56%);
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+}
+.feed-composer-overlay .feed-publisher-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(56rem, calc(100vw - 24px)) !important;
+  max-width: 56rem !important;
+  max-height: min(94dvh, 58rem) !important;
+  flex: 0 1 auto;
+}
+.feed-composer-overlay .feed-composer-close {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  box-shadow: 0 4px 14px -10px rgb(29 35 27 / 42%);
+  cursor: pointer;
+}
+.feed-composer-overlay .feed-composer-close svg { width: 18px; height: 18px; }
+@media (max-width: 560px) {
+  .feed-composer-overlay {
+    align-items: stretch;
+    padding: max(8px, env(safe-area-inset-top)) 7px max(8px, env(safe-area-inset-bottom));
+  }
+  .feed-composer-overlay .feed-publisher-dialog {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 100% !important;
+    min-height: 0;
+    border-radius: 1rem !important;
+  }
+}

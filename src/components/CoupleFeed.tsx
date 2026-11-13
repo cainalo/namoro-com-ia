@@ -44,11 +44,11 @@ import {
   X,
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
+import { createPortal } from "react-dom";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
@@ -342,6 +342,24 @@ export function CoupleFeed({
     });
     setPublishError(null);
   }
+
+  function closeComposer() {
+    if (publishing) return;
+    setComposerOpen(false);
+    resetComposer();
+  }
+
+  useEffect(() => {
+    if (!composerOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !publishing) {
+        event.preventDefault();
+        closeComposer();
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [composerOpen, publishing]);
 
   const canPublishDraft = draftBlocks.some((block) => {
     if (block.type === "title" || block.type === "text") return Boolean(block.value.trim());
@@ -686,6 +704,13 @@ export function CoupleFeed({
     }
   }
 
+  const feedListContent = useMemo(() => {
+    if (state.status !== "ready") return null;
+    return (
+      {feedListContent}
+    );
+  }, [state, visiblePosts, postFilter, anniversaryMoments, onOpenConversation, onNavigate, userId]);
+
   if (state.status === "loading") {
     return (
       <section className="social-feed" aria-busy="true">
@@ -745,19 +770,35 @@ export function CoupleFeed({
         ))}
       </div>
 
-      <Dialog
-        open={composerOpen}
-        onOpenChange={(open) => {
-          setComposerOpen(open);
-          if (!open && !publishing) resetComposer();
-        }}
-      >
-        <DialogContent className="feed-publisher-dialog">
-          <DialogHeader className="feed-publisher-header">
-            <DialogTitle>Monte sua publicação</DialogTitle>
-            <DialogDescription>Adicione partes ao card e arraste-as para escolher a ordem.</DialogDescription>
-          </DialogHeader>
-
+      {composerOpen && typeof document !== "undefined" && createPortal(
+        <div
+          className="feed-composer-overlay"
+          data-no-swipe
+          role="presentation"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) closeComposer();
+          }}
+        >
+          <section
+            className="feed-publisher-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="feed-composer-title"
+            aria-describedby="feed-composer-description"
+          >
+            <button
+              type="button"
+              className="feed-composer-close"
+              onClick={closeComposer}
+              aria-label="Fechar editor de publicação"
+              title="Fechar"
+            >
+              <X aria-hidden="true" />
+            </button>
+            <header className="feed-publisher-header">
+              <h2 id="feed-composer-title">Monte sua publicação</h2>
+              <p id="feed-composer-description">Adicione partes ao card e arraste-as para escolher a ordem.</p>
+            </header>
           <div className="feed-block-toolbox" role="toolbar" aria-label="Adicionar partes à publicação">
             <button type="button" onClick={() => addDraftBlock("photo")}><ImagePlus aria-hidden="true" /> Foto</button>
             <button type="button" onClick={() => addDraftBlock("title")}><Type aria-hidden="true" /> Título</button>
@@ -1027,8 +1068,10 @@ export function CoupleFeed({
               {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
             </article>
           </form>
-        </DialogContent>
-      </Dialog>
+          </section>
+        </div>,
+        document.body,
+      )}
 
       <div className="social-feed-list">
         {state.posts.length === 0 ? (

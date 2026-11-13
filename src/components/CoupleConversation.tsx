@@ -47,6 +47,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Capacitor } from "@capacitor/core";
+import { MoradosMark } from "@/components/MoradosMark";
 import { NativeAuth } from "@/lib/native-auth";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { supabase } from "@/integrations/supabase/client";
@@ -815,11 +816,11 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
   return (
     <section className={"conversation-screen wallpaper-" + wallpaper} aria-labelledby="conversation-title">
-      <header className="conversation-heading">
+      <header className="conversation-heading" data-no-swipe>
         <div className="conversation-heading-leading">
           <button
             type="button"
-            className="conversation-back-button"
+            className="conversation-back-button conversation-floating-action"
             onClick={onBack}
             aria-label="Voltar ao feed"
             title="Voltar"
@@ -828,25 +829,28 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           </button>
         </div>
 
-        <div className="conversation-person-copy">
-          <span className="conversation-person-avatar" aria-hidden="true">
-            {state.status === "active" && state.otherAvatarUrl
-              ? <img src={state.otherAvatarUrl} alt="" />
-              : <UserRound aria-hidden="true" />}
+        <button
+          type="button"
+          className="conversation-floating-wordmark"
+          onClick={onBack}
+          aria-label="Morados — voltar ao Feed"
+          title="Feed"
+        >
+          <span className="morados-wordmark-lockup">
+            <MoradosMark size={28} />
+            <span className="morados-wordmark-text">morados</span>
           </span>
-          <div className="conversation-person-text">
-            <h1 id="conversation-title">{state.status === "active" ? state.otherName : "Conversa"}</h1>
-            <p className={"conversation-live-status is-" + realtimeStatus} role="status">
-              <span className="conversation-live-indicator" aria-hidden="true" />
-              {getLiveStatusText(state.status, realtimeStatus)}
-            </p>
-          </div>
-        </div>
+        </button>
 
         <div className="conversation-heading-trailing">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="conversation-options-button" aria-label="Configurações da conversa" title="Configurações">
+              <button
+                type="button"
+                className="conversation-options-button conversation-floating-action"
+                aria-label="Configurações da conversa"
+                title="Configurações"
+              >
                 <MoreVertical aria-hidden="true" />
               </button>
             </DropdownMenuTrigger>
@@ -880,6 +884,21 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           </DropdownMenu>
         </div>
       </header>
+
+      <div className="conversation-person-context" data-no-swipe>
+        <span className="conversation-person-avatar" aria-hidden="true">
+          {state.status === "active" && state.otherAvatarUrl
+            ? <img src={state.otherAvatarUrl} alt="" />
+            : <UserRound aria-hidden="true" />}
+        </span>
+        <div className="conversation-person-text">
+          <h1 id="conversation-title">{state.status === "active" ? state.otherName : "Conversa"}</h1>
+          <p className={"conversation-live-status is-" + realtimeStatus} role="status">
+            <span className="conversation-live-indicator" aria-hidden="true" />
+            {getLiveStatusText(state.status, realtimeStatus)}
+          </p>
+        </div>
+      </div>
 
       {wallpaperOpen && (
         <div className="conversation-wallpaper-panel" role="group" aria-label="Escolher papel de parede">
@@ -1076,7 +1095,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             </div>
           )}
 
-          <form ref={composerRef} className="conversation-composer" onSubmit={handleSend}>
+          <form ref={composerRef} className="conversation-composer" data-no-swipe onSubmit={handleSend}>
             <input
               ref={fileInputRef}
               type="file"
