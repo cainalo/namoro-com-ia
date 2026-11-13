@@ -104,7 +104,7 @@ jobs:
           path = Path("android/app/build.gradle")
           content = path.read_text()
           content, code_count = re.subn(r"(?m)^(\s*versionCode)\s*=?\s*(\d+)", lambda match: f"{match.group(1)} {int(match.group(2)) + 1}", content, count=1)
-          content, name_count = re.subn(r'(?m)^(\s*versionName)\s*=?\s*"[^"]+"', r'\1 "1.3.9"', content)
+          content, name_count = re.subn(r'(?m)^(\s*versionName)\s*=?\s*"[^"]+"', r'\1 "1.4.0"', content)
           content = re.sub(r"(?m)^(\s*targetSdk(?:Version)?)\s*=?\s*\d+", r"\1 36", content)
           if code_count == 0 or name_count == 0:
               raise SystemExit("Não foi possível atualizar versionCode/versionName no Gradle.")
@@ -161,13 +161,15 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: morados-capacitor-${{ github.run_number }}
-          name: Morados Android nativo 1.3.9 — build ${{ github.run_number }}
+          name: Morados Android nativo 1.4.0 — build ${{ github.run_number }}
           body: |
             APK Android do Morados construído com Capacitor.
 
             - Pacote Android: com.morados.app.capacitor
             - Interface e assets web empacotados dentro do APK.
-            - No APK, o login não monta campos HTML: e-mail e senha são coletados por EditText nativos do Android em uma janela própria. O fluxo Supabase, as contas existentes e os dados do aplicativo são preservados. No navegador, o formulário web permanece.
+            - O login no APK utiliza EditText nativos do Android; o fluxo Supabase, as contas existentes e os dados do aplicativo são preservados.
+- Navegação por gesto: deslizar para a esquerda no Feed abre a conversa.
+- Modo imersivo Android: barras de status e navegação ficam ocultas e aparecem temporariamente com gesto a partir da borda do sistema.
             - Autenticação e sincronização usam os serviços online do Morados.
           files: |
             release/Morados-Android.apk

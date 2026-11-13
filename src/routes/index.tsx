@@ -111,11 +111,13 @@ function Index() {
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     // Um gesto curto e claramente horizontal evita competir com a rolagem do feed.
-    if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+    if (Math.abs(dx) < 52 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
 
-    if (activeSectionRef.current === "home" && dx > 0) {
+    // No Feed, o gesto é feito movendo o dedo para a esquerda.
+    // Na conversa, o gesto contrário retorna à tela anterior.
+    if (activeSectionRef.current === "home" && dx < 0) {
       goToSection("messages");
-    } else if (activeSectionRef.current === "messages" && dx < 0) {
+    } else if (activeSectionRef.current === "messages" && dx > 0) {
       goBack();
     }
   };
