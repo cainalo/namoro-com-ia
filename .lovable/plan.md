@@ -1,116 +1,54 @@
-# Etapa 2 — couples e couple_members (Supabase externo jffryzeelzxjqbeagecb)
+# Plano: Conversa, Chamadas (UI) e Jogos online
 
-Aplicado; histórico da decisão da etapa 2. Sem Lovable Cloud.
+## Estado confirmado (leituras desta etapa)
+- Banco externo `jffryzeelzxjqbeagecb`: `couple_game_matches` existe e está vazia (0 partidas; nada a migrar). Hoje ela só aceita `game_key = 'connect-four'` e as RPCs `create_connect_four_match` / `play_connect_four_move` são específicas do Lig 4. Está publicada no Realtime.
+- Biblioteca (`CoupleGames.tsx`) tem 13 ids: connect-four, checkers, this-or-that, daily-challenge, investigation, investigation-train, chess, battleship, domino, truco, quiz, escape-room, island-survival. Só connect-four, this-or-that (`couple_game_choices`) e daily-challenge (`couple_daily_challenge_progress`) persistem; os demais têm estado só local no componente.
+- Lig 4: a mensagem "banco não compatível" aparece quando a leitura falha com `42P01`/`PGRST205`. Como a tabela existe, a causa real ainda não está confirmada (suspeitas: cache de schema, grants ou lista de colunas). A fase 3 começa reproduzindo o erro.
+- Conversa: as cores dos balões vêm de `--conversation-bubble-own/other`, mas `styles.css` (~linha 22685) aplica `background: ... !important` de forma ampla. Isso explica o fundo verde em adesivos, presentes e anexos. A rolagem fica em `threadRef`, com `scrollTo(scrollHeight)`.
 
-## Atualização de workflow — 2026-11-10
-O usuário habilitou o Supabase GitHub Integration com Deploy to production para a branch `main`. Para o projeto, migrations são versionadas em `supabase/migrations/` e aplicadas exclusivamente pela integração oficial. Não usar SQL Editor, CLI push direto ou Lovable Cloud. Só marcar migrations como aplicadas após verificar o resultado do deployment.
+## Fase 1 — Conversa (só visual e rolagem)
+- Lista de mensagens com altura total entre o cabeçalho e o compositor. Sem `overflow:hidden` nem máscaras nos limites, com `padding` de safe area e `overscroll-behavior: contain`.
+- Ancorar no fim: um sentinel no fim e `scrollIntoView({block:"end"})` depois que a mídia carrega (ResizeObserver no thread). A última mensagem fica encostada no compositor.
+- Novo balão: raio 20px com o canto do lado do remetente menor, hierarquia nome/hora, largura máxima de 78% (64% no desktop), espaçamento agrupado por remetente.
+- A cor personalizada vale só para `.conversation-bubble--text`. Adesivo, presente, mídia e anexo ficam com fundo transparente ou card neutro. Remover os `!important` globais.
+- Arquivos: `CoupleConversation.tsx`, `src/styles.css`.
 
-Etapa 3: `supabase/migrations/20261110021500_create_couple_invitations.sql` (SHA256 `354faf44613a95cf41a449364aa044fc2847b2cbad6b6a6137ac0a0de46817a3`); deployment pendente de confirmação. Interface ainda não implementada.
+## Fase 2 — Chamadas (UI honesta, sem infraestrutura)
+- Botões de áudio e vídeo no cabeçalho da conversa abrem uma rota em tela cheia: `/conversa/chamada?tipo=audio|video`.
+- A tela tem: botão voltar, avatar e nome da pessoa, e o estado "Chamadas em breve: ainda não conectam".
+- No vídeo, há uma prévia opcional da própria câmera via `getUserMedia`, só se a pessoa tocar em "Testar câmera". As tracks são liberadas ao sair. Botões de microfone, câmera e encerrar só controlam a prévia local.
+- Nada de discar, nada de mensagem falsa de "chamando" e nada de app externo.
+- Fica para o futuro: WebRTC (RTCPeerConnection), sinalização via Supabase Realtime broadcast ou tabela `couple_calls`, TURN/STUN (serviço pago, ex. Twilio/Cloudflare Calls), push para tocar no outro aparelho e permissões nativas no Android (CAMERA, RECORD_AUDIO).
+- Arquivos: nova rota `src/routes/...chamada.tsx`, novo `CallScreen.tsx`, `CoupleConversation.tsx`.
 
-## Pré-checagem (somente leitura, antes da migration)
-- Confirmar via conector que o banco é `jffryzeelzxjqbeagecb`.
-- Confirmar que `public.couples` e `public.couple_members` não existem (o schema atual mostra só `profiles`) e que não há funções com os nomes abaixo.
-- Se algo existir, parar e reportar, sem sobrescrever.
+## Fase 3 — Infraestrutura genérica de partidas online
+Migration aditiva (pelo fluxo GitHub → Supabase, já autorizado):
+- `couple_game_matches`: trocar o CHECK por uma lista de game_keys permitidos. Adicionar `mode` ('competitive'|'cooperative'), `state jsonb`, `version int` e `participants_ready uuid[]`. Manter `board`/`turn_number` para o Lig 4. Todas as linhas atuais continuam válidas (hoje não há nenhuma).
+- Índice único parcial: uma partida ativa por (couple_id, game_key).
+- RPC `create_game_match(p_couple_id, p_game_key)`: membro atual, casal ativo, retorna a partida ativa se já existir.
+- RPC `submit_game_action(p_match_id, p_expected_version, p_action jsonb)`: lock FOR UPDATE, checa membro e versão (`stale_version`), checa turno nos jogos competitivos, valida a ação com um validador por jogo em plpgsql, grava `state` e `version+1`.
+  - Os jogos de regras complexas (xadrez, truco, dominó) precisam de validação no servidor para impedir trapaça. Como etapa intermediária, há uma alternativa: o servidor garante só turno e versão, e o cliente aplica as regras. Essa é a ambiguidade a decidir (ver abaixo).
+- RPC `abandon_game_match`. Sem INSERT/UPDATE direto: as RLS ficam como hoje (SELECT via `can_view_couple`).
+- Informação oculta (Batalha Naval, mãos no Truco e no Dominó): o `state` público não pode conter o segredo do oponente. Precisa de uma tabela `couple_game_private_state` (RLS: user_id = auth.uid()) e RPCs que revelam só o necessário.
+- Corrigir o erro do Lig 4: reproduzir, ajustar o tratamento de erro e a leitura, e migrar para as RPCs genéricas mantendo as antigas como wrapper.
 
-## Racional
-- Unicidade e limites ficam no banco (índices únicos parciais + trigger com lock de linha), não no cliente.
-- Clientes só leem; toda escrita passa por funções SECURITY DEFINER que derivam o usuário de `auth.uid()`. Assim ninguém forja `user_id`, `couple_id`, `role` ou estado.
-- Membership tem `ended_at` em vez de DELETE: histórico preservado e usuário livre para novo casal.
-- Mesmo padrão da etapa 1: `search_path = ''`, objetos qualificados, REVOKE de PUBLIC/anon, idempotência (`IF NOT EXISTS`).
+## Fase 4 — Integração por jogo (incremental, um por PR)
+Hook compartilhado `useOnlineMatch(gameKey)`: carrega, assina o Realtime (canal único e cleanup), reenvia com versão e retoma em outro aparelho (pela partida ativa do casal). Cada jogo separa `reducer(state, action)` puro em `src/lib/games/<id>.ts`, usado tanto no modo local quanto no online.
 
-## Estruturas
+Ordem: chess → checkers → connect-four (refatorar) → quiz → domino → truco → battleship → cooperativos (escape-room, island-survival, investigation, investigation-train, com progresso compartilhado e sem turno, ações idempotentes) → this-or-that e daily-challenge (já online; só unificar o selo "Online").
 
-### public.couples
-| coluna | tipo | regra |
-|---|---|---|
-| id | uuid PK | default gen_random_uuid() |
-| created_by | uuid not null | FK auth.users(id) ON DELETE RESTRICT |
-| status | text not null default 'pending' | CHECK in (pending, active, archived) |
-| relationship_started_on | date null | |
-| created_at / updated_at | timestamptz not null default now() | |
-| activated_at | timestamptz null | |
-| archived_at | timestamptz null | |
+## Testes
+- Unitários (vitest): reducers de cada jogo (jogada legal/ilegal, fim de jogo), helper de versão/turno, cálculo de estilos dos balões (texto pinta, adesivo não).
+- Banco (SQL read-only e RPC em transação de teste): fora de turno → erro; versão antiga → `stale_version`; não membro → negado; segundo create devolve a mesma partida.
+- Build e typecheck em cada fase.
+- Playwright com dois contextos e duas contas reais: A joga, B vê em menos de 2s; B tenta jogar fora da vez e é bloqueado; recarregar retoma a partida; cooperativo soma o progresso. A segunda conta ainda não existe e precisa ser criada pelo usuário.
+- Conversa: prints em 390px e 1280px no topo e no fim do histórico.
 
-CHECK `couples_status_timestamps_chk`:
-- pending: `activated_at IS NULL AND archived_at IS NULL`
-- active: `activated_at IS NOT NULL AND archived_at IS NULL`
-- archived: `archived_at IS NOT NULL` (`activated_at` pode ser NULL se arquivado ainda pending)
+## Entregável agora vs. futuro
+- Agora: fases 1 e 2, a migration da fase 3 e o Lig 4 e o xadrez online.
+- Próximas etapas: demais jogos, um por vez; informação oculta; chamadas reais (WebRTC/TURN/push).
 
-Índice: `couples(created_by)`.
-
-### public.couple_members
-| coluna | tipo | regra |
-|---|---|---|
-| couple_id | uuid not null | FK couples(id) ON DELETE RESTRICT |
-| user_id | uuid not null | FK auth.users(id) ON DELETE RESTRICT |
-| role | text not null default 'admin' | CHECK (role = 'admin'): os dois membros têm privilégios iguais |
-| joined_at | timestamptz not null default now() | |
-| ended_at | timestamptz null | CHECK ended_at IS NULL OR ended_at >= joined_at |
-| PK | (couple_id, user_id) | |
-
-Índice:
-- `UNIQUE (user_id) WHERE ended_at IS NULL` — no máximo uma relação atual por usuário (garantia concorrente pelo próprio índice). Sem índice extra por `couple_id`: a PK já começa por ele.
-
-Os dois membros são admin, com permissões iguais; `created_by` só identifica o criador.
-
-## Triggers (enforcement)
-
-1. `couple_members_before_insert` (BEFORE INSERT):
-   - `SELECT ... FROM public.couples WHERE id = NEW.couple_id FOR UPDATE` — serializa inserções concorrentes no mesmo casal.
-   - Recusa se casal `archived`.
-   - Conta membros atuais; recusa se já houver 2.
-   - Primeiro membro deve ser `admin` e igual a `created_by`; segundo deve ser outro usuário, também `admin`.
-   - Força `ended_at = NULL`, `joined_at = now()`.
-2. `couple_members_before_update`: só permite `ended_at` de NULL para valor; bloqueia mudança de `couple_id`, `user_id`, `role`, `joined_at`, e reabertura.
-3. `couple_members_before_delete` e `couples_before_delete`: sempre recusam (histórico imutável).
-4. `couples_before_update`:
-   - Bloqueia mudança de `id`, `created_by`, `created_at`.
-   - Transições válidas: pending→active, pending→archived, active→archived. Archived não muda mais nada.
-   - pending→active exige exatamente 2 membros atuais; define `activated_at`.
-   - →archived define `archived_at`.
-   - Atualiza `updated_at`.
-5. `couples_after_update_archive` (AFTER UPDATE quando vira archived): `UPDATE couple_members SET ended_at = now() WHERE couple_id = NEW.id AND ended_at IS NULL` na mesma transação.
-
-Funções de trigger: plpgsql, `SET search_path = ''`, EXECUTE revogado de PUBLIC/anon/authenticated.
-
-## Funções expostas
-
-- `public.create_couple(p_relationship_started_on date DEFAULT NULL) RETURNS uuid` — SECURITY DEFINER, `search_path = ''`.
-  - Exige `auth.uid()` não nulo; advisory lock de transação por usuário.
-  - Insere couple (`created_by = auth.uid()`, status pending) e membership admin na mesma transação.
-  - Usuário com relação atual recebe erro claro; o índice único é a proteção final.
-  - EXECUTE só para `authenticated`.
-- `public.can_view_couple(p_couple_id uuid) RETURNS boolean` — SECURITY DEFINER, STABLE, `search_path = ''`; verdadeiro se `auth.uid()` é ou já foi membro do casal. Evita recursão de RLS. EXECUTE só para `authenticated`.
-
-Ativação, convite, aceite e arquivamento por usuário não ganham função exposta agora.
-
-## Privilégios e RLS
-- REVOKE ALL de PUBLIC, anon, authenticated nas duas tabelas.
-- `GRANT SELECT` para authenticated; nenhum INSERT/UPDATE/DELETE para clientes.
-- `GRANT ALL` para service_role (triggers continuam valendo para ela).
-- RLS ligada nas duas tabelas, policies `TO authenticated`:
-  - `couples_select_member`: `public.can_view_couple(id)`.
-  - `couple_members_select_member`: `public.can_view_couple(couple_id)`.
-- `profiles` não muda: admin do casal não lê perfil do parceiro. Exposição de nome ao parceiro fica para etapa futura, por função/policy explícita.
-
-## Casos de borda
-- Dois `create_couple` simultâneos do mesmo usuário: o índice único parcial rejeita o segundo.
-- Duas pessoas entrando ao mesmo tempo no mesmo casal (futuro): `FOR UPDATE` no casal serializa; o terceiro é recusado.
-- Usuário em casal pending tentando criar outro: recusado até o pending ser arquivado.
-- Casal arquivado: memberships encerradas automaticamente; nenhuma linha muda depois; usuários podem criar novo casal.
-- Mesmo par voltando a se unir: novo `couple_id` (PK impede reuso do casal arquivado), o que é desejável.
-- Cliente tentando INSERT/UPDATE direto, ou chamando a função com outro user_id: sem grant e sem parâmetro de usuário.
-- Ex-membro: vê as duas memberships e o casal histórico, nunca o conteúdo privado de profiles nem membros de outro casal.
-- Exclusão de conta em auth.users com casal: bloqueada pelo RESTRICT. Regra de remoção/anonimização precisa ser documentada antes de oferecer exclusão de conta.
-- Ativar casal com 1 membro: o trigger recusa.
-
-## Verificações após aplicar (somente leitura + teste controlado)
-- Tabelas, índices, triggers, funções e policies presentes; `has_table_privilege` confirma anon sem nada e authenticated só SELECT.
-- `prosecdef` e `proconfig` (search_path) corretos; EXECUTE só onde previsto.
-- Testes com duas contas no Preview, pela tela, quando houver UI: A cria casal; B não vê; A não cria um segundo. Sem UI nesta etapa, os testes ficam pendentes e documentados.
-
-## Entregáveis
-1. Uma migration via ferramenta do Lovable (não editar `supabase/migrations/` à mão).
-2. Tipos Supabase regenerados automaticamente.
-3. Atualizar `docs/SUPABASE_SCHEMA_PLAN.md` (Estado) e `docs/PROJECT_STATUS.md` com hash e pendências.
-4. Sem mudanças de UI, Auth settings ou `profiles`.
+## Decisões pendentes
+1. Validação de regras: no servidor para todos (mais seguro, mais lento de fazer) ou só turno e versão no servidor, por enquanto, com o cliente confiável entre o casal?
+2. Uma partida ativa por jogo, ou várias simultâneas?
+3. Na tela de chamada, mostrar a prévia da câmera ou só um placeholder?
