@@ -803,7 +803,7 @@ export function CoupleFeed({
                                 className="nc-menu-item"
                                 onClick={() => {
                                   close();
-                                  const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                                  const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\n\n");
                                   void navigator.clipboard?.writeText(copy).catch(() => undefined);
                                 }}
                               >

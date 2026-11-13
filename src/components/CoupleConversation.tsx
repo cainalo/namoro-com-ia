@@ -176,8 +176,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [notifications, setNotifications] = useState<ConversationNotificationPreferences>(DEFAULT_CONVERSATION_NOTIFICATIONS);
   const [appearanceSaving, setAppearanceSaving] = useState(false);
   const [notificationsSaving, setNotificationsSaving] = useState(false);
-  const [appearanceSyncAvailable, setAppearanceSyncAvailable] = useState(true);
-  const [notificationsSyncAvailable, setNotificationsSyncAvailable] = useState(true);
+  const [appearanceSyncAvailable, setAppearanceSyncAvailable] = useState(false);
+  const [notificationsSyncAvailable, setNotificationsSyncAvailable] = useState(false);
   const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
   const [stickerOpen, setStickerOpen] = useState(false);
