@@ -179,6 +179,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [appearanceSyncAvailable, setAppearanceSyncAvailable] = useState(false);
   const [notificationsSyncAvailable, setNotificationsSyncAvailable] = useState(false);
   const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
+  const [backgroundImageError, setBackgroundImageError] = useState<string | null>(null);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
   const [stickerOpen, setStickerOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
@@ -251,14 +252,25 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     const path = appearance.backgroundImagePath;
     if (!path) {
       setBackgroundImageUrl(null);
+      setBackgroundImageError(null);
       return;
     }
     let active = true;
+    setBackgroundImageError(null);
     void createCoupleMediaUrl(path)
-      .then((result) => { if (active) setBackgroundImageUrl(result.url); })
+      .then((result) => {
+        if (result.error || !result.url) throw result.error ?? new Error("signed_url_missing");
+        if (active) {
+          setBackgroundImageUrl(result.url);
+          setBackgroundImageError(null);
+        }
+      })
       .catch((cause) => {
         console.warn("Não foi possível carregar o papel de parede personalizado.", cause);
-        if (active) setBackgroundImageUrl(null);
+        if (active) {
+          setBackgroundImageUrl(null);
+          setBackgroundImageError("Não foi possível carregar a foto salva. Escolha a imagem novamente.");
+        }
       });
     return () => { active = false; };
   }, [appearance.backgroundImagePath]);
@@ -893,6 +905,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         appearance={appearance}
         notifications={notifications}
         backgroundImageUrl={backgroundImageUrl}
+        backgroundImageError={backgroundImageError}
         savingAppearance={appearanceSaving}
         savingNotifications={notificationsSaving}
         appearanceSyncAvailable={appearanceSyncAvailable}
@@ -916,14 +929,18 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     "--conversation-bubble-other": appearance.otherBubbleColor,
     "--conversation-message-text": appearance.messageTextColor,
     "--conversation-message-radius": appearance.bubbleRadius + "px",
-    ...(backgroundImageUrl && appearance.wallpaper === "photo"
-      ? {
-          backgroundImage: "linear-gradient(rgb(20 24 18 / 35%), rgb(20 24 18 / 35%)), url(" + JSON.stringify(backgroundImageUrl) + ")",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }
-      : {}),
   } as CSSProperties;
+
+  const wallpaperImageStyle = backgroundImageUrl && appearance.wallpaper === "photo"
+    ? {
+        backgroundImage: "url(" + JSON.stringify(backgroundImageUrl) + ")",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        opacity: appearance.backgroundOpacity / 100,
+        filter: "brightness(" + appearance.backgroundBrightness + "%)",
+      } as CSSProperties
+    : undefined;
 
   return (
     <section
@@ -932,6 +949,9 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       data-message-font={appearance.messageFont}
       aria-label="Conversa do casal"
     >
+      {wallpaperImageStyle && (
+        <div className="conversation-wallpaper-image" aria-hidden="true" style={wallpaperImageStyle} />
+      )}
       <header className="conversation-heading" data-no-swipe>
         <div className="conversation-heading-leading">
           <button
@@ -1191,16 +1211,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 >
                   <Gift aria-hidden="true" />
                 </button>
-                <button
-                  type="button"
-                  className={"conversation-audio-button" + (recordingAudio ? " is-recording" : "")}
-                  onClick={() => void toggleAudioRecording()}
-                  aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
-                  title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
-                  disabled={busy || state.status !== "active"}
-                >
-                  {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
-                </button>
+
               </div>
               <div className="conversation-input-shell">
                 {Capacitor.isNativePlatform() ? (
@@ -1228,6 +1239,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                     />
                   </>
                 )}
+                <button
+                  type="button"
+                  className={"conversation-audio-button" + (recordingAudio ? " is-recording" : "")}
+                  onClick={() => void toggleAudioRecording()}
+                  aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
+                  title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
+                  disabled={busy || state.status !== "active"}
+                >
+                  {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
+                </button>
                 {!Capacitor.isNativePlatform() && (
                   <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0} aria-label="Enviar mensagem" title="Enviar">
                     {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}

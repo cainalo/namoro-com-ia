@@ -6,6 +6,8 @@ export type ConversationMessageFont = "system" | "serif" | "rounded";
 export type ConversationAppearance = {
   wallpaper: ConversationWallpaper;
   backgroundImagePath: string | null;
+  backgroundBrightness: number;
+  backgroundOpacity: number;
   ownBubbleColor: string;
   otherBubbleColor: string;
   messageTextColor: string;
@@ -23,6 +25,8 @@ export type ConversationNotificationPreferences = {
 export const DEFAULT_CONVERSATION_APPEARANCE: ConversationAppearance = {
   wallpaper: "paper",
   backgroundImagePath: null,
+  backgroundBrightness: 100,
+  backgroundOpacity: 100,
   ownBubbleColor: "#556b2f",
   otherBubbleColor: "#fffdf8",
   messageTextColor: "#292c25",
@@ -84,6 +88,12 @@ export function normalizeConversationAppearance(value: unknown): ConversationApp
   const source = isRecord(value) ? value : {};
   const wallpaper = source.wallpaper;
   const messageFont = source.messageFont;
+  const brightness = typeof source.backgroundBrightness === "number" && Number.isFinite(source.backgroundBrightness)
+    ? Math.min(160, Math.max(40, Math.round(source.backgroundBrightness)))
+    : DEFAULT_CONVERSATION_APPEARANCE.backgroundBrightness;
+  const opacity = typeof source.backgroundOpacity === "number" && Number.isFinite(source.backgroundOpacity)
+    ? Math.min(100, Math.max(0, Math.round(source.backgroundOpacity)))
+    : DEFAULT_CONVERSATION_APPEARANCE.backgroundOpacity;
   const radius = typeof source.bubbleRadius === "number" && Number.isFinite(source.bubbleRadius)
     ? Math.min(30, Math.max(10, Math.round(source.bubbleRadius)))
     : DEFAULT_CONVERSATION_APPEARANCE.bubbleRadius;
@@ -95,6 +105,8 @@ export function normalizeConversationAppearance(value: unknown): ConversationApp
         ? wallpaper
         : DEFAULT_CONVERSATION_APPEARANCE.wallpaper,
     backgroundImagePath: typeof source.backgroundImagePath === "string" ? source.backgroundImagePath : null,
+    backgroundBrightness: brightness,
+    backgroundOpacity: opacity,
     ownBubbleColor: validColor(source.ownBubbleColor, DEFAULT_CONVERSATION_APPEARANCE.ownBubbleColor),
     otherBubbleColor: validColor(source.otherBubbleColor, DEFAULT_CONVERSATION_APPEARANCE.otherBubbleColor),
     messageTextColor: validColor(source.messageTextColor, DEFAULT_CONVERSATION_APPEARANCE.messageTextColor),

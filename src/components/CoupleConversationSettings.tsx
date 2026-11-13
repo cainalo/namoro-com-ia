@@ -33,6 +33,7 @@ type Props = {
   appearance: ConversationAppearance;
   notifications: ConversationNotificationPreferences;
   backgroundImageUrl: string | null;
+  backgroundImageError: string | null;
   savingAppearance: boolean;
   savingNotifications: boolean;
   appearanceSyncAvailable: boolean;
@@ -76,6 +77,7 @@ export function CoupleConversationSettings({
   appearance,
   notifications,
   backgroundImageUrl,
+  backgroundImageError,
   savingAppearance,
   savingNotifications,
   appearanceSyncAvailable,
@@ -129,7 +131,7 @@ export function CoupleConversationSettings({
   };
 
   return (
-    <section className="conversation-settings-page" aria-label="Configurações da conversa">
+    <section className="conversation-settings-page" data-chrome-scroll aria-label="Configurações da conversa">
       <header className="conversation-settings-topbar">
         <button type="button" className="conversation-settings-back" onClick={onBack} aria-label="Voltar à conversa">
           <ArrowLeft aria-hidden="true" />
@@ -240,6 +242,33 @@ export function CoupleConversationSettings({
                   )}
                 </div>
                 {backgroundError && <p className="conversation-settings-error" role="alert">{backgroundError}</p>}
+                {backgroundImageError && <p className="conversation-settings-error" role="alert">{backgroundImageError}</p>}
+                {appearance.wallpaper === "photo" && (
+                  <div className="conversation-settings-photo-adjustments">
+                    <label className="conversation-settings-range">
+                      <span><strong>Brilho da foto</strong><output>{appearance.backgroundBrightness}%</output></span>
+                      <input
+                        type="range"
+                        min={40}
+                        max={160}
+                        step={5}
+                        value={appearance.backgroundBrightness}
+                        onChange={(event) => onAppearanceChange({ ...appearance, backgroundBrightness: Number(event.target.value) })}
+                      />
+                    </label>
+                    <label className="conversation-settings-range">
+                      <span><strong>Opacidade da foto</strong><output>{appearance.backgroundOpacity}%</output></span>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={5}
+                        value={appearance.backgroundOpacity}
+                        onChange={(event) => onAppearanceChange({ ...appearance, backgroundOpacity: Number(event.target.value) })}
+                      />
+                    </label>
+                  </div>
+                )}
                 {backgroundImageUrl && appearance.wallpaper === "photo" && (
                   <div className="conversation-settings-background-thumb">
                     <img src={backgroundImageUrl} alt="Prévia do fundo personalizado" />

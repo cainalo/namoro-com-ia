@@ -252,7 +252,7 @@ function Index() {
                   onCloseComposerPage={goBack}
                 />
               ) : activeSection === "games" ? (
-                <CoupleGames userId={session.user.id} />
+                <CoupleGames userId={session.user.id} onNavigate={goToSection} />
               ) : activeSection === "profile" ? (
                 <CoupleProfile userId={session.user.id} />
               ) : activeSection === "universe" ? (

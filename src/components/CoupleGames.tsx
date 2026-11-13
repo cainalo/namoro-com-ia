@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
+  Check,
   AudioLines,
   Brain,
   CalendarHeart,
@@ -8,6 +9,7 @@ import {
   Gamepad2,
   Search,
   LockKeyhole,
+  MoreVertical,
   Shield,
   Sparkles,
   Swords,
@@ -27,6 +29,8 @@ import { TrucoGame } from "@/components/TrucoGame";
 import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
+import { InlineMenu } from "@/components/InlineMenu";
+import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
 import {
   LocalConnectFourGame,
   LocalDailyChallengeGame,
@@ -115,10 +119,12 @@ function GamePage({
   gameId,
   userId,
   onBack,
+  onNavigate,
 }: {
   gameId: GameId;
   userId: string;
   onBack: () => void;
+  onNavigate: (section: SecondaryPageSection) => void;
 }) {
   const [mode, setMode] = useState<GameMode>("local");
   const game = catalogue.find((item) => item.id === gameId)!;
@@ -139,26 +145,45 @@ function GamePage({
     };
   }, [onBack]);
 
+  const gameOptions = (
+    <InlineMenu
+      label="Opções do jogo"
+      trigger={<MoreVertical aria-hidden="true" />}
+      triggerClassName="topbar-icon-button"
+      menuClassName="nc-menu secondary-game-menu"
+    >
+      {(close) => (
+        <>
+          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("local"); close(); }}>
+            {mode === "local" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
+            Jogar neste aparelho
+          </button>
+          {isRemoteSupported && (
+            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("online"); close(); }}>
+              {mode === "online" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
+              Jogar online
+            </button>
+          )}
+          <div className="nc-menu-sep" role="separator" />
+          <span className="secondary-game-menu-note">{game.category} · {game.players}</span>
+        </>
+      )}
+    </InlineMenu>
+  );
+
   return (
     <div className={"games-fullscreen-page tone-" + game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
-      <header className="games-fullscreen-header">
-        <button type="button" className="games-fullscreen-back" onClick={onBack} aria-label="Voltar para os jogos">
-          <ArrowLeft aria-hidden="true" />
-        </button>
-        <div className="games-fullscreen-heading">
-          <span>{game.category}</span>
-          <strong>{game.name}</strong>
-        </div>
-        {isRemoteSupported ? (
-          <div className="games-mode-switch" role="group" aria-label="Modo de jogo">
-            <button type="button" className={mode === "local" ? "is-active" : ""} onClick={() => setMode("local")}>Neste aparelho</button>
-            <button type="button" className={mode === "online" ? "is-active" : ""} onClick={() => setMode("online")}>Online</button>
-          </div>
-        ) : (
-          <span className="games-fullscreen-mode"><Users aria-hidden="true" /> {game.players}</span>
-        )}
-      </header>
-      <main className="games-fullscreen-scroll">
+      <SecondaryPageChrome
+        title={game.name}
+        onBack={onBack}
+        backLabel="Voltar para os jogos"
+        rightAction={gameOptions}
+        activeSection="games"
+        onNavigate={onNavigate}
+        scrollKey={"game-" + gameId}
+        contentClassName="games-fullscreen-scroll"
+        scrollableContent
+      >
         <div className="games-fullscreen-content">
           {gameId === "connect-four" ? (
             mode === "local" ? <LocalConnectFourGame /> : <ConnectFourGame userId={userId} />
@@ -188,12 +213,12 @@ function GamePage({
             <IslandSurvivalGame />
           )}
         </div>
-      </main>
+      </SecondaryPageChrome>
     </div>
   );
 }
 
-export function CoupleGames({ userId }: { userId: string }) {
+export function CoupleGames({ userId, onNavigate }: { userId: string; onNavigate: (section: SecondaryPageSection) => void }) {
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
   const [filter, setFilter] = useState<"all" | "strategy" | "cooperation" | "investigation">("all");
 
@@ -210,6 +235,10 @@ export function CoupleGames({ userId }: { userId: string }) {
         gameId={activeGame}
         userId={userId}
         onBack={() => setActiveGame(null)}
+        onNavigate={(section) => {
+          if (section === "games") setActiveGame(null);
+          else onNavigate(section);
+        }}
       />
     );
   }

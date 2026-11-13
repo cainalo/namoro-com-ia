@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { InlineMenu } from "@/components/InlineMenu";
+import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
 import { mapWithConcurrency } from "@/lib/async-pool";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
@@ -89,7 +90,7 @@ type FeedFilter = "all" | "photos" | "videos" | "text" | "audio";
 
 type CoupleFeedProps = {
   userId: string;
-  onNavigate: (section: "games" | "memories") => void;
+  onNavigate: (section: SecondaryPageSection) => void;
   onOpenConversation: () => void;
   isComposerPage: boolean;
   onCloseComposerPage: () => void;
@@ -896,24 +897,16 @@ export function CoupleFeed({
 
   const composerPageContent = (
     <section className="feed-create-page" data-no-swipe aria-labelledby="feed-composer-title">
-      <header className="feed-create-page-topbar">
-        <button
-          type="button"
-          className="feed-create-back"
-          onClick={closeComposer}
-          disabled={publishing}
-          aria-label="Voltar ao Feed"
-          title="Voltar ao Feed"
-        >
-          <ArrowLeft aria-hidden="true" />
-        </button>
-        <div className="feed-create-page-title">
-          <span>PUBLICAÇÃO PRIVADA</span>
-          <strong>Nova publicação</strong>
-        </div>
-        <span className="feed-create-page-status">Rascunho</span>
-      </header>
-      <div className="feed-create-page-main">
+      <SecondaryPageChrome
+        title="Nova publicação"
+        onBack={closeComposer}
+        backLabel="Voltar ao Feed"
+        rightAction={<span className="feed-create-page-status">Rascunho</span>}
+        activeSection="create-post"
+        onNavigate={onNavigate}
+        scrollKey="feed-create-post"
+        contentClassName="feed-create-page-main"
+      >
         <div className="feed-create-page-intro">
           <h1 id="feed-composer-title">Monte sua publicação</h1>
           <p>Combine fotos, textos, vídeos, áudio e música. Organize cada parte para contar o momento do jeito de vocês.</p>
@@ -1196,7 +1189,7 @@ export function CoupleFeed({
               {publishError && <p className="feed-publish-error" role="alert">{publishError}</p>}
             </article>
           </form>
-      </div>
+      </SecondaryPageChrome>
     </section>
   );
 
