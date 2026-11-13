@@ -21584,3 +21584,41 @@ body {
 .auth-v2-input-wrap input::selection {
   background: rgb(42 119 118 / 22%);
 }
+
+
+/* Formulário nativo no APK: não são criados campos HTML nesta tela. */
+.auth-v2-native-entry {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 0 0 20px;
+  border: 1px solid #d9e0d3;
+  border-radius: 14px;
+  background: #f5f5ec;
+  padding: 14px;
+}
+.auth-v2-native-entry-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border-radius: 12px;
+  background: #e3e9dd;
+  color: #315f54;
+}
+.auth-v2-native-entry p {
+  margin: 0;
+  color: #647168;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.auth-v2-native .auth-v2-submit {
+  width: 100%;
+}
+@media (max-width: 560px) {
+  .auth-v2-native-entry {
+    margin-bottom: 17px;
+    padding: 12px;
+  }
+}

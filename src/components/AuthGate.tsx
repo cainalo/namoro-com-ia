@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { Capacitor } from "@capacitor/core";
+import { NativeAuth } from "@/lib/native-auth";
 import {
   ArrowRight, ArrowUpRight, Download, Eye, EyeOff, KeyRound, LogOut,
   Mail, ShieldCheck, Sparkles,
@@ -64,7 +66,11 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
     );
   }
 
-  if (!session) return <AuthForm emailRedirectTo={emailRedirectTo} />;
+  if (!session) {
+    return Capacitor.isNativePlatform()
+      ? <NativeAuthForm emailRedirectTo={emailRedirectTo} />
+      : <AuthForm emailRedirectTo={emailRedirectTo} />;
+  }
   return <>{children(session)}</>;
 }
 
@@ -243,6 +249,158 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
             {busy ? <span className="auth-v2-spinner" /> : <ArrowUpRight size={19} />}
           </button>
         </form>
+
+        <div className="auth-v2-switch">
+          <span>{mode === "signin" ? "Primeira vez por aqui?" : "Já tem uma conta?"}</span>
+          <button type="button" onClick={() => changeMode(mode === "signin" ? "signup" : "signin")}>
+            {mode === "signin" ? "Criar conta" : "Entrar"}
+            <ArrowRight size={14} />
+          </button>
+        </div>
+
+        <Link to="/download" className="auth-v2-download">
+          <Download size={15} />
+          <span>Instalar o aplicativo</span>
+          <ArrowUpRight size={14} />
+        </Link>
+      </section>
+    </main>
+  );
+}
+
+
+function NativeAuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
+  const [mode, setMode] = useState<AuthMode>("signin");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  function clearMessages() {
+    setError(null);
+    setNotice(null);
+  }
+
+  async function openNativeCredentials() {
+    if (busy) return;
+    setBusy(true);
+    clearMessages();
+    try {
+      // Os campos desta etapa são EditText reais do Android, não inputs HTML.
+      const credentials = await NativeAuth.showCredentialsDialog({ mode });
+      if (credentials.cancelled) return;
+
+      const normalizedEmail = (credentials.email ?? "").trim().toLowerCase();
+      const password = credentials.password ?? "";
+      if (!normalizedEmail || !password) {
+        setError("Preencha seu e-mail e sua senha para continuar.");
+        return;
+      }
+      if (mode === "signup" && password.length < 8) {
+        setError("Sua senha precisa ter pelo menos 8 caracteres.");
+        return;
+      }
+
+      if (mode === "signin") {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
+          password,
+        });
+        if (signInError) throw signInError;
+      } else {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: normalizedEmail,
+          password,
+          options: {
+            emailRedirectTo: emailRedirectTo?.() ?? window.location.origin,
+          },
+        });
+        if (signUpError) throw signUpError;
+        if (!data.session) {
+          setNotice("Conta criada. Confira seu e-mail para confirmar o endereço antes de entrar.");
+        }
+      }
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message.toLowerCase() : "";
+      if (message.includes("invalid login credentials")) {
+        setError("E-mail ou senha incorretos. Confira os dados e tente novamente.");
+      } else if (message.includes("already registered") || message.includes("user already exists")) {
+        setError("Este e-mail já tem uma conta. Entre nela.");
+      } else if (message.includes("email not confirmed")) {
+        setError("Confirme seu e-mail antes de entrar.");
+      } else if (message.includes("password should be at least")) {
+        setError("A senha escolhida é muito curta.");
+      } else if (message.includes("network") || message.includes("fetch")) {
+        setError("Não foi possível conectar. Verifique sua internet e tente novamente.");
+      } else {
+        console.error("Falha na autenticação nativa do Morados", cause);
+        setError("Não foi possível concluir o acesso agora. Tente novamente.");
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function changeMode(nextMode: AuthMode) {
+    setMode(nextMode);
+    clearMessages();
+  }
+
+  return (
+    <main className="auth-v2 auth-v2-native">
+      <aside className="auth-v2-story" aria-label="Sobre o Morados">
+        <div className="auth-v2-story-brand">
+          <span className="auth-v2-story-mark"><MoradosMark size={34} /></span>
+          <span>Morados</span>
+        </div>
+        <div className="auth-v2-story-copy">
+          <span className="auth-v2-eyebrow"><Sparkles size={14} /> UM LUGAR FEITO A DOIS</span>
+          <h2>As pequenas coisas de vocês merecem um lugar especial.</h2>
+          <p>Conversas, planos, lembranças e descobertas. Tudo reunido em um espaço particular para compartilhar a vida.</p>
+        </div>
+        <div className="auth-v2-story-art" aria-hidden="true">
+          <div className="auth-v2-art-ring auth-v2-art-ring-one" />
+          <div className="auth-v2-art-ring auth-v2-art-ring-two" />
+          <div className="auth-v2-art-window">
+            <div className="auth-v2-art-sun" />
+            <div className="auth-v2-art-hill auth-v2-art-hill-one" />
+            <div className="auth-v2-art-hill auth-v2-art-hill-two" />
+            <span>♡</span>
+          </div>
+          <div className="auth-v2-art-note">um espaço só de vocês</div>
+        </div>
+        <div className="auth-v2-story-footer">
+          <span><ShieldCheck size={15} /> PRIVADO POR NATUREZA</span>
+          <span>CONVERSAR · CUIDAR · LEMBRAR</span>
+        </div>
+      </aside>
+
+      <section className="auth-v2-card" aria-labelledby="auth-v2-title">
+        <div className="auth-v2-card-top">
+          <div className="auth-v2-mobile-brand">
+            <span className="auth-v2-mobile-mark"><MoradosMark size={27} /></span>
+            <span>Morados</span>
+          </div>
+          <span className="auth-v2-private"><ShieldCheck size={14} /> ESPAÇO PRIVADO</span>
+        </div>
+
+        <div className="auth-v2-heading">
+          <span className="auth-v2-step">{mode === "signin" ? "BOM TER VOCÊ AQUI" : "VAMOS COMEÇAR"}</span>
+          <h1 id="auth-v2-title">{mode === "signin" ? "Entre no seu espaço." : "Criem o espaço de vocês."}</h1>
+          <p>{mode === "signin" ? "Use sua conta para continuar de onde vocês pararam." : "Cadastre seu e-mail e escolha uma senha para abrir o espaço."}</p>
+        </div>
+
+        <div className="auth-v2-native-entry">
+          <div className="auth-v2-native-entry-mark"><KeyRound size={21} /></div>
+          <p>O e-mail e a senha serão digitados em uma janela própria do Android, fora do formulário da página.</p>
+        </div>
+
+        {error && <p className="auth-v2-feedback is-error" role="alert">{error}</p>}
+        {notice && <p className="auth-v2-feedback is-notice" role="status">{notice}</p>}
+
+        <button type="button" className="auth-v2-submit" onClick={openNativeCredentials} disabled={busy}>
+          <span>{busy ? "Aguardando…" : mode === "signin" ? "Entrar no Morados" : "Criar meu acesso"}</span>
+          {busy ? <span className="auth-v2-spinner" /> : <ArrowUpRight size={19} />}
+        </button>
 
         <div className="auth-v2-switch">
           <span>{mode === "signin" ? "Primeira vez por aqui?" : "Já tem uma conta?"}</span>
