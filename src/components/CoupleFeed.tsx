@@ -901,7 +901,18 @@ export function CoupleFeed({
         title="Nova publicação"
         onBack={closeComposer}
         backLabel="Voltar ao Feed"
-        rightAction={<span className="feed-create-page-status">Rascunho</span>}
+        rightAction={(
+          <button
+            type="submit"
+            form="feed-publisher-form"
+            className="topbar-icon-button"
+            aria-label="Publicar"
+            title="Publicar"
+            disabled={publishing || !canPublishDraft}
+          >
+            {publishing ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+          </button>
+        )}
         activeSection="create-post"
         onNavigate={onNavigate}
         scrollKey="feed-create-post"
@@ -929,7 +940,7 @@ export function CoupleFeed({
             <button type="button" onClick={() => addDraftBlock("video")}><Camera aria-hidden="true" /> Vídeo</button>
           </div>
 
-          <form className="feed-publisher-form" onSubmit={publishPost}>
+          <form id="feed-publisher-form" className="feed-publisher-form" onSubmit={publishPost}>
             <article className="feed-post-card is-composer-card">
               <header className="mb-4 flex flex-wrap items-start justify-between gap-2">
                 <span className="feed-author-avatar is-you">{initials("Você")}</span>
