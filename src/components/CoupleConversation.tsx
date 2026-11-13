@@ -47,6 +47,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Capacitor } from "@capacitor/core";
+import { NativeAuth } from "@/lib/native-auth";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -529,6 +530,26 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     const body = draft.trim();
     if (!body || state.status !== "active" || busy) return;
     await saveMessage({ body, messageType: "text" });
+  }
+
+  async function openNativeMessageComposer() {
+    if (state.status !== "active" || busy) return;
+    try {
+      const result = await NativeAuth.showTextInputDialog({
+        title: "Nova mensagem",
+        hint: "Escreva uma mensagem…",
+        initialValue: draft,
+        confirmText: "Enviar",
+        maxLength: 2000,
+      });
+      if (result.cancelled) return;
+      const body = (result.text ?? "").trim();
+      if (!body) return;
+      await saveMessage({ body, messageType: "text" });
+    } catch (cause) {
+      console.error("Não foi possível abrir o campo nativo de mensagem.", cause);
+      setError("Não foi possível abrir a escrita da mensagem. Tente novamente.");
+    }
   }
 
   async function sendFile(file: File, messageTypeOverride?: CoupleMessageType, extraMetadata?: Record<string, unknown>) {
@@ -1104,26 +1125,40 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               </button>
             </div>
             <div className="conversation-input-shell">
-              <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
-              <textarea
-                id="conversation-draft"
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder="Escreva uma mensagem…"
-                maxLength={2000}
-                rows={1}
-                onKeyDown={handleComposerKeyDown}
-                disabled={busy}
-              />
-              <button
-                type="submit"
-                className="conversation-send-button"
-                disabled={busy || draft.trim().length === 0}
-                aria-label="Enviar mensagem"
-                title="Enviar"
-              >
-                {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
-              </button>
+              {Capacitor.isNativePlatform() ? (
+                <button
+                  type="button"
+                  className="conversation-native-message-trigger flex min-h-[38px] min-w-0 flex-1 items-center bg-transparent px-0 py-2 text-left text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
+                  onClick={() => void openNativeMessageComposer()}
+                  disabled={busy || state.status !== "active"}
+                  aria-label="Escrever mensagem"
+                >
+                  {draft.trim() || "Escreva uma mensagem…"}
+                </button>
+              ) : (
+                <>
+                  <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
+                  <textarea
+                    id="conversation-draft"
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    placeholder="Escreva uma mensagem…"
+                    maxLength={2000}
+                    rows={1}
+                    onKeyDown={handleComposerKeyDown}
+                    disabled={busy}
+                  />
+                  <button
+                    type="submit"
+                    className="conversation-send-button"
+                    disabled={busy || draft.trim().length === 0}
+                    aria-label="Enviar mensagem"
+                    title="Enviar"
+                  >
+                    {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                  </button>
+                </>
+              )}
             </div>
             <p className="conversation-composer-hint">{recordingAudio ? "Gravando áudio… toque novamente para finalizar" : "Enter envia · Shift + Enter quebra a linha"}</p>
           </form>

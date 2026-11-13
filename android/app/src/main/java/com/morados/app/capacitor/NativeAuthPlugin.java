@@ -1,14 +1,18 @@
 package com.morados.app.capacitor;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.util.Patterns;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -180,6 +184,120 @@ public class NativeAuthPlugin extends Plugin {
                     | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
             );
         }
+    }
+
+
+    @PluginMethod
+    public void showTextInputDialog(PluginCall call) {
+        if (getActivity() == null || getActivity().isFinishing()) {
+            call.reject("A tela do Morados não está disponível.");
+            return;
+        }
+
+        String title = call.getString("title", "Nova mensagem");
+        String hint = call.getString("hint", "Escreva uma mensagem…");
+        String initialValue = call.getString("initialValue", "");
+        String confirmText = call.getString("confirmText", "Enviar");
+        Integer requestedMaxLength = call.getInt("maxLength", 2000);
+        int maxLength = Math.max(1, Math.min(requestedMaxLength == null ? 2000 : requestedMaxLength, 5000));
+
+        call.setKeepAlive(true);
+        getActivity().runOnUiThread(() -> {
+            final AtomicBoolean completed = new AtomicBoolean(false);
+            LinearLayout content = new LinearLayout(getActivity());
+            content.setOrientation(LinearLayout.VERTICAL);
+            int horizontal = dp(24);
+            content.setPadding(horizontal, dp(8), horizontal, 0);
+
+            TextView description = new TextView(getActivity());
+            description.setText("Sua mensagem será enviada somente para a pessoa vinculada ao seu espaço.");
+            description.setTextColor(Color.rgb(91, 103, 94));
+            description.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
+            description.setPadding(0, 0, 0, dp(10));
+            content.addView(description, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
+
+            EditText editor = new EditText(getActivity());
+            editor.setId(View.generateViewId());
+            editor.setSingleLine(false);
+            editor.setMinLines(3);
+            editor.setMaxLines(6);
+            editor.setGravity(Gravity.TOP | Gravity.START);
+            editor.setHint(hint);
+            editor.setText(initialValue);
+            editor.setSelection(editor.length());
+            editor.setInputType(
+                InputType.TYPE_CLASS_TEXT
+                    | InputType.TYPE_TEXT_FLAG_MULTI_LINE
+                    | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            );
+            editor.setImeOptions(EditorInfo.IME_ACTION_DONE);
+            editor.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            editor.setTextColor(Color.rgb(39, 55, 47));
+            editor.setHintTextColor(Color.rgb(143, 151, 141));
+            editor.setPadding(dp(12), dp(12), dp(12), dp(12));
+            editor.setFilters(new InputFilter[]{new InputFilter.LengthFilter(maxLength)});
+            content.addView(editor, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(132)
+            ));
+
+            AlertDialog dialog = new AlertDialog.Builder(getActivity())
+                .setTitle(title)
+                .setView(content)
+                .setPositiveButton(confirmText, null)
+                .setNegativeButton("Cancelar", null)
+                .create();
+
+            Runnable resolveCancelled = () -> {
+                if (completed.compareAndSet(false, true)) {
+                    call.setKeepAlive(false);
+                    JSObject result = new JSObject();
+                    result.put("cancelled", true);
+                    call.resolve(result);
+                }
+            };
+
+            dialog.setOnCancelListener(ignored -> resolveCancelled.run());
+            dialog.setOnDismissListener(ignored -> resolveCancelled.run());
+            dialog.setOnShowListener(ignored -> {
+                Button submit = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+                submit.setOnClickListener(view -> {
+                    String text = editor.getText() == null ? "" : editor.getText().toString();
+                    if (text.trim().isEmpty()) {
+                        editor.setError("Escreva sua mensagem.");
+                        editor.requestFocus();
+                        return;
+                    }
+
+                    if (completed.compareAndSet(false, true)) {
+                        call.setKeepAlive(false);
+                        JSObject result = new JSObject();
+                        result.put("cancelled", false);
+                        result.put("text", text);
+                        call.resolve(result);
+                    }
+                    dialog.dismiss();
+                });
+
+                editor.requestFocus();
+                Window window = dialog.getWindow();
+                if (window != null) {
+                    window.setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+                            | WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE
+                    );
+                }
+                editor.post(() -> {
+                    InputMethodManager inputMethod = (InputMethodManager) getActivity()
+                        .getSystemService(Context.INPUT_METHOD_SERVICE);
+                    if (inputMethod != null) inputMethod.showSoftInput(editor, InputMethodManager.SHOW_IMPLICIT);
+                });
+            });
+            dialog.show();
+        });
     }
 
     private int dp(float value) {

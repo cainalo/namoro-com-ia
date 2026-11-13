@@ -1,9 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import { SplashScreen } from "@capacitor/splash-screen";
-import { StatusBar, Style } from "@capacitor/status-bar";
 import { getNativeRouter } from "./native-router";
 import "./styles.css";
 
@@ -21,7 +20,7 @@ createRoot(rootElement).render(
 );
 
 if (Capacitor.isNativePlatform()) {
-  void StatusBar.setBackgroundColor({ color: "#0F4C5C" }).catch(() => undefined);
-  void StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+  void SystemBars.setStyle({ style: SystemBarsStyle.Dark }).catch(() => undefined);
+  void SystemBars.hide().catch(() => undefined);
   void SplashScreen.hide().catch(() => undefined);
 }

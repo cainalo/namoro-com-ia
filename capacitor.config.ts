@@ -9,19 +9,19 @@ const config: CapacitorConfig = {
     allowMixedContent: false,
   },
   plugins: {
-    StatusBar: {
-      backgroundColor: "#0F4C5C",
-      style: "LIGHT",
-    },
     SplashScreen: {
       launchShowDuration: 0,
       backgroundColor: "#0F4C5C",
       showSpinner: false,
     },
-    // Restore the earlier Capacitor Android keyboard configuration.
     Keyboard: {
       resize: "native",
-      resizeOnFullScreen: true,
+    },
+    SystemBars: {
+      style: "DARK",
+      hidden: true,
+      insetsHandling: "native",
+      initialViewportFitValueHint: "cover",
     },
   },
 };

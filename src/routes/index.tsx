@@ -14,7 +14,7 @@ import {
   LogOut,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
@@ -73,7 +73,6 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
-  const swipeStartRef = useRef<{ x: number; y: number; pointerId: number } | null>(null);
   const [postComposerRequest, setPostComposerRequest] = useState(0);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
@@ -84,46 +83,6 @@ function Index() {
     sectionHistory.current = [...sectionHistory.current, activeSectionRef.current].slice(-20);
     activeSectionRef.current = section;
     setActiveSection(section);
-  };
-
-  const handleSwipePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === "mouse") return;
-    const target = event.target;
-    if (
-      target instanceof Element &&
-      target.closest("input, textarea, select, [contenteditable='true'], [data-no-swipe]")
-    ) {
-      swipeStartRef.current = null;
-      return;
-    }
-    swipeStartRef.current = {
-      x: event.clientX,
-      y: event.clientY,
-      pointerId: event.pointerId,
-    };
-  };
-
-  const handleSwipePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
-    const start = swipeStartRef.current;
-    swipeStartRef.current = null;
-    if (!start || start.pointerId !== event.pointerId) return;
-
-    const dx = event.clientX - start.x;
-    const dy = event.clientY - start.y;
-    // Um gesto curto e claramente horizontal evita competir com a rolagem do feed.
-    if (Math.abs(dx) < 52 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
-
-    // No Feed, o gesto é feito movendo o dedo para a esquerda.
-    // Na conversa, o gesto contrário retorna à tela anterior.
-    if (activeSectionRef.current === "home" && dx < 0) {
-      goToSection("messages");
-    } else if (activeSectionRef.current === "messages" && dx > 0) {
-      goBack();
-    }
-  };
-
-  const handleSwipePointerCancel = () => {
-    swipeStartRef.current = null;
   };
 
   const goHome = () => {
@@ -137,6 +96,59 @@ function Index() {
     activeSectionRef.current = previous;
     setActiveSection(previous);
   };
+
+  useEffect(() => {
+    let start: { x: number; y: number } | null = null;
+
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) {
+        start = null;
+        return;
+      }
+      const target = event.target;
+      if (
+        target instanceof Element &&
+        target.closest("input, textarea, select, [contenteditable='true'], [data-no-swipe], [data-horizontal-scroll]")
+      ) {
+        start = null;
+        return;
+      }
+      const point = event.touches[0];
+      start = { x: point.clientX, y: point.clientY };
+    };
+
+    const onTouchEnd = (event: TouchEvent) => {
+      const origin = start;
+      start = null;
+      const point = event.changedTouches[0];
+      if (!origin || !point) return;
+
+      const dx = point.clientX - origin.x;
+      const dy = point.clientY - origin.y;
+      if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.15) return;
+
+      if (activeSectionRef.current === "home" && dx < 0) {
+        goToSection("messages");
+      } else if (activeSectionRef.current === "messages" && dx > 0) {
+        goBack();
+      }
+    };
+
+    const onTouchCancel = () => {
+      start = null;
+    };
+
+    // Captura o gesto antes dos elementos internos; a rolagem vertical continua nativa.
+    window.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
+    window.addEventListener("touchend", onTouchEnd, { capture: true, passive: true });
+    window.addEventListener("touchcancel", onTouchCancel, { capture: true, passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart, true);
+      window.removeEventListener("touchend", onTouchEnd, true);
+      window.removeEventListener("touchcancel", onTouchCancel, true);
+    };
+  }, []);
 
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
@@ -173,9 +185,6 @@ function Index() {
       {(session) => (
         <div
           className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : ""}`}
-          onPointerDown={handleSwipePointerDown}
-          onPointerUp={handleSwipePointerUp}
-          onPointerCancel={handleSwipePointerCancel}
         >
           {activeSection !== "messages" && (
             <>
