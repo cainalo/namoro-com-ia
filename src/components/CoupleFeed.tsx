@@ -45,19 +45,8 @@ import {
   X,
 } from "lucide-react";
 import { CoupleSetup } from "@/components/CoupleSetup";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { InlineMenu } from "@/components/InlineMenu";
+import { mapWithConcurrency } from "@/lib/async-pool";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
 import {
@@ -420,7 +409,10 @@ export function CoupleFeed({
         }
       }
 
-      const posts: FeedPostView[] = await Promise.all(rows.map(async (post) => {
+      // Deduplica caminhos de mídia e limita quatro assinaturas simultâneas.
+      const sourceBlocksByPost = new Map<string, CouplePostBlock[]>();
+      const mediaPaths = new Set<string>();
+      for (const post of rows) {
         const savedBlocks = Array.isArray(post.content_blocks) ? post.content_blocks : [];
         const sourceBlocks: CouplePostBlock[] = savedBlocks.length > 0
           ? savedBlocks
@@ -437,32 +429,42 @@ export function CoupleFeed({
                 media_mime: post.media_mime,
               }] : []),
             ];
+        sourceBlocksByPost.set(post.id, sourceBlocks);
+        for (const block of sourceBlocks) if (block.media_path) mediaPaths.add(block.media_path);
+        if (post.media_path) mediaPaths.add(post.media_path);
+        const avatarPath = profileMap.get(post.author_id)?.avatarPath;
+        if (avatarPath) mediaPaths.add(avatarPath);
+      }
 
-        const blocks: FeedBlockView[] = await Promise.all(sourceBlocks.map(async (block) => {
-          if (!block.media_path) return { ...block, media_url: null };
-          const signed = await createCoupleMediaUrl(block.media_path);
-          return { ...block, media_url: signed.url };
+      const signedEntries = await mapWithConcurrency([...mediaPaths], 4, async (path) => {
+        try {
+          const result = await createCoupleMediaUrl(path);
+          return [path, result.url] as const;
+        } catch (cause) {
+          console.warn("Não foi possível preparar uma mídia do Feed.", cause);
+          return [path, null] as const;
+        }
+      });
+      const signedUrlByPath = new Map(signedEntries);
+
+      const posts: FeedPostView[] = rows.map((post) => {
+        const sourceBlocks = sourceBlocksByPost.get(post.id) ?? [];
+        const blocks: FeedBlockView[] = sourceBlocks.map((block) => ({
+          ...block,
+          media_url: block.media_path ? signedUrlByPath.get(block.media_path) ?? null : null,
         }));
         const primaryImage = blocks.find((block) => block.type === "photo" && block.media_url);
         const primaryMedia = blocks.find((block) => block.media_path && block.media_url);
-        const legacySigned = post.media_path
-          ? await createCoupleMediaUrl(post.media_path)
-          : null;
-
         const authorProfile = profileMap.get(post.author_id);
-        const authorAvatar = authorProfile?.avatarPath
-          ? await createCoupleMediaUrl(authorProfile.avatarPath)
-          : null;
         return {
           ...post,
-          author_name:
-            authorProfile?.name ||
-            (post.author_id === userId ? "Você" : "Sua pessoa"),
-          author_avatar_url: authorAvatar?.url ?? null,
+          author_name: authorProfile?.name || (post.author_id === userId ? "Você" : "Sua pessoa"),
+          author_avatar_url: authorProfile?.avatarPath ? signedUrlByPath.get(authorProfile.avatarPath) ?? null : null,
           blocks,
-          media_url: primaryImage?.media_url ?? primaryMedia?.media_url ?? legacySigned?.url ?? null,
+          media_url: primaryImage?.media_url ?? primaryMedia?.media_url ??
+            (post.media_path ? signedUrlByPath.get(post.media_path) ?? null : null),
         };
-      }));
+      });
 
       setState({ status: "ready", coupleId: couple.id, posts });
     } catch (error) {
@@ -753,7 +755,7 @@ export function CoupleFeed({
                         </div>
                         <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
                           <button type="button" aria-label="Copiar texto" onClick={() => {
-                            const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                            const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\n\n");
                             void navigator.clipboard?.writeText(copy);
                           }} className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
                             <Share2 className="h-4 w-4" aria-hidden="true" />
@@ -787,28 +789,38 @@ export function CoupleFeed({
                       </div>
                       <div className="ml-auto flex shrink-0 items-center gap-1.5">
                         <span className="feed-post-private">A dois</span>
-                        <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button type="button" className="feed-post-more" aria-label="Mais opções da publicação">
-                            <MoreHorizontal aria-hidden="true" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="nc-menu">
-                          <DropdownMenuItem
-                            className="nc-menu-item"
-                            onSelect={() => {
-                              const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
-                              void navigator.clipboard?.writeText(copy);
-                            }}
-                          >
-                            <Copy aria-hidden="true" /> Copiar texto
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="nc-menu-sep" />
-                          <DropdownMenuItem className="nc-menu-item" onSelect={onOpenConversation}>
-                            <MessageCircle aria-hidden="true" /> Abrir conversa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                        </DropdownMenu>
+                        <InlineMenu
+                          label="Mais opções da publicação"
+                          trigger={<MoreHorizontal aria-hidden="true" />}
+                          triggerClassName="feed-post-more"
+                          menuClassName="nc-menu feed-post-actions-menu"
+                        >
+                          {(close) => (
+                            <>
+                              <button
+                                type="button"
+                                role="menuitem"
+                                className="nc-menu-item"
+                                onClick={() => {
+                                  close();
+                                  const copy = [post.title, ...post.blocks.map((block) => block.value || block.caption).filter(Boolean)].join("\\n\\n");
+                                  void navigator.clipboard?.writeText(copy).catch(() => undefined);
+                                }}
+                              >
+                                <Copy aria-hidden="true" /> Copiar texto
+                              </button>
+                              <div className="nc-menu-sep" role="separator" />
+                              <button
+                                type="button"
+                                role="menuitem"
+                                className="nc-menu-item"
+                                onClick={() => { close(); onOpenConversation(); }}
+                              >
+                                <MessageCircle aria-hidden="true" /> Abrir conversa
+                              </button>
+                            </>
+                          )}
+                        </InlineMenu>
                       </div>
                     </header>
 
@@ -1551,16 +1563,11 @@ function FeedPostPhoto({
 
   useEffect(() => {
     if (!open) return;
-    const previousOverflow = document.body.style.overflow;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
-    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   return (
@@ -1582,13 +1589,19 @@ function FeedPostPhoto({
         {caption && <figcaption>{caption}</figcaption>}
       </figure>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="feed-post-image-dialog">
-          <DialogTitle className="sr-only">{alt}</DialogTitle>
-          <DialogDescription className="sr-only">Imagem ampliada da publicação.</DialogDescription>
+      {open && (
+        <div
+          className="feed-post-image-lightbox"
+          role="presentation"
+          data-no-swipe
+          onClick={(event) => { if (event.target === event.currentTarget) setOpen(false); }}
+        >
+          <button type="button" className="feed-post-image-lightbox-close" onClick={() => setOpen(false)} aria-label="Fechar imagem ampliada">
+            <X aria-hidden="true" />
+          </button>
           <img src={src} alt={alt} className="feed-post-image-expanded" />
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </>
   );
 }

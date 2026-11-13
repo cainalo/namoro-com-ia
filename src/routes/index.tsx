@@ -31,13 +31,7 @@ import { listCoupleMemories, type CoupleMemory } from "@/lib/couple-memories";
 import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-events";
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { MoradosMark } from "@/components/MoradosMark";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { InlineMenu } from "@/components/InlineMenu";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile" | "create-post";
 
@@ -193,26 +187,30 @@ function Index() {
                 <div className="app-topbar">
                   <div className="topbar-inner">
                     <div className="topbar-side topbar-side-leading">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button type="button" className="topbar-icon-button" aria-label="Abrir menu de navegação" title="Menu">
-                            <Menu aria-hidden="true" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start" sideOffset={8} className="morados-nav-menu nc-menu">
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("games")}><Gamepad2 aria-hidden="true" /> Jogos</DropdownMenuItem>
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("memories")}><Images aria-hidden="true" /> Memórias</DropdownMenuItem>
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("organize")}><CalendarDays aria-hidden="true" /> Planos</DropdownMenuItem>
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => goToSection("universe")}><Compass aria-hidden="true" /> Casa</DropdownMenuItem>
-                          <DropdownMenuSeparator className="nc-menu-sep" />
-                          <DropdownMenuItem asChild className="nc-menu-item"><Link to="/download"><Download aria-hidden="true" /> Baixar aplicativo</Link></DropdownMenuItem>
-                          <DropdownMenuItem className="nc-menu-item" onSelect={() => {
-                            void supabase.auth.signOut().then(({ error }) => {
-                              if (error) console.error("Não foi possível sair da conta.", error);
-                            }).catch((error) => console.error("Não foi possível sair da conta.", error));
-                          }}><LogOut aria-hidden="true" /> Sair da conta</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <InlineMenu
+                        label="Abrir menu de navegação"
+                        trigger={<Menu aria-hidden="true" />}
+                        triggerClassName="topbar-icon-button"
+                        menuClassName="nc-menu morados-nav-menu"
+                        align="start"
+                      >
+                        {(close) => (
+                          <>
+                            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("games"); }}><Gamepad2 aria-hidden="true" /> Jogos</button>
+                            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("memories"); }}><Images aria-hidden="true" /> Memórias</button>
+                            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("organize"); }}><CalendarDays aria-hidden="true" /> Planos</button>
+                            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("universe"); }}><Compass aria-hidden="true" /> Casa</button>
+                            <div className="nc-menu-sep" role="separator" />
+                            <Link to="/download" role="menuitem" className="nc-menu-item" onClick={close}><Download aria-hidden="true" /> Baixar aplicativo</Link>
+                            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => {
+                              close();
+                              void supabase.auth.signOut().then(({ error }) => {
+                                if (error) console.error("Não foi possível sair da conta.", error);
+                              }).catch((error) => console.error("Não foi possível sair da conta.", error));
+                            }}><LogOut aria-hidden="true" /> Sair da conta</button>
+                          </>
+                        )}
+                      </InlineMenu>
                     </div>
 
                     <button type="button" className="topbar-wordmark" onClick={goHome} aria-label="Morados — voltar ao Feed" title="Feed">

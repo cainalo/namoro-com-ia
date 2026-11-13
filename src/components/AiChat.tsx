@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowUp, Heart, Loader2 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { ArrowUp, Heart, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +14,18 @@ export function AiChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [open]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -96,74 +107,60 @@ export function AiChat() {
         <Heart className="h-6 w-6" fill="currentColor" />
       </Button>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-md">
-          <SheetHeader className="border-b px-6 py-5 text-left">
-            <div className="flex items-center justify-between gap-3">
-              <SheetTitle className="font-display text-2xl tracking-[0.2em]">MORADOS · IA</SheetTitle>
-              <button
-                type="button"
-                className="shrink-0 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
-                onClick={startNewConversation}
-                disabled={loading || messages.length === 0}
-              >
-                Nova conversa
-              </button>
-            </div>
-            <SheetDescription>Pergunte quando quiser uma ajuda para pensar, planejar ou conversar.</SheetDescription>
-          </SheetHeader>
-
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
-            {messages.length === 0 && (
-              <p className="pt-10 text-center text-sm text-muted-foreground">
-                Diga oi para começar a conversa.
-              </p>
-            )}
-            {messages.map((m, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                  m.role === "user"
-                    ? "ml-auto rounded-br-md bg-primary text-primary-foreground"
-                    : "mr-auto rounded-bl-md bg-muted text-foreground",
-                )}
-              >
-                {m.content || <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+      {open && (
+        <div className="ai-chat-overlay" role="presentation" onClick={() => setOpen(false)}>
+          <section
+            className="ai-chat-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="MORADOS · IA"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="ai-chat-panel-header">
+              <div>
+                <strong className="font-display text-xl tracking-[0.16em]">MORADOS · IA</strong>
+                <p>Pergunte quando quiser uma ajuda para pensar, planejar ou conversar.</p>
               </div>
-            ))}
-            {error && <p className="text-center text-sm text-destructive">{error}</p>}
-          </div>
-
-          <form onSubmit={send} className="flex items-end gap-2 border-t px-4 py-4">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  e.currentTarget.form?.requestSubmit();
-                }
-              }}
-              rows={1}
-              maxLength={4000}
-              placeholder="Escreva sua mensagem…"
-              aria-label="Mensagem"
-              className="max-h-32 min-h-11 flex-1 resize-none rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-ring"
-            />
-            <Button
-              type="submit"
-              variant="love"
-              size="icon"
-              aria-label="Enviar"
-              disabled={loading || !input.trim()}
-              className="h-11 w-11 shrink-0 rounded-full"
-            >
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
-            </Button>
-          </form>
-        </SheetContent>
-      </Sheet>
+              <div className="flex shrink-0 items-center gap-2">
+                <button type="button" className="ai-chat-new" onClick={startNewConversation} disabled={loading || messages.length === 0}>Nova conversa</button>
+                <button type="button" className="ai-chat-close" onClick={() => setOpen(false)} aria-label="Fechar IA"><X aria-hidden="true" /></button>
+              </div>
+            </header>
+            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-6 py-5">
+              {messages.length === 0 && <p className="pt-10 text-center text-sm text-muted-foreground">Diga oi para começar a conversa.</p>}
+              {messages.map((m, i) => (
+                <div key={i} className={cn(
+                  "max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                  m.role === "user" ? "ml-auto rounded-br-md bg-primary text-primary-foreground" : "mr-auto rounded-bl-md bg-muted text-foreground",
+                )}>
+                  {m.content || <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                </div>
+              ))}
+              {error && <p className="text-center text-sm text-destructive">{error}</p>}
+            </div>
+            <form onSubmit={send} className="flex items-end gap-2 border-t px-4 py-4">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    e.currentTarget.form?.requestSubmit();
+                  }
+                }}
+                rows={1}
+                maxLength={4000}
+                placeholder="Escreva sua mensagem…"
+                aria-label="Mensagem"
+                className="max-h-32 min-h-11 flex-1 resize-none rounded-2xl border border-input bg-background px-4 py-3 text-sm outline-none focus:border-ring"
+              />
+              <Button type="submit" variant="love" size="icon" aria-label="Enviar" disabled={loading || !input.trim()} className="h-11 w-11 shrink-0 rounded-full">
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-5 w-5" />}
+              </Button>
+            </form>
+          </section>
+        </div>
+      )}
     </>
   );
 }

@@ -6,6 +6,7 @@ import {
   type ChangeEvent,
   type FormEvent,
   type KeyboardEvent,
+  type CSSProperties,
 } from "react";
 import {
   ArrowLeft,
@@ -13,7 +14,6 @@ import {
   Copy,
   File,
   Gift,
-  History,
   Image,
   Camera,
   Coffee,
@@ -28,7 +28,6 @@ import {
   LoaderCircle,
   MoreVertical,
   Paperclip,
-  RefreshCw,
   Search,
   Send,
   Smile,
@@ -36,10 +35,23 @@ import {
   Video,
   X,
   Music2,
-  Palette,
 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { MoradosMark } from "@/components/MoradosMark";
+import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
+import { mapWithConcurrency } from "@/lib/async-pool";
+import {
+  DEFAULT_CONVERSATION_APPEARANCE,
+  DEFAULT_CONVERSATION_NOTIFICATIONS,
+  loadConversationAppearance,
+  loadConversationNotifications,
+  readLocalConversationAppearance,
+  readLocalConversationNotifications,
+  saveConversationAppearance,
+  saveConversationNotifications,
+  type ConversationAppearance,
+  type ConversationNotificationPreferences,
+} from "@/lib/couple-conversation-settings";
 import { NativeAuth } from "@/lib/native-auth";
 import { Haptics, ImpactStyle } from "@capacitor/haptics";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,8 +67,6 @@ import {
   removeCoupleMedia,
   uploadCoupleMedia,
 } from "@/lib/couple-media";
-
-type WallpaperId = "paper" | "petals" | "confetti" | "night";
 
 type ConversationState =
   | { status: "loading" }
@@ -75,13 +85,6 @@ type ConversationProps = {
   userId: string;
   onBack: () => void;
 };
-
-const wallpapers: { id: WallpaperId; title: string; description: string }[] = [
-  { id: "paper", title: "Papel delicado", description: "Papel creme com pequenos pontos" },
-  { id: "petals", title: "Chuva de pétalas", description: "Flores leves em tons quentes" },
-  { id: "confetti", title: "Confetes", description: "Quadrinhos e formas coloridas" },
-  { id: "night", title: "Noite estrelada", description: "Azul profundo e pequenas estrelas" },
-];
 
 const stickerOptions = [
   { id: "affection", label: "Carinho", Icon: HandHeart },
@@ -159,7 +162,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [draft, setDraft] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsPageOpen, setSettingsPageOpen] = useState(false);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
   const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
   const [olderMessagesError, setOlderMessagesError] = useState<string | null>(null);
@@ -169,8 +172,13 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [copyError, setCopyError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
-  const [wallpaper, setWallpaper] = useState<WallpaperId>("paper");
-  const [wallpaperOpen, setWallpaperOpen] = useState(false);
+  const [appearance, setAppearance] = useState<ConversationAppearance>(DEFAULT_CONVERSATION_APPEARANCE);
+  const [notifications, setNotifications] = useState<ConversationNotificationPreferences>(DEFAULT_CONVERSATION_NOTIFICATIONS);
+  const [appearanceSaving, setAppearanceSaving] = useState(false);
+  const [notificationsSaving, setNotificationsSaving] = useState(false);
+  const [appearanceSyncAvailable, setAppearanceSyncAvailable] = useState(true);
+  const [notificationsSyncAvailable, setNotificationsSyncAvailable] = useState(true);
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
   const [stickerOpen, setStickerOpen] = useState(false);
   const [giftOpen, setGiftOpen] = useState(false);
@@ -183,6 +191,14 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [giftMediaFile, setGiftMediaFile] = useState<File | null>(null);
   const [giftMediaPreview, setGiftMediaPreview] = useState<string | null>(null);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
+  const mediaUrlsCacheRef = useRef<Record<string, string>>({});
+  const mediaQueueRef = useRef<CoupleMessage[]>([]);
+  const pendingMediaIdsRef = useRef(new Set<string>());
+  const mediaSigningRef = useRef(false);
+  const mountedRef = useRef(true);
+  const settingsScrollTopRef = useRef(0);
+  const appearanceSaveTimerRef = useRef<number | null>(null);
+  const notificationsSaveTimerRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
@@ -193,12 +209,18 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const previousMessageCountRef = useRef(0);
   const pendingScrollHeightRef = useRef<number | null>(null);
 
-  useEffect(() => () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.onstop = null;
-      mediaRecorderRef.current.stop();
-    }
-    recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (appearanceSaveTimerRef.current !== null) window.clearTimeout(appearanceSaveTimerRef.current);
+      if (notificationsSaveTimerRef.current !== null) window.clearTimeout(notificationsSaveTimerRef.current);
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        mediaRecorderRef.current.onstop = null;
+        mediaRecorderRef.current.stop();
+      }
+      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+    };
   }, []);
 
   useEffect(() => {
@@ -211,42 +233,80 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     return () => URL.revokeObjectURL(previewUrl);
   }, [giftMediaFile]);
 
-  useEffect(() => {
-    if (!settingsOpen) return;
-    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        setSettingsOpen(false);
-      }
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [settingsOpen]);
-
   const messageCount = state.status === "active" ? state.messages.length : 0;
   const activeCoupleId = state.status === "active" ? state.coupleId : null;
 
   useEffect(() => {
     if (state.status !== "active") return;
-    const key = "morados-chat-wallpaper:" + state.coupleId;
-    try {
-      const saved = window.localStorage.getItem(key);
-      if (saved === "paper" || saved === "petals" || saved === "confetti" || saved === "night") {
-        setWallpaper(saved);
-      }
-    } catch {
-      // The wallpaper selection still works for this screen session.
-    }
-  }, [state.status, activeCoupleId]);
+    let active = true;
+    const coupleId = state.coupleId;
+    setAppearance(readLocalConversationAppearance(coupleId));
+    setNotifications(readLocalConversationNotifications(coupleId, userId));
+    void loadConversationAppearance(coupleId).then((value) => { if (active) setAppearance(value); });
+    void loadConversationNotifications(coupleId, userId).then((value) => { if (active) setNotifications(value); });
+    return () => { active = false; };
+  }, [state.status, activeCoupleId, userId]);
 
   useEffect(() => {
-    if (state.status !== "active") return;
-    try {
-      window.localStorage.setItem("morados-chat-wallpaper:" + state.coupleId, wallpaper);
-    } catch {
-      // Storage can be disabled in embedded browsers.
+    const path = appearance.backgroundImagePath;
+    if (!path) {
+      setBackgroundImageUrl(null);
+      return;
     }
-  }, [wallpaper, state.status, activeCoupleId]);
+    let active = true;
+    void createCoupleMediaUrl(path)
+      .then((result) => { if (active) setBackgroundImageUrl(result.url); })
+      .catch((cause) => {
+        console.warn("Não foi possível carregar o papel de parede personalizado.", cause);
+        if (active) setBackgroundImageUrl(null);
+      });
+    return () => { active = false; };
+  }, [appearance.backgroundImagePath]);
+
+  function updateAppearance(next: ConversationAppearance) {
+    setAppearance(next);
+    if (state.status !== "active") return;
+    if (appearanceSaveTimerRef.current !== null) window.clearTimeout(appearanceSaveTimerRef.current);
+    setAppearanceSaving(true);
+    const coupleId = state.coupleId;
+    appearanceSaveTimerRef.current = window.setTimeout(() => {
+      void saveConversationAppearance(coupleId, userId, next)
+        .then((synced) => { if (mountedRef.current) setAppearanceSyncAvailable(synced); })
+        .finally(() => {
+          appearanceSaveTimerRef.current = null;
+          if (mountedRef.current) setAppearanceSaving(false);
+        });
+    }, 450);
+  }
+
+  function updateNotifications(next: ConversationNotificationPreferences) {
+    setNotifications(next);
+    if (state.status !== "active") return;
+    if (notificationsSaveTimerRef.current !== null) window.clearTimeout(notificationsSaveTimerRef.current);
+    setNotificationsSaving(true);
+    const coupleId = state.coupleId;
+    notificationsSaveTimerRef.current = window.setTimeout(() => {
+      void saveConversationNotifications(coupleId, userId, next)
+        .then((synced) => { if (mountedRef.current) setNotificationsSyncAvailable(synced); })
+        .finally(() => {
+          notificationsSaveTimerRef.current = null;
+          if (mountedRef.current) setNotificationsSaving(false);
+        });
+    }, 250);
+  }
+
+  function openConversationSettings() {
+    settingsScrollTopRef.current = threadRef.current?.scrollTop ?? 0;
+    setSettingsPageOpen(true);
+  }
+
+  useEffect(() => {
+    if (settingsPageOpen) return;
+    const frame = window.requestAnimationFrame(() => {
+      if (threadRef.current) threadRef.current.scrollTop = settingsScrollTopRef.current;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [settingsPageOpen]);
 
   useEffect(() => {
     const thread = threadRef.current;
@@ -273,24 +333,42 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
   useEffect(() => {
     if (state.status !== "active") return;
-    let active = true;
-    const attachments = state.messages.filter((message) => message.attachment_path);
-    void Promise.all(
-      attachments.map(async (message) => {
-        const result = await createCoupleMediaUrl(message.attachment_path as string);
-        return [message.id, result.url] as const;
-      }),
-    ).then((entries) => {
-      if (!active) return;
-      setMediaUrls((current) => ({
-        ...current,
-        ...Object.fromEntries(entries.filter((entry) => entry[1])),
-      }));
-    });
-    return () => {
-      active = false;
-    };
-  }, [state.status, state.status === "active" ? state.messages : []]);
+    for (const message of state.messages) {
+      if (!message.attachment_path || mediaUrlsCacheRef.current[message.id] || pendingMediaIdsRef.current.has(message.id)) continue;
+      pendingMediaIdsRef.current.add(message.id);
+      mediaQueueRef.current.push(message);
+    }
+    if (mediaSigningRef.current || mediaQueueRef.current.length === 0) return;
+
+    mediaSigningRef.current = true;
+    void (async () => {
+      try {
+        while (mediaQueueRef.current.length > 0) {
+          const batch = mediaQueueRef.current.splice(0, 4);
+          const entries = await mapWithConcurrency(batch, 4, async (message) => {
+            try {
+              const result = await createCoupleMediaUrl(message.attachment_path as string);
+              return [message.id, result.url] as const;
+            } catch (cause) {
+              console.warn("Não foi possível preparar uma mídia da conversa.", cause);
+              return [message.id, null] as const;
+            }
+          });
+          for (const [messageId, url] of entries) {
+            pendingMediaIdsRef.current.delete(messageId);
+            if (url) mediaUrlsCacheRef.current[messageId] = url;
+          }
+          if (mountedRef.current && entries.some((entry) => entry[1])) {
+            setMediaUrls({ ...mediaUrlsCacheRef.current });
+          }
+        }
+      } catch (cause) {
+        console.error("Falha ao preparar anexos da conversa.", cause);
+      } finally {
+        mediaSigningRef.current = false;
+      }
+    })();
+  }, [state]);
 
   const selectedGiftArtwork = giftArtworks.find((item) => item.id === giftArtwork) ?? giftArtworks[0];
   const SelectedGiftArtworkIcon = selectedGiftArtwork.Icon;
@@ -805,8 +883,55 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     return <p className="conversation-message-text">{message.body}</p>;
   }
 
+  if (settingsPageOpen && state.status === "active") {
+    return (
+      <CoupleConversationSettings
+        userId={userId}
+        coupleId={state.coupleId}
+        messages={state.messages}
+        mediaUrls={mediaUrls}
+        appearance={appearance}
+        notifications={notifications}
+        backgroundImageUrl={backgroundImageUrl}
+        savingAppearance={appearanceSaving}
+        savingNotifications={notificationsSaving}
+        appearanceSyncAvailable={appearanceSyncAvailable}
+        notificationsSyncAvailable={notificationsSyncAvailable}
+        hasOlderMessages={hasOlderMessages}
+        loadingOlderMessages={loadingOlderMessages}
+        onBack={() => setSettingsPageOpen(false)}
+        onAppearanceChange={updateAppearance}
+        onNotificationsChange={updateNotifications}
+        onLoadMore={() => void loadOlderMessages()}
+        onSearchMessages={() => {
+          setSettingsPageOpen(false);
+          setSearchOpen(true);
+        }}
+      />
+    );
+  }
+
+  const conversationStyle = {
+    "--conversation-bubble-own": appearance.ownBubbleColor,
+    "--conversation-bubble-other": appearance.otherBubbleColor,
+    "--conversation-message-text": appearance.messageTextColor,
+    "--conversation-message-radius": appearance.bubbleRadius + "px",
+    ...(backgroundImageUrl && appearance.wallpaper === "photo"
+      ? {
+          backgroundImage: "linear-gradient(rgb(20 24 18 / 35%), rgb(20 24 18 / 35%)), url(" + JSON.stringify(backgroundImageUrl) + ")",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }
+      : {}),
+  } as CSSProperties;
+
   return (
-    <section className={"conversation-screen wallpaper-" + wallpaper} aria-label="Conversa do casal">
+    <section
+      className={"conversation-screen wallpaper-" + appearance.wallpaper + (appearance.wallpaper === "photo" ? " wallpaper-photo" : "")}
+      style={conversationStyle}
+      data-message-font={appearance.messageFont}
+      aria-label="Conversa do casal"
+    >
       <header className="conversation-heading" data-no-swipe>
         <div className="conversation-heading-leading">
           <button
@@ -838,99 +963,15 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             type="button"
             className="conversation-options-button conversation-floating-action"
             aria-label="Configurações da conversa"
-            aria-haspopup="menu"
-            aria-expanded={settingsOpen}
-            aria-controls="conversation-options-panel"
+            disabled={state.status !== "active"}
             title="Configurações"
-            onClick={() => setSettingsOpen((open) => !open)}
+            onClick={openConversationSettings}
           >
             <MoreVertical aria-hidden="true" />
           </button>
-          {settingsOpen && (
-            <div id="conversation-options-panel" className="conversation-options-panel" role="menu" aria-label="Configurações da conversa">
-              <button
-                type="button"
-                className="conversation-options-item"
-                role="menuitem"
-                onClick={() => {
-                  setSearchOpen((open) => !open);
-                  setSettingsOpen(false);
-                }}
-              >
-                <Search aria-hidden="true" />
-                <span>{searchOpen ? "Ocultar pesquisa" : "Pesquisar mensagens"}</span>
-              </button>
-              <button
-                type="button"
-                className="conversation-options-item"
-                role="menuitem"
-                onClick={() => {
-                  setWallpaperOpen((open) => !open);
-                  setSettingsOpen(false);
-                }}
-              >
-                <Palette aria-hidden="true" />
-                <span>Papel de parede</span>
-              </button>
-              <button
-                type="button"
-                className="conversation-options-item"
-                role="menuitem"
-                disabled={!hasOlderMessages || loadingOlderMessages || state.status !== "active"}
-                onClick={() => {
-                  setSettingsOpen(false);
-                  void loadOlderMessages();
-                }}
-              >
-                <History aria-hidden="true" />
-                <span>{loadingOlderMessages ? "Carregando…" : "Mensagens anteriores"}</span>
-              </button>
-              <div className="conversation-options-divider" role="separator" />
-              <button
-                type="button"
-                className="conversation-options-item"
-                role="menuitem"
-                disabled={busy || state.status === "loading"}
-                onClick={() => {
-                  setSettingsOpen(false);
-                  setRefreshKey((key) => key + 1);
-                }}
-              >
-                <RefreshCw aria-hidden="true" />
-                <span>Atualizar conversa</span>
-              </button>
-            </div>
-          )}
         </div>
       </header>
 
-      {settingsOpen && (
-        <button
-          type="button"
-          className="conversation-options-dismiss"
-          aria-label="Fechar configurações da conversa"
-          tabIndex={-1}
-          onClick={() => setSettingsOpen(false)}
-        />
-      )}
-
-      {wallpaperOpen && (
-        <div className="conversation-wallpaper-panel" role="group" aria-label="Escolher papel de parede">
-          {wallpapers.map((option) => (
-            <button
-              type="button"
-              key={option.id}
-              className={"conversation-wallpaper-choice wallpaper-" + option.id + (wallpaper === option.id ? " is-selected" : "")}
-              onClick={() => { setWallpaper(option.id); setWallpaperOpen(false); }}
-              aria-pressed={wallpaper === option.id}
-            >
-              <span className="conversation-wallpaper-swatch" />
-              <span><strong>{option.title}</strong><small>{option.description}</small></span>
-              {wallpaper === option.id && <Check aria-hidden="true" />}
-            </button>
-          ))}
-        </div>
-      )}
 
       {state.status === "loading" && (
         <p className="conversation-state" role="status">Abrindo a conversa…</p>
@@ -960,7 +1001,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               <Search aria-hidden="true" />
               <input
                 type="search"
-                autoFocus
                 value={messageSearch}
                 onChange={(event) => setMessageSearch(event.target.value)}
                 placeholder="Pesquisar nesta conversa"
@@ -1151,6 +1191,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 >
                   <Gift aria-hidden="true" />
                 </button>
+                <button
+                  type="button"
+                  className={"conversation-audio-button" + (recordingAudio ? " is-recording" : "")}
+                  onClick={() => void toggleAudioRecording()}
+                  aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
+                  title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
+                  disabled={busy || state.status !== "active"}
+                >
+                  {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
+                </button>
               </div>
               <div className="conversation-input-shell">
                 {Capacitor.isNativePlatform() ? (
@@ -1178,25 +1228,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                     />
                   </>
                 )}
-                {(!draft.trim() || Capacitor.isNativePlatform()) ? (
-                  <button
-                    type="button"
-                    className={"conversation-audio-button" + (recordingAudio ? " is-recording" : "")}
-                    onClick={() => void toggleAudioRecording()}
-                    aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
-                    title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
-                    disabled={busy || state.status !== "active"}
-                  >
-                    {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="conversation-send-button"
-                    disabled={busy || draft.trim().length === 0}
-                    aria-label="Enviar mensagem"
-                    title="Enviar"
-                  >
+                {!Capacitor.isNativePlatform() && (
+                  <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0} aria-label="Enviar mensagem" title="Enviar">
                     {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
                   </button>
                 )}
