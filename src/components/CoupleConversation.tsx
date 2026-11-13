@@ -38,13 +38,6 @@ import {
   Music2,
   Palette,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Capacitor } from "@capacitor/core";
 import { MoradosMark } from "@/components/MoradosMark";
 import { NativeAuth } from "@/lib/native-auth";
@@ -166,6 +159,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [draft, setDraft] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [hasOlderMessages, setHasOlderMessages] = useState(false);
   const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
   const [olderMessagesError, setOlderMessagesError] = useState<string | null>(null);
@@ -216,6 +210,18 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     setGiftMediaPreview(previewUrl);
     return () => URL.revokeObjectURL(previewUrl);
   }, [giftMediaFile]);
+
+  useEffect(() => {
+    if (!settingsOpen) return;
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSettingsOpen(false);
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [settingsOpen]);
 
   const messageCount = state.status === "active" ? state.messages.length : 0;
   const activeCoupleId = state.status === "active" ? state.coupleId : null;
@@ -828,47 +834,85 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         </button>
 
         <div className="conversation-heading-trailing">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="conversation-options-button conversation-floating-action"
+            aria-label="Configurações da conversa"
+            aria-haspopup="menu"
+            aria-expanded={settingsOpen}
+            aria-controls="conversation-options-panel"
+            title="Configurações"
+            onClick={() => setSettingsOpen((open) => !open)}
+          >
+            <MoreVertical aria-hidden="true" />
+          </button>
+          {settingsOpen && (
+            <div id="conversation-options-panel" className="conversation-options-panel" role="menu" aria-label="Configurações da conversa">
               <button
                 type="button"
-                className="conversation-options-button conversation-floating-action"
-                aria-label="Configurações da conversa"
-                title="Configurações"
+                className="conversation-options-item"
+                role="menuitem"
+                onClick={() => {
+                  setSearchOpen((open) => !open);
+                  setSettingsOpen(false);
+                }}
               >
-                <MoreVertical aria-hidden="true" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" sideOffset={8} className="conversation-options-menu nc-menu">
-              <DropdownMenuItem className="nc-menu-item" onSelect={() => setSearchOpen((open) => !open)}>
                 <Search aria-hidden="true" />
-                {searchOpen ? "Ocultar pesquisa" : "Pesquisar mensagens"}
-              </DropdownMenuItem>
-              <DropdownMenuItem className="nc-menu-item" onSelect={() => setWallpaperOpen((open) => !open)}>
+                <span>{searchOpen ? "Ocultar pesquisa" : "Pesquisar mensagens"}</span>
+              </button>
+              <button
+                type="button"
+                className="conversation-options-item"
+                role="menuitem"
+                onClick={() => {
+                  setWallpaperOpen((open) => !open);
+                  setSettingsOpen(false);
+                }}
+              >
                 <Palette aria-hidden="true" />
-                Papel de parede
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="nc-menu-item"
+                <span>Papel de parede</span>
+              </button>
+              <button
+                type="button"
+                className="conversation-options-item"
+                role="menuitem"
                 disabled={!hasOlderMessages || loadingOlderMessages || state.status !== "active"}
-                onSelect={() => void loadOlderMessages()}
+                onClick={() => {
+                  setSettingsOpen(false);
+                  void loadOlderMessages();
+                }}
               >
                 <History aria-hidden="true" />
-                {loadingOlderMessages ? "Carregando…" : "Mensagens anteriores"}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator className="nc-menu-sep" />
-              <DropdownMenuItem
-                className="nc-menu-item"
+                <span>{loadingOlderMessages ? "Carregando…" : "Mensagens anteriores"}</span>
+              </button>
+              <div className="conversation-options-divider" role="separator" />
+              <button
+                type="button"
+                className="conversation-options-item"
+                role="menuitem"
                 disabled={busy || state.status === "loading"}
-                onSelect={() => setRefreshKey((key) => key + 1)}
+                onClick={() => {
+                  setSettingsOpen(false);
+                  setRefreshKey((key) => key + 1);
+                }}
               >
                 <RefreshCw aria-hidden="true" />
-                Atualizar conversa
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <span>Atualizar conversa</span>
+              </button>
+            </div>
+          )}
         </div>
       </header>
+
+      {settingsOpen && (
+        <button
+          type="button"
+          className="conversation-options-dismiss"
+          aria-label="Fechar configurações da conversa"
+          tabIndex={-1}
+          onClick={() => setSettingsOpen(false)}
+        />
+      )}
 
       {wallpaperOpen && (
         <div className="conversation-wallpaper-panel" role="group" aria-label="Escolher papel de parede">
