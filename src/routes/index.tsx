@@ -14,7 +14,7 @@ import {
   LogOut,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
@@ -78,24 +78,26 @@ function Index() {
   const activeSectionRef = useRef<SectionId>("home");
   const chromeHidden = useHideOnScroll(activeSection);
 
-  const goToSection = (section: SectionId) => {
+  const goToSection = useCallback((section: SectionId) => {
     if (activeSectionRef.current === section) return;
     sectionHistory.current = [...sectionHistory.current, activeSectionRef.current].slice(-20);
     activeSectionRef.current = section;
     setActiveSection(section);
-  };
+  }, []);
 
-  const goHome = () => {
+  const goHome = useCallback(() => {
     sectionHistory.current = [];
     activeSectionRef.current = "home";
     setActiveSection("home");
-  };
+  }, []);
 
-  const goBack = () => {
+  const goBack = useCallback(() => {
     const previous = sectionHistory.current.pop() ?? "home";
     activeSectionRef.current = previous;
     setActiveSection(previous);
-  };
+  }, []);
+
+  const openConversation = useCallback(() => goToSection("messages"), [goToSection]);
 
   useEffect(() => {
     let start: { x: number; y: number } | null = null;
@@ -248,7 +250,7 @@ function Index() {
                 <HomeScreen
                   userId={session.user.id}
                   onNavigate={goToSection}
-                  onOpenConversation={() => goToSection("messages")}
+                  onOpenConversation={openConversation}
                   postComposerRequest={postComposerRequest}
                 />
               ) : activeSection === "games" ? (
