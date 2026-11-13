@@ -111,7 +111,7 @@ replace_once(
     "IME insets opt-out helper",
 )
 
-if source.count("keyboardOverlaysWebView") != 5:
+if source.count("keyboardOverlaysWebView") != 6:
     raise SystemExit(
         "Capacitor keyboard-insets patch verification failed: "
         f"found {source.count('keyboardOverlaysWebView')} marker occurrences."
