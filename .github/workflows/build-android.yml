@@ -15,6 +15,7 @@ on:
       - "package.json"
       - "bun.lock"
       - ".github/workflows/build-android.yml"
+      - "scripts/**"
   workflow_dispatch:
 
 permissions:
@@ -83,9 +84,11 @@ jobs:
       - name: Install application dependencies
         run: bun install
 
-      - name: Confirm Capacitor includes the Android keyboard-insets fix
+      - name: Apply the upstream Capacitor SystemBars keyboard-insets fix
+        run: python3 scripts/patch-capacitor-systembars.py
+
+      - name: Confirm the SystemBars keyboard-insets fix is applied
         run: |
-          bun pm ls @capacitor/core @capacitor/android @capacitor/cli
           SYSTEM_BARS="node_modules/@capacitor/android/capacitor/src/main/java/com/getcapacitor/plugin/SystemBars.java"
           test -f "$SYSTEM_BARS"
           grep -q "keyboardOverlaysWebView" "$SYSTEM_BARS"
@@ -177,7 +180,7 @@ jobs:
             - O login no APK utiliza EditText nativos do Android; o fluxo Supabase, as contas existentes e os dados do aplicativo são preservados.
             - Navegação por toque capturado: deslizar para a esquerda no Feed abre a conversa; deslizar para a direita retorna.
             - SystemBars do Capacitor inicia oculto, usa insets nativos e revela as barras temporariamente por gesto do sistema.
-            - Campos HTML usam a correção do Capacitor 8.6.2 para impedir o redimensionamento duplo da WebView; adjustNothing mantém a tela estável e o foco rola o campo acima do teclado.
+            - Campos HTML usam a correção upstream do Capacitor (PR #8619), aplicada ao código travado no lockfile; adjustNothing evita o redimensionamento duplo da WebView e o foco rola o campo acima do teclado.
             - No APK, a escrita de mensagens usa EditText nativo do Android, sem campo de texto HTML no WebView.
             - Autenticação e sincronização usam os serviços online do Morados.
           files: |
