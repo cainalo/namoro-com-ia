@@ -15,6 +15,7 @@ type Props = {
   scrollKey: string;
   contentClassName: string;
   scrollableContent?: boolean;
+  brandCenter?: boolean;
   children: ReactNode;
 };
 
@@ -68,6 +69,7 @@ export function SecondaryPageChrome({
   scrollKey,
   contentClassName,
   scrollableContent = false,
+  brandCenter = false,
   children,
 }: Props) {
   const hidden = useHideOnScroll(scrollKey);
@@ -88,7 +90,14 @@ export function SecondaryPageChrome({
                 <ArrowLeft aria-hidden="true" />
               </button>
             </div>
-            <h1 className="secondary-page-title" title={title}>{title}</h1>
+            {brandCenter ? (
+              <div className="secondary-page-brand" aria-label="Morados">
+                <MoradosMark size={28} />
+                <span className="morados-wordmark-text">morados</span>
+              </div>
+            ) : (
+              <h1 className="secondary-page-title" title={title}>{title}</h1>
+            )}
             <div className="topbar-side topbar-side-trailing secondary-page-right-action">
               {rightAction}
             </div>

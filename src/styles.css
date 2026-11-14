@@ -24159,3 +24159,112 @@ body {
   flex: 0 0 35px;
   margin: 0;
 }
+
+
+/* MORADOS — câmera própria, imersiva e compartilhada por conversa e publicação. */
+.morados-camera-overlay {
+  position: fixed !important; z-index: 20000 !important; inset: 0 !important;
+  display: flex; width: 100vw; height: 100dvh; min-height: 100dvh;
+  align-items: stretch; justify-content: center; overflow: hidden;
+  background: #101510; color: #fffaf1; overscroll-behavior: contain;
+}
+.morados-camera-screen {
+  display: grid; width: min(100%,760px); height: 100%; min-height: 0;
+  grid-template-rows: auto minmax(0,1fr) auto; background: #101510;
+}
+.morados-camera-header {
+  position: relative; z-index: 2; display: grid;
+  min-height: calc(58px + env(safe-area-inset-top));
+  grid-template-columns: 44px minmax(0,1fr) 44px; align-items: center; gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 7px) 16px 8px;
+  background: linear-gradient(180deg,rgb(0 0 0 / 44%),transparent);
+}
+.morados-camera-icon-button {
+  display: grid; width: 42px; height: 42px; place-items: center;
+  border: 1px solid rgb(255 255 255 / 24%); border-radius: 50%;
+  background: rgb(24 31 25 / 46%); color: #fffaf1; backdrop-filter: blur(12px);
+}
+.morados-camera-icon-button:disabled { opacity: .38; }
+.morados-camera-icon-button svg { width: 19px; height: 19px; }
+.morados-camera-brand { display: grid; justify-items: center; gap: 1px; }
+.morados-camera-brand span { font-family: var(--font-display); font-size: 19px; font-weight: 750; letter-spacing: -.035em; }
+.morados-camera-brand small { color: rgb(255 250 241 / 65%); font-size: 9px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+.morados-camera-viewfinder { position: relative; min-height: 0; overflow: hidden; background: #171a17; }
+.morados-camera-preview { display: block; width: 100%; height: 100%; max-height: none; aspect-ratio: auto; border-radius: 0; background: #111; object-fit: cover; }
+.morados-camera-preview.is-selfie { transform: scaleX(-1); }
+.morados-camera-loading {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px; background: #151b16; color: rgb(255 250 241 / 82%); font-size: 12px;
+}
+.morados-camera-loading svg { width: 25px; height: 25px; animation: spin 1s linear infinite; }
+.morados-camera-recording-indicator {
+  position: absolute; top: 16px; left: 16px; display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid rgb(255 255 255 / 22%); border-radius: 99px; background: rgb(21 24 21 / 72%);
+  padding: 7px 10px; color: white; font-size: 10px; font-weight: 800; font-variant-numeric: tabular-nums; backdrop-filter: blur(10px);
+}
+.morados-camera-recording-indicator span { width: 7px; height: 7px; border-radius: 50%; background: #ef4545; box-shadow: 0 0 0 4px rgb(239 69 69 / 18%); animation: morados-recording-pulse 1.1s infinite; }
+.morados-camera-controls {
+  display: grid; gap: 13px; padding: 13px 18px calc(env(safe-area-inset-bottom) + 18px);
+  background: linear-gradient(0deg,#101510 80%,rgb(16 21 16 / 93%));
+}
+.morados-camera-mode-switch { display: flex; justify-content: center; gap: 8px; }
+.morados-camera-mode-switch button {
+  min-width: 83px; min-height: 32px; border: 1px solid rgb(255 250 241 / 17%);
+  border-radius: 999px; background: rgb(255 255 255 / 7%); color: rgb(255 250 241 / 72%);
+  font-size: 9px; font-weight: 850; letter-spacing: .12em;
+}
+.morados-camera-mode-switch button.is-active { border-color: rgb(255 250 241 / 65%); background: #f8f0dc; color: #273125; }
+.morados-camera-mode-switch button:disabled { opacity: .35; }
+.morados-camera-zoom { display: flex; align-items: center; gap: 9px; color: rgb(255 250 241 / 85%); }
+.morados-camera-zoom svg { width: 15px; height: 15px; flex: 0 0 15px; }
+.morados-camera-zoom input { min-width: 0; flex: 1 1 auto; accent-color: #e9b77b; }
+.morados-camera-zoom span { min-width: 31px; color: rgb(255 250 241 / 72%); font-size: 10px; font-variant-numeric: tabular-nums; text-align: right; }
+.morados-camera-effects { display: flex; justify-content: center; gap: 7px; overflow-x: auto; padding: 1px 0 3px; scrollbar-width: none; }
+.morados-camera-effects button { min-height: 31px; flex: 0 0 auto; border: 1px solid rgb(255 250 241 / 17%); border-radius: 999px; background: rgb(255 255 255 / 6%); padding: 0 11px; color: rgb(255 250 241 / 75%); font-size: 10px; font-weight: 700; }
+.morados-camera-effects button.is-active { border-color: rgb(233 183 123 / 65%); background: rgb(233 183 123 / 17%); color: #f4c99b; }
+.morados-camera-effects button:disabled { opacity: .4; }
+.morados-camera-shutter-row { display: grid; min-height: 66px; grid-template-columns: minmax(0,1fr) 68px minmax(0,1fr); align-items: center; justify-items: center; gap: 12px; }
+.morados-camera-shutter {
+  display: grid; width: 62px; height: 62px; place-items: center;
+  border: 5px solid #f8f0dc; border-radius: 50%; background: #e9b77b; color: #273125;
+  box-shadow: 0 0 0 5px rgb(255 250 241 / 15%);
+}
+.morados-camera-shutter svg { width: 24px; height: 24px; }
+.morados-camera-shutter.is-video { background: #c94e3e; color: #fffaf1; }
+.morados-camera-shutter.is-recording { border-radius: 19px; background: #d44343; color: white; }
+.morados-camera-shutter:disabled { opacity: .35; }
+.morados-camera-shutter-side { justify-self: stretch; color: rgb(255 250 241 / 55%); font-size: 9px; text-align: center; }
+.morados-camera-finalizing { display: inline-flex; grid-column: 1 / -1; align-items: center; gap: 8px; color: #f4c99b; font-size: 11px; }
+.morados-camera-finalizing svg { width: 18px; height: 18px; animation: spin 1s linear infinite; }
+.morados-camera-caption { margin: 0; color: rgb(255 250 241 / 48%); font-size: 9px; line-height: 1.4; text-align: center; }
+.morados-camera-error { margin: 0; border: 1px solid rgb(239 69 69 / 35%); border-radius: 9px; background: rgb(239 69 69 / 12%); padding: 8px 10px; color: #ffc7c3; font-size: 10px; line-height: 1.4; text-align: center; }
+.morados-media-capture-trigger { display: inline-flex; width: 100%; min-height: 2.9rem; align-items: center; justify-content: center; gap: .55rem; border: 1px solid color-mix(in srgb,var(--color-primary) 28%,var(--color-border)); border-radius: .75rem; background: var(--color-primary-soft); padding: .65rem .8rem; color: var(--color-primary); font-size: .82rem; font-weight: 750; }
+.morados-media-capture-trigger svg { width: 1.1rem; height: 1.1rem; }
+@media (max-width:380px) { .morados-camera-controls { gap: 10px; padding-inline: 12px; } .morados-camera-effects { justify-content: flex-start; } .morados-camera-effects button { padding-inline: 9px; } }
+
+/* Chrome centralizado e navegação inferior nas configurações da conversa. */
+.secondary-page-brand { position: absolute; top: 50%; left: 50%; display: inline-flex; align-items: center; justify-content: center; gap: 7px; transform: translate(-50%,-50%); pointer-events: none; white-space: nowrap; }
+.secondary-page-brand .morados-wordmark-text { color: var(--color-foreground); font-family: var(--font-display); font-size: 17px; font-weight: 750; letter-spacing: -.04em; }
+.app-shell.is-conversation-mode .app-main-conversation { display: flex; height: 100dvh; min-height: 0; flex-direction: column; overflow: hidden; }
+.app-shell.is-conversation-mode .app-main-conversation .conversation-settings-page { display: block; width: 100%; height: calc(100dvh - 66px); min-height: 0; max-height: none; flex: 1 1 auto; overflow-x: hidden; overflow-y: auto; padding-bottom: calc(78px + env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
+.app-shell.is-conversation-mode .app-main-conversation .conversation-settings-body { min-height: 100%; background: radial-gradient(circle at 92% 0%,color-mix(in srgb,var(--color-accent) 8%,transparent),transparent 22rem),var(--color-background); color: var(--color-foreground); }
+.conversation-settings-page-heading { display: flex; max-width: 1120px; align-items: center; justify-content: space-between; gap: 12px; margin: 0 auto; padding: 21px clamp(12px,3vw,28px) 8px; }
+.conversation-settings-page-heading > div:first-child { display: grid; gap: 3px; }
+.conversation-settings-page-heading > div:first-child > span { color: var(--color-accent); font-size: 9px; font-weight: 850; letter-spacing: .14em; }
+.conversation-settings-page-heading h1 { margin: 0; color: var(--color-foreground); font-family: var(--font-display); font-size: clamp(21px,4vw,29px); font-weight: 750; letter-spacing: -.04em; }
+.conversation-settings-page-heading .conversation-settings-save-state { display: inline-flex; max-width: 125px; align-items: center; justify-content: flex-end; gap: 5px; color: var(--color-muted-foreground); font-size: 9px; text-align: right; }
+.conversation-settings-page-heading .conversation-settings-save-state svg { width: 14px; height: 14px; flex: 0 0 14px; }
+.conversation-settings-layout { padding-top: 12px; }
+@media (max-width:680px) {
+  .app-shell.is-conversation-mode .app-main-conversation .conversation-settings-page { height: calc(100dvh - 58px); }
+  .conversation-settings-page-heading { align-items: flex-start; flex-direction: column; gap: 7px; }
+  .conversation-settings-page-heading .conversation-settings-save-state { max-width: none; justify-content: flex-start; }
+}
+
+/* O menu de anexos permanece fixo imediatamente acima do compositor, não na barra superior. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-tools-panel {
+  position: fixed !important; z-index: 180 !important; top: auto !important;
+  right: 12px !important; bottom: calc(env(safe-area-inset-bottom) + 82px) !important;
+  left: 12px !important; width: auto !important; max-height: min(44dvh,360px) !important;
+  overflow-y: auto !important; transform: none !important; margin: 0 !important;
+}

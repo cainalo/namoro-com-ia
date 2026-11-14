@@ -35,6 +35,7 @@ import { Capacitor } from "@capacitor/core";
 import { ConversationCallScreen, type CallKind } from "@/components/ConversationCallScreen";
 import { readableInk } from "@/lib/readable-ink";
 import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
+import { MoradosCamera, type MoradosCameraMode } from "@/components/MoradosCamera";
 import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
 import { mapWithConcurrency } from "@/lib/async-pool";
 import {
@@ -80,6 +81,7 @@ type ConversationState =
 type ConversationProps = {
   userId: string;
   onBack: () => void;
+  onNavigate: (section: "home" | "games" | "memories" | "organize" | "create-post") => void;
 };
 
 function isCoupleMessage(value: unknown): value is CoupleMessage {
@@ -200,7 +202,7 @@ async function readAudioFileDuration(file: File): Promise<number | undefined> {
   });
 }
 
-export function CoupleConversation({ userId, onBack }: ConversationProps) {
+export function CoupleConversation({ userId, onBack, onNavigate }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
@@ -225,7 +227,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [backgroundImageError, setBackgroundImageError] = useState<string | null>(null);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
   const [attachmentAccept, setAttachmentAccept] = useState("*/*");
-  const [attachmentCapture, setAttachmentCapture] = useState<"environment" | undefined>(undefined);
+  const [cameraMode, setCameraMode] = useState<MoradosCameraMode | null>(null);
   const [recordingStatus, setRecordingStatus] = useState<AudioRecordingStatus>("idle");
   const [recordingFile, setRecordingFile] = useState<File | null>(null);
   const [recordingPreviewUrl, setRecordingPreviewUrl] = useState<string | null>(null);
@@ -452,6 +454,18 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     })();
   }, [state]);
 
+
+  function appendSavedMessage(message: CoupleMessage) {
+    setState((current) => {
+      if (current.status !== "active" || current.messages.some((item) => item.id === message.id)) return current;
+      return {
+        ...current,
+        messages: [...current.messages, message].sort(
+          (left, right) => new Date(left.created_at).getTime() - new Date(right.created_at).getTime(),
+        ),
+      };
+    });
+  }
 
   const visibleMessages =
     state.status === "active"
@@ -721,13 +735,13 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         ...input,
       });
       if (result.error) throw result.error;
+      if (result.data) appendSavedMessage(normalizedMessage(result.data));
       setDraft("");
       setAttachmentOpen(false);
 
       if (Capacitor.isNativePlatform()) {
         void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
       }
-      setRefreshKey((key) => key + 1);
     } catch (cause) {
       console.error("Falha ao enviar mensagem.", cause);
       setError("Não foi possível enviar. Confira a conexão e tente novamente.");
@@ -788,9 +802,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         await removeCoupleMedia(uploaded.path);
         throw result.error;
       }
+      if (result.data) appendSavedMessage(normalizedMessage(result.data));
       setAttachmentOpen(false);
-
-      setRefreshKey((key) => key + 1);
       if (Capacitor.isNativePlatform()) void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
       return true;
     } catch (cause) {
@@ -805,16 +818,14 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   async function sendAttachment(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
-    setAttachmentCapture(undefined);
     if (file) {
       const durationSeconds = await readAudioFileDuration(file);
       await sendFile(file, undefined, durationSeconds ? { durationSeconds } : undefined);
     }
   }
 
-  function openAttachmentPicker(accept: string, capture?: "environment") {
+  function openAttachmentPicker(accept: string) {
     setAttachmentAccept(accept);
-    setAttachmentCapture(capture);
     setAttachmentOpen(false);
     window.setTimeout(() => fileInputRef.current?.click(), 0);
   }
@@ -1087,6 +1098,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           setSettingsPageOpen(false);
           setSearchOpen(true);
         }}
+        onNavigate={onNavigate}
       />
     );
   }
@@ -1290,9 +1302,9 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             <div className="conversation-tools-panel">
               <div className="conversation-attachment-grid">
                 <button type="button" onClick={() => openAttachmentPicker("image/*")}><Image aria-hidden="true" /><span>Galeria</span></button>
-                <button type="button" onClick={() => openAttachmentPicker("image/*", "environment")}><Camera aria-hidden="true" /><span>Tirar foto</span></button>
+                <button type="button" onClick={() => { setAttachmentOpen(false); setCameraMode("photo"); }}><Camera aria-hidden="true" /><span>Tirar foto</span></button>
                 <button type="button" onClick={() => openAttachmentPicker("video/*")}><Video aria-hidden="true" /><span>Vídeo</span></button>
-                <button type="button" onClick={() => openAttachmentPicker("video/*", "environment")}><Video aria-hidden="true" /><span>Gravar vídeo</span></button>
+                <button type="button" onClick={() => { setAttachmentOpen(false); setCameraMode("video"); }}><Video aria-hidden="true" /><span>Gravar vídeo</span></button>
                 <button type="button" onClick={() => openAttachmentPicker("audio/*")}><Music2 aria-hidden="true" /><span>Enviar áudio</span></button>
                 <button type="button" onClick={() => openAttachmentPicker("application/pdf,text/plain,application/zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}><File aria-hidden="true" /><span>Arquivos</span></button>
               </div>
@@ -1304,7 +1316,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               ref={fileInputRef}
               type="file"
               accept={attachmentAccept}
-              capture={attachmentCapture}
               className="sr-only"
               onChange={(event) => void sendAttachment(event)}
               aria-label="Escolher arquivo para enviar"
@@ -1416,6 +1427,15 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           </form>
         </>
       )}
+      <MoradosCamera
+        open={cameraMode !== null}
+        initialMode={cameraMode ?? "photo"}
+        onClose={() => setCameraMode(null)}
+        onCaptured={(file) => {
+          setCameraMode(null);
+          void sendFile(file);
+        }}
+      />
     </section>
   );
 }

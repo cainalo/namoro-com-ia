@@ -31,7 +31,14 @@ type MessageListResponse = {
 };
 
 type MessageInsertResponse = {
+  data: CoupleMessage | null;
   error: CoupleMessageError | null;
+};
+
+type MessageInsertQuery = {
+  select: (columns: string) => {
+    single: () => PromiseLike<MessageInsertResponse>;
+  };
 };
 
 type MessageSelection = {
@@ -55,7 +62,7 @@ type MessageTable = {
     attachment_name: string | null;
     attachment_mime: string | null;
     metadata: Record<string, unknown>;
-  }) => PromiseLike<MessageInsertResponse>;
+  }) => MessageInsertQuery;
 };
 
 type CoupleMessageClient = {
@@ -97,5 +104,5 @@ export async function sendCoupleMessage(input: {
     attachment_name: input.attachmentName ?? null,
     attachment_mime: input.attachmentMime ?? null,
     metadata: input.metadata ?? {},
-  });
+  }).select(MESSAGE_COLUMNS).single();
 }

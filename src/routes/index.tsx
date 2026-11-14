@@ -240,7 +240,7 @@ function Index() {
 
           <main className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
             {activeSection === "messages" ? (
-              <CoupleConversation userId={session.user.id} onBack={goBack} />
+              <CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} />
             ) : (
               <div className="page-frame">
               {activeSection === "home" || activeSection === "create-post" ? (

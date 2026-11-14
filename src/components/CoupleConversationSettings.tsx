@@ -21,6 +21,7 @@ import {
   type ConversationNotificationPreferences,
 } from "@/lib/couple-conversation-settings";
 import { MAX_COUPLE_MEDIA_BYTES, uploadCoupleMedia } from "@/lib/couple-media";
+import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
 
 type SettingsTab = "general" | "appearance" | "media" | "notifications";
 type MediaFilter = "all" | "image" | "video" | "audio" | "file";
@@ -45,6 +46,7 @@ type Props = {
   onNotificationsChange: (next: ConversationNotificationPreferences) => void;
   onLoadMore: () => void;
   onSearchMessages: () => void;
+  onNavigate: (section: SecondaryPageSection) => void;
 };
 
 const tabs: { id: SettingsTab; label: string; description: string; Icon: typeof Palette }[] = [
@@ -89,6 +91,7 @@ export function CoupleConversationSettings({
   onNotificationsChange,
   onLoadMore,
   onSearchMessages,
+  onNavigate,
 }: Props) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [mediaFilter, setMediaFilter] = useState<MediaFilter>("all");
@@ -131,22 +134,34 @@ export function CoupleConversationSettings({
   };
 
   return (
-    <section className="conversation-settings-page" data-chrome-scroll aria-label="Configurações da conversa">
-      <header className="conversation-settings-topbar">
-        <button type="button" className="conversation-settings-back" onClick={onBack} aria-label="Voltar à conversa">
-          <ArrowLeft aria-hidden="true" />
+    <SecondaryPageChrome
+      title="Configurações da conversa"
+      onBack={onBack}
+      backLabel="Voltar à conversa"
+      rightAction={(
+        <button type="button" className="topbar-icon-button" onClick={onBack} aria-label="Concluir configurações" title="Concluir">
+          <Check aria-hidden="true" />
         </button>
-        <div>
-          <span>ESPAÇO DO CASAL</span>
-          <h1>Configurações da conversa</h1>
+      )}
+      activeSection="home"
+      onNavigate={onNavigate}
+      scrollKey="conversation-settings"
+      contentClassName="conversation-settings-page"
+      scrollableContent
+      brandCenter
+    >
+      <section className="conversation-settings-body" aria-label="Configurações da conversa">
+        <div className="conversation-settings-page-heading">
+          <div>
+            <span>ESPAÇO DO CASAL</span>
+            <h1>Configurações da conversa</h1>
+          </div>
+          <div className="conversation-settings-save-state" role="status">
+            {(savingAppearance || savingNotifications) ? <LoaderCircle aria-hidden="true" /> : <Check aria-hidden="true" />}
+            {(savingAppearance || savingNotifications) ? "Salvando" : appearanceSyncAvailable && notificationsSyncAvailable ? "Sincronizado" : "Salvo neste aparelho"}
+          </div>
         </div>
-        <div className="conversation-settings-save-state" role="status">
-          {(savingAppearance || savingNotifications) ? <LoaderCircle aria-hidden="true" /> : <Check aria-hidden="true" />}
-          {(savingAppearance || savingNotifications) ? "Salvando" : appearanceSyncAvailable && notificationsSyncAvailable ? "Sincronizado" : "Salvo neste aparelho"}
-        </div>
-      </header>
-
-      <div className="conversation-settings-layout">
+        <div className="conversation-settings-layout">
         <nav className="conversation-settings-tabs" aria-label="Seções das configurações">
           {tabs.map(({ id, label, Icon }) => (
             <button
@@ -417,7 +432,8 @@ export function CoupleConversationSettings({
             </div>
           )}
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </SecondaryPageChrome>
   );
 }
