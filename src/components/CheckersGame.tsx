@@ -188,10 +188,11 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
   }
 
   function undoLastMove() {
-    const previous = history[history.length - 1];
+    const steps = solo && history.length >= 2 ? 2 : 1;
+    const previous = history[history.length - steps];
     if (!previous) return;
     setGame(previous);
-    setHistory((current) => current.slice(0, -1));
+    setHistory((current) => current.slice(0, -steps));
     clearSelection();
   }
 
