@@ -26,7 +26,7 @@ const initial:Progress={reviewed:[],interviewed:[],selected:"joel",accused:"",me
 function load():Progress{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}}
 type Tab="scene"|"evidence"|"interviews"|"verdict";
 export function CoupleInvestigationTrainGame(){
- const [progress,setProgress,sync]=useGameState<Progress>(load);
+ const [progress,setProgress,sync]=useGameState<Progress>(load,{onlineInitial:initial});
  const [tab,setTab]=useState<Tab>("scene");
  const [focus,setFocus]=useState<string|null>(null);
  const [hint,setHint]=useState(false);
@@ -41,7 +41,7 @@ export function CoupleInvestigationTrainGame(){
  function interview(id:SuspectId){setProgress(p=>({...p,selected:id,interviewed:p.interviewed.includes(id)?p.interviewed:[...p.interviewed,id]}));}
  function openClue(id:string){setFocus(id);setTab("evidence");review(id);}
  function accuse(){if(!canAccuse||!progress.accused||!progress.method||!progress.motive)return;setProgress(p=>({...p,solved:true}));setSolution(true);}
- function reset(){localStorage.removeItem(STORAGE);setProgress(initial);setTab("scene");setFocus(null);setHint(false);setSolution(false);}
+ function reset(){if(!sync.online)localStorage.removeItem(STORAGE);setProgress(initial);setTab("scene");setFocus(null);setHint(false);setSolution(false);}
  return(
  <section className="investigation-game investigation-train-case">
   <div className="investigation-case-cover">

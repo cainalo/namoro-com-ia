@@ -178,7 +178,7 @@ function loadProgress(): SavedProgress {
 
 export function CoupleInvestigationGame() {
   const [tab, setTab] = useState<InvestigationTab>("scene");
-  const [progress, setProgress, sync] = useGameState<SavedProgress>(loadProgress);
+  const [progress, setProgress, sync] = useGameState<SavedProgress>(loadProgress, { onlineInitial: initialProgress });
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
@@ -234,7 +234,7 @@ export function CoupleInvestigationGame() {
   }
 
   function resetCase() {
-    localStorage.removeItem(STORAGE_KEY);
+    if (!sync.online) localStorage.removeItem(STORAGE_KEY);
     setProgress(initialProgress);
     setTab("scene");
     setShowHint(false);

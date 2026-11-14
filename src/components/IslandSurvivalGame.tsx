@@ -27,7 +27,7 @@ const actionList:Action[]=[
 function loadState():SurvivalState{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}}
 const limit=(value:number)=>Math.max(0,Math.min(9,value));
 export function IslandSurvivalGame(){
- const [game,setGame,sync]=useGameState<SurvivalState>(loadState);
+ const [game,setGame,sync]=useGameState<SurvivalState>(loadState,{onlineInitial:initial});
  const [feedback,setFeedback]=useState("A tempestade passou. Vocês alcançaram uma pequena ilha. O resgate pode demorar alguns dias.");
  const [choice,setChoice]=useState<ActionId|null>(null);
  useEffect(()=>{if(!sync.online)localStorage.setItem(STORAGE,JSON.stringify(game));},[game,sync.online]);
@@ -87,7 +87,7 @@ export function IslandSurvivalGame(){
   setGame(next);
   setFeedback(next.phase==="won"||next.phase==="lost"?next.ending:"A noite passou. Confiram os recursos antes de tomar a próxima decisão.");
  }
- function restart(){localStorage.removeItem(STORAGE);setGame(initial);setChoice(null);setFeedback("A tempestade passou. Vocês alcançaram uma pequena ilha. O resgate pode demorar alguns dias.");}
+ function restart(){if(!sync.online)localStorage.removeItem(STORAGE);setGame(initial);setChoice(null);setFeedback("A tempestade passou. Vocês alcançaram uma pequena ilha. O resgate pode demorar alguns dias.");}
  return(
   <section className="island-survival-game">
    <div className="island-survival-hero">

@@ -15,7 +15,7 @@ const objects:Array<{id:RoomObject;name:string;icon:typeof Clock3;hint:string}>=
 ];
 
 export function EscapeRoomGame(){
- const [progress,setProgress,sync]=useGameState<RoomProgress>(()=>{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}});
+ const [progress,setProgress,sync]=useGameState<RoomProgress>(()=>{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}},{onlineInitial:initial});
  const [active,setActive]=useState<RoomObject|null>(null);
  const [message,setMessage]=useState("A porta principal se fechou atrás de vocês. Encontrem o mecanismo que libera a saída.");
  const [wrongAttempts,setWrongAttempts]=useState(0);
@@ -48,7 +48,7 @@ export function EscapeRoomGame(){
   setProgress(current=>({...current,opened:true}));
   setMessage("O cofre se abre. Dentro, uma chave longa destrava a porta da sala. Vocês escaparam!");
  }
- function reset(){localStorage.removeItem(STORAGE);setProgress(initial);setActive(null);setMessage("A porta principal se fechou atrás de vocês. Encontrem o mecanismo que libera a saída.");setWrongAttempts(0);}
+ function reset(){if(!sync.online)localStorage.removeItem(STORAGE);setProgress(initial);setActive(null);setMessage("A porta principal se fechou atrás de vocês. Encontrem o mecanismo que libera a saída.");setWrongAttempts(0);}
  return(
   <section className="escape-room-game">
    <div className="escape-room-hero">

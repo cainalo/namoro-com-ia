@@ -83,6 +83,8 @@
     "@capacitor/status-bar": "^8.0.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.0.0",
+    "@electric-sql/pglite": "^0.5.16",
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.27.1",
     "@testing-library/jest-dom": "^6.6.0",
@@ -103,7 +105,6 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "8.1.5",
-    "vitest": "^4.1.10",
-    "@capacitor/cli": "^8.0.0"
+    "vitest": "^4.1.10"
   }
 }

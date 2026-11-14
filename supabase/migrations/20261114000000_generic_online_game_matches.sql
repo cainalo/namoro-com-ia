@@ -220,7 +220,7 @@ BEGIN
     ELSE v_game.current_turn END;
 
   IF p_outcome = 'win' THEN
-    IF p_winner_seat NOT IN (0, 1) THEN
+    IF p_winner_seat IS NULL OR p_winner_seat NOT IN (0, 1) THEN
       RAISE EXCEPTION 'invalid_winner' USING ERRCODE = 'check_violation';
     END IF;
     v_winner := CASE p_winner_seat WHEN 0 THEN v_game.player_one_id ELSE v_game.player_two_id END;
@@ -233,7 +233,7 @@ BEGIN
          current_turn = v_next_turn,
          status = CASE WHEN p_outcome IS NULL THEN 'active' ELSE 'finished' END,
          winner_id = v_winner,
-         is_draw = (p_outcome = 'draw'),
+         is_draw = COALESCE(p_outcome = 'draw', false),
          finished_at = CASE WHEN p_outcome IS NULL THEN NULL ELSE pg_catalog.now() END,
          updated_at = pg_catalog.now()
    WHERE g.id = p_match_id;
@@ -442,6 +442,7 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION public.play_connect_four_move(p_match_id uuid, p_column integer, p_expected_turn integer)
 RETURNS TABLE (
   match_id uuid,
   couple_id uuid,
