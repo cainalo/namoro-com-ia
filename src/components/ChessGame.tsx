@@ -227,7 +227,7 @@ function chessOutcome(s:ChessShared):GameOutcome|null{
 }
 
 export function ChessGame({ solo = false }: { solo?: boolean }) {
-  const [chess,setChess]=useGameState<ChessShared>(()=>({position:initialPosition(),history:[],notation:[]}),{turnSeat:(s)=>s.position.turn==="w"?0:1,outcome:chessOutcome});
+  const [chess,setChess,sync]=useGameState<ChessShared>(()=>({position:initialPosition(),history:[],notation:[]}),{turnSeat:(s)=>s.position.turn==="w"?0:1,outcome:chessOutcome});
   const {position,history,notation}=chess;
   const [selected,setSelected]=useState<number|null>(null);
   const [message,setMessage]=useState<string|null>(null);
@@ -321,7 +321,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
       </div>
       <div className="chess-actions">
         <span>{notation.length} lances · {position.fullMoves}ª rodada</span>
-        <div><button type="button" className="inline-action" onClick={undo} disabled={!history.length}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></div>
+        <div><button type="button" className="inline-action" onClick={undo} disabled={solo ? history.length < 2 : !history.length}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></div>
       </div>
       {message&&<p className="couple-game-error" role="alert">{message}</p>}
       <details className="chess-history">
