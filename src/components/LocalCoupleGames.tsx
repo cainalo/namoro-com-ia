@@ -163,7 +163,7 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
     if (solo) {
       if (index < round.length - 1) setIndex((current)=>current+1);
       else setShowResults(true);
-    } else if(activePlayer===1){setHandoff(true);}else if(index<choiceQuestions.length-1){setIndex((current)=>current+1);setActivePlayer(1);setHandoff(false);}else{setShowResults(true);setHandoff(false);}
+    } else if(activePlayer===1){setHandoff(true);}else if(index<round.length-1){setIndex((current)=>current+1);setActivePlayer(1);setHandoff(false);}else{setShowResults(true);setHandoff(false);}
   }
 
   function continueToSecond() {setActivePlayer(2);setHandoff(false);}
@@ -178,8 +178,8 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
     <section className={"local-choice-game" + (solo ? " is-solo" : "")}>
       {!showResults?(
         <>
-          <div className="local-game-progress"><span>Pergunta {index+1} de {choiceQuestions.length}</span><span>{solo ? "Sua escolha" : `Pessoa ${activePlayer} responde`}</span></div>
-          <div className="local-choice-progress"><span style={{width:((index+(activePlayer===2?0.5:0))/choiceQuestions.length*100)+"%"}}/></div>
+          <div className="local-game-progress"><span>Pergunta {index+1} de {round.length}</span><span>{solo ? "Sua escolha" : `Pessoa ${activePlayer} responde`}</span></div>
+          <div className="local-choice-progress"><span style={{width:((index+(activePlayer===2?0.5:0))/round.length*100)+"%"}}/></div>
           {handoff && !solo?(
             <div className="local-choice-handoff">
               <span className="local-choice-handoff-icon">↔</span>
@@ -199,13 +199,13 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
               </div>
             </div>
           )}
-          <div className="local-choice-counts">{solo ? <span>Suas respostas: {firstAnswers}/{choiceQuestions.length}</span> : <><span>Pessoa 1: {firstAnswers}/{choiceQuestions.length}</span><span>Pessoa 2: {secondAnswers}/{choiceQuestions.length}</span></>}</div>
+          <div className="local-choice-counts">{solo ? <span>Suas respostas: {firstAnswers}/{round.length}</span> : <><span>Pessoa 1: {firstAnswers}/{round.length}</span><span>Pessoa 2: {secondAnswers}/{round.length}</span></>}</div>
         </>
       ):(
         <div className="local-choice-results">
           <p className="date-kicker">Resultado final</p>
           <h3>{solo ? "Você combina com Morados?" : "Quantas escolhas combinaram?"}</h3>
-          <div className="local-choice-score"><strong>{matched}</strong><span>de {choiceQuestions.length} em comum</span></div>
+          <div className="local-choice-score"><strong>{matched}</strong><span>de {round.length} em comum</span></div>
           <ol>
             {results.map(({question:item,answers:result})=>(
               <li key={item.id}>
