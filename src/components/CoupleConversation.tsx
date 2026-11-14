@@ -36,11 +36,14 @@ import {
   Phone,
   X,
   Music2,
+  Pause,
+  Play,
 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { MoradosMark } from "@/components/MoradosMark";
 import { ConversationCallScreen, type CallKind } from "@/components/ConversationCallScreen";
 import { readableInk } from "@/lib/readable-ink";
+import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
 import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
 import { mapWithConcurrency } from "@/lib/async-pool";
 import {
@@ -160,6 +163,13 @@ function initials(value: string) {
     .join("") || "♡";
 }
 
+type AudioRecordingStatus = "idle" | "requesting" | "recording" | "paused" | "finalizing" | "ready";
+
+function formatAudioDuration(milliseconds: number) {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+  return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
+}
+
 export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
@@ -188,7 +198,11 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [giftOpen, setGiftOpen] = useState(false);
   const [attachmentAccept, setAttachmentAccept] = useState("*/*");
   const [attachmentCapture, setAttachmentCapture] = useState<"environment" | undefined>(undefined);
-  const [recordingAudio, setRecordingAudio] = useState(false);
+  const [recordingStatus, setRecordingStatus] = useState<AudioRecordingStatus>("idle");
+  const [recordingFile, setRecordingFile] = useState<File | null>(null);
+  const [recordingPreviewUrl, setRecordingPreviewUrl] = useState<string | null>(null);
+  const [recordingElapsedMs, setRecordingElapsedMs] = useState(0);
+  const [recordingLevels, setRecordingLevels] = useState<number[]>(Array.from({ length: 34 }, () => 0.08));
   const [giftTitle, setGiftTitle] = useState("");
   const [giftNote, setGiftNote] = useState("");
   const [giftArtwork, setGiftArtwork] = useState("flowers");
@@ -206,6 +220,12 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
+  const recordingAudioContextRef = useRef<AudioContext | null>(null);
+  const recordingAnalyserRef = useRef<AnalyserNode | null>(null);
+  const recordingVisualFrameRef = useRef<number | null>(null);
+  const recordingTimerRef = useRef<number | null>(null);
+  const recordingStartedAtRef = useRef<number | null>(null);
+  const recordingAccumulatedMsRef = useRef(0);
   const threadRef = useRef<HTMLDivElement>(null);
   const [callKind, setCallKind] = useState<CallKind | null>(null);
   const composerRef = useRef<HTMLFormElement>(null);
@@ -225,6 +245,11 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         mediaRecorderRef.current.stop();
       }
       recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+      if (recordingVisualFrameRef.current !== null) window.cancelAnimationFrame(recordingVisualFrameRef.current);
+      if (recordingTimerRef.current !== null) window.clearInterval(recordingTimerRef.current);
+      const audioContext = recordingAudioContextRef.current;
+      recordingAudioContextRef.current = null;
+      if (audioContext && audioContext.state !== "closed") void audioContext.close();
     };
   }, []);
 
@@ -237,6 +262,32 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     setGiftMediaPreview(previewUrl);
     return () => URL.revokeObjectURL(previewUrl);
   }, [giftMediaFile]);
+
+  useEffect(() => {
+    if (!recordingFile) {
+      setRecordingPreviewUrl(null);
+      return;
+    }
+    const previewUrl = URL.createObjectURL(recordingFile);
+    setRecordingPreviewUrl(previewUrl);
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [recordingFile]);
+
+  useEffect(() => {
+    if (recordingStatus !== "recording") return;
+    const updateElapsed = () => {
+      const startedAt = recordingStartedAtRef.current;
+      setRecordingElapsedMs(recordingAccumulatedMsRef.current + (startedAt === null ? 0 : Date.now() - startedAt));
+    };
+    updateElapsed();
+    recordingTimerRef.current = window.setInterval(updateElapsed, 100);
+    return () => {
+      if (recordingTimerRef.current !== null) {
+        window.clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+      }
+    };
+  }, [recordingStatus]);
 
   const messageCount = state.status === "active" ? state.messages.length : 0;
   const activeCoupleId = state.status === "active" ? state.coupleId : null;
