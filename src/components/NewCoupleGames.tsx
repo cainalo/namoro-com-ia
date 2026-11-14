@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
-import { Brain, Eye, EyeOff, Layers, RotateCcw, Sparkles, Trophy } from "lucide-react";
+import { Brain, EyeOff, Layers, RotateCcw, Sparkles, Trophy } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import { chooseMemoryBotPair, createMemoryDeck, isSequencePrefix, MEMORY_SYMBOLS, SEQUENCE_TOKEN_IDS, type SequenceToken } from "@/lib/new-game-logic";
+
+type MemoryState = {
+  deck: string[];
+  matched: number[];
+  revealed: number[];
+  scores: [number, number];
+  turn: 0 | 1;
+  attempts: number;
+  known: Record<number, string>;
+  phase: "playing" | "finished";
+};
 
 function newMemoryState(): MemoryState {
   return { deck: createMemoryDeck(), matched: [], revealed: [], scores: [0, 0], turn: 0, attempts: 0, known: {}, phase: "playing" };
@@ -206,7 +217,7 @@ export function SymbolSequenceGame({ solo = false }: { solo?: boolean }) {
 
   function nextPlayer() {
     if (game.phase !== "turn-end") return;
-    const sequence = Array.from({ length: 3 }, () => SEQUENCE_TOKENS[Math.floor(Math.random() * SEQUENCE_TOKENS.length)].id);
+    const sequence = Array.from({ length: 3 }, () => SEQUENCE_TOKEN_IDS[Math.floor(Math.random() * SEQUENCE_TOKEN_IDS.length)]);
     setGame({ ...game, turn: 1, sequence, input: [], phase: "showing" });
   }
 
