@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useGameState } from "@/components/OnlineGameHost";
+import { EvidenceDeductionBoard } from "@/components/EvidenceDeductionBoard";
+import { GameVictoryScreen } from "@/components/GameExperience";
 import {
   Archive,
   CheckCircle2,
@@ -153,6 +155,7 @@ type SavedProgress = {
   verdictMethod: string;
   verdictMotive: string;
   solved: boolean;
+  linkedPairs: string[];
 };
 
 const initialProgress: SavedProgress = {
@@ -163,6 +166,7 @@ const initialProgress: SavedProgress = {
   verdictMethod: "",
   verdictMotive: "",
   solved: false,
+  linkedPairs: [],
 };
 
 function loadProgress(): SavedProgress {
@@ -170,18 +174,47 @@ function loadProgress(): SavedProgress {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialProgress;
     const saved = JSON.parse(raw) as Partial<SavedProgress>;
-    return { ...initialProgress, ...saved };
+    return { ...initialProgress, ...saved, linkedPairs: Array.isArray(saved.linkedPairs) ? saved.linkedPairs : [] };
   } catch {
     return initialProgress;
   }
 }
 
+type InterviewTopic = "timeline" | "access" | "motive";
+
+const interviewReplies: Record<SuspectId, Record<InterviewTopic, string>> = {
+  helena: {
+    timeline: "O registro da fechadura coloca a chave-mestra no arquivo às 21h12, vinte e dois minutos depois do horário que você declarou.",
+    access: "A chave-mestra 01 estava vinculada à sua credencial. O retorno ao arquivo não foi registrado como empréstimo.",
+    motive: "A minuta de venda e a cobrança anexada indicam uma pressão financeira que não aparece no primeiro depoimento.",
+  },
+  beatriz: {
+    timeline: "O registro da cabine ultravioleta mostra atividade contínua entre 20h55 e 21h20, vinculada ao seu crachá.",
+    access: "Seu crachá não abre o arquivo. O acesso foi feito com a chave-mestra 01.",
+    motive: "O livro do laboratório confirma trabalho de conservação, mas não aponta benefício financeiro ou acesso à peça.",
+  },
+  davi: {
+    timeline: "A gravação do rádio confirma sua chamada às 21h10 no posto principal.",
+    access: "O registro de abertura exige a chave-mestra. Seu cartão de segurança não acionaria aquela fechadura.",
+    motive: "O depoimento e a gravação não indicam uma vantagem ligada à venda da obra.",
+  },
+  rafael: {
+    timeline: "O comprovante do café registra sua presença às 21h04, e a atendente confirmou que você permaneceu no local.",
+    access: "Você não tinha chave do arquivo. O trajeto a pé impediria chegar ao corredor no intervalo registrado.",
+    motive: "A pauta jornalística explica seu interesse na notícia, mas não liga você à proposta de venda privada.",
+  },
+};
+
 export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
   const [tab, setTab] = useState<InvestigationTab>("scene");
-  const [progress, setProgress, sync] = useGameState<SavedProgress>(loadProgress, { onlineInitial: initialProgress });
+  const [progress, setProgress, sync] = useGameState<SavedProgress>(loadProgress, {
+    onlineInitial: initialProgress,
+    outcome: (state) => state.solved ? { kind: "complete" } : null,
+  });
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
+  const [askedQuestion, setAskedQuestion] = useState<InterviewTopic | null>(null);
 
   useEffect(() => {
     if (!sync.online) localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -194,7 +227,7 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
   const selectedSuspect = suspects.find((suspect) => suspect.id === progress.selectedSuspect) ?? suspects[0];
   const reviewedCount = progress.reviewedEvidence.length;
   const interviewedCount = progress.interviewed.length;
-  const canAccuse = reviewedCount >= 3 && interviewedCount >= 2;
+  const canAccuse = reviewedCount >= 3 && interviewedCount >= 2 && progress.linkedPairs.length >= 2;
   const verdictCorrect =
     progress.verdictSuspect === "helena" &&
     progress.verdictMethod === "master-key" &&
@@ -218,18 +251,30 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
   }
 
   function interviewSuspect(id: SuspectId) {
+    setProgress((current) => ({ ...current, selectedSuspect: id }));
+    setAskedQuestion(null);
+  }
+
+  function recordInterview() {
+    if (!askedQuestion) return;
     setProgress((current) => ({
       ...current,
-      selectedSuspect: id,
-      interviewed: current.interviewed.includes(id)
+      interviewed: current.interviewed.includes(selectedSuspect.id)
         ? current.interviewed
-        : [...current.interviewed, id],
+        : [...current.interviewed, selectedSuspect.id],
+    }));
+  }
+
+  function recordEvidencePair(pair: string) {
+    setProgress((current) => ({
+      ...current,
+      linkedPairs: current.linkedPairs.includes(pair) ? current.linkedPairs : [...current.linkedPairs, pair],
     }));
   }
 
   function submitVerdict() {
     if (!canAccuse || !progress.verdictSuspect || !progress.verdictMethod || !progress.verdictMotive) return;
-    update({ solved: true });
+    update({ solved: verdictCorrect });
     setShowSolution(true);
   }
 
@@ -240,6 +285,7 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
     setShowHint(false);
     setShowSolution(false);
     setSelectedEvidenceId(null);
+    setAskedQuestion(null);
   }
 
   function openSceneEvidence(id: string) {
@@ -248,7 +294,23 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
   }
 
   return (
-    <section className="investigation-game" aria-labelledby="investigation-title">
+    <section className="investigation-game immersive-investigation-game" aria-labelledby="investigation-title">
+      {progress.solved && verdictCorrect && (
+        <GameVictoryScreen
+          won
+          title="A Carta Celeste foi recuperada!"
+          subtitle="As ligações entre os registros, o tubo de plantas e a proposta particular revelaram o método e o motivo do furto."
+          eyebrow="CASO 001 · SOLUCIONADO"
+          stats={[
+            { label: "Pistas", value: reviewedCount + "/" + evidence.length },
+            { label: "Depoimentos", value: interviewedCount + "/4" },
+            { label: "Ligações", value: progress.linkedPairs.length + "/3" },
+            { label: "Progresso", value: progressPercent + "%" },
+          ]}
+          onReplay={resetCase}
+          onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
+        />
+      )}
       <div className="investigation-case-cover">
         <div className="investigation-case-cover-art">
           <div className="investigation-stamp"><Fingerprint aria-hidden="true" /></div>
@@ -390,6 +452,12 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
               );
             })}
           </div>
+          <EvidenceDeductionBoard
+            clues={evidence.map((item) => ({ id: item.id, title: item.title, short: item.location + " · " + item.time }))}
+            requiredPairs={["camera|tubo", "proposta|registro", "cafe|radio"]}
+            completedPairs={progress.linkedPairs}
+            onPairVerified={recordEvidencePair}
+          />
           <p className="investigation-section-footnote">{reviewedCount === evidence.length ? "Todas as evidências foram examinadas. Compare os horários com os depoimentos." : "Dica: não tire conclusões apenas pelo motivo. Compare o que cada pessoa disse com os registros independentes."}</p>
         </div>
       )}
@@ -424,9 +492,19 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
               <blockquote>“{selectedSuspect.statement}”</blockquote>
               <div className="investigation-interview-divider"><span>Após confrontação com os registros</span></div>
               <p>{selectedSuspect.response}</p>
+              <section className="investigation-followup-questions">
+                <strong>Interrogatório complementar</strong>
+                <p>Escolha uma pergunta e compare a resposta com as provas.</p>
+                <div>
+                  <button type="button" className={askedQuestion === "timeline" ? "is-active" : ""} onClick={() => setAskedQuestion("timeline")}>Confrontar horário</button>
+                  <button type="button" className={askedQuestion === "access" ? "is-active" : ""} onClick={() => setAskedQuestion("access")}>Questionar acesso</button>
+                  <button type="button" className={askedQuestion === "motive" ? "is-active" : ""} onClick={() => setAskedQuestion("motive")}>Investigar motivo</button>
+                </div>
+                {askedQuestion && <p className="investigation-followup-answer">{interviewReplies[selectedSuspect.id][askedQuestion]}</p>}
+              </section>
               <div className="investigation-motive-note"><strong>Possível ligação com o caso</strong><p>{selectedSuspect.motive}</p></div>
               {!progress.interviewed.includes(selectedSuspect.id) ? (
-                <button type="button" className="investigation-record-button" onClick={() => interviewSuspect(selectedSuspect.id)}>
+                <button type="button" className="investigation-record-button" onClick={recordInterview} disabled={!askedQuestion}>
                   <ClipboardList aria-hidden="true" /> Registrar depoimento
                 </button>
               ) : (
@@ -442,10 +520,10 @@ export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
           <div className="investigation-section-intro">
             <span className="investigation-kicker">Relatório final</span>
             <h3>Quem levou a Carta Celeste?</h3>
-            <p>Escolha um suspeito, o método usado e o motivo. Você precisa examinar pelo menos três pistas e ouvir duas pessoas antes de registrar a conclusão.</p>
+            <p>Escolha um suspeito, o método usado e o motivo. Analise pelo menos três pistas, confirme duas ligações no quadro de dedução e registre dois interrogatórios.</p>
           </div>
           {!canAccuse && (
-            <div className="investigation-unlock-note"><ShieldAlert aria-hidden="true" /><span>Conclusão ainda bloqueada: analise {Math.max(0,3-reviewedCount)} pista(s) e colha {Math.max(0,2-interviewedCount)} depoimento(s) a mais.</span></div>
+            <div className="investigation-unlock-note"><ShieldAlert aria-hidden="true" /><span>Faltam {Math.max(0,3-reviewedCount)} pista(s), {Math.max(0,2-interviewedCount)} depoimento(s) e {Math.max(0,2-progress.linkedPairs.length)} ligação(ões) entre evidências.</span></div>
           )}
           <div className="investigation-verdict-form">
             <label>

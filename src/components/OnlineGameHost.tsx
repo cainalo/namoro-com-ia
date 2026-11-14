@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { Wifi, WifiOff } from "lucide-react";
+import { GameVictoryScreen } from "@/components/GameExperience";
 import { supabase } from "@/integrations/supabase/client";
 import {
   abandonMatch,
@@ -340,25 +341,46 @@ export function OnlineGameHost({
   const mySeat = match ? seatOf(match, userId) : null;
 
   if (!match || mySeat === null) {
-    const result =
-      finished && finished.status === "finished"
-        ? finished.is_draw
-          ? "A última partida terminou empatada."
-          : finished.winner_id
-            ? finished.winner_id === userId
-              ? "Você venceu a última partida!"
-              : "A outra pessoa venceu a última partida."
-            : "Vocês concluíram a última partida juntos."
-        : finished?.status === "abandoned"
-          ? "A última partida foi encerrada."
-          : null;
+    if (finished && (finished.status === "finished" || finished.status === "abandoned")) {
+      const finalData = finished.state?.data as { phase?: string; day?: number; floor?: number } | undefined;
+      const isDraw = finished.is_draw;
+      const cooperativeLost = mode === "cooperative" && finalData?.phase === "lost";
+      const won = !isDraw && finished.status === "finished" && !cooperativeLost && (
+        finished.winner_id ? finished.winner_id === userId : mode === "cooperative"
+      );
+      const title = finished.status === "abandoned"
+        ? "Partida encerrada"
+        : isDraw
+          ? "Empate!"
+          : mode === "cooperative"
+            ? cooperativeLost ? "Missão interrompida" : "Missão concluída em conjunto!"
+            : won ? "Você venceu!" : "A outra pessoa venceu!";
+      const subtitle = finished.status === "abandoned"
+        ? "A partida foi encerrada antes de chegar ao fim."
+        : isDraw
+          ? "As duas pessoas terminaram com o mesmo resultado."
+          : mode === "cooperative"
+            ? cooperativeLost ? "A equipe não conseguiu concluir o objetivo desta expedição." : "O objetivo compartilhado foi alcançado nos dois aparelhos."
+            : won ? "Você levou a melhor nesta partida." : "A outra pessoa levou a melhor nesta partida.";
+      return (
+        <GameVictoryScreen
+          won={won}
+          title={title}
+          subtitle={subtitle}
+          eyebrow={mode === "cooperative" ? "RESULTADO COOPERATIVO" : "RESULTADO DA PARTIDA"}
+          stats={[
+            { label: "Modo", value: mode === "cooperative" ? "Cooperativo" : "Competitivo" },
+            { label: "Versão", value: finished.version },
+            { label: "Status", value: finished.status === "abandoned" ? "Encerrada" : "Finalizada" },
+          ]}
+          primaryLabel="Jogar novamente"
+          onReplay={() => void start()}
+          onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
+        />
+      );
+    }
     return (
       <div className="couple-game-state online-game-state">
-        {result && (
-          <p role="status">
-            <strong>{result}</strong>
-          </p>
-        )}
         <p>
           Uma partida compartilhada entre os dois aparelhos. Quem entrar depois continua do mesmo
           ponto.

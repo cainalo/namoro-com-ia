@@ -7,6 +7,7 @@ import {
   CalendarHeart,
   Crown,
   Gamepad2,
+  Play,
   Search,
   LockKeyhole,
   MoreVertical,
@@ -31,11 +32,12 @@ import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
 import { CaveExpeditionGame } from "@/components/CaveExpeditionGame";
 import { InlineMenu } from "@/components/InlineMenu";
+import { GameAudioProvider, GameAudioToggle, useGameAudio } from "@/components/GameExperience";
 import { OnlineGameHost } from "@/components/OnlineGameHost";
 import { OnlineBattleshipGame } from "@/components/OnlineBattleshipGame";
 import { OnlineDominoGame } from "@/components/OnlineDominoGame";
 import { OnlineTrucoGame } from "@/components/OnlineTrucoGame";
-import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
+import type { SecondaryPageSection } from "@/components/SecondaryPageChrome";
 import {
   LocalConnectFourGame,
   LocalDailyChallengeGame,
@@ -121,128 +123,51 @@ const catalogue: Array<{
   { id: "cave-expedition", name: "As Ruínas de Morados", category: "Aventura 2D", description: "Explore câmaras esquecidas, enfrente guardiões, encontre relíquias e escape em uma aventura cooperativa.", players: "Cooperativo · 1–2", icon: Swords, tone: "noir", new: true },
 ];
 
-function GamePage({
-  gameId,
-  userId,
-  onBack,
-  onNavigate,
-}: {
-  gameId: GameId;
-  userId: string;
-  onBack: () => void;
-  onNavigate: (section: SecondaryPageSection) => void;
-}) {
-  const [mode, setMode] = useState<GameMode>(null);
-  const game = catalogue.find((item) => item.id === gameId)!;
+const launchInfo:Record<GameId,{eyebrow:string;tagline:string;story:string;goal:string;steps:string[];chips:string[]}> = {
+"connect-four":{eyebrow:"ARENA DE ESTRATÉGIA",tagline:"Quatro peças. Uma jogada decisiva.",story:"Uma arena de raciocínio rápido em que cada coluna muda o rumo da disputa. Ataque, antecipe bloqueios e monte sua sequência.",goal:"Conectar quatro peças da sua cor antes do adversário.",steps:["Escolha uma coluna para soltar sua peça.","Observe ameaças e bloqueie sequências.","No modo individual, enfrente o Morados."],chips:["Partidas rápidas","Estratégia","Duelo online"]},
+"checkers":{eyebrow:"CAMPO DE BATALHA",tagline:"Domine o tabuleiro. Controle o ritmo.",story:"Uma disputa tática em que cada peça importa. Prepare capturas em cadeia, proteja suas fileiras e transforme peões em damas.",goal:"Capturar ou bloquear todas as peças adversárias.",steps:["Capturas são obrigatórias quando disponíveis.","Planeje sequências e proteja suas peças.","Chegue à última fileira para virar dama."],chips:["Capturas em cadeia","Damas voadoras","Duelo"]},
+"this-or-that":{eyebrow:"JOGO DE CONEXÃO",tagline:"Descubra o quanto vocês combinam.",story:"Uma sequência de escolhas revela gostos, diferenças inesperadas e pequenas histórias. Não existe resposta certa: o desafio é descobrir como cada pessoa pensa.",goal:"Responder às escolhas e comparar preferências.",steps:["Leia as duas opções antes de escolher.","No modo local, cada pessoa responde na sua vez.","No online, as respostas são sincronizadas."],chips:["Perguntas variadas","Escolhas individuais","Compatibilidade"]},
+"daily-challenge":{eyebrow:"MISSÃO COMPARTILHADA",tagline:"Uma missão diferente para hoje.",story:"Um desafio cooperativo para sair da rotina, criar uma lembrança e concluir uma pequena missão em conjunto.",goal:"Concluir a proposta do dia e registrar a participação.",steps:["Leiam a missão completa.","Combinem como realizar o desafio.","Marquem a conclusão depois de participar."],chips:["Missões rotativas","Progresso conjunto","Conquistas"]},
+"investigation":{eyebrow:"DOSSIÊ POLICIAL · CASO 001",tagline:"Toda evidência conta uma história.",story:"A Carta Celeste desapareceu do Museu Aurora. A cena foi limpa, os depoimentos não fecham e quatro pessoas tinham acesso ao prédio.",goal:"Identificar quem retirou a obra, como entrou no arquivo e qual foi o motivo.",steps:["Examine os pontos da cena e registre as pistas.","Interrogue os suspeitos e compare horários.","Conecte evidências antes de apresentar o veredito."],chips:["Cena investigável","Interrogatórios","Dedução lógica"]},
+"investigation-train":{eyebrow:"DOSSIÊ POLICIAL · CASO 002",tagline:"O último trem não levou a resposta.",story:"Uma maleta desapareceu na Plataforma 4. O painel, os bilhetes, a porta técnica e os relatos escondem uma sequência impossível à primeira vista.",goal:"Descobrir quem retirou a maleta, qual rota foi usada e por quê.",steps:["Explore a estação e examine os objetos.","Confronte a equipe com horários e registros.","Conecte as pistas antes de acusar."],chips:["Mistério em vários ambientes","Depoimentos","Conexões"]},
+"chess":{eyebrow:"ARENA DE XADREZ",tagline:"Pense adiante. Cada movimento importa.",story:"Uma arena de madeira e peças em disputa. Planeje aberturas, proteja seu rei e construa combinações. O tabuleiro é o centro da experiência.",goal:"Dar xeque-mate ao rei adversário.",steps:["Toque em uma peça para ver movimentos possíveis.","Use roque e en passant quando permitido.","Acompanhe o histórico e fique atento ao xeque."],chips:["Movimentos legais","Roque e en passant","Histórico"]},
+"battleship":{eyebrow:"COMANDO NAVAL",tagline:"O oceano esconde a frota inimiga.",story:"Dois comandos navais disputam um mar desconhecido. Posicione a frota, leia os disparos e descubra os navios inimigos antes que encontrem os seus.",goal:"Localizar e afundar todas as embarcações adversárias.",steps:["Posicione navios sem sobreposição.","Escolha coordenadas para disparar.","Use resultados anteriores para reduzir a busca."],chips:["Frota secreta","Batalha por coordenadas","Duelo online"]},
+"domino":{eyebrow:"MESA DE DOMINÓ",tagline:"A próxima pedra pode fechar o jogo.",story:"Uma mesa de madeira, peças na mão e uma sequência que exige leitura do jogo. Controle as pontas, conte pontos e escolha quando travar a mesa.",goal:"Ficar sem peças ou terminar com a menor soma de pontos.",steps:["Jogue uma peça que combine com uma das pontas.","Compre quando não houver jogada possível.","Observe as peças baixadas para antecipar o fechamento."],chips:["Compra de peças","Bloqueio","Contagem de pontos"]},
+"truco":{eyebrow:"MESA DE TRUCO",tagline:"Coragem, leitura e blefe.",story:"Uma mesa de cartas em que a mão pode mudar com uma chamada. Leia intenções, use as manilhas e decida quando aumentar a aposta.",goal:"Vencer mãos e alcançar doze pontos.",steps:["Entenda a vira e a ordem das manilhas.","Escolha cartas para disputar as rodadas.","Peça truco quando aceitar o risco."],chips:["Vira e manilhas","Chamadas","Blefe"]},
+"quiz":{eyebrow:"MORADOS QUIZ SHOW",tagline:"Luzes acesas. Cronômetro valendo.",story:"O palco está aberto. Cada pergunta vale pontos, o tempo corre e a disputa pode virar com uma única resposta. Escolham uma categoria e entrem no programa.",goal:"Acumular mais pontos respondendo antes do cronômetro terminar.",steps:["Escolha uma categoria ou jogue com todas.","Cada pergunta tem tempo limitado.","Acompanhe o placar e a explicação."],chips:["Palco de programa","Cronômetro","Categorias"]},
+"escape-room":{eyebrow:"ESCAPE ROOM · A SALA DO RELÓGIO",tagline:"O tempo está correndo. Encontre a saída.",story:"Vocês acordaram em uma sala trancada. Objetos, mecanismos e mensagens escondidas compõem uma sequência de enigmas.",goal:"Investigar o ambiente, coletar itens e destrancar a porta.",steps:["Toque nos pontos de interesse.","Examine objetos e descubra como interagem.","Use pistas para abrir os mecanismos."],chips:["Cenário interativo","Mecanismos","Enigmas"]},
+"island-survival":{eyebrow:"SOBREVIVÊNCIA · DEPOIS DA TEMPESTADE",tagline:"Sete dias. Recursos limitados. Uma rota de volta.",story:"A tempestade destruiu o barco e deixou vocês em uma ilha desconhecida. Cada decisão consome tempo e recursos. Explorem regiões, enfrentem eventos e preparem um sinalizador ou uma balsa.",goal:"Sobreviver à campanha e concluir uma rota de resgate antes do limite.",steps:["Explore zonas da ilha e revele recursos.","Divida ações entre coleta, abrigo, fabricação e recuperação.","Resolva eventos e prepare o resgate."],chips:["Mapa por regiões","Eventos e decisões","Gestão e fabricação"]},
+"cave-expedition":{eyebrow:"RPG 2D · AS RUÍNAS DE MORADOS",tagline:"Desça às ruínas. Enfrente o que desperta.",story:"Uma expedição encontra a entrada de um complexo subterrâneo esquecido. Câmaras, passagens ocultas, criaturas e relíquias aguardam. A equipe precisa explorar e sobreviver aos guardiões.",goal:"Explorar os andares, encontrar tesouros, vencer monstros e concluir a expedição.",steps:["Explore o mapa e revele áreas ocultas.","Gerencie vida, energia e poções.","Em batalha, ataque, use habilidades, defenda ou recupere vida."],chips:["Exploração 2D","Combate e chefes","Cooperação"]}
+};
 
-  useEffect(() => {
-    document.documentElement.dataset.moradosGameOpen = "true";
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onBack();
-    };
-    const onHardwareBack = () => onBack();
-    window.addEventListener("keydown", onEscape);
-    window.addEventListener("morados:game-back", onHardwareBack);
-    return () => {
-      delete document.documentElement.dataset.moradosGameOpen;
-      window.removeEventListener("keydown", onEscape);
-      window.removeEventListener("morados:game-back", onHardwareBack);
-    };
-  }, [onBack]);
-
-  const gameOptions = (
-    <InlineMenu
-      label="Opções do jogo"
-      trigger={<MoreVertical aria-hidden="true" />}
-      triggerClassName="topbar-icon-button"
-      menuClassName="nc-menu secondary-game-menu"
-    >
-      {(close) => (
-        <>
-          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("solo"); close(); }}>
-            {mode === "solo" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
-            Jogar sozinho
-          </button>
-          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("local"); close(); }}>
-            {mode === "local" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
-            Jogar juntos neste aparelho
-          </button>
-          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("online"); close(); }}>
-            {mode === "online" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
-            Jogar online
-          </button>
-          <div className="nc-menu-sep" role="separator" />
-          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode(null); close(); }}>
-            <span className="secondary-game-menu-spacer" /> Trocar modo
-          </button>
-          <span className="secondary-game-menu-note">{game.category} · {game.players}</span>
-        </>
-      )}
-    </InlineMenu>
-  );
-
-  return (
-    <div className={"games-fullscreen-page tone-" + game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
-      <SecondaryPageChrome
-        title={game.name}
-        onBack={onBack}
-        backLabel="Voltar para os jogos"
-        rightAction={gameOptions}
-        activeSection="games"
-        onNavigate={onNavigate}
-        scrollKey={"game-" + gameId}
-        contentClassName="games-fullscreen-scroll"
-        scrollableContent
-      >
-        <div className={"games-fullscreen-content" + (mode ? " is-playing is-mode-" + mode : " is-choosing-mode")}>
-          {!mode ? (
-            <section className="game-mode-picker" aria-labelledby="game-mode-title">
-              <div className="game-mode-picker-intro">
-                <span className="game-mode-eyebrow"><Sparkles aria-hidden="true" /> UMA EXPERIÊNCIA DO MORADOS</span>
-                <h2 id="game-mode-title">Como vocês querem jogar?</h2>
-                <p>Escolha o formato da partida. Você pode trocar de modo a qualquer momento pelo menu no alto da tela.</p>
-              </div>
-              <div className="game-mode-options">
-                <button type="button" className="game-mode-card is-solo" onClick={() => setMode("solo")}>
-                  <span className="game-mode-icon"><Crown aria-hidden="true" /></span>
-                  <span className="game-mode-copy"><strong>Sozinho</strong><small>Jogue no seu ritmo, supere desafios pessoais ou enfrente o Morados nos jogos competitivos.</small></span>
-                  <span className="game-mode-arrow">Jogar sozinho <ArrowLeft aria-hidden="true" /></span>
-                </button>
-                <button type="button" className="game-mode-card is-local" onClick={() => setMode("local")}>
-                  <span className="game-mode-icon"><Users aria-hidden="true" /></span>
-                  <span className="game-mode-copy"><strong>Juntos neste aparelho</strong><small>Uma só tela, duas pessoas. O jogo alterna as vezes e protege informações privadas quando necessário.</small></span>
-                  <span className="game-mode-arrow">Jogar lado a lado <ArrowLeft aria-hidden="true" /></span>
-                </button>
-                <button type="button" className="game-mode-card is-online" onClick={() => setMode("online")}>
-                  <span className="game-mode-icon"><Shield aria-hidden="true" /></span>
-                  <span className="game-mode-copy"><strong>Online</strong><small>Cada pessoa no próprio aparelho, com partida e progresso sincronizados entre as duas contas.</small></span>
-                  <span className="game-mode-arrow">Conectar partida <ArrowLeft aria-hidden="true" /></span>
-                </button>
-              </div>
-              <p className="game-mode-footnote">Ao trocar de modo, uma nova partida começa; casos e desafios com progresso salvo podem manter suas pistas no aparelho.</p>
-            </section>
-          ) : (
-            <>
-              <div className="game-mode-toolbar">
-                <span className={"game-mode-current is-" + mode}>
-                  {mode === "solo" ? <Crown aria-hidden="true" /> : mode === "local" ? <Users aria-hidden="true" /> : <Shield aria-hidden="true" />}
-                  {mode === "solo" ? "Modo sozinho" : mode === "local" ? "Juntos neste aparelho" : "Partida online"}
-                </span>
-                <button type="button" className="game-mode-change" onClick={() => setMode(null)}>
-                  <ArrowLeft aria-hidden="true" /> Trocar modo
-                </button>
-              </div>
-              <div key={mode + "-" + gameId} className="game-play-surface">
-                {mode === "solo" && renderSoloGame(gameId)}
-                {mode === "local" && renderLocalGame(gameId)}
-                {mode === "online" && renderOnlineGame(gameId, userId)}
-              </div>
-            </>
-          )}
-        </div>
-      </SecondaryPageChrome>
-    </div>
-  );
+function GamePage({gameId,userId,onBack}:{gameId:GameId;userId:string;onBack:()=>void}) {
+ const [stage,setStage]=useState<"cover"|"mode"|"briefing"|"play">("cover");
+ const [mode,setMode]=useState<GameMode>(null);
+ const [confirmExit,setConfirmExit]=useState(false);
+ const game=catalogue.find(item=>item.id===gameId)!;
+ const info=launchInfo[gameId],GameIcon=game.icon,{play}=useGameAudio();
+ useEffect(()=>{
+  document.documentElement.dataset.moradosGameOpen="true";
+  const prior=document.body.style.overflow;document.body.style.overflow="hidden";
+  const goBack=()=>{if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="briefing")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
+  const escape=(e:KeyboardEvent)=>{if(e.key==="Escape"){e.preventDefault();goBack();}};
+  const onGameExit=()=>onBack();
+  window.addEventListener("keydown",escape);window.addEventListener("morados:game-back",goBack);window.addEventListener("morados:game-exit",onGameExit);
+  return()=>{delete document.documentElement.dataset.moradosGameOpen;document.body.style.overflow=prior;window.removeEventListener("keydown",escape);window.removeEventListener("morados:game-back",goBack);window.removeEventListener("morados:game-exit",onGameExit);};
+ },[onBack,confirmExit,stage]);
+ const back=()=>{play("tap");if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="briefing")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
+ const settings=<InlineMenu label="Configurações do jogo" trigger={<MoreVertical/>} triggerClassName="game-world-float-button" menuClassName="game-world-menu-panel" className="game-world-menu">{close=><><div className="game-world-menu-heading">CONFIGURAÇÕES</div><GameAudioToggle/><button type="button" role="menuitem" onClick={()=>{setStage("briefing");setConfirmExit(false);close();play("tap");}}><Sparkles/> Regras e objetivo</button><button type="button" role="menuitem" onClick={()=>{setStage("mode");setConfirmExit(false);close();play("tap");}}><Users/> Trocar modo</button><button type="button" role="menuitem" onClick={()=>{setConfirmExit(true);close();play("warning");}}><ArrowLeft/> Sair da partida</button></>}</InlineMenu>;
+ const choices=[{id:"solo" as const,title:"Jogar sozinho",detail:"Uma experiência individual, no seu ritmo. Nos duelos, enfrente o Morados.",meta:"1 JOGADOR",Icon:Crown},{id:"local" as const,title:"Jogar neste aparelho",detail:"Duas pessoas compartilham a tela e alternam os controles.",meta:"2 JOGADORES · LOCAL",Icon:Users},{id:"online" as const,title:"Jogar online",detail:"Cada pessoa usa seu aparelho, com a partida sincronizada.",meta:"2 JOGADORES · ONLINE",Icon:Shield}];
+ return <div className={"games-fullscreen-page game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
+  <header className="game-world-topbar"><button type="button" className="game-world-float-button" onClick={back} aria-label={stage==="cover"?"Voltar aos jogos":"Voltar uma etapa"}><ArrowLeft/></button><div className="game-world-top-title"><small>MORADOS ORIGINALS · {game.category.toUpperCase()}</small><strong>{game.name}</strong></div>{settings}</header>
+  <main className={"game-world-main stage-"+stage}>
+   {stage==="cover"&&<section className="game-launch-cover"><div className="game-cover-copy"><span className="game-world-eyebrow"><Sparkles/> {info.eyebrow}</span><h1>{game.name}</h1><p className="game-cover-tagline">{info.tagline}</p><p className="game-cover-description">{game.description}</p><div className="game-cover-highlights">{info.chips.map(x=><span key={x}>{x}</span>)}</div><button type="button" className="game-world-primary" onClick={()=>{setStage("mode");play("discovery");}}><Play/> Entrar no jogo</button><span className="game-cover-brand"><Gamepad2/> MORADOS ORIGINALS</span></div><div className={"game-cover-art art-"+gameId} aria-hidden="true"><span className="game-cover-orbit orbit-one"/><span className="game-cover-orbit orbit-two"/><span className="game-cover-beam beam-one"/><span className="game-cover-beam beam-two"/><span className="game-cover-spark spark-one"/><span className="game-cover-spark spark-two"/><span className="game-cover-spark spark-three"/><span className="game-cover-token token-one"/><span className="game-cover-token token-two"/><span className="game-cover-token token-three"/><div className="game-cover-emblem"><GameIcon/></div><span className="game-cover-art-label">{game.category.toUpperCase()}</span><span className="game-cover-art-number">0{catalogue.findIndex(x=>x.id===gameId)+1}</span></div><div className="game-cover-premise"><span>O UNIVERSO</span><p>{info.story}</p></div></section>}
+   {stage==="mode"&&<section className="game-mode-stage"><div className="game-stage-heading"><span className="game-world-eyebrow">ESCOLHA SUA EXPERIÊNCIA</span><h1>Como você quer jogar?</h1><p>Escolha como entrar neste jogo.</p></div><div className="game-world-mode-grid">{choices.map(({id,title,detail,meta,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setMode(id);setStage("briefing");play("discovery");}}><span className="game-world-mode-icon"><Icon/></span><span className="game-world-mode-meta">{meta}</span><strong>{title}</strong><small>{detail}</small><span className="game-world-mode-enter">Continuar <ArrowLeft/></span></button>)}</div><button type="button" className="game-world-text-button" onClick={()=>setStage("cover")}>Voltar à capa</button></section>}
+   {stage==="briefing"&&<section className="game-briefing-stage"><div className="game-stage-heading"><span className="game-world-eyebrow">ANTES DE COMEÇAR · {mode==="solo"?"MODO INDIVIDUAL":mode==="local"?"DOIS JOGADORES · LOCAL":"DOIS JOGADORES · ONLINE"}</span><h1>{info.tagline}</h1><p>{info.story}</p></div><div className="game-briefing-grid"><article className="game-briefing-objective"><span className="game-briefing-number">01</span><div><small>OBJETIVO PRINCIPAL</small><h2>{info.goal}</h2></div></article><article className="game-briefing-guide"><span className="game-briefing-number">02</span><div><small>COMO JOGAR</small><ol>{info.steps.map(s=><li key={s}>{s}</li>)}</ol></div></article></div><div className="game-briefing-footer"><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Trocar modo</button><button type="button" className="game-world-primary" onClick={()=>{setStage("play");play("success");}}><Play/> Começar partida</button></div></section>}
+   {stage==="play"&&mode&&<section className="game-session-stage"><div className="game-session-context"><span>{game.category.toUpperCase()}</span><strong>{game.name}</strong><small>{mode==="solo"?"MODO INDIVIDUAL":mode==="local"?"DOIS JOGADORES · LOCAL":"PARTIDA ONLINE"}</small></div><div key={mode+"-"+gameId} className="game-play-surface">{mode==="solo"&&renderSoloGame(gameId)}{mode==="local"&&renderLocalGame(gameId)}{mode==="online"&&renderOnlineGame(gameId,userId)}</div></section>}
+  </main>
+  {confirmExit&&<div className="game-world-exit-backdrop" role="presentation"><section className="game-world-exit-dialog" role="dialog" aria-modal="true" aria-labelledby="game-exit-title"><span className="game-world-exit-icon"><Shield/></span><small>PAUSAR EXPERIÊNCIA</small><h2 id="game-exit-title">Sair desta partida?</h2><p>Você pode voltar ao jogo depois. O progresso salvo continua disponível quando o modo permitir.</p><button type="button" className="game-world-primary" onClick={()=>{setConfirmExit(false);setStage("cover");setMode(null);}}>Voltar à capa do jogo</button><button type="button" className="game-world-text-button" onClick={()=>{setConfirmExit(false);onBack();}}>Voltar ao catálogo</button><button type="button" className="game-world-exit-cancel" onClick={()=>setConfirmExit(false)}>Continuar jogando</button></section></div>}
+ </div>;
 }
 
 const cooperativeGames: GameId[] = ["investigation", "investigation-train", "escape-room", "island-survival", "cave-expedition"];
@@ -302,7 +227,7 @@ function renderOnlineGame(gameId: GameId, userId: string) {
   );
 }
 
-export function CoupleGames({ userId, onNavigate }: { userId: string; onNavigate: (section: SecondaryPageSection) => void }) {
+export function CoupleGames({ userId }: { userId: string; onNavigate: (section: SecondaryPageSection) => void }) {
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
   const [filter, setFilter] = useState<"all" | "strategy" | "cooperation" | "investigation">("all");
 
@@ -315,15 +240,7 @@ export function CoupleGames({ userId, onNavigate }: { userId: string; onNavigate
 
   if (activeGame) {
     return (
-      <GamePage
-        gameId={activeGame}
-        userId={userId}
-        onBack={() => setActiveGame(null)}
-        onNavigate={(section) => {
-          if (section === "games") setActiveGame(null);
-          else onNavigate(section);
-        }}
-      />
+      <GameAudioProvider><GamePage gameId={activeGame} userId={userId} onBack={() => setActiveGame(null)} /></GameAudioProvider>
     );
   }
 
