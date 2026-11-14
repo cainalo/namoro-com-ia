@@ -785,52 +785,177 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     window.setTimeout(() => fileInputRef.current?.click(), 0);
   }
 
-  async function toggleAudioRecording() {
-    if (recordingAudio && mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setRecordingAudio(false);
-      return;
+  function stopRecordingVisualizer() {
+    if (recordingVisualFrameRef.current !== null) {
+      window.cancelAnimationFrame(recordingVisualFrameRef.current);
+      recordingVisualFrameRef.current = null;
     }
+  }
+
+  function startRecordingVisualizer() {
+    const analyser = recordingAnalyserRef.current;
+    if (!analyser) return;
+    stopRecordingVisualizer();
+    const samples = new Uint8Array(analyser.fftSize);
+    const draw = () => {
+      const activeAnalyser = recordingAnalyserRef.current;
+      if (!activeAnalyser || mediaRecorderRef.current?.state !== "recording") {
+        recordingVisualFrameRef.current = null;
+        return;
+      }
+      activeAnalyser.getByteTimeDomainData(samples);
+      let energy = 0;
+      for (let index = 0; index < samples.length; index += 1) {
+        const normalized = (samples[index] - 128) / 128;
+        energy += normalized * normalized;
+      }
+      const level = Math.max(0.08, Math.min(1, Math.sqrt(energy / samples.length) * 3.8));
+      setRecordingLevels((current) => [...current.slice(1), level]);
+      recordingVisualFrameRef.current = window.requestAnimationFrame(draw);
+    };
+    recordingVisualFrameRef.current = window.requestAnimationFrame(draw);
+  }
+
+  function releaseRecordingResources(stream: MediaStream) {
+    stream.getTracks().forEach((track) => track.stop());
+    if (recordingStreamRef.current === stream) recordingStreamRef.current = null;
+    recordingAnalyserRef.current = null;
+    stopRecordingVisualizer();
+    const audioContext = recordingAudioContextRef.current;
+    recordingAudioContextRef.current = null;
+    if (audioContext && audioContext.state !== "closed") void audioContext.close();
+  }
+
+  async function startAudioRecording() {
+    if (state.status !== "active" || busy || recordingStatus !== "idle") return;
+    setError(null);
+    setRecordingStatus("requesting");
+    setRecordingFile(null);
+    setRecordingElapsedMs(0);
+    setRecordingLevels(Array.from({ length: 34 }, () => 0.08));
+    recordingAccumulatedMsRef.current = 0;
+    recordingStartedAtRef.current = null;
+
     try {
       if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
         throw new Error("Este dispositivo não oferece gravação de áudio neste navegador.");
       }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       recordingStreamRef.current = stream;
       recordingChunksRef.current = [];
       const mimeType = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find((candidate) => MediaRecorder.isTypeSupported(candidate));
       const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
       mediaRecorderRef.current = recorder;
-      recorder.ondataavailable = (event) => { if (event.data.size > 0) recordingChunksRef.current.push(event.data); };
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) recordingChunksRef.current.push(event.data);
+      };
       recorder.onerror = () => {
         setError("A gravação de áudio foi interrompida.");
-        setRecordingAudio(false);
-        stream.getTracks().forEach((track) => track.stop());
-        recordingStreamRef.current = null;
+        setRecordingStatus("idle");
+        mediaRecorderRef.current = null;
+        recordingChunksRef.current = [];
+        releaseRecordingResources(stream);
       };
       recorder.onstop = () => {
         const mime = recorder.mimeType || "audio/webm";
         const extension = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
         const blob = new Blob(recordingChunksRef.current, { type: mime });
-        stream.getTracks().forEach((track) => track.stop());
-        recordingStreamRef.current = null;
-        mediaRecorderRef.current = null;
         recordingChunksRef.current = [];
-        setRecordingAudio(false);
-        if (blob.size > 0) void sendFile(new globalThis.File([blob], "mensagem-de-voz." + extension, { type: mime }));
-        else setError("A gravação ficou vazia. Tente novamente.");
+        mediaRecorderRef.current = null;
+        releaseRecordingResources(stream);
+        recordingStartedAtRef.current = null;
+        if (blob.size > 0) {
+          setRecordingFile(new globalThis.File([blob], "mensagem-de-voz." + extension, { type: mime }));
+          setRecordingStatus("ready");
+        } else {
+          setRecordingStatus("idle");
+          setError("A gravação ficou vazia. Tente novamente.");
+        }
       };
-      recorder.start(250);
-      setRecordingAudio(true);
+
+      const AudioContextConstructor = window.AudioContext;
+      if (AudioContextConstructor) {
+        try {
+          const audioContext = new AudioContextConstructor();
+          const source = audioContext.createMediaStreamSource(stream);
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 256;
+          analyser.smoothingTimeConstant = 0.72;
+          source.connect(analyser);
+          recordingAudioContextRef.current = audioContext;
+          recordingAnalyserRef.current = analyser;
+          await audioContext.resume().catch(() => undefined);
+        } catch (cause) {
+          console.warn("A visualização da forma de onda não está disponível neste dispositivo.", cause);
+        }
+      }
+
+      recorder.start(200);
+      recordingStartedAtRef.current = Date.now();
+      setRecordingStatus("recording");
       setAttachmentOpen(false);
       setStickerOpen(false);
       setGiftOpen(false);
+      startRecordingVisualizer();
     } catch (cause) {
       recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
       recordingStreamRef.current = null;
-      setRecordingAudio(false);
+      recordingAnalyserRef.current = null;
+      setRecordingStatus("idle");
       setError(cause instanceof Error ? cause.message : "Não foi possível acessar o microfone.");
     }
+  }
+
+  async function toggleRecordingPause() {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder) return;
+    if (recorder.state === "recording") {
+      recorder.pause();
+      const startedAt = recordingStartedAtRef.current;
+      if (startedAt !== null) recordingAccumulatedMsRef.current += Date.now() - startedAt;
+      recordingStartedAtRef.current = null;
+      setRecordingElapsedMs(recordingAccumulatedMsRef.current);
+      stopRecordingVisualizer();
+      const audioContext = recordingAudioContextRef.current;
+      if (audioContext && audioContext.state === "running") await audioContext.suspend().catch(() => undefined);
+      setRecordingStatus("paused");
+    } else if (recorder.state === "paused") {
+      recorder.resume();
+      recordingStartedAtRef.current = Date.now();
+      const audioContext = recordingAudioContextRef.current;
+      if (audioContext && audioContext.state === "suspended") await audioContext.resume().catch(() => undefined);
+      setRecordingStatus("recording");
+      startRecordingVisualizer();
+    }
+  }
+
+  function stopAudioRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+    const startedAt = recordingStartedAtRef.current;
+    if (startedAt !== null) recordingAccumulatedMsRef.current += Date.now() - startedAt;
+    recordingStartedAtRef.current = null;
+    setRecordingElapsedMs(recordingAccumulatedMsRef.current);
+    stopRecordingVisualizer();
+    setRecordingStatus("finalizing");
+    recorder.stop();
+  }
+
+  function discardRecordedAudio() {
+    setRecordingFile(null);
+    setRecordingStatus("idle");
+    setRecordingElapsedMs(0);
+    setRecordingLevels(Array.from({ length: 34 }, () => 0.08));
+    recordingAccumulatedMsRef.current = 0;
+    recordingStartedAtRef.current = null;
+  }
+
+  async function sendRecordedAudio() {
+    if (!recordingFile || recordingStatus !== "ready" || busy) return;
+    const sent = await sendFile(recordingFile, "audio");
+    if (sent) discardRecordedAudio();
   }
 
   async function sendSticker(sticker: (typeof stickerOptions)[number]) {
