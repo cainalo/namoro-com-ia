@@ -27065,3 +27065,117 @@ body {
  .cave-controls { gap: 15px; }
 }
 @media(prefers-reduced-motion:reduce) { .cave-tile { transition: none; } }
+
+
+/* Encerramento de partida: vitória/derrota ocupa a tela inteira */
+.game-play-surface :is(
+  .quiz-finish,
+  .chess-end-panel,
+  .island-ending,
+  .escape-room-complete,
+  .investigation-result.is-correct,
+  .investigation-train-result.is-correct,
+  .naval-end-screen,
+  .domino-end-panel,
+  .truco-result-panel.is-hand-end,
+  .local-game-end-panel
+) {
+  position: fixed;
+  z-index: 9998;
+  inset: 0;
+  display: flex;
+  width: 100vw;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  overflow-y: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: max(26px, env(safe-area-inset-top)) 22px max(26px, env(safe-area-inset-bottom));
+  background: #38263a;
+  color: #fff3dc;
+  box-shadow: none;
+  text-align: center;
+}
+.game-play-surface .quiz-finish { background: #49326d; }
+.game-play-surface .chess-end-panel { background: #493126; }
+.game-play-surface .island-ending.is-won { background: #205b4b; color: #fff3dc; }
+.game-play-surface .island-ending.is-lost { background: #713a3d; color: #fff3dc; }
+.game-play-surface .escape-room-complete { background: #315b56; color: #fff3dc; }
+.game-play-surface .investigation-result.is-correct { background: #254f61; color: #fff3dc; }
+.game-play-surface .naval-end-screen { background: #15536d; color: #fff3dc; }
+.game-play-surface .domino-end-panel { background: #315b3c; color: #fff3dc; }
+.game-play-surface .truco-result-panel.is-hand-end { background: #743a35; color: #fff3dc; }
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) h2,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) h3,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) h4,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) strong {
+  color: #fff3dc;
+}
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) p,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) span {
+  color: #f0dfc8;
+}
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) button {
+  min-height: 46px;
+  border: 2px solid #f4c65f;
+  border-radius: 14px;
+  background: #d76c3e;
+  color: #fff;
+  padding: 0 19px;
+  font-weight: 950;
+}
+
+/* Xadrez: arena ampla, tabuleiro como protagonista */
+.game-play-surface:has(.chess-game) {
+  width: 100%;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: #38271f;
+  padding: clamp(12px, 3vw, 25px);
+}
+.game-play-surface .chess-game {
+  display: grid;
+  width: min(100%, 760px);
+  justify-items: center;
+  gap: 14px;
+  margin: 0 auto;
+  padding: clamp(10px, 2vw, 20px);
+  border: 2px solid #8a5d3c;
+  border-radius: 20px;
+  background: #51382b;
+  color: #fff0d6;
+}
+.game-play-surface .chess-board {
+  width: min(100%, 560px);
+  margin: 5px auto;
+  border: 7px solid #b57b42;
+  border-radius: 5px;
+  background: #b57b42;
+  box-shadow: 0 12px 0 #2c201c, 0 18px 28px rgb(0 0 0 / 35%);
+}
+.game-play-surface .chess-square { aspect-ratio: 1; }
+.game-play-surface .chess-square.is-light { background: #f2dfb9; }
+.game-play-surface .chess-square.is-dark { background: #80513a; }
+.game-play-surface .chess-piece { font-size: clamp(24px, 5vw, 48px); }
+.game-play-surface .chess-status {
+  border: 1px solid #b57b42;
+  border-radius: 999px;
+  background: #35251f;
+  color: #ffe5b3;
+  padding: 9px 17px;
+  font-weight: 850;
+}
+.game-play-surface .chess-statusbar { width: min(100%, 560px); }
+.game-play-surface .chess-history {
+  width: min(100%, 560px);
+  border: 1px solid #8a5d3c;
+  border-radius: 12px;
+  background: #3d2a23;
+  color: #fff0d6;
+  padding: 10px 13px;
+}
