@@ -1105,15 +1105,9 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     setSelectedActionMessageId(null);
   }
 
-  function beginEditMessage(message: CoupleMessage) {
-    setEditingMessageId(message.id);
-    setEditingDraft(message.body);
-    setSelectedActionMessageId(null);
-  }
-
-  async function saveEditedMessage(messageId: string) {
-    const body = editingDraft.trim();
-    if (!body || body.length > 2000 || savingEdit) return;
+  async function persistEditedMessage(messageId: string, rawBody: string) {
+    const body = rawBody.trim();
+    if (!body || body.length > 2000 || savingEdit) return false;
     setSavingEdit(true);
     setError(null);
     try {
@@ -1125,12 +1119,49 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         : current);
       setEditingMessageId(null);
       setEditingDraft("");
+      return true;
     } catch (cause) {
       console.error("Falha ao editar mensagem.", cause);
       setError("Não foi possível editar. Confira a permissão de edição no banco de dados.");
+      return false;
     } finally {
       setSavingEdit(false);
     }
+  }
+
+  async function beginEditMessage(message: CoupleMessage) {
+    setSelectedActionMessageId(null);
+
+    // No APK não montamos um input HTML dentro do histórico: o teclado do
+    // Android é aberto pelo mesmo EditText nativo já usado no compositor.
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const result = await NativeAuth.showTextInputDialog({
+          title: "Editar mensagem",
+          description: "Altere o texto da mensagem enviada.",
+          hint: "Edite sua mensagem…",
+          initialValue: message.body,
+          confirmText: "Salvar",
+          maxLength: 2000,
+        });
+        if (result.cancelled || typeof result.text !== "string") return;
+        const body = result.text.trim();
+        if (!body || body === message.body.trim()) return;
+        await persistEditedMessage(message.id, body);
+      } catch (cause) {
+        console.error("Não foi possível abrir a edição nativa da mensagem.", cause);
+        setError("Não foi possível abrir a edição. Tente novamente.");
+      }
+      return;
+    }
+
+    // No navegador, mantém a edição inline tradicional.
+    setEditingMessageId(message.id);
+    setEditingDraft(message.body);
+  }
+
+  async function saveEditedMessage(messageId: string) {
+    await persistEditedMessage(messageId, editingDraft);
   }
 
   async function deleteMessage(message: CoupleMessage) {

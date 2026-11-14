@@ -198,6 +198,10 @@ public class NativeAuthPlugin extends Plugin {
         String hint = call.getString("hint", "Escreva uma mensagem…");
         String initialValue = call.getString("initialValue", "");
         String confirmText = call.getString("confirmText", "Enviar");
+        String descriptionText = call.getString(
+            "description",
+            "Sua mensagem será enviada somente para a pessoa vinculada ao seu espaço."
+        );
         Integer requestedMaxLength = call.getInt("maxLength", 2000);
         int maxLength = Math.max(1, Math.min(requestedMaxLength == null ? 2000 : requestedMaxLength, 5000));
 
@@ -210,7 +214,7 @@ public class NativeAuthPlugin extends Plugin {
             content.setPadding(horizontal, dp(8), horizontal, 0);
 
             TextView description = new TextView(getActivity());
-            description.setText("Sua mensagem será enviada somente para a pessoa vinculada ao seu espaço.");
+            description.setText(descriptionText);
             description.setTextColor(Color.rgb(91, 103, 94));
             description.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13);
             description.setPadding(0, 0, 0, dp(10));

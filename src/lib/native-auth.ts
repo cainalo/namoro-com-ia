@@ -15,6 +15,7 @@ export interface NativeTextInputResult {
 
 export interface NativeTextInputOptions {
   title: string;
+  description?: string;
   hint: string;
   initialValue?: string;
   confirmText?: string;
