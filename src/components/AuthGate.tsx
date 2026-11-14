@@ -7,7 +7,7 @@ import {
   Mail, ShieldCheck, Sparkles,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { MoradosMark } from "@/components/MoradosMark";
+import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
 import { supabase } from "@/integrations/supabase/client";
 
 type AuthGateProps = {
@@ -58,12 +58,7 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
   }, []);
 
   if (checking) {
-    return (
-      <main className="auth-v2-loading" aria-busy="true">
-        <div className="auth-v2-loading-mark"><MoradosMark size={34} /></div>
-        <span>Preparando o espaço de vocês</span>
-      </main>
-    );
+    return <MoradosLoadingScreen message="Preparando o espaço de vocês" />;
   }
 
   if (!session) {
