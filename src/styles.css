@@ -26793,3 +26793,119 @@ body {
     transition: none !important;
   }
 }
+
+
+/* MORADOS — acabamento chapado para cenários e tabuleiros já existentes.
+   Aplicado somente ao conteúdo da partida; o catálogo permanece intocado. */
+.game-play-surface .connect-four-board {
+  border-color: #49316f;
+  background: #67459a;
+  box-shadow: none;
+}
+.game-play-surface .connect-four-cell {
+  background: #302345;
+  box-shadow: none;
+}
+.game-play-surface .connect-four-piece.is-player-one {
+  border: 2px solid #b8436b;
+  background: #ed7094;
+  box-shadow: none;
+}
+.game-play-surface .connect-four-piece.is-player-two {
+  border: 2px solid #6848a7;
+  background: #a68ae5;
+  box-shadow: none;
+}
+.game-play-surface .checkers-piece.is-white {
+  border: 2px solid #fff;
+  background: #fff;
+  box-shadow: none;
+}
+.game-play-surface .checkers-piece.is-black {
+  border: 2px solid #e2b8ff;
+  background: #67438b;
+  box-shadow: none;
+}
+.game-play-surface .chess-board {
+  border-color: #4c347d;
+  background: #4c347d;
+  box-shadow: none;
+}
+.game-play-surface .chess-square.is-light {
+  background: #f5e9c9;
+}
+.game-play-surface .chess-square.is-dark {
+  background: #7955a8;
+}
+.game-play-surface .chess-square.is-selected {
+  background: #f2c34b;
+}
+.game-play-surface .chess-square.is-king-check {
+  background: #d65a43;
+}
+.game-play-surface .investigation-case-cover-art {
+  background: #314f78;
+}
+.game-play-surface .investigation-scene-visual {
+  background-color: #254e67;
+  background-image: url("/images/investigation-observatory.webp");
+  box-shadow: none;
+}
+.game-play-surface .investigation-scene-visual::before {
+  background: none;
+  box-shadow: none;
+}
+.game-play-surface .investigation-train-cover {
+  background: #344e70;
+}
+.game-play-surface .investigation-train-scene {
+  background: #285d78;
+}
+.game-play-surface .investigation-train-scene::before {
+  background: none;
+  box-shadow: none;
+}
+.game-play-surface .escape-room-scene {
+  border-color: #354b70;
+  background: #374c72;
+}
+.game-play-surface .escape-room-scene::before {
+  background: #285b72;
+  box-shadow: none;
+}
+.game-play-surface .escape-room-scene::after {
+  display: none;
+}
+.game-play-surface :is(
+  .quiz-finish,
+  .chess-end-panel,
+  .naval-end-screen,
+  .domino-end-panel,
+  .truco-result-panel.is-hand-end,
+  .island-ending.is-won,
+  .island-ending.is-lost,
+  .escape-room-complete,
+  .investigation-result.is-correct,
+  .investigation-solution-report,
+  .local-choice-results
+) {
+  background: var(--game-page-soft);
+  box-shadow: none;
+}
+.game-play-surface :is(
+  .quiz-finish,
+  .chess-end-panel,
+  .naval-end-screen,
+  .domino-end-panel,
+  .truco-result-panel.is-hand-end,
+  .island-ending.is-won,
+  .island-ending.is-lost,
+  .escape-room-complete,
+  .investigation-result.is-correct,
+  .investigation-solution-report,
+  .local-choice-results
+)::before {
+  content: none;
+  display: none;
+  background: none;
+}
