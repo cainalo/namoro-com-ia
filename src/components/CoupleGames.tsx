@@ -30,6 +30,7 @@ import { TrucoGame } from "@/components/TrucoGame";
 import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
+import { CaveExpeditionGame } from "@/components/CaveExpeditionGame";
 import { MemoryMatchGame, SymbolSequenceGame } from "@/components/NewCoupleGames";
 import { InlineMenu } from "@/components/InlineMenu";
 import { OnlineGameHost } from "@/components/OnlineGameHost";
@@ -43,7 +44,7 @@ import {
   LocalThisOrThatGame,
 } from "@/components/LocalCoupleGames";
 
-type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room" | "island-survival" | "memory-match" | "symbol-sequence";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room" | "island-survival" | "memory-match" | "symbol-sequence" | "cave-expedition";
 type GameMode = "solo" | "local" | "online" | null;
 
 const catalogue: Array<{
@@ -121,6 +122,7 @@ const catalogue: Array<{
   { id: "island-survival", name: "Depois da tempestade", category: "Sobrevivência", description: "Administrem recursos, dividam tarefas e sobrevivam cinco dias numa ilha até o resgate.", players: "Cooperativo · 1–2", icon: Shield, tone: "olive", new: true },
   { id: "memory-match", name: "Jogo da Memória", category: "Memória", description: "Encontrem pares, memorizem posições e disputem quem descobre mais cartas.", players: "1–2 pessoas", icon: Layers, tone: "plum", new: true },
   { id: "symbol-sequence", name: "Sequência de Símbolos", category: "Atenção", description: "Observe uma sequência de símbolos e repita cada passo sem errar.", players: "1–2 pessoas", icon: Sparkles, tone: "petrol", new: true },
+  { id: "cave-expedition", name: "As Ruínas de Morados", category: "Aventura 2D", description: "Explore câmaras esquecidas, enfrente guardiões, encontre relíquias e escape em uma aventura cooperativa.", players: "Cooperativo · 1–2", icon: Swords, tone: "noir", new: true },
 ];
 
 function GamePage({
@@ -247,7 +249,7 @@ function GamePage({
   );
 }
 
-const cooperativeGames: GameId[] = ["investigation", "investigation-train", "escape-room", "island-survival"];
+const cooperativeGames: GameId[] = ["investigation", "investigation-train", "escape-room", "island-survival", "cave-expedition"];
 
 function renderSoloGame(gameId: GameId) {
   switch (gameId) {
@@ -266,6 +268,7 @@ function renderSoloGame(gameId: GameId) {
     case "island-survival": return <IslandSurvivalGame solo />;
     case "memory-match": return <MemoryMatchGame solo />;
     case "symbol-sequence": return <SymbolSequenceGame solo />;
+    case "cave-expedition": return <CaveExpeditionGame solo />;
   }
 }
 
@@ -286,6 +289,7 @@ function renderLocalGame(gameId: GameId) {
     case "island-survival": return <IslandSurvivalGame />;
     case "memory-match": return <MemoryMatchGame />;
     case "symbol-sequence": return <SymbolSequenceGame />;
+    case "cave-expedition": return <CaveExpeditionGame />;
   }
 }
 
@@ -312,7 +316,7 @@ export function CoupleGames({ userId, onNavigate }: { userId: string; onNavigate
 
   const visibleGames = catalogue.filter((game) => {
     if (filter === "strategy") return game.category === "Estratégia";
-    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room","Sobrevivência","Memória","Atenção"].includes(game.category);
+    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room","Sobrevivência","Memória","Atenção","Aventura 2D"].includes(game.category);
     if (filter === "investigation") return game.category === "Investigação policial" || game.category === "Escape room";
     return true;
   });
