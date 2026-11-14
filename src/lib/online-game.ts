@@ -28,6 +28,7 @@ export const ONLINE_MATCH_COLUMNS =
 
 type RpcError = { code?: string; message: string };
 type Loose = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- loose adapter until types are regenerated
   from: (table: string) => any;
   rpc: (
     name: string,
