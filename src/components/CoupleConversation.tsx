@@ -170,6 +170,31 @@ function formatAudioDuration(milliseconds: number) {
   return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
 }
 
+function compressAudioWaveform(samples: number[], barCount = 56): number[] {
+  if (samples.length === 0) return [];
+  const peaks = Array.from({ length: barCount }, (_, index) => {
+    const start = Math.floor((index * samples.length) / barCount);
+    const end = Math.max(start + 1, Math.floor(((index + 1) * samples.length) / barCount));
+    let peak = 0;
+    for (let sample = start; sample < Math.min(end, samples.length); sample += 1) {
+      peak = Math.max(peak, samples[sample] ?? 0);
+    }
+    return peak;
+  });
+  const maximum = Math.max(0.08, ...peaks);
+  return peaks.map((peak) => Math.round(Math.max(0.07, peak / maximum) * 100) / 100);
+}
+
+function readMessageAudioWaveform(message: CoupleMessage): number[] | undefined {
+  const value = message.metadata?.waveform;
+  if (!Array.isArray(value)) return undefined;
+  const waveform = value
+    .filter((item): item is number => typeof item === "number" && Number.isFinite(item))
+    .slice(0, 96)
+    .map((item) => Math.max(0.07, Math.min(1, item)));
+  return waveform.length >= 8 ? waveform : undefined;
+}
+
 export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
@@ -203,6 +228,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [recordingPreviewUrl, setRecordingPreviewUrl] = useState<string | null>(null);
   const [recordingElapsedMs, setRecordingElapsedMs] = useState(0);
   const [recordingLevels, setRecordingLevels] = useState<number[]>(Array.from({ length: 34 }, () => 0.08));
+  const [recordingWaveform, setRecordingWaveform] = useState<number[]>([]);
   const [giftTitle, setGiftTitle] = useState("");
   const [giftNote, setGiftNote] = useState("");
   const [giftArtwork, setGiftArtwork] = useState("flowers");
@@ -220,6 +246,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
+  const recordingWaveformSamplesRef = useRef<number[]>([]);
   const recordingAudioContextRef = useRef<AudioContext | null>(null);
   const recordingAnalyserRef = useRef<AnalyserNode | null>(null);
   const recordingVisualFrameRef = useRef<number | null>(null);
@@ -467,14 +494,17 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     if (state.status !== "active" || !composer || !thread) return;
 
     const updateClearance = () => {
-      const composerHeight = composer.getBoundingClientRect().height;
-      // Reserva a altura real do compositor e uma folga para que o último balão
-      // ou player termine inteiramente acima dos controles.
-      const clearance = Math.ceil(composerHeight + 26);
+      const composerTop = composer.getBoundingClientRect().top;
+      const threadBottom = thread.getBoundingClientRect().bottom;
+      // Reserva exatamente a distância entre o fim da área rolável e o topo
+      // real da fileira de ferramentas, sem estimar a altura do formulário.
+      const clearance = Math.max(0, Math.ceil(threadBottom - composerTop + 14));
       thread.style.setProperty("--conversation-composer-clearance", clearance + "px");
       if (wasAtBottomRef.current) {
         window.requestAnimationFrame(() => {
-          if (threadRef.current === thread && wasAtBottomRef.current) scrollThreadToEnd("auto");
+          window.requestAnimationFrame(() => {
+            if (threadRef.current === thread && wasAtBottomRef.current) scrollThreadToEnd("auto");
+          });
         });
       }
     };
@@ -483,9 +513,11 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateClearance);
     observer?.observe(composer);
     window.addEventListener("resize", updateClearance);
+    window.visualViewport?.addEventListener("resize", updateClearance);
     return () => {
       observer?.disconnect();
       window.removeEventListener("resize", updateClearance);
+      window.visualViewport?.removeEventListener("resize", updateClearance);
       thread.style.removeProperty("--conversation-composer-clearance");
     };
   }, [state.status, recordingStatus, attachmentOpen, stickerOpen, giftOpen]);
@@ -842,6 +874,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           energy += normalized * normalized;
         }
         const level = Math.max(0.08, Math.min(1, Math.sqrt(energy / samples.length) * 3.8));
+        recordingWaveformSamplesRef.current.push(level);
+        if (recordingWaveformSamplesRef.current.length > 12000) recordingWaveformSamplesRef.current.shift();
         setRecordingLevels((current) => [...current.slice(1), level]);
       }
       recordingVisualFrameRef.current = window.requestAnimationFrame(draw);
@@ -864,6 +898,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     setError(null);
     setRecordingStatus("requesting");
     setRecordingFile(null);
+    setRecordingWaveform([]);
+    recordingWaveformSamplesRef.current = [];
     setRecordingElapsedMs(0);
     setRecordingLevels(Array.from({ length: 34 }, () => 0.08));
     recordingAccumulatedMsRef.current = 0;
@@ -895,12 +931,15 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         const mime = recorder.mimeType || "audio/webm";
         const extension = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
         const blob = new Blob(recordingChunksRef.current, { type: mime });
+        const waveform = compressAudioWaveform(recordingWaveformSamplesRef.current);
+        recordingWaveformSamplesRef.current = [];
         recordingChunksRef.current = [];
         mediaRecorderRef.current = null;
         releaseRecordingResources(stream);
         recordingStartedAtRef.current = null;
         if (blob.size > 0) {
           setRecordingFile(new globalThis.File([blob], "mensagem-de-voz." + extension, { type: mime }));
+          setRecordingWaveform(waveform);
           setRecordingStatus("ready");
         } else {
           setRecordingStatus("idle");
@@ -983,6 +1022,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
   function discardRecordedAudio() {
     setRecordingFile(null);
+    setRecordingWaveform([]);
+    recordingWaveformSamplesRef.current = [];
     setRecordingStatus("idle");
     setRecordingElapsedMs(0);
     setRecordingLevels(Array.from({ length: 34 }, () => 0.08));
@@ -992,7 +1033,10 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
   async function sendRecordedAudio() {
     if (!recordingFile || recordingStatus !== "ready" || busy) return;
-    const sent = await sendFile(recordingFile, "audio");
+    const sent = await sendFile(recordingFile, "audio", {
+      waveform: recordingWaveform,
+      waveformVersion: 1,
+    });
     if (sent) discardRecordedAudio();
   }
 
@@ -1123,7 +1167,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     }
     if (message.message_type === "audio") {
       return url ? (
-        <ConversationAudioPlayer src={url} label={message.attachment_name || "Mensagem de voz"} />
+        <ConversationAudioPlayer src={url} waveform={readMessageAudioWaveform(message)} />
       ) : <p className="conversation-attachment-pending">Carregando áudio…</p>;
     }
     if (message.message_type === "file") {
@@ -1363,6 +1407,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 );
               })
             )}
+            <div className="conversation-scroll-end-spacer" aria-hidden="true" />
           </div>
 
           {copyError && <p className="conversation-error" role="alert">{copyError}</p>}
@@ -1535,7 +1580,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             )}
             {recordingStatus === "ready" && recordingFile && recordingPreviewUrl ? (
               <div className="conversation-recording-review">
-                <ConversationAudioPlayer src={recordingPreviewUrl} label="Prévia do áudio" />
+                <ConversationAudioPlayer src={recordingPreviewUrl} waveform={recordingWaveform} />
                 <div className="conversation-recording-review-actions">
                   <button type="button" className="conversation-recording-discard" onClick={discardRecordedAudio} disabled={busy} aria-label="Descartar áudio" title="Descartar">
                     <X aria-hidden="true" />
