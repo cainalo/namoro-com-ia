@@ -1255,6 +1255,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           >
             <ArrowLeft aria-hidden="true" />
           </button>
+          <button
+            type="button"
+            className="conversation-call-button conversation-floating-action"
+            aria-label="Chamada de voz"
+            title="Chamada de voz"
+            disabled={state.status !== "active"}
+            onClick={() => setCallKind("audio")}
+          >
+            <Phone aria-hidden="true" />
+          </button>
         </div>
 
         <button
@@ -1271,16 +1281,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         </button>
 
         <div className="conversation-heading-trailing">
-          <button
-            type="button"
-            className="conversation-call-button conversation-floating-action"
-            aria-label="Chamada de voz"
-            title="Chamada de voz"
-            disabled={state.status !== "active"}
-            onClick={() => setCallKind("audio")}
-          >
-            <Phone aria-hidden="true" />
-          </button>
           <button
             type="button"
             className="conversation-call-button conversation-floating-action"
@@ -1386,13 +1386,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                         " is-kind-" + message.message_type
                       }
                     >
-                      <div className="conversation-message-meta">
-                        <span className="conversation-sender">{ownMessage ? "Você" : state.otherName}</span>
-                        <time dateTime={message.created_at}>{formatMessageTime(message.created_at)}</time>
-                      </div>
+                      <span className="conversation-sender sr-only">{ownMessage ? "Você" : state.otherName}</span>
                       <div className={"conversation-message-content is-" + message.message_type}>
                         {renderMessageContent(message)}
                       </div>
+                      <time
+                        className={"conversation-message-time" + (message.message_type === "text" ? " is-text" : "")}
+                        dateTime={message.created_at}
+                      >
+                        {formatMessageTime(message.created_at)}
+                      </time>
                       <button
                         type="button"
                         className="conversation-copy-action"
@@ -1499,125 +1502,133 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               onChange={(event) => void sendAttachment(event)}
               aria-label="Escolher arquivo para enviar"
             />
-{recordingStatus === "idle" && (
             <div className="conversation-composer-row">
-              <div className="conversation-composer-tools" aria-label="Ferramentas da conversa">
-                <button
-                  type="button"
-                  className={attachmentOpen ? "is-active" : ""}
-                  onClick={() => { setAttachmentOpen((value) => !value); setStickerOpen(false); setGiftOpen(false); }}
-                  aria-label="Anexar mídia"
-                  title="Foto, vídeo, áudio ou arquivo"
-                  disabled={busy}
-                >
-                  <Paperclip aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className={stickerOpen ? "is-active" : ""}
-                  onClick={() => { setStickerOpen((value) => !value); setAttachmentOpen(false); setGiftOpen(false); }}
-                  aria-label="Enviar figurinha"
-                  title="Figurinhas"
-                  disabled={busy}
-                >
-                  <Sticker aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className={giftOpen ? "is-active" : ""}
-                  onClick={() => { setGiftOpen((value) => !value); setAttachmentOpen(false); setStickerOpen(false); }}
-                  aria-label="Abrir oficina de presentes"
-                  title="Oficina de presentes"
-                  disabled={busy}
-                >
-                  <Gift aria-hidden="true" />
-                </button>
-
-              </div>
-              <div className="conversation-input-shell">
-                {Capacitor.isNativePlatform() ? (
+              {recordingStatus === "idle" && (
+                <div className="conversation-composer-tools" aria-label="Ferramentas da conversa">
                   <button
                     type="button"
-                    className="conversation-native-message-trigger flex min-h-[38px] min-w-0 flex-1 items-center bg-transparent px-0 py-2 text-left text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
-                    onClick={() => void openNativeMessageComposer()}
-                    disabled={busy || state.status !== "active"}
-                    aria-label="Escrever mensagem"
+                    className={attachmentOpen ? "is-active" : ""}
+                    onClick={() => { setAttachmentOpen((value) => !value); setStickerOpen(false); setGiftOpen(false); }}
+                    aria-label="Anexar mídia"
+                    title="Foto, vídeo, áudio ou arquivo"
+                    disabled={busy}
                   >
-                    {draft.trim() || "Escreva uma mensagem…"}
+                    <Paperclip aria-hidden="true" />
                   </button>
-                ) : (
+                  <button
+                    type="button"
+                    className={stickerOpen ? "is-active" : ""}
+                    onClick={() => { setStickerOpen((value) => !value); setAttachmentOpen(false); setGiftOpen(false); }}
+                    aria-label="Enviar figurinha"
+                    title="Figurinhas"
+                    disabled={busy}
+                  >
+                    <Sticker aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className={giftOpen ? "is-active" : ""}
+                    onClick={() => { setGiftOpen((value) => !value); setAttachmentOpen(false); setStickerOpen(false); }}
+                    aria-label="Abrir oficina de presentes"
+                    title="Oficina de presentes"
+                    disabled={busy}
+                  >
+                    <Gift aria-hidden="true" />
+                  </button>
+                </div>
+              )}
+
+              <div className="conversation-input-shell">
+                {recordingStatus === "idle" ? (
                   <>
-                    <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
-                    <textarea
-                      id="conversation-draft"
-                      value={draft}
-                      onChange={(event) => setDraft(event.target.value)}
-                      placeholder="Escreva uma mensagem…"
-                      maxLength={2000}
-                      rows={1}
-                      onKeyDown={handleComposerKeyDown}
-                      disabled={busy}
-                    />
+                    {Capacitor.isNativePlatform() ? (
+                      <button
+                        type="button"
+                        className="conversation-native-message-trigger flex min-h-[38px] min-w-0 flex-1 items-center bg-transparent px-0 py-2 text-left text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
+                        onClick={() => void openNativeMessageComposer()}
+                        disabled={busy || state.status !== "active"}
+                        aria-label="Escrever mensagem"
+                      >
+                        {draft.trim() || "Escreva uma mensagem…"}
+                      </button>
+                    ) : (
+                      <>
+                        <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
+                        <textarea
+                          id="conversation-draft"
+                          value={draft}
+                          onChange={(event) => setDraft(event.target.value)}
+                          placeholder="Escreva uma mensagem…"
+                          maxLength={2000}
+                          rows={1}
+                          onKeyDown={handleComposerKeyDown}
+                          disabled={busy}
+                        />
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      className="conversation-audio-button"
+                      onClick={() => void startAudioRecording()}
+                      aria-label="Gravar áudio"
+                      title="Gravar áudio"
+                      disabled={busy || state.status !== "active"}
+                    >
+                      <Mic aria-hidden="true" />
+                    </button>
+                    {!Capacitor.isNativePlatform() && (
+                      <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0} aria-label="Enviar mensagem" title="Enviar">
+                        {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                      </button>
+                    )}
                   </>
-                )}
-                <button
-                  type="button"
-                  className="conversation-audio-button"
-                  onClick={() => void startAudioRecording()}
-                  aria-label="Gravar áudio"
-                  title="Gravar áudio"
-                  disabled={busy || state.status !== "active"}
-                >
-                  <Mic aria-hidden="true" />
-                </button>
-                {!Capacitor.isNativePlatform() && (
-                  <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0} aria-label="Enviar mensagem" title="Enviar">
-                    {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
-                  </button>
+                ) : recordingStatus === "ready" ? (
+                  recordingFile && recordingPreviewUrl ? (
+                    <div className="conversation-recording-review-inline">
+                      <ConversationAudioPlayer src={recordingPreviewUrl} waveform={recordingWaveform} />
+                      <div className="conversation-recording-review-actions">
+                        <button type="button" className="conversation-recording-discard" onClick={discardRecordedAudio} disabled={busy} aria-label="Descartar áudio" title="Descartar">
+                          <X aria-hidden="true" />
+                        </button>
+                        <button type="button" className="conversation-recording-send" onClick={() => void sendRecordedAudio()} disabled={busy} aria-label="Enviar áudio" title="Enviar áudio">
+                          {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="conversation-recording-wait" role="status" aria-label="Preparando áudio">
+                      <LoaderCircle aria-hidden="true" />
+                    </span>
+                  )
+                ) : (
+                  <div className={"conversation-recording-inline is-" + recordingStatus}>
+                    <div className="conversation-recording-clock">
+                      <span className="conversation-recording-dot" />
+                      <strong>{recordingStatus === "requesting" ? "Microfone" : recordingStatus === "finalizing" ? "Preparando" : formatAudioDuration(recordingElapsedMs)}</strong>
+                    </div>
+                    <div className="conversation-recording-waveform" role="img" aria-label={recordingStatus === "paused" ? "Gravação pausada" : "Visualização do áudio enquanto grava"}>
+                      {recordingLevels.map((level, index) => (
+                        <span key={index} style={{ height: Math.max(4, Math.round(level * 30)) + "px" }} />
+                      ))}
+                    </div>
+                    <div className="conversation-recording-actions">
+                      {recordingStatus === "requesting" || recordingStatus === "finalizing" ? (
+                        <span className="conversation-recording-wait" role="status"><LoaderCircle aria-hidden="true" /></span>
+                      ) : (
+                        <>
+                          <button type="button" className="conversation-recording-pause" onClick={() => void toggleRecordingPause()} aria-label={recordingStatus === "paused" ? "Retomar gravação" : "Pausar gravação"} title={recordingStatus === "paused" ? "Retomar" : "Pausar"}>
+                            {recordingStatus === "paused" ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+                          </button>
+                          <button type="button" className="conversation-recording-stop" onClick={stopAudioRecording} aria-label="Parar gravação" title="Parar gravação">
+                            <Square aria-hidden="true" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
-            )}
-            {recordingStatus === "ready" && recordingFile && recordingPreviewUrl ? (
-              <div className="conversation-recording-review">
-                <ConversationAudioPlayer src={recordingPreviewUrl} waveform={recordingWaveform} />
-                <div className="conversation-recording-review-actions">
-                  <button type="button" className="conversation-recording-discard" onClick={discardRecordedAudio} disabled={busy} aria-label="Descartar áudio" title="Descartar">
-                    <X aria-hidden="true" />
-                  </button>
-                  <button type="button" className="conversation-recording-send" onClick={() => void sendRecordedAudio()} disabled={busy} aria-label="Enviar áudio">
-                    {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
-                    <span>{busy ? "Enviando…" : "Enviar áudio"}</span>
-                  </button>
-                </div>
-              </div>
-            ) : recordingStatus !== "idle" ? (
-              <div className={"conversation-recording-bar is-" + recordingStatus}>
-                <div className="conversation-recording-clock">
-                  <span className="conversation-recording-dot" />
-                  <strong>{recordingStatus === "requesting" ? "Microfone" : recordingStatus === "finalizing" ? "Preparando" : formatAudioDuration(recordingElapsedMs)}</strong>
-                </div>
-                <div className="conversation-recording-waveform" role="img" aria-label={recordingStatus === "paused" ? "Gravação pausada" : "Visualização do áudio enquanto grava"}>
-                  {recordingLevels.map((level, index) => (
-                    <span key={index} style={{ height: Math.max(4, Math.round(level * 30)) + "px" }} />
-                  ))}
-                </div>
-                <div className="conversation-recording-actions">
-                  {recordingStatus === "requesting" || recordingStatus === "finalizing" ? (
-                    <span className="conversation-recording-wait" role="status"><LoaderCircle aria-hidden="true" /></span>
-                  ) : (
-                    <>
-                      <button type="button" className="conversation-recording-pause" onClick={() => void toggleRecordingPause()} aria-label={recordingStatus === "paused" ? "Retomar gravação" : "Pausar gravação"} title={recordingStatus === "paused" ? "Retomar" : "Pausar"}>
-                        {recordingStatus === "paused" ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
-                      </button>
-                      <button type="button" className="conversation-recording-stop" onClick={stopAudioRecording} aria-label="Parar gravação" title="Parar gravação">
-                        <Square aria-hidden="true" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ) : null}
             {recordingStatus === "idle" && <p className="conversation-composer-hint">Enter envia · Shift + Enter quebra a linha</p>}
           </form>
         </>
