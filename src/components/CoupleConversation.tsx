@@ -222,7 +222,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   const [copyError, setCopyError] = useState<string | null>(null);
   const [selectedActionMessageId, setSelectedActionMessageId] = useState<string | null>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [editingDraft, setEditingDraft] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [favoriteMessageIds, setFavoriteMessageIds] = useState<string[]>(() => {
     try {
@@ -805,7 +804,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
 
   function cancelMessageEdit() {
     setEditingMessageId(null);
-    setEditingDraft("");
     setDraft("");
     setError(null);
   }
@@ -1171,7 +1169,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     // Não cria um segundo textarea dentro da lista rolável de mensagens,
     // evitando o travamento de foco/teclado observado no WebView.
     setEditingMessageId(message.id);
-    setEditingDraft(message.body);
     setDraft(message.body);
     window.requestAnimationFrame(() => {
       const composer = composerRef.current;
@@ -1182,10 +1179,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       }
       composer?.scrollIntoView({ block: "nearest", behavior: "smooth" });
     });
-  }
-
-  async function saveEditedMessage(messageId: string) {
-    await persistEditedMessage(messageId, editingDraft);
   }
 
   async function deleteMessage(message: CoupleMessage) {
