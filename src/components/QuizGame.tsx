@@ -34,7 +34,7 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
     turnSeat:(q)=>q.player,
     outcome:(q)=>q.phase!=="finished"?null:q.scores[0]===q.scores[1]?{kind:"draw"}:{kind:"win",winnerSeat:q.scores[0]>q.scores[1]?0:1},
   });
-  const {category,round,index,player,scores,phase,selected,timedOut}=quiz;
+  const {category,round,index,player,scores,phase,selected,timedOut,opponentCorrect}=quiz;
   const [timeLeft,setTimeLeft]=useState(20);
   const question=round[index];
   const correct=selected===question?.answer;
@@ -126,7 +126,7 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
       )}
       {phase==="finished"&&(
         <div className="quiz-finish">
-          <span><Trophy aria-hidden="true"/></span><p className="date-kicker">Fim do desafio</p><h3>{solo ? (scores[0]===scores[1]?"Vocês empataram!":`${leader} venceu!`) : (scores[0]===scores[1]?"Vocês empataram!":`${leader} venceu!`)}</h3>
+          <span><Trophy aria-hidden="true"/></span><p className="date-kicker">Fim do desafio</p><h3>{solo ? (scores[0]===scores[1]?(solo?"Empate com Morados!":"Vocês empataram!"):`${leader} venceu!`) : (scores[0]===scores[1]?(solo?"Empate com Morados!":"Vocês empataram!"):`${leader} venceu!`)}</h3>
           <div className="quiz-final-score"><div><span>{solo ? "Você" : "Pessoa 1"}</span><strong>{scores[0]}</strong></div><div><span>{solo ? "Morados" : "Pessoa 2"}</span><strong>{scores[1]}</strong></div></div>
           <p>{solo ? "Você respondeu" : "Vocês responderam"} {round.length} perguntas na categoria {category.toLowerCase()}.</p>
           <button type="button" className="primary-action" onClick={start}>Jogar novamente</button>
