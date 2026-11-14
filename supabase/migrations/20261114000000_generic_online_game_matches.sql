@@ -83,7 +83,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
   SELECT EXISTS (
     SELECT 1
     FROM public.couples AS c
@@ -93,7 +93,7 @@ AS $
       AND m.user_id = (SELECT auth.uid())
       AND m.ended_at IS NULL
   );
-$;
+$$;
 REVOKE ALL ON FUNCTION public.is_current_game_member(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.is_current_game_member(uuid) TO authenticated;
 
