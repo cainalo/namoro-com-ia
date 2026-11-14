@@ -293,7 +293,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
     else {setSelected(null);setMessage("Selecione uma peça da sua cor.");}
   }
   function undo(){
-    const steps = solo ? 2 : 1;
+    const steps = solo && history.length >= 2 ? 2 : 1;
     const previous=history[history.length-steps];if(!previous)return;
     setChess({position:previous,history:history.slice(0,-steps),notation:notation.slice(0,-steps)});setSelected(null);setMessage(null);
   }
@@ -321,7 +321,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
       </div>
       <div className="chess-actions">
         <span>{notation.length} lances · {position.fullMoves}ª rodada</span>
-        <div><button type="button" className="inline-action" onClick={undo} disabled={solo ? history.length < 2 : !history.length}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></div>
+        <div><button type="button" className="inline-action" onClick={undo} disabled={!history.length}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></div>
       </div>
       {message&&<p className="couple-game-error" role="alert">{message}</p>}
       <details className="chess-history">
