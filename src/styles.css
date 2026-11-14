@@ -24880,3 +24880,315 @@ body {
   width: 22px !important;
   height: 22px !important;
 }
+
+
+/* MORADOS — tela de carregamento ilustrada e compartilhada. */
+.morados-loading-screen {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 100svh;
+  height: 100dvh;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: #f7f1e6;
+  color: #29463b;
+  font-family: "Inter Tight", var(--font-sans), sans-serif;
+}
+.morados-loading-art {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: morados-loading-art-float 18s ease-in-out infinite alternate;
+}
+.morados-loading-content {
+  display: grid;
+  min-width: min(310px, calc(100vw - 38px));
+  justify-items: center;
+  gap: 23px;
+  border: 1px solid rgb(255 255 255 / 76%);
+  border-radius: 30px;
+  background: rgb(255 250 241 / 82%);
+  padding: 27px 35px 24px;
+  text-align: center;
+  box-shadow: 0 22px 65px -42px rgb(37 58 47 / 30%);
+  backdrop-filter: blur(18px) saturate(118%);
+  -webkit-backdrop-filter: blur(18px) saturate(118%);
+}
+.morados-loading-brand {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.morados-loading-mark {
+  display: grid;
+  width: 70px;
+  height: 70px;
+  place-items: center;
+  border: 1px solid rgb(85 95 54 / 12%);
+  border-radius: 23px;
+  background: #fffaf0;
+  box-shadow: 0 7px 22px -15px rgb(45 67 52 / 45%);
+}
+.morados-loading-word {
+  margin-top: 3px;
+  color: #314c3e;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 35px;
+  font-weight: 650;
+  letter-spacing: -.055em;
+  line-height: 1;
+}
+.morados-loading-tagline {
+  margin-top: 4px;
+  color: #798276;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.morados-loading-status {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  color: #52675a;
+  font-size: 12px;
+  font-weight: 650;
+}
+.morados-loading-message {
+  min-height: 16px;
+}
+.morados-loading-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.morados-loading-dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d98761;
+  animation: morados-loading-dot 1.05s ease-in-out infinite;
+}
+.morados-loading-dots i:nth-child(2) {
+  background: #80946d;
+  animation-delay: .14s;
+}
+.morados-loading-dots i:nth-child(3) {
+  background: #e9b85f;
+  animation-delay: .28s;
+}
+.morados-loading-screen.is-compact {
+  width: 100%;
+  min-height: 100%;
+  height: 100%;
+}
+.morados-loading-screen.is-compact .morados-loading-content {
+  min-width: min(285px, calc(100vw - 44px));
+  gap: 17px;
+  padding: 21px 25px 19px;
+}
+.morados-loading-screen.is-compact .morados-loading-mark {
+  width: 58px;
+  height: 58px;
+  border-radius: 19px;
+}
+.morados-loading-screen.is-compact .morados-loading-word {
+  font-size: 29px;
+}
+.morados-loading-screen.is-compact .morados-loading-tagline {
+  font-size: 9px;
+}
+.morados-loading-screen.is-compact .morados-loading-status {
+  font-size: 11px;
+}
+.morados-conversation-loading-overlay {
+  position: absolute;
+  z-index: 500;
+  inset: 0;
+  display: grid;
+  overflow: hidden;
+  background: #f7f1e6;
+}
+@keyframes morados-loading-dot {
+  0%, 70%, 100% { transform: translateY(0) scale(.82); opacity: .55; }
+  35% { transform: translateY(-5px) scale(1); opacity: 1; }
+}
+@keyframes morados-loading-art-float {
+  from { transform: scale(1) translate3d(0, 0, 0); }
+  to { transform: scale(1.025) translate3d(0, -6px, 0); }
+}
+@media (max-width: 560px) {
+  .morados-loading-content {
+    min-width: min(290px, calc(100vw - 34px));
+    padding: 23px 25px 21px;
+  }
+  .morados-loading-word { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .morados-loading-art,
+  .morados-loading-dots i {
+    animation: none !important;
+  }
+}
+
+/* Arte vetorial substitui os antigos padrões geométricos dos papéis de parede. */
+.app-shell.is-conversation-mode .conversation-screen {
+  position: relative;
+  isolation: isolate;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-wallpaper-art {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-wallpaper-art:not(.is-compact) {
+  opacity: .9;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-wallpaper-art.is-compact {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-wallpaper-image {
+  z-index: 0 !important;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-thread {
+  position: relative;
+  z-index: 2;
+  background: transparent !important;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-thread::before {
+  display: none !important;
+  content: none !important;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading,
+.app-shell.is-conversation-mode .conversation-screen .conversation-composer,
+.app-shell.is-conversation-mode .conversation-screen .conversation-tools-panel,
+.app-shell.is-conversation-mode .conversation-screen .conversation-search-panel {
+  z-index: 3;
+}
+
+/* Prévias dos papéis de parede usam a mesma ilustração vetorial da conversa. */
+.conversation-settings-wallpaper-preview {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1.5;
+  border-radius: 8px;
+  background: #f2eadc;
+}
+.conversation-settings-wallpaper-preview .conversation-wallpaper-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.conversation-settings-wallpaper-preview .conversation-wallpaper-art.is-compact {
+  opacity: 1;
+}
+
+/* Placeholders conservam o tamanho dos anexos enquanto as URLs são preparadas. */
+.app-shell.is-conversation-mode .conversation-media-skeleton {
+  display: flex;
+  width: min(100%, 360px);
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid rgb(85 95 54 / 8%);
+  border-radius: var(--conversation-message-radius, 20px);
+  background: color-mix(in srgb, var(--conversation-bubble-other, #fffdf8) 92%, #dce5d8);
+  padding: 10px 13px;
+  color: var(--conversation-other-ink, #52675a);
+}
+.app-shell.is-conversation-mode .conversation-message.is-own .conversation-media-skeleton {
+  background: color-mix(in srgb, var(--conversation-bubble-own, #556b2f) 86%, white);
+  color: var(--conversation-own-ink, #fffdf8);
+}
+.conversation-media-skeleton > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  opacity: .65;
+}
+.conversation-media-skeleton > span:not(.conversation-media-skeleton-play) {
+  font-size: 10px;
+  opacity: .65;
+}
+.conversation-media-skeleton.is-image,
+.conversation-media-skeleton.is-video {
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  aspect-ratio: 4 / 3;
+  width: min(62vw, 390px);
+  max-width: 100%;
+  background:
+    radial-gradient(circle at 70% 28%, rgb(232 180 93 / 22%) 0 18%, transparent 19%),
+    linear-gradient(140deg, rgb(128 151 116 / 14%), rgb(222 151 117 / 12%));
+}
+.conversation-media-skeleton.is-video {
+  aspect-ratio: 16 / 9;
+  width: min(64vw, 390px);
+}
+.conversation-media-skeleton.is-image > svg,
+.conversation-media-skeleton.is-video > svg {
+  width: 26px;
+  height: 26px;
+  flex-basis: 26px;
+}
+.conversation-media-skeleton.is-audio {
+  min-height: 66px;
+}
+.conversation-media-skeleton-play {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  opacity: .7;
+}
+.conversation-media-skeleton-play svg {
+  width: 17px;
+  height: 17px;
+}
+.conversation-media-skeleton-wave {
+  display: flex;
+  min-width: 0;
+  height: 27px;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+.conversation-media-skeleton-wave i {
+  display: block;
+  width: 2px;
+  height: 5px;
+  border-radius: 99px;
+  background: currentColor;
+  opacity: .36;
+}
+.conversation-media-skeleton-wave i:nth-child(4n) { height: 19px; }
+.conversation-media-skeleton-wave i:nth-child(4n + 1) { height: 12px; }
+.conversation-media-skeleton-wave i:nth-child(4n + 2) { height: 8px; }
+.conversation-media-skeleton.is-file {
+  min-height: 54px;
+  max-width: 320px;
+}
