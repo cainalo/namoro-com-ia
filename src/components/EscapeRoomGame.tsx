@@ -14,7 +14,7 @@ const objects:Array<{id:RoomObject;name:string;icon:typeof Clock3;hint:string}>=
 {id:"safe",name:"Cofre embutido",icon:LockKeyhole,hint:"O teclado aceita quatro algarismos. Uma engrenagem está faltando."},
 ];
 
-export function EscapeRoomGame(){
+export function EscapeRoomGame({ solo = false }: { solo?: boolean }){
  const [progress,setProgress,sync]=useGameState<RoomProgress>(()=>{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}},{onlineInitial:initial});
  const [active,setActive]=useState<RoomObject|null>(null);
  const [message,setMessage]=useState("A porta principal se fechou atrás de vocês. Encontrem o mecanismo que libera a saída.");
@@ -46,13 +46,13 @@ export function EscapeRoomGame(){
   if(progress.code!=="2147"){setWrongAttempts(value=>value+1);setMessage("O mecanismo não cede. Reexaminem as pistas e tentem novamente.");return;}
   if(!progress.key||!progress.gear||!progress.note){setMessage("Ainda falta preparar o mecanismo do cofre.");return;}
   setProgress(current=>({...current,opened:true}));
-  setMessage("O cofre se abre. Dentro, uma chave longa destrava a porta da sala. Vocês escaparam!");
+  setMessage(solo ? "O cofre se abre. Dentro, uma chave longa destrava a porta. Você escapou!" : "O cofre se abre. Dentro, uma chave longa destrava a porta da sala. Vocês escaparam!");
  }
  function reset(){if(!sync.online)localStorage.removeItem(STORAGE);setProgress(initial);setActive(null);setMessage("A porta principal se fechou atrás de vocês. Encontrem o mecanismo que libera a saída.");setWrongAttempts(0);}
  return(
-  <section className="escape-room-game">
+  <section className={"escape-room-game" + (solo ? " is-solo" : "")}>
    <div className="escape-room-hero">
-    <div><span className="escape-room-kicker">ESCAPE ROOM · SALA 01</span><h2>A sala do relógio</h2><p>Uma sala antiga, cinco objetos suspeitos e uma única saída. Trabalhem juntos para descobrir a combinação.</p></div>
+    <div><span className="escape-room-kicker">ESCAPE ROOM · {solo ? "DESAFIO INDIVIDUAL" : "SALA 01"}</span><h2>A sala do relógio</h2><p>{solo ? "Uma sala antiga, cinco objetos suspeitos e uma única saída. Examine os detalhes e descubra a combinação." : "Uma sala antiga, cinco objetos suspeitos e uma única saída. Trabalhem juntos para descobrir a combinação."}</p></div>
     <div className="escape-room-door"><DoorOpen aria-hidden="true"/><span>{progress.opened?"SAÍDA ABERTA":"PORTA TRANCADA"}</span></div>
    </div>
    <div className="escape-room-scene" role="group" aria-label="Objetos da sala. Selecione um para investigar.">
@@ -81,7 +81,7 @@ export function EscapeRoomGame(){
     {active==="desk"&&progress.key&&!progress.gear&&<button type="button" className="escape-room-action" onClick={()=>{setProgress(current=>({...current,gear:true}));setMessage("Você removeu a engrenagem de latão da gaveta.");}}>Retirar engrenagem</button>}
    </article>}
    <div className="escape-room-narration" role="status" aria-live="polite"><Lightbulb aria-hidden="true"/><p>{message}</p></div>
-   {progress.opened&&<div className="escape-room-complete"><Unlock/><h3>Vocês escaparam!</h3><p>O mecanismo foi reconstruído e a porta abriu. A primeira sala está concluída.</p><button type="button" onClick={reset}>Jogar novamente</button></div>}
+   {progress.opened&&<div className="escape-room-complete"><Unlock/><h3>{solo ? "Você escapou!" : "Vocês escaparam!"}</h3><p>O mecanismo foi reconstruído e a porta abriu. A primeira sala está concluída.</p><button type="button" onClick={reset}>Jogar novamente</button></div>}
    <footer className="escape-room-footer"><span>{wrongAttempts} tentativas incorretas</span><button type="button" onClick={reset}><RotateCcw/> Reiniciar sala</button></footer>
   </section>
  );
