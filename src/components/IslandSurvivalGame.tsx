@@ -52,7 +52,7 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }){
   return next;
  }
  function applyAction(id:ActionId){
-  if(game.phase!=="action"||choice)return;
+  if(game.phase!=="action")return;
   let next={...game,health:[...game.health] as [number,number],log:[...game.log]};
   const messages:Record<ActionId,string>={
    forage:"Vocês encontraram frutos e raízes na vegetação.",
