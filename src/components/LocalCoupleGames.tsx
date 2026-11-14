@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Trophy } from "lucide-react";
+import { getFreshThisOrThatRound } from "@/lib/this-or-that";
 
 const CONNECT_WIDTH = 7;
 const CONNECT_HEIGHT = 6;
@@ -137,35 +138,21 @@ export function LocalConnectFourGame({ solo = false }: { solo?: boolean }) {
   );
 }
 
-type ChoiceQuestion = {id:string; prompt:string; a:string; b:string; category:string};
-const choiceQuestions: ChoiceQuestion[] = [
-  {id:"trip",prompt:"Uma viagem perfeita seria…",a:"Conhecer cidades históricas",b:"Explorar a natureza",category:"Viagens"},
-  {id:"sunday",prompt:"Um domingo livre combina mais com…",a:"Passear sem roteiro",b:"Ficar em casa e descansar",category:"Rotina"},
-  {id:"food",prompt:"Na hora de escolher o jantar…",a:"Experimentar algo novo",b:"Repetir um prato favorito",category:"Comida"},
-  {id:"movie",prompt:"Para uma noite de cinema…",a:"Mistério e investigação",b:"Comédia e aventura",category:"Entretenimento"},
-  {id:"gift",prompt:"Um presente memorável é…",a:"Algo feito à mão",b:"Uma experiência para viver",category:"Preferências"},
-  {id:"weekend",prompt:"Um fim de semana ideal…",a:"Cheio de atividades",b:"Com poucas coisas marcadas",category:"Rotina"},
-  {id:"music",prompt:"A trilha sonora de uma viagem…",a:"Playlist preparada antes",b:"Músicas escolhidas na hora",category:"Música"},
-  {id:"surprise",prompt:"Uma surpresa melhor seria…",a:"Um passeio inesperado",b:"Um bilhete carinhoso",category:"Carinho"},
-  {id:"home",prompt:"Uma casa aconchegante precisa de…",a:"Livros e cantinhos de leitura",b:"Música e espaço para receber",category:"Casa"},
-  {id:"learning",prompt:"Para aprender algo novo…",a:"Um curso organizado",b:"Experimentar e descobrir",category:"Aprendizado"},
-  {id:"weather",prompt:"O clima que mais agrada…",a:"Frio e chuva",b:"Sol e céu aberto",category:"Preferências"},
-  {id:"memory",prompt:"Para guardar uma memória…",a:"Fotos e vídeos",b:"Cartas e objetos",category:"Memórias"},
-];
-
 type AnswerPair = {first:"a"|"b"|null; second:"a"|"b"|null};
 
 export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
   const [index,setIndex]=useState(0);
+  const [round,setRound]=useState(()=>getFreshThisOrThatRound());
+  const [recentIds,setRecentIds]=useState<string[]>([]);
   const [answers,setAnswers]=useState<Record<string,AnswerPair>>({});
   const [activePlayer,setActivePlayer]=useState<1|2>(1);
   const [handoff,setHandoff]=useState(false);
   const [showResults,setShowResults]=useState(false);
-  const question=choiceQuestions[index];
-  const firstAnswers=choiceQuestions.filter((item)=>answers[item.id]?.first).length;
-  const secondAnswers=choiceQuestions.filter((item)=>answers[item.id]?.second).length;
-  const matched=choiceQuestions.filter((item)=>answers[item.id]?.first&&answers[item.id]?.first===answers[item.id]?.second).length;
-  const results=useMemo(()=>choiceQuestions.map((item)=>({question:item,answers:answers[item.id]??{first:null,second:null}})),[answers]);
+  const question=round[index];
+  const firstAnswers=round.filter((item)=>answers[item.id]?.first).length;
+  const secondAnswers=round.filter((item)=>answers[item.id]?.second).length;
+  const matched=round.filter((item)=>answers[item.id]?.first&&answers[item.id]?.first===answers[item.id]?.second).length;
+  const results=useMemo(()=>round.map((item)=>({question:item,answers:answers[item.id]??{first:null,second:null}})),[round,answers]);
 
   function choose(value:"a"|"b") {
     setAnswers((current)=>{
@@ -174,13 +161,18 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
       return {...current,[question.id]:activePlayer===1?{...existing,first:value}:{...existing,second:value}};
     });
     if (solo) {
-      if (index < choiceQuestions.length - 1) setIndex((current)=>current+1);
+      if (index < round.length - 1) setIndex((current)=>current+1);
       else setShowResults(true);
     } else if(activePlayer===1){setHandoff(true);}else if(index<choiceQuestions.length-1){setIndex((current)=>current+1);setActivePlayer(1);setHandoff(false);}else{setShowResults(true);setHandoff(false);}
   }
 
   function continueToSecond() {setActivePlayer(2);setHandoff(false);}
-  function restart(){setIndex(0);setAnswers({});setActivePlayer(1);setHandoff(false);setShowResults(false);}
+  function restart(){
+    const nextRecent=[...recentIds,...round.map((item)=>item.id)].slice(-45);
+    setRecentIds(nextRecent);
+    setRound(getFreshThisOrThatRound(nextRecent));
+    setIndex(0);setAnswers({});setActivePlayer(1);setHandoff(false);setShowResults(false);
+  }
 
   return (
     <section className={"local-choice-game" + (solo ? " is-solo" : "")}>
