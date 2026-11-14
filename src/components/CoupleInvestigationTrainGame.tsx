@@ -25,7 +25,7 @@ type Progress={reviewed:string[];interviewed:SuspectId[];selected:SuspectId;accu
 const initial:Progress={reviewed:[],interviewed:[],selected:"joel",accused:"",method:"",motive:"",solved:false};
 function load():Progress{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}}
 type Tab="scene"|"evidence"|"interviews"|"verdict";
-export function CoupleInvestigationTrainGame(){
+export function CoupleInvestigationTrainGame({ solo = false }: { solo?: boolean }){
  const [progress,setProgress,sync]=useGameState<Progress>(load,{onlineInitial:initial});
  const [tab,setTab]=useState<Tab>("scene");
  const [focus,setFocus]=useState<string|null>(null);
@@ -47,7 +47,7 @@ export function CoupleInvestigationTrainGame(){
   <div className="investigation-case-cover">
    <div className="investigation-case-cover-art investigation-train-cover">
     <div className="investigation-stamp"><TrainFront aria-hidden="true"/></div>
-    <span>ARQUIVO CONFIDENCIAL · CASO 002</span>
+    <span>ARQUIVO CONFIDENCIAL · CASO 002{solo ? " · MODO INDIVIDUAL" : ""}</span>
     <h2>O Último Trem</h2>
     <p>O desaparecimento na Plataforma 4</p>
     <div className="investigation-cover-meta"><span><TrainFront/> Estação Central</span><span><ShieldAlert/> Roubo em área restrita</span></div>
@@ -63,7 +63,7 @@ export function CoupleInvestigationTrainGame(){
    {([["scene","Cena da estação",Search],["evidence","Pistas",FileSearch],["interviews","Interrogatórios",MessageSquareText],["verdict","Conclusão",ClipboardList]] as const).map(([id,label,Icon])=><button key={id} type="button" className={tab===id?"is-active":""} onClick={()=>setTab(id)}><Icon/><span>{label}</span>{id==="evidence"&&<small>{progress.reviewed.length}/{clues.length}</small>}{id==="interviews"&&<small>{progress.interviewed.length}/4</small>}</button>)}
   </nav>
   {tab==="scene"&&<div className="investigation-scene">
-   <div className="investigation-section-intro"><span className="investigation-kicker">22h30 · Estação Central</span><h3>Reconstruam o percurso da maleta</h3><p>Os marcadores abrem evidências específicas do local.</p></div>
+   <div className="investigation-section-intro"><span className="investigation-kicker">22h30 · Estação Central</span><h3>Reconstruam o percurso da maleta</h3><p>{solo ? "Toque nos marcadores, conecte as evidências e reconstrua o percurso da maleta." : "Os marcadores abrem evidências específicas do local."}</p></div>
    <div className="investigation-scene-visual investigation-train-scene">
     <div className="investigation-scene-visual-caption"><span>PLATAFORMA 4</span><strong>Último embarque da noite</strong></div>
     <div className="investigation-scene-hotspots">
@@ -72,7 +72,7 @@ export function CoupleInvestigationTrainGame(){
      <button type="button" className="scene-hotspot hotspot-tubo" onClick={()=>openClue("locker")}><span>03</span>Guarda-volumes</button>
      <button type="button" className="scene-hotspot hotspot-computador" onClick={()=>openClue("ticket")}><span>04</span>Bilheteria</button>
     </div>
-    <p className="investigation-scene-visual-hint">Selecionem os pontos para abrir as pistas.</p>
+    <p className="investigation-scene-visual-hint">{solo ? "Selecione os pontos para abrir as pistas." : "Selecionem os pontos para abrir as pistas."}</p>
    </div>
    <div className="investigation-suspects-overview"><h3>Quatro pessoas na estação</h3><div className="investigation-suspect-grid">{suspects.map(s=><article key={s.id}><span className={"investigation-suspect-avatar portrait portrait-"+(s.id==="marta"?"helena":s.id==="joel"?"davi":s.id==="lila"?"beatriz":"rafael")}/><div><strong>{s.name}</strong><small>{s.role}</small></div>{progress.interviewed.includes(s.id)&&<CheckCircle2/>}</article>)}</div></div>
   </div>}
