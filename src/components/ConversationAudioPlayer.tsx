@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 
 type ConversationAudioPlayerProps = {
@@ -7,6 +7,15 @@ type ConversationAudioPlayerProps = {
   durationSeconds?: number;
   messageTime?: string;
 };
+
+type AudioAnalysis = {
+  duration: number;
+  waveform: number[];
+};
+
+const AUDIO_ANALYSIS_MAX_BYTES = 24 * 1024 * 1024;
+const audioAnalysisCache = new Map<string, AudioAnalysis>();
+const audioAnalysisPending = new Map<string, Promise<AudioAnalysis | null>>();
 
 function formatAudioTime(value: number) {
   if (!Number.isFinite(value) || value < 0) return "0:00";
@@ -21,13 +30,84 @@ function normalizeWaveform(values: number[]) {
     .map((value) => Math.max(0.07, Math.min(1, value)));
 }
 
+function createWaveform(buffer: AudioBuffer, barCount = 64): number[] {
+  const channelCount = Math.max(1, Math.min(buffer.numberOfChannels, 2));
+  const peaks = Array.from({ length: barCount }, (_, index) => {
+    const start = Math.floor((index * buffer.length) / barCount);
+    const end = Math.max(start + 1, Math.floor(((index + 1) * buffer.length) / barCount));
+    let energy = 0;
+    let count = 0;
+
+    for (let channel = 0; channel < channelCount; channel += 1) {
+      const samples = buffer.getChannelData(channel);
+      for (let sample = start; sample < Math.min(end, buffer.length); sample += 1) {
+        const value = samples[sample] ?? 0;
+        energy += value * value;
+        count += 1;
+      }
+    }
+    return count > 0 ? Math.sqrt(energy / count) : 0;
+  });
+
+  const maximum = Math.max(0.0001, ...peaks);
+  return peaks.map((peak) => Math.max(0.08, Math.min(1, Math.pow(peak / maximum, 0.72))));
+}
+
+async function analyzeAudioSource(src: string): Promise<AudioAnalysis | null> {
+  const cached = audioAnalysisCache.get(src);
+  if (cached) return cached;
+  const pending = audioAnalysisPending.get(src);
+  if (pending) return pending;
+
+  const task = (async () => {
+    let context: AudioContext | null = null;
+    try {
+      const response = await fetch(src, { cache: "force-cache" });
+      if (!response.ok) return null;
+      const contentLength = Number(response.headers.get("content-length") ?? 0);
+      if (contentLength > AUDIO_ANALYSIS_MAX_BYTES) return null;
+
+      const data = await response.arrayBuffer();
+      if (data.byteLength === 0 || data.byteLength > AUDIO_ANALYSIS_MAX_BYTES) return null;
+
+      const AudioContextConstructor = window.AudioContext;
+      if (!AudioContextConstructor) return null;
+      context = new AudioContextConstructor();
+      const decoded = await context.decodeAudioData(data.slice(0));
+      if (!Number.isFinite(decoded.duration) || decoded.duration <= 0) return null;
+
+      const result = { duration: decoded.duration, waveform: createWaveform(decoded) };
+      audioAnalysisCache.set(src, result);
+      return result;
+    } catch {
+      return null;
+    } finally {
+      if (context && context.state !== "closed") {
+        await context.close().catch(() => undefined);
+      }
+    }
+  })();
+
+  audioAnalysisPending.set(src, task);
+  try {
+    return await task;
+  } finally {
+    audioAnalysisPending.delete(src);
+  }
+}
+
 export function ConversationAudioPlayer({
   src,
   waveform,
   durationSeconds,
   messageTime,
 }: ConversationAudioPlayerProps) {
+  const playerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [analysisRequested, setAnalysisRequested] = useState(false);
+  const [resolvedWaveform, setResolvedWaveform] = useState<number[] | undefined>(() =>
+    waveform?.length ? normalizeWaveform(waveform) : undefined,
+  );
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(
@@ -36,25 +116,62 @@ export function ConversationAudioPlayer({
       : 0,
   );
   const [playbackError, setPlaybackError] = useState(false);
-  const waveformKey = waveform?.length ? normalizeWaveform(waveform).join(",") : "";
-  const waveformBars = waveformKey ? waveformKey.split(",").map(Number) : [];
+  const providedWaveform = useMemo(
+    () => waveform?.length ? normalizeWaveform(waveform) : undefined,
+    [waveform?.join(",")],
+  );
+  const providedWaveformKey = providedWaveform?.join(",") ?? "";
+  const waveformBars = resolvedWaveform ?? [];
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
   useEffect(() => {
-    if (typeof durationSeconds === "number" && Number.isFinite(durationSeconds) && durationSeconds > 0) {
-      setDuration(durationSeconds);
+    const element = playerRef.current;
+    if (!element) {
+      setAnalysisRequested(true);
+      return;
     }
-  }, [durationSeconds]);
+    if (typeof IntersectionObserver === "undefined") {
+      setAnalysisRequested(true);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setAnalysisRequested(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "220px 0px" });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [src]);
+
+  useEffect(() => {
+    let active = true;
+    setResolvedWaveform(providedWaveform);
+    setDuration(
+      typeof durationSeconds === "number" && Number.isFinite(durationSeconds) && durationSeconds > 0
+        ? durationSeconds
+        : 0,
+    );
+    setCurrentTime(0);
+
+    if (!analysisRequested || (durationSeconds && providedWaveform?.length)) {
+      return () => { active = false; };
+    }
+
+    void analyzeAudioSource(src).then((info) => {
+      if (!active || !info) return;
+      if (!durationSeconds || !Number.isFinite(durationSeconds)) setDuration(info.duration);
+      if (!providedWaveform?.length) setResolvedWaveform(info.waveform);
+    });
+    return () => { active = false; };
+  }, [analysisRequested, src, durationSeconds, providedWaveformKey]);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    // Solicita os metadados ainda na montagem, antes do primeiro toque.
-    audio.preload = "auto";
+    audio.preload = "metadata";
     audio.load();
-    return () => {
-      audio.pause();
-    };
+    return () => { audio.pause(); };
   }, [src]);
 
   useEffect(() => {
@@ -75,7 +192,6 @@ export function ConversationAudioPlayer({
     if (!audio) return;
     setPlaybackError(false);
     if (audio.paused) {
-      // Resposta imediata ao toque; o preload deixa o fluxo de áudio pronto.
       setPlaying(true);
       try {
         await audio.play();
@@ -90,9 +206,7 @@ export function ConversationAudioPlayer({
   }
 
   function updateDuration(audio: HTMLAudioElement) {
-    if (Number.isFinite(audio.duration) && audio.duration > 0) {
-      setDuration(audio.duration);
-    }
+    if (Number.isFinite(audio.duration) && audio.duration > 0) setDuration(audio.duration);
   }
 
   function seek(value: string) {
@@ -104,7 +218,10 @@ export function ConversationAudioPlayer({
   }
 
   return (
-    <div className={"conversation-audio-player" + (playing ? " is-playing" : "") + (messageTime ? " has-message-time" : "")}>
+    <div
+      ref={playerRef}
+      className={"conversation-audio-player" + (playing ? " is-playing" : "") + (messageTime ? " has-message-time" : "")}
+    >
       {messageTime && <time className="conversation-audio-message-time">{messageTime}</time>}
       <button
         type="button"
@@ -117,10 +234,12 @@ export function ConversationAudioPlayer({
       </button>
       <div className="conversation-audio-main">
         <div className="conversation-audio-title-row">
-          <span className="conversation-audio-duration">{formatAudioTime(currentTime)} / {formatAudioTime(duration)}</span>
+          <span className="conversation-audio-duration">
+            {formatAudioTime(currentTime)} / {formatAudioTime(duration)}
+          </span>
         </div>
         {waveformBars.length > 0 && (
-          <div className="conversation-audio-wave" role="img" aria-label="Forma de onda real do áudio">
+          <div className="conversation-audio-wave" role="img" aria-label="Forma de onda do áudio">
             {waveformBars.map((height, index) => (
               <span
                 key={index}
@@ -148,7 +267,7 @@ export function ConversationAudioPlayer({
       <audio
         ref={audioRef}
         src={src}
-        preload="auto"
+        preload="metadata"
         onLoadedMetadata={(event) => updateDuration(event.currentTarget)}
         onDurationChange={(event) => updateDuration(event.currentTarget)}
         onCanPlay={(event) => updateDuration(event.currentTarget)}

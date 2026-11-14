@@ -1310,28 +1310,23 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               aria-label="Escolher arquivo para enviar"
             />
             <div className="conversation-composer-row">
-              {recordingStatus === "idle" && (
-                <div className="conversation-composer-tools" aria-label="Ferramentas da conversa">
-                  <button
-                    type="button"
-                    className={attachmentOpen ? "is-active" : ""}
-                    onClick={() => setAttachmentOpen((value) => !value)}
-                    aria-label="Anexar mídia"
-                    title="Foto, vídeo, áudio ou arquivo"
-                    disabled={busy}
-                  >
-                    <Paperclip aria-hidden="true" />
-                  </button>
-                </div>
-              )}
-
               <div className="conversation-input-shell">
                 {recordingStatus === "idle" ? (
                   <>
+                    <button
+                      type="button"
+                      className={"conversation-attachment-button" + (attachmentOpen ? " is-active" : "")}
+                      onClick={() => setAttachmentOpen((value) => !value)}
+                      aria-label="Anexar mídia"
+                      title="Foto, vídeo, áudio ou arquivo"
+                      disabled={busy}
+                    >
+                      <Paperclip aria-hidden="true" />
+                    </button>
                     {Capacitor.isNativePlatform() ? (
                       <button
                         type="button"
-                        className="conversation-native-message-trigger flex min-h-[38px] min-w-0 flex-1 items-center bg-transparent px-0 py-2 text-left text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
+                        className="conversation-native-message-trigger conversation-message-input flex min-h-[38px] min-w-0 flex-1 items-center justify-center bg-transparent px-0 py-2 text-center text-sm text-muted-foreground disabled:cursor-wait disabled:opacity-60"
                         onClick={() => void openNativeMessageComposer()}
                         disabled={busy || state.status !== "active"}
                         aria-label="Escrever mensagem"
@@ -1342,6 +1337,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                       <>
                         <label className="sr-only" htmlFor="conversation-draft">Mensagem</label>
                         <textarea
+                          className="conversation-message-input"
                           id="conversation-draft"
                           value={draft}
                           onChange={(event) => setDraft(event.target.value)}

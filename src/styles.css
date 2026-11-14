@@ -24076,3 +24076,86 @@ body {
   line-height: 1.1;
   pointer-events: none;
 }
+
+
+/* MORADOS — clipe dentro do campo e texto centralizado entre os controles. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-composer-row {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-input-shell {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-audio-button {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
+  flex: 0 0 35px;
+  place-items: center;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  padding: 0;
+  color: var(--color-muted-foreground);
+  box-shadow: none !important;
+  cursor: pointer;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button svg,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-audio-button svg {
+  width: 18px;
+  height: 18px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button.is-active {
+  background: var(--color-secondary) !important;
+  color: var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button:disabled,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-audio-button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-message-input {
+  display: flex;
+  min-width: 0;
+  min-height: 42px;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  border: 0 !important;
+  background: transparent !important;
+  padding: 8px 2px !important;
+  color: var(--color-foreground);
+  font: inherit;
+  line-height: 1.35;
+  text-align: center !important;
+  box-shadow: none !important;
+}
+.app-shell.is-conversation-mode .conversation-input-shell textarea.conversation-message-input {
+  height: 42px;
+  resize: none;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-message-input::placeholder {
+  color: var(--color-muted-foreground);
+  text-align: center;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-native-message-trigger {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-send-button {
+  width: 35px;
+  height: 35px;
+  min-width: 35px;
+  flex: 0 0 35px;
+  margin: 0;
+}
