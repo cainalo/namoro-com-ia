@@ -72,15 +72,15 @@ export function MemoryMatchGame({ solo = false }: { solo?: boolean }) {
   const canFlip = game.phase === "playing" && game.revealed.length < 2 && (!sync.online || sync.canAct) && !(solo && game.turn === 1);
 
   useEffect(() => {
-    if (!mismatch || game.phase !== "playing") return;
+    if (!mismatch || game.phase !== "playing" || (sync.online && !sync.canAct)) return;
     const timer = window.setTimeout(() => {
       setGame((current) => {
         if (current.revealed.length !== 2 || current.deck[current.revealed[0]] === current.deck[current.revealed[1]]) return current;
-        return { ...current, revealed: [], turn: solo ? 1 : (current.turn === 0 ? 1 : 0), attempts: current.attempts + 1 };
+        return { ...current, revealed: [], turn: current.turn === 0 ? 1 : 0, attempts: current.attempts + 1 };
       });
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [mismatch, game.phase, game.revealed, game.deck, solo, setGame]);
+  }, [mismatch, game.phase, game.revealed, game.deck, solo, sync.online, sync.canAct, setGame]);
 
   useEffect(() => {
     if (!solo || sync.online || game.phase !== "playing" || game.turn !== 1 || game.revealed.length > 0) return;
@@ -100,7 +100,7 @@ export function MemoryMatchGame({ solo = false }: { solo?: boolean }) {
       });
     }, 620);
     return () => window.clearTimeout(timer);
-  }, [solo, sync.online, game.phase, game.turn, game.revealed, setGame]);
+  }, [solo, sync.online, game.phase, game.turn, game.revealed, game.matched, game.known, game.deck, setGame]);
 
   function flip(index: number) {
     if (!canFlip || game.matched.includes(index) || game.revealed.includes(index)) return;
