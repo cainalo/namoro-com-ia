@@ -25235,3 +25235,18 @@ body {
 .app-shell.is-conversation-mode section.conversation-screen form.conversation-composer[data-no-swipe] {
   bottom: calc(env(safe-area-inset-bottom) + 18px) !important;
 }
+
+
+/* MORADOS — ajuste de encaixe das mensagens no limite superior do histórico. */
+/* O cabeçalho e o histórico têm áreas distintas; o encaixe por proximidade
+   impede que o primeiro balão visível pare cortado no limite superior ao parar
+   a rolagem. Balões longos continuam podendo ser percorridos normalmente. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread {
+  scroll-snap-type: y proximity !important;
+  scroll-padding-top: 18px !important;
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message {
+  scroll-snap-align: start !important;
+  scroll-margin-top: 18px !important;
+}
