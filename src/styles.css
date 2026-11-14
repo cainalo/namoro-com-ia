@@ -23349,3 +23349,329 @@ body {
   transform: translateX(-50%) !important;
   z-index: 100 !important;
 }
+
+
+/* Conversa: o histórico reserva a altura real do compositor fixo para não deixar
+   a mensagem mais recente nem o controle de áudio escondidos atrás dos botões. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-thread {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--conversation-composer-clearance, 170px)) !important;
+  scroll-padding-bottom: calc(env(safe-area-inset-bottom) + var(--conversation-composer-clearance, 170px)) !important;
+}
+
+/* O contêiner transparente da fileira não intercepta toques nos itens do histórico
+   que passam atrás dela; somente botões e campos reais recebem eventos. */
+.app-shell.is-conversation-mode .conversation-composer > .conversation-composer-row {
+  pointer-events: none !important;
+}
+.app-shell.is-conversation-mode .conversation-composer-row :is(button, input, textarea, .conversation-native-message-trigger) {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 2;
+}
+
+/* Player de áudio do Morados: controles e progresso independentes do player nativo. */
+.app-shell.is-conversation-mode .conversation-audio-player {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  width: min(100%, 360px);
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 17%, var(--color-border));
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--color-card) 94%, var(--color-primary-soft));
+  box-shadow: 0 8px 24px -19px rgb(29 43 37 / 42%);
+  color: var(--color-foreground);
+  pointer-events: auto;
+}
+.app-shell.is-conversation-mode .conversation-audio-play {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  cursor: pointer;
+}
+.app-shell.is-conversation-mode .conversation-audio-play svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+.app-shell.is-conversation-mode .conversation-audio-main {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 5px;
+}
+.app-shell.is-conversation-mode .conversation-audio-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.app-shell.is-conversation-mode .conversation-audio-title {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  color: var(--color-foreground);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.app-shell.is-conversation-mode .conversation-audio-title svg {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 13px;
+  color: var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-audio-duration {
+  flex: 0 0 auto;
+  color: var(--color-muted-foreground);
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+}
+.app-shell.is-conversation-mode .conversation-audio-wave {
+  display: flex;
+  height: 27px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  overflow: hidden;
+}
+.app-shell.is-conversation-mode .conversation-audio-wave span {
+  display: block;
+  width: 3px;
+  min-width: 2px;
+  max-height: 25px;
+  flex: 1 1 2px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-primary) 25%, var(--color-border));
+  transition: background-color 120ms linear;
+}
+.app-shell.is-conversation-mode .conversation-audio-wave span.is-played {
+  background: var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-audio-progress {
+  position: relative;
+  height: 4px;
+  overflow: visible;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--color-muted-foreground) 20%, transparent);
+}
+.app-shell.is-conversation-mode .conversation-audio-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-accent);
+  transition: width 100ms linear;
+}
+.app-shell.is-conversation-mode .conversation-audio-progress input {
+  position: absolute;
+  inset: -9px 0;
+  width: 100%;
+  height: 22px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.app-shell.is-conversation-mode .conversation-audio-progress input:disabled {
+  cursor: default;
+}
+.app-shell.is-conversation-mode .conversation-audio-error {
+  color: var(--color-destructive);
+  font-size: 10px;
+}
+.app-shell.is-conversation-mode .conversation-audio-player > audio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Gravação ocupa a barra inteira: forma de onda viva, pausa e parada separadas. */
+.app-shell.is-conversation-mode .conversation-recording-bar,
+.app-shell.is-conversation-mode .conversation-recording-review {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 64px;
+  align-items: center;
+  gap: 9px;
+  box-sizing: border-box;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+  border-radius: 23px;
+  background: color-mix(in srgb, var(--color-card) 96%, var(--color-primary-soft));
+  padding: 8px 10px;
+  box-shadow: 0 10px 28px -20px rgb(29 43 37 / 48%);
+  pointer-events: auto;
+}
+.app-shell.is-conversation-mode .conversation-recording-clock {
+  display: flex;
+  min-width: 58px;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-foreground);
+}
+.app-shell.is-conversation-mode .conversation-recording-clock strong {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.app-shell.is-conversation-mode .conversation-recording-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-destructive);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-destructive) 13%, transparent);
+  animation: morados-recording-pulse 1.2s ease-in-out infinite;
+}
+.app-shell.is-conversation-mode .conversation-recording-bar.is-paused .conversation-recording-dot {
+  background: var(--color-muted-foreground);
+  box-shadow: none;
+  animation: none;
+}
+.app-shell.is-conversation-mode .conversation-recording-waveform {
+  display: flex;
+  min-width: 0;
+  height: 36px;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: space-around;
+  gap: 2px;
+  overflow: hidden;
+}
+.app-shell.is-conversation-mode .conversation-recording-waveform span {
+  display: block;
+  width: 3px;
+  min-width: 2px;
+  max-height: 30px;
+  flex: 1 1 2px;
+  border-radius: 99px;
+  background: var(--color-primary);
+  opacity: 0.78;
+  transition: height 75ms ease-out;
+}
+.app-shell.is-conversation-mode .conversation-recording-bar.is-paused .conversation-recording-waveform span {
+  opacity: 0.35;
+}
+.app-shell.is-conversation-mode .conversation-recording-actions,
+.app-shell.is-conversation-mode .conversation-recording-review-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+}
+.app-shell.is-conversation-mode .conversation-recording-actions button,
+.app-shell.is-conversation-mode .conversation-recording-discard {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  cursor: pointer;
+}
+.app-shell.is-conversation-mode .conversation-recording-actions button svg,
+.app-shell.is-conversation-mode .conversation-recording-discard svg {
+  width: 17px;
+  height: 17px;
+}
+.app-shell.is-conversation-mode .conversation-recording-actions .conversation-recording-stop {
+  border-color: color-mix(in srgb, var(--color-destructive) 28%, var(--color-border));
+  background: color-mix(in srgb, var(--color-destructive) 10%, var(--color-card));
+  color: var(--color-destructive);
+}
+.app-shell.is-conversation-mode .conversation-recording-actions .conversation-recording-wait {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  color: var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-recording-actions .conversation-recording-wait svg,
+.app-shell.is-conversation-mode .conversation-recording-send svg {
+  width: 17px;
+  height: 17px;
+}
+.app-shell.is-conversation-mode .conversation-recording-review {
+  gap: 7px;
+}
+.app-shell.is-conversation-mode .conversation-recording-review .conversation-audio-player {
+  min-width: 0;
+  width: auto;
+  flex: 1 1 auto;
+  padding: 5px 4px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.app-shell.is-conversation-mode .conversation-recording-review .conversation-audio-play {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+}
+.app-shell.is-conversation-mode .conversation-recording-review .conversation-audio-title {
+  display: none;
+}
+.app-shell.is-conversation-mode .conversation-recording-send {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-primary);
+  padding: 0 12px;
+  color: var(--color-primary-foreground);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.app-shell.is-conversation-mode .conversation-recording-send:disabled,
+.app-shell.is-conversation-mode .conversation-recording-discard:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+@keyframes morados-recording-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@media (max-width: 380px) {
+  .app-shell.is-conversation-mode .conversation-recording-bar,
+  .app-shell.is-conversation-mode .conversation-recording-review {
+    gap: 5px;
+    padding: 7px;
+  }
+  .app-shell.is-conversation-mode .conversation-recording-clock {
+    min-width: 48px;
+  }
+  .app-shell.is-conversation-mode .conversation-recording-actions button,
+  .app-shell.is-conversation-mode .conversation-recording-discard {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
+  }
+  .app-shell.is-conversation-mode .conversation-recording-send {
+    min-height: 36px;
+    padding-inline: 9px;
+    font-size: 10px;
+  }
+}
