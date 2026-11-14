@@ -1085,10 +1085,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     }
     if (message.message_type === "audio") {
       return url ? (
-        <div className="conversation-audio">
-          <Music2 aria-hidden="true" />
-          <audio src={url} controls preload="metadata" />
-        </div>
+        <ConversationAudioPlayer src={url} label={message.attachment_name || "Mensagem de voz"} />
       ) : <p className="conversation-attachment-pending">Carregando áudio…</p>;
     }
     if (message.message_type === "file") {
@@ -1419,6 +1416,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
               onChange={(event) => void sendAttachment(event)}
               aria-label="Escolher arquivo para enviar"
             />
+{recordingStatus === "idle" && (
             <div className="conversation-composer-row">
               <div className="conversation-composer-tools" aria-label="Ferramentas da conversa">
                 <button
@@ -1496,7 +1494,48 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 )}
               </div>
             </div>
-            <p className="conversation-composer-hint">{recordingAudio ? "Gravando áudio… toque novamente para finalizar" : "Enter envia · Shift + Enter quebra a linha"}</p>
+            )}
+            {recordingStatus === "ready" && recordingFile && recordingPreviewUrl ? (
+              <div className="conversation-recording-review">
+                <ConversationAudioPlayer src={recordingPreviewUrl} label="Prévia do áudio" />
+                <div className="conversation-recording-review-actions">
+                  <button type="button" className="conversation-recording-discard" onClick={discardRecordedAudio} disabled={busy} aria-label="Descartar áudio" title="Descartar">
+                    <X aria-hidden="true" />
+                  </button>
+                  <button type="button" className="conversation-recording-send" onClick={() => void sendRecordedAudio()} disabled={busy} aria-label="Enviar áudio">
+                    {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                    <span>{busy ? "Enviando…" : "Enviar áudio"}</span>
+                  </button>
+                </div>
+              </div>
+            ) : recordingStatus !== "idle" ? (
+              <div className={"conversation-recording-bar is-" + recordingStatus}>
+                <div className="conversation-recording-clock">
+                  <span className="conversation-recording-dot" />
+                  <strong>{recordingStatus === "requesting" ? "Microfone" : recordingStatus === "finalizing" ? "Preparando" : formatAudioDuration(recordingElapsedMs)}</strong>
+                </div>
+                <div className="conversation-recording-waveform" role="img" aria-label={recordingStatus === "paused" ? "Gravação pausada" : "Visualização do áudio enquanto grava"}>
+                  {recordingLevels.map((level, index) => (
+                    <span key={index} style={{ height: Math.max(4, Math.round(level * 30)) + "px" }} />
+                  ))}
+                </div>
+                <div className="conversation-recording-actions">
+                  {recordingStatus === "requesting" || recordingStatus === "finalizing" ? (
+                    <span className="conversation-recording-wait" role="status"><LoaderCircle aria-hidden="true" /></span>
+                  ) : (
+                    <>
+                      <button type="button" className="conversation-recording-pause" onClick={() => void toggleRecordingPause()} aria-label={recordingStatus === "paused" ? "Retomar gravação" : "Pausar gravação"} title={recordingStatus === "paused" ? "Retomar" : "Pausar"}>
+                        {recordingStatus === "paused" ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+                      </button>
+                      <button type="button" className="conversation-recording-stop" onClick={stopAudioRecording} aria-label="Parar gravação" title="Parar gravação">
+                        <Square aria-hidden="true" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : null}
+            {recordingStatus === "idle" && <p className="conversation-composer-hint">Enter envia · Shift + Enter quebra a linha</p>}
           </form>
         </>
       )}
