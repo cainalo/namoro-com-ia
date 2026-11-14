@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, ShoppingCart } from "lucide-react";
 
 export type Tile={id:string;a:number;b:number};
@@ -65,7 +65,7 @@ export function placeTile(state:DominoState,side:"left"|"right"):DominoState|nul
   const winner=hands[state.turn].length===0?state.turn:null;
   return {...state,hands,line:side==="left"&&state.line.length>0?[placed,...state.line]:[...state.line,placed],left,right,turn:state.turn===0?1:0,selected:null,passes:0,winner,reason:winner!==null?"Um jogador ficou sem peças.":null};
 }
-export function DominoGame(){
+export function DominoGame({ solo = false }: { solo?: boolean }){
   const [game,setGame]=useState<DominoState>(()=>newDominoGame());
   const hand=game.hands[game.turn];
   const canPlayAny=hand.some(tile=>playable(tile,game.left,game.right));
@@ -73,6 +73,45 @@ export function DominoGame(){
   const currentTile=hand.find(tile=>tile.id===game.selected)??null;
   const canPlaceLeft=Boolean(currentTile&&(game.left===null||currentTile.a===game.left||currentTile.b===game.left));
   const canPlaceRight=Boolean(currentTile&&(game.right===null||currentTile.a===game.right||currentTile.b===game.right));
+
+  useEffect(() => {
+    if (!solo || game.turn !== 1 || game.winner !== null) return;
+    const timer = window.setTimeout(() => {
+      const hand = game.hands[1];
+      const possible = hand.filter((tile) => playable(tile, game.left, game.right));
+      if (!possible.length && game.stock.length > 0) {
+        const nextStock = game.stock.slice();
+        const tile = nextStock.shift()!;
+        const nextHands = [game.hands[0].slice(), game.hands[1].slice()] as [Tile[], Tile[]];
+        nextHands[1].push(tile);
+        setGame({ ...game, stock: nextStock, hands: nextHands, selected: null });
+        return;
+      }
+      if (!possible.length) {
+        const pips: [number, number] = [pipCount(game.hands[0]), pipCount(game.hands[1])];
+        const passes = game.passes + 1;
+        if (passes >= 2) {
+          const winner = pips[0] === pips[1] ? "draw" : pips[0] < pips[1] ? 0 : 1;
+          setGame({ ...game, passes, winner, reason: "Mesa bloqueada. Vence quem terminou com menos pontos na mão." });
+        } else {
+          setGame({ ...game, passes, turn: 0, selected: null });
+        }
+        return;
+      }
+      const ranked = possible.map((tile) => {
+        const opensDouble = tile.a === tile.b ? 7 : 0;
+        const pipPenalty = tile.a + tile.b;
+        return { tile, score: opensDouble + pipPenalty * 1.4 + Math.random() };
+      }).sort((a, b) => b.score - a.score);
+      const tile = ranked[0].tile;
+      const leftFits = game.left === null || tile.a === game.left || tile.b === game.left;
+      const rightFits = game.right === null || tile.a === game.right || tile.b === game.right;
+      const side: "left" | "right" = rightFits ? "right" : leftFits ? "left" : "right";
+      const next = placeTile({ ...game, selected: tile.id }, side);
+      if (next) setGame(next);
+    }, 540);
+    return () => window.clearTimeout(timer);
+  }, [solo, game]);
 
   function place(side:"left"|"right"){
     const next=placeTile(game,side);
@@ -98,15 +137,15 @@ export function DominoGame(){
   }
   function restart(){setGame(newDominoGame());}
   const lineText=useMemo(()=>game.line.length?game.line.map(item=>`${item.a}|${item.b}`).join(" — "):"A mesa ainda está vazia.",[game.line]);
-  const status=game.winner==="draw"?"Empate!":typeof game.winner==="number"?`Pessoa ${game.winner+1} venceu!`:`Vez da Pessoa ${game.turn+1}`;
+  const status=game.winner==="draw"?"Empate!":typeof game.winner==="number"?(solo?(game.winner===0?"Você venceu!":"Morados venceram!"):`Pessoa ${game.winner+1} venceu!`):`Vez da ${solo?(game.turn===0?"sua vez":"vez dos Morados"):"Pessoa "+(game.turn+1)}`;
 
   return (
-    <section className="domino-game">
+    <section className={"domino-game" + (solo ? " is-solo" : "")}>
       <div className="domino-scorebar">
-        <div className={game.turn===0?"is-active":""}><span className="domino-token is-one"/>Pessoa 1 <strong>{game.hands[0].length}</strong><small>{pipTotals[0]} pontos</small></div>
-        <div className={game.turn===1?"is-active":""}><span className="domino-token is-two"/>Pessoa 2 <strong>{game.hands[1].length}</strong><small>{pipTotals[1]} pontos</small></div>
+        <div className={game.turn===0?"is-active":""}><span className="domino-token is-one"/>{solo ? "Você" : "Pessoa 1"} <strong>{game.hands[0].length}</strong><small>{pipTotals[0]} pontos</small></div>
+        <div className={game.turn===1?"is-active":""}><span className="domino-token is-two"/>{solo ? "Morados" : "Pessoa 2"} <strong>{game.hands[1].length}</strong><small>{pipTotals[1]} pontos</small></div>
       </div>
-      <div className="domino-table-status" role="status" aria-live="polite"><strong>{status}</strong><span>{game.stock.length} peças na compra · {game.line.length} na mesa</span></div>
+      <div className="domino-table-status" role="status" aria-live="polite"><strong>{solo && game.turn===1 && game.winner===null ? "Morados estão pensando…" : status}</strong><span>{game.stock.length} peças na compra · {game.line.length} na mesa</span></div>
       <div className="domino-line-wrap">
         <div className="domino-end-labels"><span>← {game.left??"Esquerda"}</span><span>{game.right??"Direita"} →</span></div>
         <div className="domino-line" aria-label={lineText}>
@@ -115,13 +154,13 @@ export function DominoGame(){
       </div>
       {game.winner===null?(
         <>
-          <div className="domino-turn-call">Pessoa {game.turn+1}, escolha uma peça da sua mão.</div>
-          <div className="domino-hand" aria-label={`Mão da Pessoa ${game.turn+1}`}>
+          {(!solo || game.turn===0) ? <><div className="domino-turn-call">{solo ? "Sua mão" : `Pessoa ${game.turn+1}, escolha uma peça da sua mão.`} · {pipCount(hand)} pontos</div>
+          <div className="domino-hand" aria-label={solo ? "Sua mão" : `Mão da Pessoa ${game.turn+1}`}>
             {hand.map(tile=><button key={tile.id} type="button" className={"domino-hand-tile"+(game.selected===tile.id?" is-selected":"")} onClick={()=>setGame(current=>({...current,selected:current.selected===tile.id?null:tile.id}))} aria-pressed={game.selected===tile.id}>
               <DominoTileView a={tile.a} b={tile.b}/>
             </button>)}
-          </div>
-          <div className="domino-play-actions">
+          </div></> : <div className="domino-turn-call">Morados estão escolhendo uma peça em segredo…</div>}
+          {(!solo || game.turn===0) && <><div className="domino-play-actions">
             <button type="button" className="primary-action" onClick={()=>place("left")} disabled={!game.selected||!canPlaceLeft}>Colocar à esquerda</button>
             <button type="button" className="primary-action" onClick={()=>place("right")} disabled={!game.selected||!canPlaceRight}>Colocar à direita</button>
           </div>
@@ -130,12 +169,12 @@ export function DominoGame(){
             <button type="button" className="inline-action" onClick={pass} disabled={canPlayAny||game.stock.length>0}>Passar</button>
           </div>
           {!canPlayAny&&game.stock.length>0&&<p className="domino-hint">Você não tem uma peça compatível. Compre uma peça para tentar jogar.</p>}
-          {!canPlayAny&&game.stock.length===0&&<p className="domino-hint">Sem jogadas possíveis. Passe a vez; se a outra pessoa também não puder jogar, a mesa será bloqueada.</p>}
+          {!canPlayAny&&game.stock.length===0&&<p className="domino-hint">Sem jogadas possíveis. Passe a vez; se a outra pessoa também não puder jogar, a mesa será bloqueada.</p>}</>}
         </>
       ):(
         <div className="domino-end-panel"><strong>{status}</strong><p>{game.reason}</p><button type="button" className="primary-action" onClick={restart}>Nova partida</button></div>
       )}
-      <footer className="domino-footer"><span>Duplo-seis · Compra, bloqueio e pontuação</span><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
+      <footer className="domino-footer"><span>Duplo-seis · {solo ? "Contra Morados" : "Compra, bloqueio e pontuação"}</span><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
     </section>
   );
 }

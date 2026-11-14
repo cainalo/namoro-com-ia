@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Anchor, RotateCcw, Shield, Target } from "lucide-react";
 
 type FleetCell = string | null;
@@ -37,6 +37,7 @@ function newGame(){
     winner:null as number|null,
     lastShot:null as number|null,
     hitCount:[0,0] as [number,number],
+    computerTurn:false,
   };
 }
 type NavalState=ReturnType<typeof newGame>;
@@ -44,7 +45,7 @@ export function shipSunk(fleet:Fleet,shots:Shot[],shipId:string){
   return fleet.every((cell,index)=>cell!==shipId||shots[index]==="hit");
 }
 
-export function BattleshipGame(){
+export function BattleshipGame({ solo = false }: { solo?: boolean }){
   const [game,setGame]=useState<NavalState>(()=>newGame());
   const [error,setError]=useState("");
   const active=game.current;
@@ -58,6 +59,44 @@ export function BattleshipGame(){
   const hitCount=game.hitCount[active];
   const fleetRows=Array.from({length:SIZE},(_,row)=>row);
   const sunkCount=enemySunken.length;
+
+  useEffect(() => {
+    if (!solo || !game.computerTurn || game.winner !== null) return;
+    const timer = window.setTimeout(() => {
+      const ownShots = game.shots[1];
+      const available = ownShots.map((shot, square) => shot === null ? square : -1).filter((square) => square >= 0);
+      if (!available.length) {
+        setGame((current) => ({ ...current, computerTurn: false, phase: "finished", winner: current.hitCount[0] >= current.hitCount[1] ? 0 : 1 }));
+        return;
+      }
+      const recentHits = ownShots.map((shot, square) => shot === "hit" ? square : -1).filter((square) => square >= 0);
+      const adjacent = recentHits.flatMap((square) => {
+        const row = Math.floor(square / SIZE), col = square % SIZE;
+        return [[row-1,col],[row+1,col],[row,col-1],[row,col+1]]
+          .filter(([r,c]) => r >= 0 && r < SIZE && c >= 0 && c < SIZE)
+          .map(([r,c]) => r * SIZE + c)
+          .filter((candidate) => ownShots[candidate] === null && available.includes(candidate));
+      });
+      const pool = adjacent.length ? adjacent : available;
+      const square = pool[Math.floor(Math.random() * pool.length)];
+      const hit = game.fleets[0][square] !== null;
+      const nextShots = [game.shots[0].slice(), game.shots[1].slice()] as [Shot[], Shot[]];
+      nextShots[1][square] = hit ? "hit" : "miss";
+      const nextHits = [...game.hitCount] as [number, number];
+      if (hit) nextHits[1] += 1;
+      const defeated = shipSpecs.every((ship) => shipSunk(game.fleets[0], nextShots[1], ship.id));
+      setGame((current) => ({
+        ...current,
+        shots: nextShots,
+        hitCount: nextHits,
+        lastShot: square,
+        winner: defeated ? 1 : null,
+        phase: defeated ? "finished" : "play",
+        computerTurn: false,
+      }));
+    }, 680);
+    return () => window.clearTimeout(timer);
+  }, [solo, game.computerTurn, game.shots, game.fleets, game.hitCount, game.winner]);
 
   function fire(square:number){
     if(game.phase!=="play"||game.winner!==null||game.shots[active][square]!==null)return;
@@ -73,7 +112,8 @@ export function BattleshipGame(){
       hitCount:nextHits,
       lastShot:square,
       winner:allShipsSunk?active:null,
-      phase:allShipsSunk?"finished":"pass",
+      phase:allShipsSunk?"finished":solo?"play":"pass",
+      computerTurn:solo&&!allShipsSunk,
     }));
     setError("");
   }
@@ -82,11 +122,11 @@ export function BattleshipGame(){
     setGame(current=>({...current,current:current.current===0?1:0,phase:"play",lastShot:null}));
   }
   function reset(){setGame(newGame());setError("");}
-  const status=game.phase==="finished"?`Pessoa ${(game.winner??0)+1} venceu a Batalha Naval!`:`Pessoa ${active+1}: escolha uma coordenada para disparar.`;
+  const status=game.phase==="finished"?(solo?(game.winner===0?"Você venceu a Batalha Naval!":"Morados venceram a Batalha Naval!"):`Pessoa ${(game.winner??0)+1} venceu a Batalha Naval!`):solo&&game.computerTurn?"Morados estão atacando…":solo?"Escolha uma coordenada para disparar.":`Pessoa ${active+1}: escolha uma coordenada para disparar.`;
 
   if(game.phase==="pass"){
     return (
-      <section className="naval-game">
+      <section className={"naval-game" + (solo ? " is-solo" : "")}>
         <div className="naval-pass-screen">
           <span className="naval-pass-mark"><Anchor aria-hidden="true"/></span>
           <p className="date-kicker">Fim da jogada</p>
@@ -99,11 +139,11 @@ export function BattleshipGame(){
   }
 
   return (
-    <section className="naval-game">
+    <section className={"naval-game" + (solo ? " is-solo" : "")}>
       <div className="naval-scorebar">
-        <div className={active===0?"is-active":""}><span className="naval-player-token is-one"/>Pessoa 1 <strong>{game.hitCount[0]}</strong></div>
+        <div className={active===0?"is-active":""}><span className="naval-player-token is-one"/>{solo ? "Você" : "Pessoa 1"} <strong>{game.hitCount[0]}</strong></div>
         <span className="naval-score-separator">×</span>
-        <div className={active===1?"is-active":""}><span className="naval-player-token is-two"/>Pessoa 2 <strong>{game.hitCount[1]}</strong></div>
+        <div className={active===1?"is-active":""}><span className="naval-player-token is-two"/>{solo ? "Morados" : "Pessoa 2"} <strong>{game.hitCount[1]}</strong></div>
       </div>
       <div className="naval-turn-banner">
         <Target aria-hidden="true"/>
@@ -118,7 +158,7 @@ export function BattleshipGame(){
               <span className="naval-row-label">{row+1}</span>
               {Array.from({length:SIZE},(_,col)=>{
                 const square=row*SIZE+col,shot=myShots[square];
-                return <button key={col} type="button" className={"naval-cell"+(shot==="hit"?" is-hit":shot==="miss"?" is-miss":"")} onClick={()=>fire(square)} disabled={shot!==null||game.phase==="finished"} aria-label={`Disparo em ${axis[col]}${row+1}: ${shot==="hit"?"acerto":shot==="miss"?"água":"não disparado"}`}>
+                return <button key={col} type="button" className={"naval-cell"+(shot==="hit"?" is-hit":shot==="miss"?" is-miss":"")} onClick={()=>fire(square)} disabled={shot!==null||game.phase==="finished"||(solo&&game.computerTurn)} aria-label={`Disparo em ${axis[col]}${row+1}: ${shot==="hit"?"acerto":shot==="miss"?"água":"não disparado"}`}>
                   {shot==="hit"?"✦":shot==="miss"?"·":""}
                 </button>;
               })}
@@ -148,7 +188,7 @@ export function BattleshipGame(){
           </div>
         </details>
       </div>
-      <footer className="naval-footer"><span>Frotas ocultas · Mesmo aparelho</span><button type="button" className="inline-action" onClick={reset}><RotateCcw/> Nova partida</button></footer>
+      <footer className="naval-footer"><span>{solo ? "Frotas ocultas · Contra Morados" : "Frotas ocultas · Mesmo aparelho"}</span><button type="button" className="inline-action" onClick={reset}><RotateCcw/> Nova partida</button></footer>
       {game.phase==="finished"&&<div className="naval-end-screen"><strong>{status}</strong><p>{enemySunken.length===5?"A frota adversária foi completamente afundada.":""}</p><button type="button" className="primary-action" onClick={reset}>Jogar novamente</button></div>}
       {error&&<p className="couple-game-error">{error}</p>}
     </section>

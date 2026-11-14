@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Undo2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { RotateCcw, Undo2, Trophy } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import {
   createInitialCheckersGame,
@@ -19,7 +19,7 @@ function playerLabel(player: "white" | "black") {
   return player === "white" ? "Claras" : "Verdes";
 }
 
-export function CheckersGame() {
+export function CheckersGame({ solo = false }: { solo?: boolean }) {
   const [game, setGame, sync] = useGameState<CheckersGameState>(() => createInitialCheckersGame(), {
     turnSeat: (state) => (state.turn === "white" ? 0 : 1),
     outcome: (state) =>
@@ -32,6 +32,33 @@ export function CheckersGame() {
   const [history, setHistory] = useState<CheckersGameState[]>([]);
   const [selectedFrom, setSelectedFrom] = useState<number | null>(null);
   const [selectedPath, setSelectedPath] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (!solo || sync.online || game.status !== "active" || game.turn !== "black") return;
+    const timer = window.setTimeout(() => {
+      const moves = getLegalCheckersMoves(game.board, "black");
+      if (!moves.length) return;
+      const ranked = moves.map((move) => {
+        const destination = move.path[move.path.length - 1];
+        const row = Math.floor(destination / 8);
+        const capturedValue = move.captures.reduce((sum, square) => {
+          const piece = game.board[square];
+          return sum + (piece?.king ? 95 : 60);
+        }, 0);
+        const promotes = row === 7 && !game.board[move.from]?.king;
+        const center = 3.5 - Math.abs(3.5 - (destination % 8));
+        const advancement = row * 1.8;
+        const score = capturedValue + (promotes ? 85 : 0) + center * 2 + advancement + Math.random() * 5;
+        return { move, score };
+      }).sort((a, b) => b.score - a.score);
+      const next = playCheckersMove(game, ranked[0].move);
+      setHistory((current) => [...current, game].slice(-50));
+      setGame(next);
+      setSelectedFrom(null);
+      setSelectedPath([]);
+    }, 560);
+    return () => window.clearTimeout(timer);
+  }, [solo, sync.online, game, setGame]);
 
   const legalMoves = useMemo(
     () =>
@@ -161,10 +188,11 @@ export function CheckersGame() {
   }
 
   function undoLastMove() {
-    const previous = history[history.length - 1];
+    const steps = solo && history.length >= 2 ? 2 : 1;
+    const previous = history[history.length - steps];
     if (!previous) return;
     setGame(previous);
-    setHistory((current) => current.slice(0, -1));
+    setHistory((current) => current.slice(0, -steps));
     clearSelection();
   }
 
@@ -176,21 +204,25 @@ export function CheckersGame() {
 
   const statusText =
     game.status === "finished"
-      ? `${playerLabel(game.winner ?? game.turn)} venceram a partida.`
-      : selectedPath.length > 0
-        ? "Continue a sequência de captura."
-        : captureRequired
-          ? `Vez das ${playerLabel(game.turn).toLowerCase()}. Captura obrigatória: escolha uma peça que possa capturar.`
-          : `Vez das ${playerLabel(game.turn).toLowerCase()}.`;
+      ? game.winner
+        ? `${solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner)} venceu a partida.`
+        : "Empate. A partida terminou sem vencedor."
+      : solo && game.turn === "black"
+        ? "Morados estão analisando o tabuleiro…"
+        : selectedPath.length > 0
+          ? "Continue a sequência de captura."
+          : captureRequired
+            ? `Vez das ${playerLabel(game.turn).toLowerCase()}. Captura obrigatória: escolha uma peça que possa capturar.`
+            : `Vez das ${playerLabel(game.turn).toLowerCase()}.`;
 
   return (
-    <section className="checkers-game" aria-labelledby="checkers-title">
+    <section className={"checkers-game" + (solo ? " is-solo" : "")} aria-labelledby="checkers-title">
       <header className="connect-four-heading">
         <div>
-          <p className="date-kicker">Estratégia · prévia local para 2 jogadores</p>
+          <p className="date-kicker">Estratégia · {solo ? "contra Morados" : "2 jogadores"}</p>
           <h2 id="checkers-title">Damas brasileiras</h2>
         </div>
-        <span className="checkers-mode-label">Mesmo aparelho</span>
+        <span className="checkers-mode-label">{solo ? "Você × Morados" : "Mesmo aparelho"}</span>
       </header>
 
       <div className="checkers-match">
@@ -199,8 +231,8 @@ export function CheckersGame() {
             {statusText}
           </p>
           <div className="checkers-score" aria-label="Peças restantes">
-            <span><i className="checkers-piece is-white" /> Claras <strong>{whiteCount}</strong></span>
-            <span><i className="checkers-piece is-black" /> Verdes <strong>{blackCount}</strong></span>
+            <span><i className="checkers-piece is-white" /> {solo ? "Você" : "Claras"} <strong>{whiteCount}</strong></span>
+            <span><i className="checkers-piece is-black" /> {solo ? "Morados" : "Verdes"} <strong>{blackCount}</strong></span>
           </div>
         </div>
 
@@ -233,7 +265,7 @@ export function CheckersGame() {
                   canSelectOwnPiece ? "can-select-piece" : "",
                 ].filter(Boolean).join(" ")}
                 onClick={() => handleSquareClick(index)}
-                disabled={!playableSquare || game.status === "finished"}
+                disabled={!playableSquare || game.status === "finished" || (solo && game.turn === "black") }
                 aria-label={squareLabel + pieceLabel + (isDestination ? ", destino permitido" : "")}
                 aria-pressed={isSelected}
               >
@@ -257,7 +289,7 @@ export function CheckersGame() {
         <div className="checkers-actions">
           <div className="checkers-action-info">
             <p className="checkers-instructions">
-              Toque em uma peça para selecioná-la e depois escolha uma casa marcada. As jogadas permitidas ficam destacadas.
+              Toque em uma peça para selecioná-la e depois escolha uma casa marcada. As jogadas permitidas ficam destacadas. {solo ? "Os Morados respondem automaticamente após sua jogada." : "Ao jogar no mesmo aparelho, alternem as vezes."}
             </p>
             <span className="checkers-move-count">
               {history.length} {history.length === 1 ? "jogada concluída" : "jogadas concluídas"}
@@ -283,6 +315,15 @@ export function CheckersGame() {
           </div>
         </div>
       </div>
+      {game.status === "finished" && (
+        <div className="quiz-finish game-mode-victory-panel" role="status" aria-live="polite">
+          <span><Trophy aria-hidden="true"/></span>
+          <p className="date-kicker">FIM DA PARTIDA</p>
+          <h3>{game.winner ? (solo ? (game.winner === "white" ? "Você venceu!" : "Morados venceram!") : `${playerLabel(game.winner)} venceram!`) : "Empate!"}</h3>
+          <p>{history.length} jogadas concluídas. As peças e o resultado ficaram registrados nesta tela.</p>
+          <button type="button" className="primary-action" onClick={startNewGame}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
+        </div>
+      )}
     </section>
   );
 }

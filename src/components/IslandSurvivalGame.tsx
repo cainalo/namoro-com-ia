@@ -26,7 +26,7 @@ const actionList:Action[]=[
 ];
 function loadState():SurvivalState{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}}
 const limit=(value:number)=>Math.max(0,Math.min(9,value));
-export function IslandSurvivalGame(){
+export function IslandSurvivalGame({ solo = false }: { solo?: boolean }){
  const [game,setGame,sync]=useGameState<SurvivalState>(loadState,{onlineInitial:initial});
  const [feedback,setFeedback]=useState("A tempestade passou. Vocês alcançaram uma pequena ilha. O resgate pode demorar alguns dias.");
  const [choice,setChoice]=useState<ActionId|null>(null);
@@ -52,7 +52,7 @@ export function IslandSurvivalGame(){
   return next;
  }
  function applyAction(id:ActionId){
-  if(game.phase!=="action"||choice)return;
+  if(game.phase!=="action")return;
   let next={...game,health:[...game.health] as [number,number],log:[...game.log]};
   const messages:Record<ActionId,string>={
    forage:"Vocês encontraram frutos e raízes na vegetação.",
@@ -73,7 +73,7 @@ export function IslandSurvivalGame(){
   if(id==="rest"){next.health[game.player-1]=Math.min(3,next.health[game.player-1]+1);next.morale=limit(next.morale+1);}
   if(id==="treat"&&next.medicine>=1){next.medicine-=1;next.health[game.player-1]=Math.min(3,next.health[game.player-1]+2);}
   next.log=[`Dia ${game.day} · Pessoa ${game.player}: ${messages[id]}`,...next.log].slice(0,8);
-  setGame({...next,phase:game.player===1?"handoff":"night",player:game.player===1?2:1});
+  setGame({...next,phase:game.player===1?((solo||sync.online)?"action":"handoff"):"night",player:game.player===1?2:1});
   setFeedback(messages[id]);
   setChoice(null);
  }
@@ -89,11 +89,11 @@ export function IslandSurvivalGame(){
  }
  function restart(){if(!sync.online)localStorage.removeItem(STORAGE);setGame(initial);setChoice(null);setFeedback("A tempestade passou. Vocês alcançaram uma pequena ilha. O resgate pode demorar alguns dias.");}
  return(
-  <section className="island-survival-game">
+  <section className={"island-survival-game" + (solo ? " is-solo" : "")}>
    <div className="island-survival-hero">
-    <div className="island-survival-kicker">SOBREVIVÊNCIA COOPERATIVA · 2 PESSOAS</div>
+    <div className="island-survival-kicker">{solo ? "MODO INDIVIDUAL · GESTÃO DA EQUIPE" : "SOBREVIVÊNCIA COOPERATIVA · 2 PESSOAS"}</div>
     <h2>Depois da tempestade</h2>
-    <p>Vocês chegaram a uma ilha desconhecida. Dividam tarefas, administrem os recursos e mantenham o acampamento até o resgate.</p>
+    <p>{solo ? "Você chegou a uma ilha desconhecida com uma pequena equipe. Administre os recursos, planeje duas ações por dia e conduza todos até o resgate." : "Vocês chegaram a uma ilha desconhecida. Dividam tarefas, administrem os recursos e mantenham o acampamento até o resgate."}</p>
     <div className="island-survival-scene"><div className="island-sun"><Sun/></div><div className="island-islet"/><div className="island-water"/></div>
     <div className="island-survival-day"><span> DIA {Math.min(game.day,5)} DE 5 · {dayLabel.toUpperCase()}</span><strong>{Math.round(dayProgress)}%</strong></div>
     <div className="island-survival-progress"><span style={{width:dayProgress+"%"}}/></div>
@@ -110,13 +110,13 @@ export function IslandSurvivalGame(){
     {[0,1].map(i=><div key={i}><span>Pessoa {i+1}</span><div>{Array.from({length:3},(_,n)=><HeartPulse key={n} className={game.health[i]>n?"is-alive":"is-empty"}/>)}</div></div>)}
     <span>Ânimo coletivo · {game.morale}/9</span>
    </div>
-   {game.phase==="handoff"&&<div className="island-handoff"><span><Wind/></span><p className="date-kicker">Troca de turno</p><h3>Passe o aparelho para a Pessoa 2.</h3><p>A ação da Pessoa 1 foi registrada. A próxima decisão agora é da outra pessoa.</p><button type="button" onClick={continueTurn}>Estou pronto</button></div>}
+   {!solo && game.phase==="handoff"&&<div className="island-handoff"><span><Wind/></span><p className="date-kicker">Troca de turno</p><h3>Passe o aparelho para a Pessoa 2.</h3><p>A ação da Pessoa 1 foi registrada. A próxima decisão agora é da outra pessoa.</p><button type="button" onClick={continueTurn}>Estou pronto</button></div>}
    {game.phase==="night"&&<div className="island-night-panel"><span><Wind/></span><p className="date-kicker">FIM DO DIA {game.day}</p><h3>Preparados para passar a noite?</h3><p>O consumo de água e comida será calculado, e o clima pode afetar a equipe e o abrigo.</p><button type="button" onClick={endDay}>Encerrar o dia e passar a noite</button></div>}
-   {game.phase==="action"&&<div className="island-actions-panel"><div className="island-actions-heading"><span className="date-kicker">DECISÃO DO DIA · PESSOA {game.player}</span><h3>O que vocês vão fazer agora?</h3><p>Cada pessoa realiza uma ação por dia. Escolham considerando o que será necessário à noite.</p></div><div className="island-action-grid">{actions.map(action=><button type="button" key={action.id} className={choice===action.id?"is-selected":""} disabled={action.disabled} onClick={()=>setChoice(action.id)}><ActionIcon id={action.id}/><span><strong>{action.title}</strong><small>{action.description}</small><em>{action.cost}</em></span></button>)}</div><button type="button" className="island-confirm-action" disabled={!choice} onClick={()=>choice&&applyAction(choice)}>Confirmar ação</button></div>}
-   {(game.phase==="won"||game.phase==="lost")&&<div className={"island-ending "+(game.phase==="won"?"is-won":"is-lost")}><Anchor/><span className="date-kicker">{game.phase==="won"?"RESGATE CONCLUÍDO":"FIM DA EXPEDIÇÃO"}</span><h3>{game.phase==="won"?"Vocês conseguiram!":"A expedição terminou."}</h3><p>{game.ending}</p><div><strong>Recursos finais</strong><span>Comida {game.food} · Água {game.water} · Sinal {game.signal}</span></div><button type="button" onClick={restart}>Jogar novamente</button></div>}
+   {game.phase==="action"&&<div className="island-actions-panel"><div className="island-actions-heading"><span className="date-kicker">{solo ? `SUA DECISÃO · AÇÃO ${game.player} DE 2` : `DECISÃO DO DIA · PESSOA ${game.player}`}</span><h3>{solo ? (game.player===1?"Qual será sua primeira ação?":"Escolha sua segunda ação do dia.") : "O que vocês vão fazer agora?"}</h3><p>{solo ? "Você controla as duas decisões da equipe. Pense no que será necessário para atravessar a noite." : "Cada pessoa realiza uma ação por dia. Escolham considerando o que será necessário à noite."}</p></div><div className="island-action-grid">{actions.map(action=><button type="button" key={action.id} className={choice===action.id?"is-selected":""} disabled={action.disabled} onClick={()=>setChoice(action.id)}><ActionIcon id={action.id}/><span><strong>{action.title}</strong><small>{action.description}</small><em>{action.cost}</em></span></button>)}</div><button type="button" className="island-confirm-action" disabled={!choice} onClick={()=>choice&&applyAction(choice)}>Confirmar ação</button></div>}
+   {(game.phase==="won"||game.phase==="lost")&&<div className={"island-ending "+(game.phase==="won"?"is-won":"is-lost")}><Anchor/><span className="date-kicker">{game.phase==="won"?"RESGATE CONCLUÍDO":"FIM DA EXPEDIÇÃO"}</span><h3>{solo ? (game.phase==="won"?"Você conduziu o resgate!":"A expedição terminou.") : (game.phase==="won"?"Vocês conseguiram!":"A expedição terminou.")}</h3><p>{game.ending}</p><div><strong>Recursos finais</strong><span>Comida {game.food} · Água {game.water} · Sinal {game.signal}</span></div><button type="button" onClick={restart}>Jogar novamente</button></div>}
    <div className="island-feedback"><Leaf/><p>{feedback}</p></div>
    <details className="island-log"><summary>Diário da expedição</summary><ol>{game.log.map((line,i)=><li key={i}>{line}</li>)}</ol></details>
-   <footer className="island-footer"><span>As decisões alteram os recursos e a condição da equipe.</span><button type="button" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
+   <footer className="island-footer"><span>{solo ? "Você controla as decisões dos dois sobreviventes." : "As decisões alteram os recursos e a condição da equipe."}</span><button type="button" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
   </section>
  );
 }

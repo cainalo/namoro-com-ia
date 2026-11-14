@@ -25250,3 +25250,381 @@ body {
   scroll-snap-align: start !important;
   scroll-margin-top: 18px !important;
 }
+
+
+/* MORADOS — experiência unificada dos jogos: modos, microinterações e finais. */
+.games-fullscreen-content.is-choosing-mode {
+  width: 100%;
+  max-width: 940px;
+  min-height: min(720px, calc(100dvh - 120px));
+  margin-inline: auto;
+  padding: clamp(18px, 4vw, 36px) clamp(12px, 3vw, 24px) 42px;
+}
+.game-mode-picker {
+  display: grid;
+  gap: 22px;
+  max-width: 790px;
+  margin: 0 auto;
+  animation: game-page-enter 360ms cubic-bezier(.2,.75,.25,1) both;
+}
+.game-mode-picker-intro {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+  padding: clamp(10px, 2vw, 20px) 2px 2px;
+}
+.game-mode-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.game-mode-eyebrow svg { width: 15px; height: 15px; }
+.game-mode-picker-intro h2 {
+  max-width: 620px;
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+  font-size: clamp(27px, 5vw, 43px);
+  font-weight: 760;
+  letter-spacing: -.045em;
+  line-height: 1.06;
+}
+.game-mode-picker-intro p {
+  max-width: 560px;
+  margin: 0;
+  color: var(--color-muted-foreground);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.game-mode-options {
+  display: grid;
+  gap: 12px;
+}
+.game-mode-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  gap: 5px 15px;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-border) 83%, var(--color-primary));
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 44%),
+    var(--color-card);
+  padding: 17px 20px;
+  color: var(--color-foreground);
+  text-align: left;
+  box-shadow: 0 12px 34px -30px rgb(23 44 36 / 34%);
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  animation: game-card-enter 420ms cubic-bezier(.2,.75,.25,1) both;
+}
+.game-mode-card:nth-child(2) { animation-delay: 55ms; }
+.game-mode-card:nth-child(3) { animation-delay: 110ms; }
+.game-mode-card::after {
+  position: absolute;
+  inset: auto 18px 0 auto;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-accent) 9%, transparent);
+  content: "";
+  pointer-events: none;
+  transform: translate(32%, 48%);
+}
+.game-mode-card:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-primary) 48%, var(--color-border));
+  box-shadow: 0 18px 42px -30px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+.game-mode-card:active { transform: translateY(-1px) scale(.994); }
+.game-mode-card:focus-visible,
+.game-mode-change:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 50%, transparent);
+  outline-offset: 3px;
+}
+.game-mode-card.is-solo .game-mode-icon { color: #a75e38; background: #f8e8dc; }
+.game-mode-card.is-local .game-mode-icon { color: #617b4d; background: #e9efdf; }
+.game-mode-card.is-online .game-mode-icon { color: #477a82; background: #e2eff0; }
+.game-mode-icon {
+  z-index: 1;
+  display: grid;
+  width: 56px;
+  height: 56px;
+  grid-row: 1 / span 2;
+  place-items: center;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 3%);
+}
+.game-mode-icon svg { width: 25px; height: 25px; stroke-width: 1.8; }
+.game-mode-copy {
+  z-index: 1;
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+.game-mode-copy strong {
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 760;
+  letter-spacing: -.025em;
+}
+.game-mode-copy small {
+  max-width: 590px;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  line-height: 1.55;
+}
+.game-mode-arrow {
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  justify-self: start;
+  margin-top: 5px;
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 850;
+}
+.game-mode-arrow svg { width: 14px; height: 14px; transform: rotate(180deg); }
+.game-mode-footnote {
+  margin: -5px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.55;
+}
+.game-mode-toolbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  width: min(100%, 940px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 auto;
+  padding: 0 clamp(12px, 3vw, 24px) 12px;
+  animation: game-page-enter 240ms ease-out both;
+}
+.game-mode-current {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-card) 86%, transparent);
+  padding: 7px 11px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 800;
+}
+.game-mode-current svg { width: 14px; height: 14px; }
+.game-mode-current.is-solo { color: #a75e38; }
+.game-mode-current.is-local { color: #617b4d; }
+.game-mode-current.is-online { color: #477a82; }
+.game-mode-change {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-card);
+  padding: 6px 11px;
+  color: var(--color-foreground);
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 160ms ease, transform 160ms ease;
+}
+.game-mode-change:hover { background: var(--color-secondary); }
+.game-mode-change:active { transform: scale(.97); }
+.game-mode-change svg { width: 14px; height: 14px; }
+.game-play-surface {
+  width: 100%;
+  animation: game-page-enter 320ms cubic-bezier(.2,.75,.25,1) both;
+}
+.game-play-surface > section { min-width: 0; }
+.games-hub-card {
+  transform: translateZ(0);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+}
+.games-hub-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 42px -30px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+.games-hub-card:active { transform: translateY(-1px) scale(.99); }
+.game-play-surface button:not(:disabled) {
+  -webkit-tap-highlight-color: transparent;
+}
+.game-play-surface button:not(:disabled):active { filter: brightness(.97); }
+.game-play-surface :is(.connect-four-piece, .checkers-piece, .chess-piece, .domino-tile, .truco-card) {
+  will-change: transform;
+}
+.game-play-surface .connect-four-piece.is-player-one,
+.game-play-surface .connect-four-piece.is-player-two {
+  animation: game-piece-drop 260ms cubic-bezier(.2,.8,.2,1) both;
+}
+.game-play-surface .checkers-piece,
+.game-play-surface .chess-piece {
+  animation: game-piece-enter 180ms ease-out both;
+}
+.game-play-surface .domino-hand-tile,
+.game-play-surface .truco-hand-card {
+  transition: transform 180ms ease, filter 180ms ease;
+}
+.game-play-surface .domino-hand-tile:hover,
+.game-play-surface .truco-hand-card:hover { transform: translateY(-5px); }
+.game-play-surface :is(.quiz-options button, .escape-room-hotspot, .investigation-tabs button, .investigation-evidence-grid article, .island-action-grid button) {
+  transition: transform 170ms ease, border-color 170ms ease, box-shadow 170ms ease, background 170ms ease;
+}
+.game-play-surface :is(.quiz-options button, .escape-room-hotspot, .investigation-tabs button, .island-action-grid button):hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.game-play-surface :is(.quiz-options button, .escape-room-hotspot, .investigation-tabs button, .island-action-grid button):active:not(:disabled) {
+  transform: scale(.985);
+}
+.game-play-surface :is(.quiz-progress > span, .local-choice-progress > span, .island-survival-progress > span, .investigation-progress > span) {
+  transition: width 420ms cubic-bezier(.2,.7,.2,1);
+}
+.game-play-surface :is(.quiz-feedback, .local-game-turn, .truco-result-panel, .domino-table-status, .naval-turn-banner, .escape-room-narration, .island-feedback) {
+  animation: game-feedback-enter 240ms ease-out both;
+}
+.game-play-surface :is(.quiz-finish, .chess-end-panel, .naval-end-screen, .domino-end-panel, .truco-result-panel.is-hand-end, .island-ending.is-won, .island-ending.is-lost, .escape-room-complete, .investigation-result.is-correct, .investigation-solution-report, .local-choice-results) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 25%, var(--color-border));
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent), transparent 45%),
+    linear-gradient(145deg, color-mix(in srgb, var(--color-card) 96%, var(--color-primary-soft)), var(--color-card));
+  box-shadow: 0 20px 46px -34px color-mix(in srgb, var(--color-primary) 42%, transparent);
+  animation: game-result-pop 460ms cubic-bezier(.16,.8,.25,1) both;
+}
+.game-play-surface :is(.quiz-finish, .chess-end-panel, .naval-end-screen, .domino-end-panel, .truco-result-panel.is-hand-end, .island-ending.is-won, .escape-room-complete) > :is(svg, span:first-child) {
+  animation: game-win-glow 2.4s ease-in-out infinite;
+}
+.game-play-surface :is(.investigation-result.is-incorrect, .truco-overlay.is-challenge, .island-night-panel) {
+  animation: game-feedback-enter 260ms ease-out both;
+}
+.game-play-surface .game-victory-confetti {
+  pointer-events: none;
+}
+.game-play-surface :is(.quiz-finish, .chess-end-panel, .naval-end-screen, .domino-end-panel, .truco-result-panel.is-hand-end, .island-ending.is-won, .escape-room-complete)::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 9% 14%, color-mix(in srgb, var(--color-accent) 42%, transparent) 0 3px, transparent 4px),
+    radial-gradient(circle at 84% 18%, color-mix(in srgb, var(--color-primary) 34%, transparent) 0 2px, transparent 3px),
+    radial-gradient(circle at 75% 82%, color-mix(in srgb, var(--color-accent) 34%, transparent) 0 3px, transparent 4px),
+    radial-gradient(circle at 20% 78%, color-mix(in srgb, var(--color-primary) 30%, transparent) 0 2px, transparent 3px);
+  background-size: 100% 100%;
+  content: "";
+  opacity: .75;
+  animation: game-confetti-drift 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.game-play-surface .quiz-opponent-feedback {
+  display: block;
+  margin: 7px 0 10px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--color-secondary) 76%, transparent);
+  padding: 8px 11px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  font-weight: 650;
+}
+.game-play-surface .quiz-opponent-feedback.is-correct { color: var(--color-primary); }
+.game-play-surface .truco-ai-thinking {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-card) 70%, transparent);
+  padding: 14px;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+  font-weight: 650;
+  animation: game-feedback-enter 220ms ease-out both;
+}
+.game-play-surface .game-mode-result-label {
+  color: var(--color-primary);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+@keyframes game-page-enter {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes game-card-enter {
+  from { opacity: 0; transform: translateY(12px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes game-feedback-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes game-result-pop {
+  0% { opacity: 0; transform: translateY(14px) scale(.975); }
+  70% { opacity: 1; transform: translateY(-2px) scale(1.006); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes game-piece-drop {
+  from { transform: translateY(-14px) scale(.82); opacity: .35; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes game-piece-enter {
+  from { transform: scale(.78); opacity: .35; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes game-win-glow {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  50% { transform: scale(1.045); filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--color-accent) 24%, transparent)); }
+}
+@keyframes game-confetti-drift {
+  from { transform: translateY(0); opacity: .46; }
+  to { transform: translateY(-5px); opacity: .86; }
+}
+@media (max-width: 700px) {
+  .game-mode-picker { gap: 16px; }
+  .game-mode-card { grid-template-columns: 48px minmax(0,1fr); gap: 5px 11px; border-radius: 18px; padding: 14px; }
+  .game-mode-icon { width: 47px; height: 47px; border-radius: 15px; }
+  .game-mode-icon svg { width: 22px; height: 22px; }
+  .game-mode-copy strong { font-size: 16px; }
+  .game-mode-copy small { font-size: 11px; }
+  .game-mode-arrow { font-size: 10px; }
+  .game-mode-toolbar { padding-bottom: 9px; }
+  .game-mode-footnote { font-size: 9px; }
+}
+@media (max-width: 390px) {
+  .game-mode-current { font-size: 9px; padding: 6px 8px; }
+  .game-mode-change { min-height: 32px; font-size: 9px; padding-inline: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-mode-card,
+  .game-mode-picker,
+  .game-mode-toolbar,
+  .game-play-surface,
+  .games-hub-card,
+  .game-play-surface :is(.quiz-finish, .chess-end-panel, .naval-end-screen, .domino-end-panel, .truco-result-panel.is-hand-end, .island-ending.is-won, .island-ending.is-lost, .escape-room-complete, .investigation-result.is-correct, .investigation-solution-report, .local-choice-results),
+  .game-play-surface :is(.connect-four-piece.is-player-one, .connect-four-piece.is-player-two, .checkers-piece, .chess-piece, .quiz-feedback, .local-game-turn, .truco-result-panel, .domino-table-status, .naval-turn-banner, .escape-room-narration, .island-feedback) {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -42,7 +42,7 @@ import {
 } from "@/components/LocalCoupleGames";
 
 type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room" | "island-survival";
-type GameMode = "local" | "online";
+type GameMode = "solo" | "local" | "online" | null;
 
 const catalogue: Array<{
   id: GameId;
@@ -130,7 +130,7 @@ function GamePage({
   onBack: () => void;
   onNavigate: (section: SecondaryPageSection) => void;
 }) {
-  const [mode, setMode] = useState<GameMode>("local");
+  const [mode, setMode] = useState<GameMode>(null);
   const game = catalogue.find((item) => item.id === gameId)!;
 
   useEffect(() => {
@@ -157,17 +157,22 @@ function GamePage({
     >
       {(close) => (
         <>
+          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("solo"); close(); }}>
+            {mode === "solo" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
+            Jogar sozinho
+          </button>
           <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("local"); close(); }}>
             {mode === "local" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
-            Jogar neste aparelho
+            Jogar juntos neste aparelho
           </button>
-          {(
-            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("online"); close(); }}>
-              {mode === "online" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
-              Jogar online
-            </button>
-          )}
+          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("online"); close(); }}>
+            {mode === "online" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
+            Jogar online
+          </button>
           <div className="nc-menu-sep" role="separator" />
+          <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode(null); close(); }}>
+            <span className="secondary-game-menu-spacer" /> Trocar modo
+          </button>
           <span className="secondary-game-menu-note">{game.category} · {game.players}</span>
         </>
       )}
@@ -187,10 +192,51 @@ function GamePage({
         contentClassName="games-fullscreen-scroll"
         scrollableContent
       >
-        <div className="games-fullscreen-content">
-          {/* O modo local continua montado (oculto) para não perder a partida neste aparelho. */}
-          <div hidden={mode !== "local"}>{renderLocalGame(gameId)}</div>
-          {mode === "online" && renderOnlineGame(gameId, userId)}
+        <div className={"games-fullscreen-content" + (mode ? " is-playing is-mode-" + mode : " is-choosing-mode")}>
+          {!mode ? (
+            <section className="game-mode-picker" aria-labelledby="game-mode-title">
+              <div className="game-mode-picker-intro">
+                <span className="game-mode-eyebrow"><Sparkles aria-hidden="true" /> UMA EXPERIÊNCIA DO MORADOS</span>
+                <h2 id="game-mode-title">Como vocês querem jogar?</h2>
+                <p>Escolha o formato da partida. Você pode trocar de modo a qualquer momento pelo menu no alto da tela.</p>
+              </div>
+              <div className="game-mode-options">
+                <button type="button" className="game-mode-card is-solo" onClick={() => setMode("solo")}>
+                  <span className="game-mode-icon"><Crown aria-hidden="true" /></span>
+                  <span className="game-mode-copy"><strong>Sozinho</strong><small>Jogue no seu ritmo, com desafios individuais ou contra o Morados nos jogos de estratégia.</small></span>
+                  <span className="game-mode-arrow">Jogar sozinho <ArrowLeft aria-hidden="true" /></span>
+                </button>
+                <button type="button" className="game-mode-card is-local" onClick={() => setMode("local")}>
+                  <span className="game-mode-icon"><Users aria-hidden="true" /></span>
+                  <span className="game-mode-copy"><strong>Juntos neste aparelho</strong><small>Uma só tela, duas pessoas. O jogo alterna as vezes e protege informações privadas quando necessário.</small></span>
+                  <span className="game-mode-arrow">Jogar lado a lado <ArrowLeft aria-hidden="true" /></span>
+                </button>
+                <button type="button" className="game-mode-card is-online" onClick={() => setMode("online")}>
+                  <span className="game-mode-icon"><Shield aria-hidden="true" /></span>
+                  <span className="game-mode-copy"><strong>Online</strong><small>Cada pessoa no próprio aparelho, com partida e progresso sincronizados entre as duas contas.</small></span>
+                  <span className="game-mode-arrow">Conectar partida <ArrowLeft aria-hidden="true" /></span>
+                </button>
+              </div>
+              <p className="game-mode-footnote">Ao trocar de modo, uma nova partida começa; casos e desafios com progresso salvo podem manter suas pistas no aparelho.</p>
+            </section>
+          ) : (
+            <>
+              <div className="game-mode-toolbar">
+                <span className={"game-mode-current is-" + mode}>
+                  {mode === "solo" ? <Crown aria-hidden="true" /> : mode === "local" ? <Users aria-hidden="true" /> : <Shield aria-hidden="true" />}
+                  {mode === "solo" ? "Modo sozinho" : mode === "local" ? "Juntos neste aparelho" : "Partida online"}
+                </span>
+                <button type="button" className="game-mode-change" onClick={() => setMode(null)}>
+                  <ArrowLeft aria-hidden="true" /> Trocar modo
+                </button>
+              </div>
+              <div key={mode + "-" + gameId} className="game-play-surface">
+                {mode === "solo" && renderSoloGame(gameId)}
+                {mode === "local" && renderLocalGame(gameId)}
+                {mode === "online" && renderOnlineGame(gameId, userId)}
+              </div>
+            </>
+          )}
         </div>
       </SecondaryPageChrome>
     </div>
@@ -198,6 +244,24 @@ function GamePage({
 }
 
 const cooperativeGames: GameId[] = ["investigation", "investigation-train", "escape-room", "island-survival"];
+
+function renderSoloGame(gameId: GameId) {
+  switch (gameId) {
+    case "connect-four": return <LocalConnectFourGame solo />;
+    case "checkers": return <CheckersGame solo />;
+    case "this-or-that": return <LocalThisOrThatGame solo />;
+    case "daily-challenge": return <LocalDailyChallengeGame solo />;
+    case "investigation": return <CoupleInvestigationGame solo />;
+    case "investigation-train": return <CoupleInvestigationTrainGame solo />;
+    case "chess": return <ChessGame solo />;
+    case "battleship": return <BattleshipGame solo />;
+    case "domino": return <DominoGame solo />;
+    case "truco": return <TrucoGame solo />;
+    case "quiz": return <QuizGame solo />;
+    case "escape-room": return <EscapeRoomGame solo />;
+    case "island-survival": return <IslandSurvivalGame solo />;
+  }
+}
 
 function renderLocalGame(gameId: GameId) {
   switch (gameId) {

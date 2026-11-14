@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { RotateCcw, Trophy } from "lucide-react";
 
 const CONNECT_WIDTH = 7;
 const CONNECT_HEIGHT = 6;
@@ -21,15 +21,50 @@ function findConnectWinner(board: number[], row: number, column: number, player:
   });
 }
 
-export function LocalConnectFourGame() {
+export function LocalConnectFourGame({ solo = false }: { solo?: boolean }) {
   const [board, setBoard] = useState<number[]>(() => Array(42).fill(0));
   const [turn, setTurn] = useState<1 | 2>(1);
   const [winner, setWinner] = useState<1 | 2 | null>(null);
   const [moves, setMoves] = useState(0);
   const [draw, setDraw] = useState(false);
 
+  useEffect(() => {
+    if (!solo || turn !== 2 || winner || draw) return;
+    const timer = window.setTimeout(() => {
+      const columns = Array.from({ length: CONNECT_WIDTH }, (_, column) => column).filter((column) => board[column] === 0);
+      const simulate = (from: number[], column: number, player: number) => {
+        let row = -1;
+        for (let y = CONNECT_HEIGHT - 1; y >= 0; y -= 1) if (from[y * CONNECT_WIDTH + column] === 0) { row = y; break; }
+        if (row < 0) return null;
+        const next = [...from];
+        next[row * CONNECT_WIDTH + column] = player;
+        return { next, row, wins: findConnectWinner(next, row, column, player) };
+      };
+      if (!columns.length) { setDraw(true); return; }
+      const winning = columns.find((column) => simulate(board, column, 2)?.wins);
+      const blocking = columns.find((column) => simulate(board, column, 1)?.wins);
+      const ranked = columns.map((column) => {
+        const result = simulate(board, column, 2);
+        let score = (3 - Math.abs(3 - column)) * 4 + Math.random();
+        if (result?.wins) score += 1000;
+        if (result && columns.some((other) => simulate(result.next, other, 1)?.wins)) score -= 50;
+        return { column, score };
+      }).sort((a, b) => b.score - a.score);
+      const selected = winning ?? blocking ?? ranked[0]?.column;
+      if (selected === undefined) return;
+      const result = simulate(board, selected, 2);
+      if (!result) return;
+      setBoard(result.next);
+      setMoves((value) => value + 1);
+      if (result.wins) setWinner(2);
+      else if (result.next.every((cell) => cell !== 0)) setDraw(true);
+      else setTurn(1);
+    }, 520);
+    return () => window.clearTimeout(timer);
+  }, [solo, turn, board, winner, draw]);
+
   function playColumn(column: number) {
-    if (winner || draw) return;
+    if (winner || draw || (solo && turn === 2)) return;
     let targetRow = -1;
     for (let row = CONNECT_HEIGHT - 1; row >= 0; row -= 1) {
       if (board[row * CONNECT_WIDTH + column] === 0) {
@@ -60,17 +95,17 @@ export function LocalConnectFourGame() {
   }
 
   return (
-    <section className="local-connect-four" aria-label="Lig 4 local">
+    <section className={"local-connect-four" + (solo ? " is-solo" : "")} aria-label="Lig 4">
       <div className="local-game-status">
-        <span className={turn === 1 ? "is-turn" : ""}><i className="connect-four-piece is-player-one"/> Pessoa 1</span>
-        <span className={turn === 2 ? "is-turn" : ""}><i className="connect-four-piece is-player-two"/> Pessoa 2</span>
+        <span className={turn === 1 ? "is-turn" : ""}><i className="connect-four-piece is-player-one"/> {solo ? "Você" : "Pessoa 1"}</span>
+        <span className={turn === 2 ? "is-turn" : ""}><i className="connect-four-piece is-player-two"/> {solo ? "Morados" : "Pessoa 2"}</span>
       </div>
       <p className="local-game-turn" role="status" aria-live="polite">
-        {winner ? `Pessoa ${winner} venceu a partida!` : draw ? "Deu velha! A partida terminou empatada." : `Vez da Pessoa ${turn}`}
+        {winner ? (solo ? (winner === 1 ? "Você venceu!" : "Morados venceram!") : `Pessoa ${winner} venceu a partida!`) : draw ? "Deu velha! A partida terminou empatada." : solo && turn === 2 ? "Morados estão pensando…" : `Vez de ${solo ? "você" : "Pessoa " + turn}`}
       </p>
       <div className="connect-four-column-controls" aria-label="Escolha a coluna">
         {Array.from({length:7},(_,column)=>(
-          <button key={column} type="button" onClick={()=>playColumn(column)} disabled={Boolean(winner||draw)||board[column]!==0} aria-label={`Soltar peça na coluna ${column+1}`}>{column+1}</button>
+          <button key={column} type="button" onClick={()=>playColumn(column)} disabled={Boolean(winner||draw)||(solo&&turn===2)||board[column]!==0} aria-label={`Soltar peça na coluna ${column+1}`}>{column+1}</button>
         ))}
       </div>
       <div className="connect-four-board" role="grid" aria-label="Tabuleiro de Lig 4">
@@ -85,8 +120,17 @@ export function LocalConnectFourGame() {
           </div>
         ))}
       </div>
+      {(winner || draw) && (
+        <div className="quiz-finish local-game-end-panel" role="status" aria-live="polite">
+          <span><Trophy aria-hidden="true"/></span>
+          <p className="date-kicker">FIM DA PARTIDA</p>
+          <h3>{draw ? "Empate!" : solo ? (winner === 1 ? "Você venceu!" : "Morados venceram!") : `Pessoa ${winner} venceu!`}</h3>
+          <p>{moves} jogadas até o resultado. Uma nova rodada começa com o tabuleiro limpo.</p>
+          <button type="button" className="primary-action" onClick={restart}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
+        </div>
+      )}
       <footer className="local-game-footer">
-        <span>{moves} jogadas · Mesmo aparelho</span>
+        <span>{moves} jogadas · {solo ? "Contra Morados" : "Mesmo aparelho"}</span>
         <button type="button" className="inline-action" onClick={restart}><RotateCcw aria-hidden="true"/> Reiniciar</button>
       </footer>
     </section>
@@ -111,7 +155,7 @@ const choiceQuestions: ChoiceQuestion[] = [
 
 type AnswerPair = {first:"a"|"b"|null; second:"a"|"b"|null};
 
-export function LocalThisOrThatGame() {
+export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
   const [index,setIndex]=useState(0);
   const [answers,setAnswers]=useState<Record<string,AnswerPair>>({});
   const [activePlayer,setActivePlayer]=useState<1|2>(1);
@@ -126,21 +170,25 @@ export function LocalThisOrThatGame() {
   function choose(value:"a"|"b") {
     setAnswers((current)=>{
       const existing=current[question.id]??{first:null,second:null};
+      if (solo) return {...current,[question.id]:{first:value,second:Math.random()<0.5?"a":"b"}};
       return {...current,[question.id]:activePlayer===1?{...existing,first:value}:{...existing,second:value}};
     });
-    if(activePlayer===1){setHandoff(true);}else if(index<choiceQuestions.length-1){setIndex((current)=>current+1);setActivePlayer(1);setHandoff(false);}else{setShowResults(true);setHandoff(false);}
+    if (solo) {
+      if (index < choiceQuestions.length - 1) setIndex((current)=>current+1);
+      else setShowResults(true);
+    } else if(activePlayer===1){setHandoff(true);}else if(index<choiceQuestions.length-1){setIndex((current)=>current+1);setActivePlayer(1);setHandoff(false);}else{setShowResults(true);setHandoff(false);}
   }
 
   function continueToSecond() {setActivePlayer(2);setHandoff(false);}
   function restart(){setIndex(0);setAnswers({});setActivePlayer(1);setHandoff(false);setShowResults(false);}
 
   return (
-    <section className="local-choice-game">
+    <section className={"local-choice-game" + (solo ? " is-solo" : "")}>
       {!showResults?(
         <>
-          <div className="local-game-progress"><span>Pergunta {index+1} de {choiceQuestions.length}</span><span>Pessoa {activePlayer} responde</span></div>
+          <div className="local-game-progress"><span>Pergunta {index+1} de {choiceQuestions.length}</span><span>{solo ? "Sua escolha" : `Pessoa ${activePlayer} responde`}</span></div>
           <div className="local-choice-progress"><span style={{width:((index+(activePlayer===2?0.5:0))/choiceQuestions.length*100)+"%"}}/></div>
-          {handoff?(
+          {handoff && !solo?(
             <div className="local-choice-handoff">
               <span className="local-choice-handoff-icon">↔</span>
               <p className="date-kicker">Resposta registrada</p>
@@ -159,19 +207,19 @@ export function LocalThisOrThatGame() {
               </div>
             </div>
           )}
-          <div className="local-choice-counts"><span>Pessoa 1: {firstAnswers}/{choiceQuestions.length}</span><span>Pessoa 2: {secondAnswers}/{choiceQuestions.length}</span></div>
+          <div className="local-choice-counts">{solo ? <span>Suas respostas: {firstAnswers}/{choiceQuestions.length}</span> : <><span>Pessoa 1: {firstAnswers}/{choiceQuestions.length}</span><span>Pessoa 2: {secondAnswers}/{choiceQuestions.length}</span></>}</div>
         </>
       ):(
         <div className="local-choice-results">
           <p className="date-kicker">Resultado final</p>
-          <h3>Quantas escolhas combinaram?</h3>
+          <h3>{solo ? "Você combina com Morados?" : "Quantas escolhas combinaram?"}</h3>
           <div className="local-choice-score"><strong>{matched}</strong><span>de {choiceQuestions.length} em comum</span></div>
           <ol>
             {results.map(({question:item,answers:result})=>(
               <li key={item.id}>
                 <strong>{item.prompt}</strong>
-                <span className={result.first===result.second?"is-match":""}>Pessoa 1: {result.first==="a"?item.a:item.b}</span>
-                <span className={result.first===result.second?"is-match":""}>Pessoa 2: {result.second==="a"?item.a:item.b}</span>
+                <span className={result.first===result.second?"is-match":""}>{solo ? "Você" : "Pessoa 1"}: {result.first==="a"?item.a:item.b}</span>
+                <span className={result.first===result.second?"is-match":""}>{solo ? "Morados" : "Pessoa 2"}: {result.second==="a"?item.a:item.b}</span>
               </li>
             ))}
           </ol>
@@ -183,11 +231,11 @@ export function LocalThisOrThatGame() {
 }
 
 const dailyChallenges = [
-  {category:"Criatividade",title:"Desenho às cegas",instruction:"Escolham um objeto. Cada pessoa desenha sem olhar para o papel por um minuto. Depois comparem os resultados."},
-  {category:"Dedução",title:"Objeto misterioso",instruction:"Uma pessoa escolhe um objeto que esteja perto. A outra pode fazer até dez perguntas que só aceitam sim ou não."},
-  {category:"Memória",title:"Linha do tempo",instruction:"Cada pessoa conta três momentos marcantes da história de vocês. Tentem colocá-los na ordem correta."},
-  {category:"Improviso",title:"História em turnos",instruction:"Criem juntos uma história. Cada pessoa acrescenta duas frases, sem combinar o que vem depois."},
-  {category:"Observação",title:"Caça às cores",instruction:"Escolham uma cor. Cada pessoa tem um minuto para encontrar cinco objetos dessa cor e mostrar o resultado."},
+  {category:"Criatividade",title:"Desenho às cegas",instruction:"Escolham um objeto. Cada pessoa desenha sem olhar para o papel por um minuto. Depois comparem os resultados.",solo:"Escolha um objeto simples, feche os olhos e desenhe por um minuto. Depois observe o resultado e dê um nome à sua criação."},
+  {category:"Dedução",title:"Objeto misterioso",instruction:"Uma pessoa escolhe um objeto que esteja perto. A outra pode fazer até dez perguntas que só aceitam sim ou não.",solo:"Escolha um objeto próximo sem olhar diretamente para ele. Faça até dez perguntas de sim ou não e tente deduzir sua forma, material e uso antes de conferir."},
+  {category:"Memória",title:"Linha do tempo",instruction:"Cada pessoa conta três momentos marcantes da história de vocês. Tentem colocá-los na ordem correta.",solo:"Escolha três lembranças importantes e organize-as em ordem cronológica. Registre o que tornou cada momento especial."},
+  {category:"Improviso",title:"História em turnos",instruction:"Criem juntos uma história. Cada pessoa acrescenta duas frases, sem combinar o que vem depois.",solo:"Escreva uma história curta em seis frases. Cada frase deve acrescentar uma surpresa ou mudar o rumo da narrativa."},
+  {category:"Observação",title:"Caça às cores",instruction:"Escolham uma cor. Cada pessoa tem um minuto para encontrar cinco objetos dessa cor e mostrar o resultado.",solo:"Escolha uma cor e encontre cinco objetos dela em até um minuto. Depois tente organizá-los do mais claro ao mais escuro."},
 ];
 
 function localDateSeed() {
@@ -197,27 +245,27 @@ function localDateSeed() {
   return seed%dailyChallenges.length;
 }
 
-export function LocalDailyChallengeGame() {
+export function LocalDailyChallengeGame({ solo = false }: { solo?: boolean }) {
   const challenge=dailyChallenges[localDateSeed()];
   const [done,setDone]=useState<[boolean,boolean]>([false,false]);
   const completeCount=Number(done[0])+Number(done[1]);
   return (
-    <section className="local-daily-game">
-      <div className="local-daily-date">MISSÃO DO DIA · {new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"numeric",month:"long"}).format(new Date())}</div>
+    <section className={"local-daily-game" + (solo ? " is-solo" : "")}>
+      <div className="local-daily-date">{solo ? "DESAFIO INDIVIDUAL · " : "MISSÃO DO DIA · "} {new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"numeric",month:"long"}).format(new Date())}</div>
       <span className="local-game-category">{challenge.category}</span>
       <h3>{challenge.title}</h3>
-      <p>{challenge.instruction}</p>
+      <p>{solo ? challenge.solo : challenge.instruction}</p>
       <div className="local-daily-players">
-        {([0,1] as const).map((player)=>(
+        {(solo ? [0] as const : [0,1] as const).map((player)=>(
           <button type="button" key={player} className={done[player]?"is-complete":""} onClick={()=>setDone((current)=>current.map((value,index)=>index===player?!value:value) as [boolean,boolean])}>
             <span className="local-daily-check">{done[player]?"✓":player+1}</span>
-            <strong>Pessoa {player+1}</strong>
+            <strong>{solo ? "Você" : `Pessoa ${player+1}`}</strong>
             <small>{done[player]?"Missão concluída":"Marcar conclusão"}</small>
           </button>
         ))}
       </div>
       <div className="local-daily-result" role="status" aria-live="polite">
-        {completeCount===2?"Missão concluída pelos dois. Muito bem!":completeCount===1?"Uma pessoa já concluiu. Falta só mais uma!":"Façam a missão juntos e marquem quando cada um terminar."}
+        {solo ? (completeCount ? "Desafio individual concluído. Boa!" : "Faça a missão e marque quando terminar.") : completeCount===2?"Missão concluída pelos dois. Muito bem!":completeCount===1?"Uma pessoa já concluiu. Falta só mais uma!":"Façam a missão juntos e marquem quando cada um terminar."}
       </div>
       <button type="button" className="inline-action" onClick={()=>setDone([false,false])}><RotateCcw aria-hidden="true"/> Limpar marcações</button>
     </section>
