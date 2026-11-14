@@ -99,9 +99,9 @@ export function ConversationAudioPlayer({ src, label = "Mensagem de voz" }: Conv
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onEnded={() => {
+        onEnded={(event) => {
           setPlaying(false);
-          setCurrentTime(duration);
+          setCurrentTime(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0);
         }}
         onError={() => {
           setPlaying(false);
