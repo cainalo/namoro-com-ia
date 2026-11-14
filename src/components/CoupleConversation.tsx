@@ -40,7 +40,6 @@ import {
   Play,
 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
-import { MoradosMark } from "@/components/MoradosMark";
 import { ConversationCallScreen, type CallKind } from "@/components/ConversationCallScreen";
 import { readableInk } from "@/lib/readable-ink";
 import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
@@ -1267,19 +1266,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           </button>
         </div>
 
-        <button
-          type="button"
-          className="conversation-floating-wordmark"
-          onClick={onBack}
-          aria-label="Morados — voltar ao Feed"
-          title="Feed"
-        >
-          <span className="morados-wordmark-lockup">
-            <MoradosMark size={28} />
-            <span className="morados-wordmark-text">morados</span>
-          </span>
-        </button>
-
         <div className="conversation-heading-trailing">
           <button
             type="button"
@@ -1388,14 +1374,14 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                     >
                       <span className="conversation-sender sr-only">{ownMessage ? "Você" : state.otherName}</span>
                       <div className={"conversation-message-content is-" + message.message_type}>
+                        <time
+                          className="conversation-message-time"
+                          dateTime={message.created_at}
+                        >
+                          {formatMessageTime(message.created_at)}
+                        </time>
                         {renderMessageContent(message)}
                       </div>
-                      <time
-                        className={"conversation-message-time" + (message.message_type === "text" ? " is-text" : "")}
-                        dateTime={message.created_at}
-                      >
-                        {formatMessageTime(message.created_at)}
-                      </time>
                       <button
                         type="button"
                         className="conversation-copy-action"
