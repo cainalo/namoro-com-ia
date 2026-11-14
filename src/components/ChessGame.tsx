@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGameState } from "@/components/OnlineGameHost";
 import type { GameOutcome } from "@/lib/online-game";
 import { RotateCcw, Undo2 } from "lucide-react";
@@ -226,7 +226,7 @@ function chessOutcome(s:ChessShared):GameOutcome|null{
   return null;
 }
 
-export function ChessGame() {
+export function ChessGame({ solo = false }: { solo?: boolean }) {
   const [chess,setChess]=useGameState<ChessShared>(()=>({position:initialPosition(),history:[],notation:[]}),{turnSeat:(s)=>s.position.turn==="w"?0:1,outcome:chessOutcome});
   const {position,history,notation}=chess;
   const [selected,setSelected]=useState<number|null>(null);
@@ -234,12 +234,52 @@ export function ChessGame() {
   const moves=useMemo(()=>position.turn==="w"?legalMovesFor(position,"w"):legalMovesFor(position,"b"),[position]);
   const available=useMemo(()=>new Set(moves.filter(m=>m.from===selected).map(m=>m.to)),[moves,selected]);
   const check=inCheck(position,position.turn);
-  const winner=position.turn==="w"?"Pessoa 2":"Pessoa 1";
+  const winner=position.turn==="w"?(solo?"Morados":"Pessoa 2"):(solo?"Você":"Pessoa 1");
   const finished=moves.length===0||position.halfMoves>=100||insufficientMaterial(position);
-  const status=moves.length===0?(check?`Xeque-mate! ${winner} venceu.`:"Empate por afogamento.") : position.halfMoves>=100?"Empate pela regra dos 50 lances.":insufficientMaterial(position)?"Empate por material insuficiente.":check?"Xeque! Proteja o rei.":`Vez da Pessoa ${position.turn==="w"?1:2}.`;
+  const status=moves.length===0?(check?`Xeque-mate! ${winner} venceu.`:"Empate por afogamento.") : position.halfMoves>=100?"Empate pela regra dos 50 lances.":insufficientMaterial(position)?"Empate por material insuficiente.":check?"Xeque! Proteja o rei.":solo&&position.turn==="b"?"Morados estão pensando…":`Vez de ${solo?(position.turn==="w"?"você":"Morados"):"Pessoa "+(position.turn==="w"?1:2)}.`;
+
+  useEffect(() => {
+    if (!solo || sync.online || position.turn !== "b" || finished) return;
+    const timer = window.setTimeout(() => {
+      const candidates = legalMovesFor(position, "b");
+      if (!candidates.length) return;
+      const values: Record<Kind, number> = { P: 100, N: 320, B: 335, R: 500, Q: 900, K: 20000 };
+      const material = (board: Array<Piece | null>) => board.reduce((sum, piece) => {
+        if (!piece) return sum;
+        return sum + (piece.color === "b" ? 1 : -1) * values[piece.kind];
+      }, 0);
+      const ranked = candidates.map((move) => {
+        const next = applyMove(position, move);
+        const piece = position.board[move.from];
+        const captured = position.board[move.to] ?? (move.enPassant ? position.board[idx(coords(move.from)[0], coords(move.to)[1])] : null);
+        const checkWhite = inCheck(next, "w");
+        const whiteReplies = legalMovesFor(next, "w");
+        const mate = whiteReplies.length === 0 && checkWhite;
+        const [row, column] = coords(move.to);
+        let score = material(next.board) * 0.12;
+        if (captured) score += values[captured.kind] * 0.9 - (piece ? values[piece.kind] * 0.08 : 0);
+        if (move.promotion) score += 800;
+        if (move.castle) score += 35;
+        if (checkWhite) score += 32;
+        if (mate) score += 100000;
+        score += (3.5 - Math.abs(3.5 - column)) * 2 + (3.5 - Math.abs(3.5 - row)) * 1.3;
+        if (isSquareAttacked(next.board, move.to, "w") && piece && !captured) score -= values[piece.kind] * 0.18;
+        score += Math.random() * 0.8;
+        return { move, score };
+      }).sort((a, b) => b.score - a.score);
+      const best = ranked[0]?.move;
+      if (!best) return;
+      setChess((current) => current.position.turn !== "b" ? current : ({
+        position: applyMove(current.position, best),
+        history: [...current.history, current.position].slice(-60),
+        notation: [...current.notation, moveLabel(current.position, best)],
+      }));
+    }, 620);
+    return () => window.clearTimeout(timer);
+  }, [solo, sync.online, position, finished, setChess]);
 
   function clickSquare(square:number){
-    if(finished)return;
+    if(finished || (solo && position.turn === "b"))return;
     const piece=position.board[square];
     if(selected!==null&&available.has(square)){
       const move=moves.find(m=>m.from===selected&&m.to===square);
@@ -253,16 +293,17 @@ export function ChessGame() {
     else {setSelected(null);setMessage("Selecione uma peça da sua cor.");}
   }
   function undo(){
-    const previous=history[history.length-1];if(!previous)return;
-    setChess({position:previous,history:history.slice(0,-1),notation:notation.slice(0,-1)});setSelected(null);setMessage(null);
+    const steps = solo ? 2 : 1;
+    const previous=history[history.length-steps];if(!previous)return;
+    setChess({position:previous,history:history.slice(0,-steps),notation:notation.slice(0,-steps)});setSelected(null);setMessage(null);
   }
   function restart(){setChess({position:initialPosition(),history:[],notation:[]});setSelected(null);setMessage(null);}
 
   return (
-    <section className="chess-game" aria-label="Xadrez para duas pessoas">
+    <section className={"chess-game" + (solo ? " is-solo" : "")} aria-label="Xadrez">
       <div className="chess-statusbar">
-        <span className={position.turn==="w"?"is-active":""}><i className="chess-player-dot is-white"/> Pessoa 1 · Brancas</span>
-        <span className={position.turn==="b"?"is-active":""}><i className="chess-player-dot is-black"/> Pessoa 2 · Pretas</span>
+        <span className={position.turn==="w"?"is-active":""}><i className="chess-player-dot is-white"/> {solo ? "Você · Brancas" : "Pessoa 1 · Brancas"}</span>
+        <span className={position.turn==="b"?"is-active":""}><i className="chess-player-dot is-black"/> {solo ? "Morados · Pretas" : "Pessoa 2 · Pretas"}</span>
       </div>
       <div className={"chess-status"+(check?" is-check":"")} role="status" aria-live="polite">{status}</div>
       <div className="chess-board" role="grid" aria-label="Tabuleiro de xadrez">
@@ -270,7 +311,7 @@ export function ChessGame() {
           const [r,c]=coords(square);
           return <button key={square} type="button" role="gridcell"
             className={["chess-square",(r+c)%2?"is-dark":"is-light",selected===square?"is-selected":"",available.has(square)?"is-legal":"",check&&piece?.kind==="K"&&piece.color===position.turn?"is-king-check":""].filter(Boolean).join(" ")}
-            onClick={()=>clickSquare(square)} disabled={finished}
+            onClick={()=>clickSquare(square)} disabled={finished || (solo && position.turn === "b")}
             aria-label={`${files[c]}${8-r}: ${piece?(piece.color==="w"?"branca ":"preta ")+({K:"rei",Q:"dama",R:"torre",B:"bispo",N:"cavalo",P:"peão"}[piece.kind]):"vazia"}`}
             aria-pressed={selected===square}>
             {piece&&<span className={"chess-piece "+(piece.color==="w"?"is-white":"is-black")} aria-hidden="true">{glyph[piece.color][piece.kind]}</span>}
@@ -288,7 +329,7 @@ export function ChessGame() {
         <ol>{notation.map((move,i)=><li key={i}>{i+1}. {move}</li>)}</ol>
       </details>
       {finished&&<div className="chess-end-panel"><strong>{status}</strong><button type="button" className="primary-action" onClick={restart}>Nova partida</button></div>}
-      <p className="chess-note">Modo local para duas pessoas no mesmo aparelho. A promoção de peão é automática para dama.</p>
+      <p className="chess-note">{solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}A promoção de peão é automática para dama.</p>
     </section>
   );
 }
