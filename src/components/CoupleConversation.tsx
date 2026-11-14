@@ -796,8 +796,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     const body = draft.trim();
     if (!body || state.status !== "active" || busy) return;
     if (editingMessageId) {
-      await persistEditedMessage(editingMessageId, body);
-      if (!savingEdit) setDraft("");
+      const saved = await persistEditedMessage(editingMessageId, body);
+      if (saved) setDraft("");
       return;
     }
     await saveMessage({ body, messageType: "text" });
