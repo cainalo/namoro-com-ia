@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Undo2 } from "lucide-react";
+import { Undo2, Trophy } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import {
   createInitialCheckersGame,
@@ -315,6 +315,15 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
           </div>
         </div>
       </div>
+      {game.status === "finished" && (
+        <div className="quiz-finish game-mode-victory-panel" role="status" aria-live="polite">
+          <span><Trophy aria-hidden="true"/></span>
+          <p className="date-kicker">FIM DA PARTIDA</p>
+          <h3>{game.winner ? `${solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner)} venceram!` : "Empate!"}</h3>
+          <p>{history.length} jogadas concluídas. As peças e o resultado ficaram registrados nesta tela.</p>
+          <button type="button" className="primary-action" onClick={startNewGame}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
+        </div>
+      )}
     </section>
   );
 }
