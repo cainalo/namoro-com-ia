@@ -24835,3 +24835,10 @@ body {
   font-weight: 600;
   padding: 4px 8px;
 }
+
+/* A lista só aparece depois de receber a posição inicial correta.
+   Isso evita mostrar o topo do histórico por um instante antes do salto
+   automático para a mensagem mais recente. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread.is-initial-positioning {
+  visibility: hidden !important;
+}
