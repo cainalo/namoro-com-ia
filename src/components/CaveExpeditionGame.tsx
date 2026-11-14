@@ -36,13 +36,13 @@ export function CaveExpeditionGame({solo=false}:{solo?:boolean}) {
   if(game.status!=="playing")return;
   const next={x:game.player.x+dx,y:game.player.y+dy};const cell=MAP[next.y]?.[next.x];
   if(!cell||cell==="wall"){emit(95,.07);setMessage("A passagem está bloqueada por rocha.");return}
-  if(cell==="gate"&&(!game.key||!game.relic)){setMessage("O portal exige a chave antiga e a relíquia.");emit(180);return}
+  if(cell==="gate"&&(!game.key||!game.relic||game.bossHp>0)){setMessage("O portal exige a chave, a relíquia e a derrota do guardião.");emit(180);return}
   const revealed=[...new Set([...game.revealed,keyOf(next),keyOf({x:next.x+1,y:next.y}),keyOf({x:next.x-1,y:next.y}),keyOf({x:next.x,y:next.y+1}),keyOf({x:next.x,y:next.y-1})])];
   const n:CaveState={...game,player:next,moves:game.moves+1,revealed};
   if(cell==="key"){n.key=true;setMessage("Chave antiga encontrada. Ela abre o portal da câmara.");n.log=["Vocês encontraram uma chave antiga.",...game.log];emit(620)}
   else if(cell==="relic"){n.relic=true;setMessage("A relíquia foi recuperada. O guardião despertou!");n.log=["A relíquia despertou o guardião da caverna.",...game.log];emit(760)}
   else if(cell==="potion"){n.hp=Math.min(n.maxHp,n.hp+3);setMessage("Poção encontrada: +3 de vida.");n.log=["Uma poção restaurou parte da vida.",...game.log];emit(520)}
-  else if(cell==="enemy"){n.hp=Math.max(0,n.hp-1);n.bossHp=Math.max(0,n.bossHp-2);setMessage(n.bossHp===0?"O guardião foi derrotado! O caminho está livre.":"Golpe contra o guardião! Ele também feriu vocês.");n.log=["Vocês enfrentaram o guardião.",...game.log];emit(n.bossHp===0?880:150,.2);if(n.hp===0)n.status="lost"}
+  else if(cell==="enemy"&&game.bossHp>0){n.hp=Math.max(0,n.hp-1);n.bossHp=Math.max(0,n.bossHp-2);setMessage(n.bossHp===0?"O guardião foi derrotado! O caminho está livre.":"Golpe contra o guardião! Ele também feriu vocês.");n.log=["Vocês enfrentaram o guardião.",...game.log];emit(n.bossHp===0?880:150,.2);if(n.hp===0)n.status="lost"}
   else if(cell==="gate"){n.status="won";setMessage("A relíquia foi devolvida ao altar. Vocês escaparam!");emit(940,.35)}
   else{setMessage("Passagem explorada.");emit(240,.05)}
   n.turn=game.turn===0?1:0;setGame(n);
