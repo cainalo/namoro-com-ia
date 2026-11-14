@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Trophy } from "lucide-react";
 
 const CONNECT_WIDTH = 7;
 const CONNECT_HEIGHT = 6;
@@ -120,6 +120,15 @@ export function LocalConnectFourGame({ solo = false }: { solo?: boolean }) {
           </div>
         ))}
       </div>
+      {(winner || draw) && (
+        <div className="quiz-finish local-game-end-panel" role="status" aria-live="polite">
+          <span><Trophy aria-hidden="true"/></span>
+          <p className="date-kicker">FIM DA PARTIDA</p>
+          <h3>{draw ? "Empate!" : solo ? (winner === 1 ? "Você venceu!" : "Morados venceram!") : `Pessoa ${winner} venceu!`}</h3>
+          <p>{moves} jogadas até o resultado. Uma nova rodada começa com o tabuleiro limpo.</p>
+          <button type="button" className="primary-action" onClick={restart}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
+        </div>
+      )}
       <footer className="local-game-footer">
         <span>{moves} jogadas · {solo ? "Contra Morados" : "Mesmo aparelho"}</span>
         <button type="button" className="inline-action" onClick={restart}><RotateCcw aria-hidden="true"/> Reiniciar</button>
