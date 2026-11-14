@@ -23332,3 +23332,19 @@ body {
   margin: 0 !important;
   transform: translateX(-50%) !important;
 }
+
+
+/* Correção de prioridade: o seletor antigo com "section" mantinha o composer no topo.
+   O seletor específico do formulário garante a posição inferior, com a mesma folga
+   de 10 px que a barra de navegação usa em relação ao topo da tela. */
+.app-shell.is-conversation-mode section.conversation-screen form.conversation-composer[data-no-swipe] {
+  position: fixed !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: calc(env(safe-area-inset-bottom) + 10px) !important;
+  left: 50% !important;
+  width: min(920px, calc(100% - 22px)) !important;
+  margin: 0 !important;
+  transform: translateX(-50%) !important;
+  z-index: 100 !important;
+}
