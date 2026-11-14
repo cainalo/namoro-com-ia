@@ -89,9 +89,9 @@ const questionBank:QuizQuestion[]=[
 
 const categories=["Todas","Ciência","Natureza","Geografia","Cultura"];
 function shuffle<T>(values:T[]){const items=values.slice();for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}return items;}
-type QuizShared={category:string;round:QuizQuestion[];index:number;player:0|1;scores:[number,number];phase:"setup"|"question"|"result"|"finished";selected:number|null;timedOut:boolean;opponentCorrect:boolean};
+type QuizShared={category:string;round:QuizQuestion[];index:number;player:0|1;scores:[number,number];phase:"setup"|"question"|"result"|"finished";selected:number|null;timedOut:boolean;opponentCorrect:boolean;usedIds:string[]};
 export function QuizGame({ solo = false }: { solo?: boolean }){
-  const [quiz,setQuiz,sync]=useGameState<QuizShared>(()=>({category:"Todas",round:[],index:0,player:0,scores:[0,0],phase:"setup",selected:null,timedOut:false,opponentCorrect:false}),{
+  const [quiz,setQuiz,sync]=useGameState<QuizShared>(()=>({category:"Todas",round:[],index:0,player:0,scores:[0,0],phase:"setup",selected:null,timedOut:false,opponentCorrect:false,usedIds:[]}),{
     turnSeat:(q)=>q.player,
     outcome:(q)=>q.phase!=="finished"?null:q.scores[0]===q.scores[1]?{kind:"draw"}:{kind:"win",winnerSeat:q.scores[0]>q.scores[1]?0:1},
   });
@@ -124,7 +124,12 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
 
   function start(){
     const pool=category==="Todas"?questionBank:questionBank.filter(q=>q.category===category);
-    setQuiz({...quiz,round:shuffle(pool).slice(0,10),index:0,player:0,scores:[0,0],selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
+    const fresh=pool.filter(question=>!quiz.usedIds.includes(question.id));
+    const recentRoundIds=new Set(quiz.round.map(question=>question.id));
+    const candidates=fresh.length>=10?fresh:[...fresh,...pool.filter(question=>!fresh.some(item=>item.id===question.id)&&!recentRoundIds.has(question.id))];
+    const round=shuffle(candidates).slice(0,10);
+    const nextUsed=[...(fresh.length>=10?quiz.usedIds:quiz.round.map(question=>question.id)),...round.map(question=>question.id)].slice(-80);
+    setQuiz({...quiz,round,usedIds:nextUsed,index:0,player:0,scores:[0,0],selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
   }
   function answer(choice:number){
     if(phase!=="question"||selected!==null||!question)return;
@@ -152,7 +157,8 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
           <div className="quiz-category-picker" role="group" aria-label="Escolher categoria">
             {categories.map(item=><button type="button" key={item} className={category===item?"is-active":""} onClick={()=>setCategory(item)}>{item}</button>)}
           </div>
-          <div className="quiz-rules"><span>10 perguntas</span><span>20 segundos por resposta</span><span>1 ponto por acerto</span></div>
+          <div className="quiz-rules"><span>10 perguntas por rodada</span><span>20 segundos por resposta</span><span>1 ponto por acerto</span></div>
+          <p className="quiz-bank-count"><strong>{questionBank.length} perguntas</strong> no banco · novas combinações a cada rodada</p>
           <button type="button" className="primary-action" onClick={start}>Começar quiz</button>
         </div>
       )}
