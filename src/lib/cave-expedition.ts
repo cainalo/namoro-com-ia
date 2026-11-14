@@ -9,31 +9,13 @@ export type CavePoint = { x: number; y: number };
 export const CAVE_FLOORS: CaveFloor[] = [
   {
     name: "Galeria das Raízes",
-    map: [
-      "##########",
-      "#P...#...#",
-      "#.#..#...#",
-      "#.#..#g..#",
-      "#...c...E#",
-      "#.##...#.#",
-      "#...r....#",
-      "##########",
-    ],
+    map: ["##########", "#P...#...#", "#.#..#...#", "#.#..#g..#", "#...c...E#", "#.##...#.#", "#...r....#", "##########"],
     monsters: [{ x: 6, y: 3, hp: 5, attack: 1, name: "Sentinela de Musgo", icon: "🌿" }],
     requiredCrystals: 1,
   },
   {
     name: "Fornalha Submersa",
-    map: [
-      "##########",
-      "#P....#..#",
-      "#.##..#g.#",
-      "#..c.....#",
-      "###.###E.#",
-      "#...g....#",
-      "#...r....#",
-      "##########",
-    ],
+    map: ["##########", "#P....#..#", "#.##..#g.#", "#..c.....#", "###.###E.#", "#...g....#", "#...r....#", "##########"],
     monsters: [
       { x: 7, y: 2, hp: 7, attack: 2, name: "Escavador de Cinzas", icon: "🦂" },
       { x: 4, y: 5, hp: 6, attack: 2, name: "Vigia das Brasas", icon: "🦇" },
@@ -42,16 +24,7 @@ export const CAVE_FLOORS: CaveFloor[] = [
   },
   {
     name: "Câmara do Coração",
-    map: [
-      "##########",
-      "#P....#..#",
-      "#.##..#..#",
-      "#..g.....#",
-      "#...c##E.#",
-      "#.g......#",
-      "#...r....#",
-      "##########",
-    ],
+    map: ["##########", "#P....#..#", "#.##..#..#", "#..g.....#", "#...c##E.#", "#.g......#", "#...r....#", "##########"],
     monsters: [
       { x: 3, y: 3, hp: 8, attack: 2, name: "Guardião de Basalto", icon: "🗿" },
       { x: 2, y: 5, hp: 7, attack: 2, name: "Lobo da Fenda", icon: "🐺" },
@@ -61,7 +34,9 @@ export const CAVE_FLOORS: CaveFloor[] = [
 ];
 
 export function caveCell(map: string[], point: CavePoint) {
-  return map[point.y]?.[point.x] ?? "#";
+  const tile = map[point.y]?.[point.x];
+  if (tile === undefined) return "#";
+  return tile === "P" ? "." : tile;
 }
 
 export function revealCave(map: string[], positions: CavePoint[], radius = 1) {
