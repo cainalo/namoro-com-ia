@@ -1,6 +1,5 @@
 import { useMemo, useState, type ChangeEvent } from "react";
 import {
-  ArrowLeft,
   Bell,
   Check,
   File,

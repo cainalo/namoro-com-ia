@@ -37,8 +37,6 @@ import {
   Send,
   Share2,
   Sparkles,
-  RefreshCw,
-  Video,
   Check,
   Ship,
   Target,

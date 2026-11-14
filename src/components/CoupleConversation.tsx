@@ -1428,6 +1428,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         </>
       )}
       <MoradosCamera
+        key={cameraMode ?? "closed"}
         open={cameraMode !== null}
         initialMode={cameraMode ?? "photo"}
         onClose={() => setCameraMode(null)}
