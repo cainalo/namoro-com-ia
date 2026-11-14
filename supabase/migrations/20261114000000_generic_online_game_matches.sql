@@ -75,9 +75,45 @@ REVOKE ALL ON TABLE public.couple_game_private_state FROM PUBLIC, anon, authenti
 GRANT SELECT ON TABLE public.couple_game_private_state TO authenticated;
 GRANT ALL ON TABLE public.couple_game_private_state TO service_role;
 ALTER TABLE public.couple_game_private_state ENABLE ROW LEVEL SECURITY;
+-- A leitura de partidas exige vínculo atual com casal ativo. A função
+-- SECURITY DEFINER evita recursão de RLS ao consultar couple_members.
+CREATE OR REPLACE FUNCTION public.is_current_game_member(p_couple_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.couples AS c
+    JOIN public.couple_members AS m ON m.couple_id = c.id
+    WHERE c.id = p_couple_id
+      AND c.status = 'active'
+      AND m.user_id = (SELECT auth.uid())
+      AND m.ended_at IS NULL
+  );
+$;
+REVOKE ALL ON FUNCTION public.is_current_game_member(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.is_current_game_member(uuid) TO authenticated;
+
+DROP POLICY IF EXISTS couple_game_matches_select_members ON public.couple_game_matches;
+CREATE POLICY couple_game_matches_select_current_members
+  ON public.couple_game_matches FOR SELECT TO authenticated
+  USING (public.is_current_game_member(couple_id));
+
+DROP POLICY IF EXISTS couple_game_private_state_select_own ON public.couple_game_private_state;
 CREATE POLICY couple_game_private_state_select_own
   ON public.couple_game_private_state FOR SELECT TO authenticated
-  USING (user_id = (SELECT auth.uid()));
+  USING (
+    user_id = (SELECT auth.uid())
+    AND EXISTS (
+      SELECT 1
+      FROM public.couple_game_matches AS g
+      WHERE g.id = match_id
+        AND public.is_current_game_member(g.couple_id)
+    )
+  );
 
 -- Monte embaralhado no servidor (peças/cartas ainda não distribuídas). Ninguém lê diretamente.
 CREATE TABLE public.couple_game_piles (

@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
 test("partidas online: migration, Lig 4, turnos, versões, privacidade", async () => {
 const db = new PGlite();
-const A='11111111-1111-1111-1111-111111111111', B='22222222-2222-2222-2222-222222222222', X='33333333-3333-3333-3333-333333333333', C='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+const A='11111111-1111-1111-1111-111111111111', B='22222222-2222-2222-2222-222222222222', X='33333333-3333-3333-3333-333333333333', Y='44444444-4444-4444-4444-444444444444', C='aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
 await db.exec(readFileSync(here("../../supabase/tests/online-games.base.sql"),"utf8"));
 // live function body (from production), to reproduce
 await db.exec(readFileSync(here("../../supabase/tests/online-games.live-lig4.sql"),"utf8"));
@@ -62,11 +62,15 @@ ok('privado: monte ilegível pelo cliente', !!(await as(A,'select * from public.
 ok('privado: escrita direta proibida', !!(await as(A,`insert into public.couple_game_private_state(match_id,user_id) values($1,$2)`,[dom,B])).err);
 const sa=(new Set([...ha.rows![0].d.hand,...hb.rows![0].d.hand].map((t:any)=>t.join()))).size; ok('dominó: mãos sem peças repetidas', sa===14);
 ok('monte restante 14', (await db.query(`select jsonb_array_length(items) n from public.couple_game_piles where match_id=$1`,[dom])).rows[0] as any && ((await db.query(`select jsonb_array_length(items) n from public.couple_game_piles where match_id=$1`,[dom])).rows[0] as any).n===14);
-// access control
+// access control: X já pertenceu ao casal, mas ended_at não é NULL; Y nunca pertenceu.
+await db.query('INSERT INTO public.couple_game_private_state(match_id,user_id,data) VALUES ($1,$2,$3)',[dom,X,JSON.stringify({fleet:['secret']})]);
 ok('anon sem execução', !!(await as(null,'select public.start_game_match($1,$2,$3)',[C,'quiz','competitive'])).err);
-ok('não-membro bloqueado', (await as(X,'select public.start_game_match($1,$2,$3)',[C,'quiz','competitive'])).err?.message==='invalid_couple_members');
-ok('não-membro não lê partidas', (await as(X,'select count(*)::int n from public.couple_game_matches')).rows?.[0]?.n===0);
-ok('não-membro não grava estado', (await as(X,'select public.submit_game_state($1,0,$2)',[inv,{}])).err?.message==='not_current_couple_member');
+ok('ex-membro bloqueado no RPC', (await as(X,'select public.start_game_match($1,$2,$3)',[C,'quiz','competitive'])).err?.message==='invalid_couple_members');
+ok('ex-membro não lê partidas, mesmo com can_view_couple legado', (await as(X,'select count(*)::int n from public.couple_game_matches')).rows?.[0]?.n===0);
+ok('não-membro não lê partidas', (await as(Y,'select count(*)::int n from public.couple_game_matches')).rows?.[0]?.n===0);
+ok('ex-membro não lê nem seu antigo estado privado', (await as(X,'select data from public.couple_game_private_state where match_id=$1',[dom])).rows?.length===0);
+ok('ex-membro não grava estado', (await as(X,'select public.set_game_private_state($1,$2)',[dom,{fleet:['tampered']}])).err?.message==='not_current_couple_member');
+ok('não-membro não grava estado', (await as(Y,'select public.submit_game_state($1,0,$2)',[inv,{}])).err?.message==='not_current_couple_member');
 ok('UPDATE direto proibido', !!(await as(A,`update public.couple_game_matches set state='{}'`)).err);
 ok('INSERT direto proibido', !!(await as(A,`insert into public.couple_game_matches(couple_id,game_key,player_one_id,player_two_id,board,current_turn) values($1,'quiz',$2,$3,'[]',$2)`,[C,A,B])).err);
 ok('helper interno não exposto', !!(await as(A,'select public.game_lock_match_for_member($1)',[inv])).err);

@@ -30,6 +30,8 @@ REVOKE ALL ON public.couple_game_matches FROM PUBLIC, anon, authenticated; GRANT
 ALTER TABLE public.couple_game_matches ENABLE ROW LEVEL SECURITY;
 CREATE POLICY couple_game_matches_select_members ON public.couple_game_matches FOR SELECT TO authenticated USING (public.can_view_couple(couple_id));
 ALTER PUBLICATION supabase_realtime ADD TABLE public.couple_game_matches;
-INSERT INTO auth.users VALUES ('11111111-1111-1111-1111-111111111111'),('22222222-2222-2222-2222-222222222222'),('33333333-3333-3333-3333-333333333333');
+INSERT INTO auth.users VALUES ('11111111-1111-1111-1111-111111111111'),('22222222-2222-2222-2222-222222222222'),('33333333-3333-3333-3333-333333333333'),('44444444-4444-4444-4444-444444444444');
 INSERT INTO public.couples VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','11111111-1111-1111-1111-111111111111','active');
 INSERT INTO public.couple_members(couple_id,user_id) VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','11111111-1111-1111-1111-111111111111'),('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','22222222-2222-2222-2222-222222222222');
+-- X representa uma pessoa que já pertenceu ao casal; sua membership está encerrada.
+INSERT INTO public.couple_members(couple_id,user_id,ended_at) VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa','33333333-3333-3333-3333-333333333333',now() - interval '1 day');
