@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
+import { MoradosMark } from "@/components/MoradosMark";
 import { supabase } from "@/integrations/supabase/client";
 
 type AuthGateProps = {
