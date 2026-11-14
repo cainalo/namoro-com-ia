@@ -24842,3 +24842,41 @@ body {
 .app-shell.is-conversation-mode section.conversation-screen .conversation-thread.is-initial-positioning {
   visibility: hidden !important;
 }
+
+
+/* A abertura da conversa controla a rolagem explicitamente. Desativa a âncora
+   automática do navegador, que pode competir com a posição até a última mensagem. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread {
+  overflow-anchor: none !important;
+}
+
+/* Espaço de onda reservado desde o primeiro quadro: áudio antigo sem waveform
+   não aumenta o balão quando seus metadados ficam disponíveis. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-wave {
+  display: flex;
+  min-height: 27px;
+  height: 27px;
+  align-items: center;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-wave.is-placeholder {
+  opacity: .42;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-wave.is-placeholder span {
+  min-height: 5px;
+  height: 5px;
+}
+
+/* Controles superiores ligeiramente maiores, sem alterar a distribuição. */
+.app-shell.is-conversation-mode .conversation-heading-leading > .conversation-floating-action,
+.app-shell.is-conversation-mode .conversation-heading-trailing > .conversation-floating-action {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  flex: 0 0 48px !important;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading > .conversation-floating-action svg,
+.app-shell.is-conversation-mode .conversation-heading-trailing > .conversation-floating-action svg {
+  width: 22px !important;
+  height: 22px !important;
+}
