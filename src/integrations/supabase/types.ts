@@ -14,6 +14,64 @@ export type Database = {
   }
   public: {
     Tables: {
+      couple_conversation_member_settings: {
+        Row: {
+          couple_id: string
+          preferences: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          preferences?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          preferences?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_conversation_member_settings_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_conversation_settings: {
+        Row: {
+          appearance: Json
+          couple_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          appearance?: Json
+          couple_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          appearance?: Json
+          couple_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_conversation_settings_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: true
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       couple_daily_challenge_progress: {
         Row: {
           challenge_date: string
@@ -367,34 +425,40 @@ export type Database = {
         Row: {
           author_id: string
           body: string
+          content_blocks: Json
           couple_id: string
           created_at: string
           id: string
           media_mime: string | null
           media_name: string | null
           media_path: string | null
+          title: string | null
           updated_at: string
         }
         Insert: {
           author_id: string
           body?: string
+          content_blocks?: Json
           couple_id: string
           created_at?: string
           id?: string
           media_mime?: string | null
           media_name?: string | null
           media_path?: string | null
+          title?: string | null
           updated_at?: string
         }
         Update: {
           author_id?: string
           body?: string
+          content_blocks?: Json
           couple_id?: string
           created_at?: string
           id?: string
           media_mime?: string | null
           media_name?: string | null
           media_path?: string | null
+          title?: string | null
           updated_at?: string
         }
         Relationships: [
