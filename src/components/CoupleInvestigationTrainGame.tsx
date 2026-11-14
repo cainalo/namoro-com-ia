@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGameState } from "@/components/OnlineGameHost";
 import { CheckCircle2, ClipboardList, Eye, Fingerprint, FileSearch, MessageSquareText, Search, ShieldAlert, TrainFront, XCircle } from "lucide-react";
 
 type SuspectId="marta"|"joel"|"lila"|"enzo";
@@ -25,12 +26,12 @@ const initial:Progress={reviewed:[],interviewed:[],selected:"joel",accused:"",me
 function load():Progress{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}}
 type Tab="scene"|"evidence"|"interviews"|"verdict";
 export function CoupleInvestigationTrainGame(){
- const [progress,setProgress]=useState<Progress>(load);
+ const [progress,setProgress,sync]=useGameState<Progress>(load);
  const [tab,setTab]=useState<Tab>("scene");
  const [focus,setFocus]=useState<string|null>(null);
  const [hint,setHint]=useState(false);
  const [solution,setSolution]=useState(false);
- useEffect(()=>{localStorage.setItem(STORAGE,JSON.stringify(progress));},[progress]);
+ useEffect(()=>{if(!sync.online)localStorage.setItem(STORAGE,JSON.stringify(progress));},[progress,sync.online]);
  useEffect(()=>{if(progress.solved)setSolution(true);},[progress.solved]);
  const selected=suspects.find(s=>s.id===progress.selected)??suspects[1];
  const canAccuse=progress.reviewed.length>=3&&progress.interviewed.length>=2;

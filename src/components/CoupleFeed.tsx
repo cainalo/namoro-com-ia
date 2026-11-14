@@ -26,6 +26,7 @@ import {
   Gamepad2,
   GripVertical,
   ImagePlus,
+  Images,
   LoaderCircle,
   MessageCircle,
   MoreHorizontal,

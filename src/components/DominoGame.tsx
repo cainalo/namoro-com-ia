@@ -1,10 +1,10 @@
 import { useMemo, useState } from "react";
 import { RotateCcw, ShoppingCart } from "lucide-react";
 
-type Tile={id:string;a:number;b:number};
-type Placed={tile:Tile;a:number;b:number};
+export type Tile={id:string;a:number;b:number};
+export type Placed={tile:Tile;a:number;b:number};
 type Player=0|1;
-type DominoState={
+export type DominoState={
   hands:[Tile[],Tile[]];
   stock:Tile[];
   line:Placed[];
@@ -38,11 +38,11 @@ function newDominoGame():DominoState{
     reason:null,
   };
 }
-function pipCount(hand:Tile[]){return hand.reduce((sum,tile)=>sum+tile.a+tile.b,0);}
-function playable(tile:Tile,left:number|null,right:number|null){
+export function pipCount(hand:Tile[]){return hand.reduce((sum,tile)=>sum+tile.a+tile.b,0);}
+export function playable(tile:Tile,left:number|null,right:number|null){
   return left===null||right===null||tile.a===left||tile.b===left||tile.a===right||tile.b===right;
 }
-function placeTile(state:DominoState,side:"left"|"right"):DominoState|null{
+export function placeTile(state:DominoState,side:"left"|"right"):DominoState|null{
   if(!state.selected||state.winner!==null)return null;
   const hand=state.hands[state.turn];
   const tile=hand.find(item=>item.id===state.selected);
@@ -140,6 +140,6 @@ export function DominoGame(){
   );
 }
 
-function DominoTileView({a,b}:{a:number;b:number}){
+export function DominoTileView({a,b}:{a:number;b:number}){
   return <span className="domino-tile" aria-hidden="true"><span>{Array.from({length:a},(_,i)=><i key={"a"+i}/>)}</span><span className="domino-divider"/><span>{Array.from({length:b},(_,i)=><i key={"b"+i}/>)}</span></span>;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGameState } from "@/components/OnlineGameHost";
 import { Archive, Clock3, DoorOpen, KeyRound, Lightbulb, LockKeyhole, RotateCcw, Search, Unlock } from "lucide-react";
 
 type RoomObject="clock"|"books"|"portrait"|"desk"|"safe";
@@ -14,11 +15,11 @@ const objects:Array<{id:RoomObject;name:string;icon:typeof Clock3;hint:string}>=
 ];
 
 export function EscapeRoomGame(){
- const [progress,setProgress]=useState<RoomProgress>(()=>{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}});
+ const [progress,setProgress,sync]=useGameState<RoomProgress>(()=>{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}});
  const [active,setActive]=useState<RoomObject|null>(null);
  const [message,setMessage]=useState("A porta principal se fechou atrás de vocês. Encontrem o mecanismo que libera a saída.");
  const [wrongAttempts,setWrongAttempts]=useState(0);
- useEffect(()=>{localStorage.setItem(STORAGE,JSON.stringify(progress));},[progress]);
+ useEffect(()=>{if(!sync.online)localStorage.setItem(STORAGE,JSON.stringify(progress));},[progress,sync.online]);
  const doneCount=Number(progress.key)+Number(progress.gear)+Number(progress.note);
  const object=objects.find(item=>item.id===active);
  function inspect(id:RoomObject){

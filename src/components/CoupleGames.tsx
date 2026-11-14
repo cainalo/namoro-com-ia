@@ -30,6 +30,10 @@ import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
 import { InlineMenu } from "@/components/InlineMenu";
+import { OnlineGameHost } from "@/components/OnlineGameHost";
+import { OnlineBattleshipGame } from "@/components/OnlineBattleshipGame";
+import { OnlineDominoGame } from "@/components/OnlineDominoGame";
+import { OnlineTrucoGame } from "@/components/OnlineTrucoGame";
 import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
 import {
   LocalConnectFourGame,
@@ -128,7 +132,6 @@ function GamePage({
 }) {
   const [mode, setMode] = useState<GameMode>("local");
   const game = catalogue.find((item) => item.id === gameId)!;
-  const isRemoteSupported = gameId === "connect-four" || gameId === "this-or-that" || gameId === "daily-challenge";
 
   useEffect(() => {
     document.documentElement.dataset.moradosGameOpen = "true";
@@ -158,7 +161,7 @@ function GamePage({
             {mode === "local" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
             Jogar neste aparelho
           </button>
-          {isRemoteSupported && (
+          {(
             <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { setMode("online"); close(); }}>
               {mode === "online" ? <Check aria-hidden="true" /> : <span className="secondary-game-menu-spacer" />}
               Jogar online
@@ -185,36 +188,49 @@ function GamePage({
         scrollableContent
       >
         <div className="games-fullscreen-content">
-          {gameId === "connect-four" ? (
-            mode === "local" ? <LocalConnectFourGame /> : <ConnectFourGame userId={userId} />
-          ) : gameId === "checkers" ? (
-            <CheckersGame />
-          ) : gameId === "this-or-that" ? (
-            mode === "local" ? <LocalThisOrThatGame /> : <CoupleGame userId={userId} />
-          ) : gameId === "daily-challenge" ? (
-            mode === "local" ? <LocalDailyChallengeGame /> : <CoupleDailyChallenge userId={userId} />
-          ) : gameId === "investigation" ? (
-            <CoupleInvestigationGame />
-          ) : gameId === "investigation-train" ? (
-            <CoupleInvestigationTrainGame />
-          ) : gameId === "chess" ? (
-            <ChessGame />
-          ) : gameId === "battleship" ? (
-            <BattleshipGame />
-          ) : gameId === "domino" ? (
-            <DominoGame />
-          ) : gameId === "truco" ? (
-            <TrucoGame />
-          ) : gameId === "quiz" ? (
-            <QuizGame />
-          ) : gameId === "escape-room" ? (
-            <EscapeRoomGame />
-          ) : (
-            <IslandSurvivalGame />
-          )}
+          {/* O modo local continua montado (oculto) para não perder a partida neste aparelho. */}
+          <div hidden={mode !== "local"}>{renderLocalGame(gameId)}</div>
+          {mode === "online" && renderOnlineGame(gameId, userId)}
         </div>
       </SecondaryPageChrome>
     </div>
+  );
+}
+
+const cooperativeGames: GameId[] = ["investigation", "investigation-train", "escape-room", "island-survival"];
+
+function renderLocalGame(gameId: GameId) {
+  switch (gameId) {
+    case "connect-four": return <LocalConnectFourGame />;
+    case "checkers": return <CheckersGame />;
+    case "this-or-that": return <LocalThisOrThatGame />;
+    case "daily-challenge": return <LocalDailyChallengeGame />;
+    case "investigation": return <CoupleInvestigationGame />;
+    case "investigation-train": return <CoupleInvestigationTrainGame />;
+    case "chess": return <ChessGame />;
+    case "battleship": return <BattleshipGame />;
+    case "domino": return <DominoGame />;
+    case "truco": return <TrucoGame />;
+    case "quiz": return <QuizGame />;
+    case "escape-room": return <EscapeRoomGame />;
+    case "island-survival": return <IslandSurvivalGame />;
+  }
+}
+
+function renderOnlineGame(gameId: GameId, userId: string) {
+  // Estes três já tinham sincronização própria (tabelas existentes preservadas).
+  if (gameId === "connect-four") return <ConnectFourGame userId={userId} />;
+  if (gameId === "this-or-that") return <CoupleGame userId={userId} />;
+  if (gameId === "daily-challenge") return <CoupleDailyChallenge userId={userId} />;
+  const game =
+    gameId === "battleship" ? <OnlineBattleshipGame /> :
+    gameId === "domino" ? <OnlineDominoGame /> :
+    gameId === "truco" ? <OnlineTrucoGame /> :
+    renderLocalGame(gameId);
+  return (
+    <OnlineGameHost key={gameId} gameKey={gameId} userId={userId} mode={cooperativeGames.includes(gameId) ? "cooperative" : "competitive"}>
+      {game}
+    </OnlineGameHost>
   );
 }
 

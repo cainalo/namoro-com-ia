@@ -23055,3 +23055,226 @@ body {
   background: transparent !important;
   background-image: none !important;
 }
+
+/* ==========================================================================
+   Conversa — camada final (rolagem, balões e chamadas).
+   A cor personalizada pinta somente o balão de texto; adesivos, presentes,
+   mídia e anexos ficam sem fundo herdado.
+   ========================================================================== */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0 !important;
+  padding: 12px clamp(12px, 3vw, 28px) 12px !important;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+  clip-path: none !important;
+  scroll-padding-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread::before,
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread::after {
+  content: none !important;
+  display: none !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-composer {
+  margin-top: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  flex: 0 0 auto;
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message {
+  position: relative;
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px 6px;
+  align-self: flex-start;
+  width: auto !important;
+  max-width: min(78%, 560px) !important;
+  margin: 10px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  animation: conversation-message-in 180ms ease-out both;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own {
+  align-self: flex-end;
+  justify-content: flex-end;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-grouped { margin-top: 3px !important; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content {
+  order: 1;
+  flex: 0 1 auto;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--color-foreground);
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-content { margin-left: auto; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-meta {
+  order: 2;
+  flex: 1 0 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 6px !important;
+  background: none !important;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--color-muted-foreground) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-meta { justify-content: flex-end; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-meta time { color: inherit !important; font-weight: 500; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-sender {
+  position: absolute !important;
+  width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* Balão de texto: único elemento que recebe a cor escolhida. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text {
+  padding: 9px 14px 10px !important;
+  border-radius: var(--conversation-message-radius, 20px) !important;
+  border-bottom-left-radius: 6px !important;
+  background: var(--conversation-bubble-other, var(--color-card)) !important;
+  color: var(--conversation-other-ink, var(--color-foreground)) !important;
+  box-shadow: 0 1px 2px rgb(52 45 36 / 8%), 0 6px 18px -14px rgb(52 45 36 / 40%) !important;
+  border: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-content.is-text {
+  border-bottom-left-radius: var(--conversation-message-radius, 20px) !important;
+  border-bottom-right-radius: 6px !important;
+  background: var(--conversation-bubble-own, var(--color-primary)) !important;
+  color: var(--conversation-own-ink, var(--color-primary-foreground)) !important;
+  border-color: transparent !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-grouped .conversation-message-content.is-text { border-top-left-radius: 8px !important; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own.is-grouped .conversation-message-content.is-text {
+  border-top-left-radius: var(--conversation-message-radius, 20px) !important;
+  border-top-right-radius: 8px !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-text {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font-size: 15px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Conteúdo que não é balão: sem fundo, borda ou tinta herdada. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content:not(.is-text) :is(.conversation-sticker, .conversation-sticker *, svg) {
+  background: none !important;
+  box-shadow: none !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-sticker {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 4px !important; border: 0 !important;
+  color: var(--color-accent) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-sticker svg { width: 64px; height: 64px; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-sticker span { font-size: 12px; color: var(--color-muted-foreground) !important; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-gift-card {
+  background: var(--color-card) !important;
+  color: var(--color-foreground) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 8px 24px -18px rgb(52 45 36 / 45%) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content :is(img, video) {
+  display: block; max-width: 100%; border-radius: 18px;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content audio { max-width: 100%; }
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-copy-action {
+  order: 3;
+  position: static !important;
+  width: 24px !important; height: 24px !important; min-width: 24px;
+  padding: 0 !important;
+  display: inline-grid; place-items: center;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: none !important;
+  color: var(--color-muted-foreground) !important;
+  opacity: 0.6;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-copy-action svg { width: 13px; height: 13px; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message:hover .conversation-copy-action,
+.app-shell.is-conversation-mode section.conversation-screen .conversation-copy-action:focus-visible { opacity: 1; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message .conversation-message-meta { flex: 0 1 auto; }
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-day-divider { margin: 16px 0 6px; align-self: center; }
+
+.conversation-heading-trailing { display: flex; align-items: center; gap: 6px; }
+@media (max-width: 380px) { .conversation-heading-trailing { gap: 2px; } }
+
+@keyframes conversation-message-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.is-conversation-mode section.conversation-screen .conversation-message { animation: none; }
+}
+
+/* Tela de chamada (estrutura; sem conexão ainda). */
+.call-screen {
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  background: color-mix(in srgb, var(--color-foreground) 92%, var(--color-primary));
+  color: var(--color-background);
+  animation: call-screen-in 200ms ease-out both;
+}
+.call-screen-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 64px; padding: 0 12px; }
+.call-screen-back, .call-screen-spacer { width: 44px; height: 44px; flex: 0 0 44px; }
+.call-screen-back { display: grid; place-items: center; border-radius: 999px; border: 0; background: color-mix(in srgb, var(--color-background) 14%, transparent); color: inherit; }
+.call-screen-back:focus-visible, .call-screen-controls button:focus-visible { outline: 2px solid var(--color-background); outline-offset: 2px; }
+.call-screen-kind { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; opacity: 0.85; }
+.call-screen-kind svg { width: 16px; height: 16px; }
+.call-screen-stage { position: relative; flex: 1 1 auto; min-height: 0; display: grid; place-items: center; padding: 24px; }
+.call-screen.is-video .call-screen-stage { margin: 0 12px; border-radius: 28px; background: color-mix(in srgb, var(--color-background) 8%, transparent); }
+.call-screen-identity { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; max-width: 340px; }
+.call-screen-avatar { width: 112px; height: 112px; border-radius: 999px; overflow: hidden; display: grid; place-items: center; background: var(--color-primary); color: var(--color-primary-foreground); font: 700 40px/1 "Libre Baskerville", Georgia, serif; box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-background) 10%, transparent); }
+.call-screen-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.call-screen-identity strong { font: 700 24px/1.2 "Libre Baskerville", Georgia, serif; }
+.call-screen-status { margin: 0; font-weight: 600; font-size: 15px; }
+.call-screen-identity small { font-size: 13px; line-height: 1.5; opacity: 0.75; }
+.call-screen-controls { display: flex; justify-content: center; gap: 18px; padding: 20px 16px 28px; }
+.call-screen-controls button { width: 60px; height: 60px; border-radius: 999px; border: 0; display: grid; place-items: center; background: color-mix(in srgb, var(--color-background) 16%, transparent); color: inherit; }
+.call-screen-controls button:disabled { opacity: 0.45; }
+.call-screen-controls button.is-end { background: var(--color-accent); color: var(--color-primary-foreground); }
+.call-screen-controls svg { width: 24px; height: 24px; }
+@keyframes call-screen-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .call-screen { animation: none; } }
+
+/* Barra do modo online dos jogos. */
+.online-game-bar { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-card); font-size: 14px; font-weight: 600; }
+.online-game-bar small { font-weight: 500; color: var(--color-muted-foreground); }
+.online-game-bar > span:nth-child(2) { flex: 1 1 auto; min-width: 0; }
+.online-game-dot { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 999px; background: var(--color-primary-soft, var(--color-secondary)); color: var(--color-primary); }
+.online-game-dot.is-offline { background: var(--color-accent-soft, var(--color-secondary)); color: var(--color-accent); }
+.online-game-dot svg { width: 15px; height: 15px; }
+.online-game-end { min-height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--color-border); background: transparent; color: var(--color-foreground); font-size: 13px; }
+.online-game-body.is-locked { opacity: 0.92; }
+.online-game-state { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message::before,
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message::after { content: none !important; display: none !important; }
+.app-shell.is-conversation-mode section.conversation-screen article.conversation-message.is-own,
+.app-shell.is-conversation-mode section.conversation-screen article.conversation-message { background: none !important; background-color: transparent !important; }
+@media (max-width: 440px) {
+  .app-shell.is-conversation-mode .conversation-floating-wordmark .morados-wordmark-text { display: none; }
+}

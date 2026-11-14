@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Brain, Clock3, RotateCcw, Trophy } from "lucide-react";
+import { useGameState } from "@/components/OnlineGameHost";
 
 type QuizQuestion={id:string;category:string;question:string;options:[string,string,string,string];answer:number;explanation:string};
 const questionBank:QuizQuestion[]=[
@@ -27,21 +28,21 @@ const questionBank:QuizQuestion[]=[
 
 const categories=["Todas","Ciência","Natureza","Geografia","Cultura"];
 function shuffle<T>(values:T[]){const items=values.slice();for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}return items;}
+type QuizShared={category:string;round:QuizQuestion[];index:number;player:0|1;scores:[number,number];phase:"setup"|"question"|"result"|"finished";selected:number|null;timedOut:boolean};
 export function QuizGame(){
-  const [category,setCategory]=useState("Todas");
-  const [round,setRound]=useState<QuizQuestion[]>([]);
-  const [index,setIndex]=useState(0);
-  const [player,setPlayer]=useState<0|1>(0);
-  const [scores,setScores]=useState<[number,number]>([0,0]);
-  const [phase,setPhase]=useState<"setup"|"question"|"result"|"finished">("setup");
-  const [selected,setSelected]=useState<number|null>(null);
-  const [timedOut,setTimedOut]=useState(false);
+  const [quiz,setQuiz,sync]=useGameState<QuizShared>(()=>({category:"Todas",round:[],index:0,player:0,scores:[0,0],phase:"setup",selected:null,timedOut:false}),{
+    turnSeat:(q)=>q.player,
+    outcome:(q)=>q.phase!=="finished"?null:q.scores[0]===q.scores[1]?{kind:"draw"}:{kind:"win",winnerSeat:q.scores[0]>q.scores[1]?0:1},
+  });
+  const {category,round,index,player,scores,phase,selected,timedOut}=quiz;
   const [timeLeft,setTimeLeft]=useState(20);
   const question=round[index];
   const correct=selected===question?.answer;
   const answeredCount=index+(phase==="result"?1:0);
   const leader=scores[0]===scores[1]?"Empate":scores[0]>scores[1]?"Pessoa 1":"Pessoa 2";
+  const setCategory=(value:string)=>setQuiz({...quiz,category:value});
 
+  useEffect(()=>{setTimeLeft(20);},[index,phase]);
   useEffect(()=>{
     if(phase!=="question"||timeLeft<=0)return;
     const timer=window.setInterval(()=>setTimeLeft(value=>Math.max(0,value-1)),1000);
@@ -49,29 +50,26 @@ export function QuizGame(){
   },[phase,timeLeft]);
 
   useEffect(()=>{
-    if(phase==="question"&&timeLeft===0){
-      setTimedOut(true);
-      setSelected(null);
-      setPhase("result");
+    // No modo online, só quem está respondendo registra o tempo esgotado.
+    if(phase==="question"&&timeLeft===0&&sync.canAct&&(!sync.online||sync.mySeat===player)){
+      setQuiz(q=>({...q,timedOut:true,selected:null,phase:"result"}));
     }
-  },[phase,timeLeft]);
+  },[phase,timeLeft,sync.canAct,sync.online,sync.mySeat,player,setQuiz]);
 
   function start(){
     const pool=category==="Todas"?questionBank:questionBank.filter(q=>q.category===category);
-    setRound(shuffle(pool).slice(0,10));
-    setIndex(0);setPlayer(0);setScores([0,0]);setSelected(null);setTimedOut(false);setTimeLeft(20);setPhase("question");
+    setQuiz({...quiz,round:shuffle(pool).slice(0,10),index:0,player:0,scores:[0,0],selected:null,timedOut:false,phase:"question"});
   }
   function answer(choice:number){
-    if(phase!=="question"||selected!==null)return;
-    setSelected(choice);
-    if(choice===question.answer)setScores(current=>current.map((score,i)=>i===player?score+1:score) as [number,number]);
-    setPhase("result");
+    if(phase!=="question"||selected!==null||!question)return;
+    const nextScores=(choice===question.answer?scores.map((score,i)=>i===player?score+1:score):scores) as [number,number];
+    setQuiz({...quiz,selected:choice,scores:nextScores,phase:"result"});
   }
   function next(){
-    if(index>=round.length-1){setPhase("finished");return;}
-    setIndex(value=>value+1);setPlayer(value=>value===0?1:0);setSelected(null);setTimedOut(false);setTimeLeft(20);setPhase("question");
+    if(index>=round.length-1){setQuiz({...quiz,phase:"finished"});return;}
+    setQuiz({...quiz,index:index+1,player:player===0?1:0,selected:null,timedOut:false,phase:"question"});
   }
-  function restart(){setPhase("setup");setRound([]);setIndex(0);setScores([0,0]);}
+  function restart(){setQuiz({...quiz,phase:"setup",round:[],index:0,scores:[0,0],player:0,selected:null,timedOut:false});}
   const progress=round.length?Math.round((answeredCount/round.length)*100):0;
 
   return (

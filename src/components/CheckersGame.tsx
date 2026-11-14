@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { Undo2 } from "lucide-react";
+import { useGameState } from "@/components/OnlineGameHost";
 import {
   createInitialCheckersGame,
   getLegalCheckersMoves,
@@ -19,9 +20,15 @@ function playerLabel(player: "white" | "black") {
 }
 
 export function CheckersGame() {
-  const [game, setGame] = useState<CheckersGameState>(() =>
-    createInitialCheckersGame(),
-  );
+  const [game, setGame, sync] = useGameState<CheckersGameState>(() => createInitialCheckersGame(), {
+    turnSeat: (state) => (state.turn === "white" ? 0 : 1),
+    outcome: (state) =>
+      state.status === "finished"
+        ? state.winner
+          ? { kind: "win", winnerSeat: state.winner === "white" ? 0 : 1 }
+          : { kind: "draw" }
+        : null,
+  });
   const [history, setHistory] = useState<CheckersGameState[]>([]);
   const [selectedFrom, setSelectedFrom] = useState<number | null>(null);
   const [selectedPath, setSelectedPath] = useState<number[]>([]);
@@ -261,7 +268,7 @@ export function CheckersGame() {
               type="button"
               className="inline-action"
               onClick={undoLastMove}
-              disabled={history.length === 0}
+              disabled={history.length === 0 || sync.online}
             >
               <Undo2 aria-hidden="true" />
               Desfazer

@@ -3,12 +3,12 @@ import { Handshake, RotateCcw, Swords } from "lucide-react";
 
 type Suit="♣"|"♥"|"♠"|"♦";
 type Rank="4"|"5"|"6"|"7"|"Q"|"J"|"K"|"A"|"2"|"3";
-type Card={id:string;rank:Rank;suit:Suit};
-type Player=0|1;
-type TrickWinner=Player|"tie";
+export type Card={id:string;rank:Rank;suit:Suit};
+export type Player=0|1;
+export type TrickWinner=Player|"tie";
 type Phase="play"|"handoff"|"challenge"|"trick-result"|"hand-result"|"match-result";
-type TableCard={player:Player;card:Card};
-type TrucoState={
+export type TableCard={player:Player;card:Card};
+export type TrucoState={
   hands:[Card[],Card[]];
   vira:Card;
   manilha:Rank;
@@ -26,12 +26,12 @@ type TrucoState={
   handReason:string;
   matchWinner:Player|null;
 };
-const suits:Suit[]=["♣","♥","♠","♦"];
-const ranks:Rank[]=["4","5","6","7","Q","J","K","A","2","3"];
+export const suits:Suit[]=["♣","♥","♠","♦"];
+export const ranks:Rank[]=["4","5","6","7","Q","J","K","A","2","3"];
 const suitPower:Record<Suit,number>={"♦":1,"♠":2,"♥":3,"♣":4};
 const rankPower:Record<Rank,number>={"4":0,"5":1,"6":2,"7":3,"Q":4,"J":5,"K":6,"A":7,"2":8,"3":9};
-const nextRank=(rank:Rank):Rank=>ranks[(rankPower[rank]+1)%ranks.length];
-const labels:Record<Suit,string>={"♣":"Paus","♥":"Copas","♠":"Espadas","♦":"Ouros"};
+export const nextRank=(rank:Rank):Rank=>ranks[(rankPower[rank]+1)%ranks.length];
+export const labels:Record<Suit,string>={"♣":"Paus","♥":"Copas","♠":"Espadas","♦":"Ouros"};
 function shuffle<T>(items:T[]){
   const out=items.slice();
   for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
@@ -46,26 +46,26 @@ function createHand(score:[number,number],starter:Player):TrucoState{
 function strength(card:Card,manilha:Rank){
   return card.rank===manilha?100+suitPower[card.suit]:rankPower[card.rank];
 }
-function trickWinner(a:Card,b:Card,manilha:Rank):TrickWinner{
+export function trickWinner(a:Card,b:Card,manilha:Rank):TrickWinner{
   const first=strength(a,manilha),second=strength(b,manilha);
   return first===second?"tie":first>second?0:1;
 }
-const other=(player:Player):Player=>player===0?1:0;
-function decideHand(wins:TrickWinner[],starter:Player):Player|null{
+export const other=(player:Player):Player=>player===0?1:0;
+export function decideHand(wins:TrickWinner[],starter:Player):Player|null{
   const w0=wins.filter(x=>x===0).length,w1=wins.filter(x=>x===1).length;
   if(w0>=2)return 0;if(w1>=2)return 1;
   if(wins.length<3)return null;
   const firstDecisive=wins.find(x=>x!=="tie");
   return firstDecisive==="tie"||firstDecisive===undefined?starter:firstDecisive;
 }
-function endHand(state:TrucoState,winner:Player,reason:string):TrucoState{
+export function endHand(state:TrucoState,winner:Player,reason:string):TrucoState{
   const score=[...state.score] as [number,number];
   score[winner]+=state.handPoints;
   const matchWinner=score[winner]>=12?winner:null;
   return {...state,score,phase:matchWinner===null?"hand-result":"match-result",handWinner:winner,handReason:reason,matchWinner};
 }
-function raiseLabel(points:number){return points===3?"Truco":points===6?"Seis":points===9?"Nove":"Doze";}
-function nextRaise(points:number){return points===1?3:points===3?6:points===6?9:points===9?12:null;}
+export function raiseLabel(points:number){return points===3?"Truco":points===6?"Seis":points===9?"Nove":"Doze";}
+export function nextRaise(points:number){return points===1?3:points===3?6:points===6?9:points===9?12:null;}
 
 export function TrucoGame(){
   const [game,setGame]=useState<TrucoState>(()=>createHand([0,0],0));
@@ -185,7 +185,7 @@ export function TrucoGame(){
   );
 }
 
-function TrucoCard({card}:{card:Card}){
+export function TrucoCard({card}:{card:Card}){
   const red=card.suit==="♥"||card.suit==="♦";
   return <span className={"truco-card"+(red?" is-red":"")} aria-hidden="true"><strong>{card.rank}</strong><b>{card.suit}</b><small>{card.rank}{card.suit}</small></span>;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useGameState } from "@/components/OnlineGameHost";
 import {
   Archive,
   CheckCircle2,
@@ -177,14 +178,14 @@ function loadProgress(): SavedProgress {
 
 export function CoupleInvestigationGame() {
   const [tab, setTab] = useState<InvestigationTab>("scene");
-  const [progress, setProgress] = useState<SavedProgress>(loadProgress);
+  const [progress, setProgress, sync] = useGameState<SavedProgress>(loadProgress);
   const [showHint, setShowHint] = useState(false);
   const [showSolution, setShowSolution] = useState(false);
   const [selectedEvidenceId, setSelectedEvidenceId] = useState<string | null>(null);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  }, [progress]);
+    if (!sync.online) localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  }, [progress, sync.online]);
 
   useEffect(() => {
     if (progress.solved) setShowSolution(true);

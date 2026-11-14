@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { useGameState } from "@/components/OnlineGameHost";
+import type { GameOutcome } from "@/lib/online-game";
 import { RotateCcw, Undo2 } from "lucide-react";
 
 type Color = "w" | "b";
@@ -215,10 +217,18 @@ function moveLabel(position:Position,move:Move) {
   return (piece?.kind==="P"?"":piece?.kind)+squareName(move.from)+(capture?"×":"–")+squareName(move.to)+(move.promotion?"=D":"");
 }
 
+type ChessShared={position:Position;history:Position[];notation:string[]};
+function chessOutcome(s:ChessShared):GameOutcome|null{
+  const p=s.position;
+  const moves=legalMovesFor(p,p.turn);
+  if(moves.length===0)return inCheck(p,p.turn)?{kind:"win",winnerSeat:p.turn==="w"?1:0}:{kind:"draw"};
+  if(p.halfMoves>=100||insufficientMaterial(p))return {kind:"draw"};
+  return null;
+}
+
 export function ChessGame() {
-  const [position,setPosition]=useState<Position>(()=>initialPosition());
-  const [history,setHistory]=useState<Position[]>([]);
-  const [notation,setNotation]=useState<string[]>([]);
+  const [chess,setChess]=useGameState<ChessShared>(()=>({position:initialPosition(),history:[],notation:[]}),{turnSeat:(s)=>s.position.turn==="w"?0:1,outcome:chessOutcome});
+  const {position,history,notation}=chess;
   const [selected,setSelected]=useState<number|null>(null);
   const [message,setMessage]=useState<string|null>(null);
   const moves=useMemo(()=>position.turn==="w"?legalMovesFor(position,"w"):legalMovesFor(position,"b"),[position]);
@@ -234,9 +244,7 @@ export function ChessGame() {
     if(selected!==null&&available.has(square)){
       const move=moves.find(m=>m.from===selected&&m.to===square);
       if(!move)return;
-      setHistory(prev=>[...prev,position]);
-      setNotation(prev=>[...prev,moveLabel(position,move)]);
-      setPosition(applyMove(position,move));
+      setChess({position:applyMove(position,move),history:[...history,position].slice(-60),notation:[...notation,moveLabel(position,move)]});
       setSelected(null);
       setMessage(null);
       return;
@@ -246,9 +254,9 @@ export function ChessGame() {
   }
   function undo(){
     const previous=history[history.length-1];if(!previous)return;
-    setPosition(previous);setHistory(v=>v.slice(0,-1));setNotation(v=>v.slice(0,-1));setSelected(null);setMessage(null);
+    setChess({position:previous,history:history.slice(0,-1),notation:notation.slice(0,-1)});setSelected(null);setMessage(null);
   }
-  function restart(){setPosition(initialPosition());setHistory([]);setNotation([]);setSelected(null);setMessage(null);}
+  function restart(){setChess({position:initialPosition(),history:[],notation:[]});setSelected(null);setMessage(null);}
 
   return (
     <section className="chess-game" aria-label="Xadrez para duas pessoas">

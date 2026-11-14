@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useGameState } from "@/components/OnlineGameHost";
 import {
   Anchor, Droplets, Flame, HeartPulse, Leaf, Package, RotateCcw,
   Shield, Sun, TentTree, Trees, Waves, Wind,
@@ -26,10 +27,10 @@ const actionList:Action[]=[
 function loadState():SurvivalState{try{const raw=localStorage.getItem(STORAGE);return raw?{...initial,...JSON.parse(raw)}:initial;}catch{return initial;}}
 const limit=(value:number)=>Math.max(0,Math.min(9,value));
 export function IslandSurvivalGame(){
- const [game,setGame]=useState<SurvivalState>(loadState);
+ const [game,setGame,sync]=useGameState<SurvivalState>(loadState);
  const [feedback,setFeedback]=useState("A tempestade passou. Vocês alcançaram uma pequena ilha. O resgate pode demorar alguns dias.");
  const [choice,setChoice]=useState<ActionId|null>(null);
- useEffect(()=>{localStorage.setItem(STORAGE,JSON.stringify(game));},[game]);
+ useEffect(()=>{if(!sync.online)localStorage.setItem(STORAGE,JSON.stringify(game));},[game,sync.online]);
  const totalHealth=game.health[0]+game.health[1];
  const dayLabel=["Chegada","Primeira noite","A tempestade","Maré baixa","Sinal no horizonte","Resgate"][game.day]??"Último dia";
  const actions=useMemo(()=>actionList.map(a=>({...a,disabled:a.id==="shelter"&&game.wood<2||a.id==="signal"&&game.wood<2||a.id==="treat"&&game.medicine<1||totalHealth>=6&&a.id==="treat"})),[game.wood,game.medicine,totalHealth]);

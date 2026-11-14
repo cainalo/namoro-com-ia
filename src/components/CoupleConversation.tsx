@@ -33,11 +33,14 @@ import {
   Smile,
   Sticker,
   Video,
+  Phone,
   X,
   Music2,
 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { MoradosMark } from "@/components/MoradosMark";
+import { ConversationCallScreen, type CallKind } from "@/components/ConversationCallScreen";
+import { readableInk } from "@/lib/readable-ink";
 import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
 import { mapWithConcurrency } from "@/lib/async-pool";
 import {
@@ -204,6 +207,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const recordingStreamRef = useRef<MediaStream | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const threadRef = useRef<HTMLDivElement>(null);
+  const [callKind, setCallKind] = useState<CallKind | null>(null);
   const composerRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wasAtBottomRef = useRef(true);
@@ -329,15 +333,15 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
 
     const previousHeight = pendingScrollHeightRef.current;
     if (previousHeight !== null) {
+      // Mensagens antigas entraram no topo: preserva a posição de leitura.
       thread.scrollTop = thread.scrollHeight - previousHeight;
       pendingScrollHeightRef.current = null;
     } else {
       const isInitialLoad = previousMessageCountRef.current === 0 && messageCount > 0;
-      if (isInitialLoad || wasAtBottomRef.current) {
-        thread.scrollTo({
-          top: thread.scrollHeight,
-          behavior: isInitialLoad ? "auto" : "smooth",
-        });
+      const last = state.messages[state.messages.length - 1];
+      const ownNew = messageCount > previousMessageCountRef.current && last?.sender_id === userId;
+      if (isInitialLoad || ownNew || wasAtBottomRef.current) {
+        scrollThreadToEnd(isInitialLoad ? "auto" : "smooth");
       }
     }
     previousMessageCountRef.current = messageCount;
@@ -397,6 +401,32 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
             normalize(message.attachment_name ?? "").includes(query);
         })
       : [];
+
+  function scrollThreadToEnd(behavior: ScrollBehavior = "auto") {
+    const thread = threadRef.current;
+    if (!thread) return;
+    // Fim exato: a última mensagem encosta no compositor, sem espaço extra.
+    thread.scrollTo({ top: Math.max(0, thread.scrollHeight - thread.clientHeight), behavior });
+    wasAtBottomRef.current = true;
+  }
+
+  useEffect(() => {
+    const thread = threadRef.current;
+    if (state.status !== "active" || !thread) return;
+    const keepPinned = () => {
+      if (wasAtBottomRef.current) scrollThreadToEnd("auto");
+    };
+    // Mídia que termina de carregar ou teclado que reduz a área mantém o fim visível.
+    thread.addEventListener("load", keepPinned, true);
+    thread.addEventListener("loadedmetadata", keepPinned, true);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(keepPinned);
+    observer?.observe(thread);
+    return () => {
+      thread.removeEventListener("load", keepPinned, true);
+      thread.removeEventListener("loadedmetadata", keepPinned, true);
+      observer?.disconnect();
+    };
+  }, [state.status]);
 
   function handleThreadScroll() {
     const thread = threadRef.current;
@@ -928,6 +958,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     "--conversation-bubble-own": appearance.ownBubbleColor,
     "--conversation-bubble-other": appearance.otherBubbleColor,
     "--conversation-message-text": appearance.messageTextColor,
+    "--conversation-own-ink": readableInk(appearance.ownBubbleColor, appearance.messageTextColor),
+    "--conversation-other-ink": readableInk(appearance.otherBubbleColor, appearance.messageTextColor),
     "--conversation-message-radius": appearance.bubbleRadius + "px",
   } as CSSProperties;
 
@@ -949,6 +981,9 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       data-message-font={appearance.messageFont}
       aria-label="Conversa do casal"
     >
+      {callKind && state.status === "active" && (
+        <ConversationCallScreen kind={callKind} name={state.otherName} avatarUrl={state.otherAvatarUrl} onClose={() => setCallKind(null)} />
+      )}
       {wallpaperImageStyle && (
         <div className="conversation-wallpaper-image" aria-hidden="true" style={wallpaperImageStyle} />
       )}
@@ -979,6 +1014,26 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         </button>
 
         <div className="conversation-heading-trailing">
+          <button
+            type="button"
+            className="conversation-call-button conversation-floating-action"
+            aria-label="Chamada de voz"
+            title="Chamada de voz"
+            disabled={state.status !== "active"}
+            onClick={() => setCallKind("audio")}
+          >
+            <Phone aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="conversation-call-button conversation-floating-action"
+            aria-label="Chamada de vídeo"
+            title="Chamada de vídeo"
+            disabled={state.status !== "active"}
+            onClick={() => setCallKind("video")}
+          >
+            <Video aria-hidden="true" />
+          </button>
           <button
             type="button"
             className="conversation-options-button conversation-floating-action"
@@ -1066,7 +1121,14 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                         <span>{formatMessageDay(message.created_at)}</span>
                       </div>
                     )}
-                    <article className={ownMessage ? "conversation-message is-own" : "conversation-message"}>
+                    <article
+                      className={
+                        "conversation-message" +
+                        (ownMessage ? " is-own" : "") +
+                        (previousMessage && !showDayDivider && previousMessage.sender_id === message.sender_id ? " is-grouped" : "") +
+                        " is-kind-" + message.message_type
+                      }
+                    >
                       <div className="conversation-message-meta">
                         <span className="conversation-sender">{ownMessage ? "Você" : state.otherName}</span>
                         <time dateTime={message.created_at}>{formatMessageTime(message.created_at)}</time>

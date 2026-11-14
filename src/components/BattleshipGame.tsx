@@ -2,14 +2,14 @@ import { useMemo, useState } from "react";
 import { Anchor, RotateCcw, Shield, Target } from "lucide-react";
 
 type FleetCell = string | null;
-type Fleet = FleetCell[];
-type Shot = "hit" | "miss" | null;
+export type Fleet = FleetCell[];
+export type Shot = "hit" | "miss" | null;
 type Phase = "play" | "pass" | "finished";
-const SIZE=10;
-const shipSpecs=[{id:"porta-avioes",name:"Porta-aviões",length:5},{id:"encouracado",name:"Encouraçado",length:4},{id:"cruzador",name:"Cruzador",length:3},{id:"submarino",name:"Submarino",length:3},{id:"patrulha",name:"Patrulha",length:2}];
-const axis=["A","B","C","D","E","F","G","H","I","J"];
+export const SIZE=10;
+export const shipSpecs=[{id:"porta-avioes",name:"Porta-aviões",length:5},{id:"encouracado",name:"Encouraçado",length:4},{id:"cruzador",name:"Cruzador",length:3},{id:"submarino",name:"Submarino",length:3},{id:"patrulha",name:"Patrulha",length:2}];
+export const axis=["A","B","C","D","E","F","G","H","I","J"];
 
-function createFleet():Fleet {
+export function createFleet():Fleet {
   const board:Fleet=Array(SIZE*SIZE).fill(null);
   for(const ship of shipSpecs){
     let placed=false,tries=0;
@@ -40,7 +40,7 @@ function newGame(){
   };
 }
 type NavalState=ReturnType<typeof newGame>;
-function shipSunk(fleet:Fleet,shots:Shot[],shipId:string){
+export function shipSunk(fleet:Fleet,shots:Shot[],shipId:string){
   return fleet.every((cell,index)=>cell!==shipId||shots[index]==="hit");
 }
 
