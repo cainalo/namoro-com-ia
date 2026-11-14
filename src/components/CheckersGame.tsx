@@ -204,7 +204,9 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
 
   const statusText =
     game.status === "finished"
-      ? `${solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner ?? game.turn)} venceu a partida.`
+      ? game.winner
+        ? `${solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner)} venceu a partida.`
+        : "Empate. A partida terminou sem vencedor."
       : solo && game.turn === "black"
         ? "Morados estão analisando o tabuleiro…"
         : selectedPath.length > 0
