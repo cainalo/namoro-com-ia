@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Search,
   LockKeyhole,
+  Layers,
   MoreVertical,
   Shield,
   Sparkles,
