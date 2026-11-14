@@ -23338,6 +23338,7 @@ body {
    O seletor específico do formulário garante a posição inferior, com a mesma folga
    de 10 px que a barra de navegação usa em relação ao topo da tela. */
 .app-shell.is-conversation-mode section.conversation-screen form.conversation-composer[data-no-swipe] {
+  box-sizing: border-box !important;
   position: fixed !important;
   top: auto !important;
   right: auto !important;
