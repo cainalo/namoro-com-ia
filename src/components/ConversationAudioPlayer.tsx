@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { formatAudioTime } from "@/lib/audio-format";
 import { normalizeWaveform } from "@/lib/audio-waveform";
 
 type ConversationAudioPlayerProps = {
