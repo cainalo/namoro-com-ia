@@ -1,7 +1,13 @@
 /** Cores de texto legíveis sobre a cor escolhida para o balão (WCAG). */
 function parseHex(color: string): [number, number, number] | null {
   const hex = color.trim().replace(/^#/, "");
-  const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+  const full =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : hex;
   if (!/^[0-9a-f]{6}$/i.test(full)) return null;
   return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)) as [number, number, number];
 }

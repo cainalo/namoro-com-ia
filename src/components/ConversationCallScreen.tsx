@@ -30,12 +30,25 @@ export function ConversationCallScreen({
   const KindIcon = kind === "video" ? Video : Phone;
 
   return (
-    <div className={"call-screen is-" + kind} role="dialog" aria-modal="true" aria-label={(kind === "video" ? "Chamada de vídeo" : "Chamada de voz") + " com " + name} data-no-swipe>
+    <div
+      className={"call-screen is-" + kind}
+      role="dialog"
+      aria-modal="true"
+      aria-label={(kind === "video" ? "Chamada de vídeo" : "Chamada de voz") + " com " + name}
+      data-no-swipe
+    >
       <header className="call-screen-top">
-        <button type="button" className="call-screen-back" onClick={onClose} aria-label="Voltar para a conversa">
+        <button
+          type="button"
+          className="call-screen-back"
+          onClick={onClose}
+          aria-label="Voltar para a conversa"
+        >
           <ArrowLeft aria-hidden="true" />
         </button>
-        <span className="call-screen-kind"><KindIcon aria-hidden="true" /> {kind === "video" ? "Chamada de vídeo" : "Chamada de voz"}</span>
+        <span className="call-screen-kind">
+          <KindIcon aria-hidden="true" /> {kind === "video" ? "Chamada de vídeo" : "Chamada de voz"}
+        </span>
         <span className="call-screen-spacer" aria-hidden="true" />
       </header>
 
@@ -46,15 +59,33 @@ export function ConversationCallScreen({
             {avatarUrl ? <img src={avatarUrl} alt="" /> : <span aria-hidden="true">{initial}</span>}
           </span>
           <strong>{name}</strong>
-          <p className="call-screen-status" role="status">Chamadas ainda não estão disponíveis</p>
-          <small>A conexão de voz e vídeo entre os aparelhos será habilitada em uma próxima etapa. Nenhuma chamada foi iniciada.</small>
+          <p className="call-screen-status" role="status">
+            Chamadas ainda não estão disponíveis
+          </p>
+          <small>
+            A conexão de voz e vídeo entre os aparelhos será habilitada em uma próxima etapa.
+            Nenhuma chamada foi iniciada.
+          </small>
         </div>
       </div>
 
       <footer className="call-screen-controls" aria-label="Controles da chamada (indisponíveis)">
-        <button type="button" disabled aria-label="Microfone (indisponível)"><Mic aria-hidden="true" /></button>
-        {kind === "video" && <button type="button" disabled aria-label="Câmera (indisponível)"><VideoOff aria-hidden="true" /></button>}
-        <button type="button" className="is-end" onClick={onClose} aria-label="Sair da tela de chamada"><PhoneOff aria-hidden="true" /></button>
+        <button type="button" disabled aria-label="Microfone (indisponível)">
+          <Mic aria-hidden="true" />
+        </button>
+        {kind === "video" && (
+          <button type="button" disabled aria-label="Câmera (indisponível)">
+            <VideoOff aria-hidden="true" />
+          </button>
+        )}
+        <button
+          type="button"
+          className="is-end"
+          onClick={onClose}
+          aria-label="Sair da tela de chamada"
+        >
+          <PhoneOff aria-hidden="true" />
+        </button>
       </footer>
     </div>
   );

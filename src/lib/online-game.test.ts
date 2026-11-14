@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { canAct, classifyOnlineError, isNewer, outcomeArgs, seatOf } from "./online-game";
 
-const match = { id: "m", player_one_id: "a", player_two_id: "b", mode: "competitive" as const, status: "active" as const, current_turn: "a", version: 3 };
+const match = {
+  id: "m",
+  player_one_id: "a",
+  player_two_id: "b",
+  mode: "competitive" as const,
+  status: "active" as const,
+  current_turn: "a",
+  version: 3,
+};
 
 describe("online game rules", () => {
   it("maps players to seats", () => {
@@ -31,8 +39,14 @@ describe("online game rules", () => {
     expect(classifyOnlineError({ code: "PGRST202", message: "x" })).toBe("database-pending");
   });
   it("encodes outcomes for the server", () => {
-    expect(outcomeArgs({ kind: "win", winnerSeat: 1 })).toEqual({ p_outcome: "win", p_winner_seat: 1 });
-    expect(outcomeArgs({ kind: "complete" })).toEqual({ p_outcome: "complete", p_winner_seat: null });
+    expect(outcomeArgs({ kind: "win", winnerSeat: 1 })).toEqual({
+      p_outcome: "win",
+      p_winner_seat: 1,
+    });
+    expect(outcomeArgs({ kind: "complete" })).toEqual({
+      p_outcome: "complete",
+      p_winner_seat: null,
+    });
     expect(outcomeArgs(null)).toEqual({ p_outcome: null, p_winner_seat: null });
   });
 });
