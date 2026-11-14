@@ -25192,3 +25192,46 @@ body {
   min-height: 54px;
   max-width: 320px;
 }
+
+/* MORADOS — correção da faixa superior que encobria o histórico.
+   O cabeçalho ocupa sua própria faixa; a área rolável começa abaixo dele,
+   em vez de passar por trás de uma barra transparente. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-heading {
+  position: absolute !important;
+  top: calc(env(safe-area-inset-top) + 16px) !important;
+  right: 0 !important;
+  left: 0 !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding-top: 0 !important;
+  transform: none !important;
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-heading-leading > .conversation-floating-action,
+.app-shell.is-conversation-mode section.conversation-screen .conversation-heading-trailing > .conversation-floating-action {
+  position: relative !important;
+  top: 0 !important;
+  transform: none !important;
+}
+
+/* O histórico deixa de ocupar a faixa do cabeçalho. Assim, ao rolar até
+   a primeira mensagem, nenhum trecho passa por baixo dos botões superiores. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread {
+  position: absolute !important;
+  top: calc(env(safe-area-inset-top) + 80px) !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 14px clamp(12px, 3vw, 28px) 6px !important;
+  scroll-padding-top: 14px !important;
+}
+
+/* Afasta o campo de digitação da borda inferior, mantendo o cálculo
+   dinâmico do espaço que ele ocupa no fim do histórico. */
+.app-shell.is-conversation-mode section.conversation-screen form.conversation-composer[data-no-swipe] {
+  bottom: calc(env(safe-area-inset-bottom) + 18px) !important;
+}
