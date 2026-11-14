@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Handshake, RotateCcw, Swords } from "lucide-react";
 
 type Suit="♣"|"♥"|"♠"|"♦";
@@ -67,13 +67,13 @@ export function endHand(state:TrucoState,winner:Player,reason:string):TrucoState
 export function raiseLabel(points:number){return points===3?"Truco":points===6?"Seis":points===9?"Nove":"Doze";}
 export function nextRaise(points:number){return points===1?3:points===3?6:points===6?9:points===9?12:null;}
 
-export function TrucoGame(){
+export function TrucoGame({ solo = false }: { solo?: boolean }){
   const [game,setGame]=useState<TrucoState>(()=>createHand([0,0],0));
   const [error,setError]=useState("");
   const canRaise=game.phase==="play"&&nextRaise(game.handPoints)!==null;
   const currentHand=game.hands[game.turn];
-  const winnerText=game.handWinner===null?"":`Pessoa ${game.handWinner+1}`;
-  const status=game.phase==="match-result"?`Pessoa ${(game.matchWinner??0)+1} venceu o jogo!`:game.phase==="hand-result"?`${winnerText} ganhou a mão.`:game.phase==="challenge"?"Uma chamada foi feita.":`Vez da Pessoa ${game.turn+1}.`;
+  const winnerText=game.handWinner===null?"":solo?(game.handWinner===0?"Você":"Morados"):`Pessoa ${game.handWinner+1}`;
+  const status=game.phase==="match-result"?(solo?(game.matchWinner===0?"Você venceu o jogo!":"Morados venceram o jogo!"):`Pessoa ${(game.matchWinner??0)+1} venceu o jogo!`):game.phase==="hand-result"?`${winnerText} ganhou a mão.`:game.phase==="challenge"?"Uma chamada foi feita.":solo&&game.turn===1?"Morados estão pensando…":`Vez de ${solo?(game.turn===0?"você":"Morados"):"Pessoa "+(game.turn+1)}.`;
 
   function playCard(cardId:string){
     if(game.phase!=="play")return;
@@ -83,7 +83,7 @@ export function TrucoGame(){
     hands[game.turn]=hands[game.turn].filter(item=>item.id!==cardId);
     const table=[...game.table,{player:game.turn,card}];
     if(table.length===1){
-      setGame({...game,hands,table,turn:other(game.turn),phase:"handoff"});
+      setGame({...game,hands,table,turn:other(game.turn),phase:solo?"play":"handoff"});
       return;
     }
     const resultPosition=trickWinner(table[0].card,table[1].card,game.manilha);
@@ -126,18 +126,53 @@ export function TrucoGame(){
   }
   function restart(){setGame(createHand([0,0],0));setError("");}
 
+  useEffect(() => {
+    if (!solo) return;
+    if (game.phase === "challenge" && game.challenger === 0 && game.pendingRaise !== null) {
+      const timer = window.setTimeout(() => {
+        const strengthTotal = game.hands[1].reduce((sum, card) => sum + strength(card, game.manilha), 0);
+        const hasManilha = game.hands[1].some((card) => card.rank === game.manilha);
+        const accept = hasManilha || strengthTotal >= 24 || Math.random() > 0.45;
+        answerChallenge(accept);
+      }, 720);
+      return () => window.clearTimeout(timer);
+    }
+    if (game.phase !== "play" || game.turn !== 1) return;
+    const timer = window.setTimeout(() => {
+      const hand = game.hands[1];
+      if (!hand.length) return;
+      const canCall = nextRaise(game.handPoints) !== null;
+      const power = hand.reduce((sum, card) => sum + strength(card, game.manilha), 0);
+      if (game.table.length === 0 && canCall && power >= 27 && Math.random() < 0.22) {
+        callRaise();
+        return;
+      }
+      let selectedCard: Card;
+      if (game.table.length === 1) {
+        const lead = game.table[0].card;
+        const winning = hand.filter((card) => strength(card, game.manilha) > strength(lead, game.manilha))
+          .sort((a, b) => strength(a, game.manilha) - strength(b, game.manilha));
+        selectedCard = winning[0] ?? hand.slice().sort((a, b) => strength(a, game.manilha) - strength(b, game.manilha))[0];
+      } else {
+        selectedCard = hand.slice().sort((a, b) => strength(a, game.manilha) - strength(b, game.manilha))[0];
+      }
+      playCard(selectedCard.id);
+    }, 650);
+    return () => window.clearTimeout(timer);
+  }, [solo, game]);
+
   return (
-    <section className="truco-game">
+    <section className={"truco-game" + (solo ? " is-solo" : "")}>
       <div className="truco-scoreboard">
-        <div className={game.turn===0?"is-active":""}><span className="truco-player-dot is-one"/>Pessoa 1<strong>{game.score[0]}</strong></div>
+        <div className={game.turn===0?"is-active":""}><span className="truco-player-dot is-one"/>{solo ? "Você" : "Pessoa 1"}<strong>{game.score[0]}</strong></div>
         <span className="truco-score-separator">×</span>
-        <div className={game.turn===1?"is-active":""}><span className="truco-player-dot is-two"/>Pessoa 2<strong>{game.score[1]}</strong></div>
+        <div className={game.turn===1?"is-active":""}><span className="truco-player-dot is-two"/>{solo ? "Morados" : "Pessoa 2"}<strong>{game.score[1]}</strong></div>
       </div>
       <div className="truco-round-meta"><span>Mão vale <strong>{game.handPoints}</strong></span><span>Rodada {game.tricks.length+1}/3</span><span>Primeiro: Pessoa {game.handStarter+1}</span></div>
       <div className="truco-table">
         <div className="truco-vira"><small>VIRA · MANILHA</small><div className="truco-vira-cards"><TrucoCard card={game.vira}/><span className="truco-manilha">Manilha: {game.manilha}</span></div></div>
         <div className="truco-played-cards">
-          {game.table.length===0?<p>As cartas jogadas aparecerão aqui.</p>:game.table.map(item=><div key={item.card.id}><small>Pessoa {item.player+1}</small><TrucoCard card={item.card}/></div>)}
+          {game.table.length===0?<p>As cartas jogadas aparecerão aqui.</p>:game.table.map(item=><div key={item.card.id}><small>{solo ? (item.player===0?"Você":"Morados") : `Pessoa ${item.player+1}`}</small><TrucoCard card={item.card}/></div>)}
           {game.phase==="trick-result"&&<strong>{game.lastTrick==="tie"?"Rodada empatada.":`Rodada da Pessoa ${(game.lastTrick??0)+1}.`}</strong>}
         </div>
       </div>
@@ -153,33 +188,33 @@ export function TrucoGame(){
       {game.phase==="challenge"&&(
         <div className="truco-overlay is-challenge">
           <span><Swords aria-hidden="true"/></span><p className="date-kicker">Desafio aceito?</p>
-          <h3>Pessoa {other(game.challenger??0)+1}, pediram {raiseLabel(game.pendingRaise??3).toLowerCase()}!</h3>
-          <p>A mão passa a valer {game.pendingRaise} pontos se você aceitar. Se correr, a outra pessoa leva os {game.handPoints} ponto(s) atuais.</p>
-          <div className="truco-challenge-actions">
+          <h3>{solo ? (game.challenger===1?"Você recebeu um pedido de ":"Morados receberam um pedido de ") : `Pessoa ${other(game.challenger??0)+1}, pediram `}{raiseLabel(game.pendingRaise??3).toLowerCase()}!</h3>
+          <p>A mão passa a valer {game.pendingRaise} pontos se você aceitar. Se correr, {solo?(game.challenger===1?"você":"Morados"):"a outra pessoa"} leva os {game.handPoints} ponto(s) atuais.</p>
+          {!(solo && game.challenger===0) ? <div className="truco-challenge-actions">
             <button type="button" className="primary-action" onClick={()=>answerChallenge(true)}>Aceitar · {game.pendingRaise}</button>
             <button type="button" className="secondary-action" onClick={()=>answerChallenge(false)}>Correr · {game.handPoints} ponto(s)</button>
-          </div>
+          </div> : <p className="truco-ai-thinking">Morados estão avaliando a chamada…</p>}
         </div>
       )}
       {game.phase==="play"&&(
         <>
-          <div className="truco-active-turn"><strong>Pessoa {game.turn+1}, escolha uma carta.</strong><small>Seu adversário não vê sua mão.</small></div>
+          {(!solo || game.turn===0) ? <><div className="truco-active-turn"><strong>{solo ? "Sua vez: escolha uma carta." : `Pessoa ${game.turn+1}, escolha uma carta.`}</strong><small>{solo ? "Morados não veem suas cartas." : "Seu adversário não vê sua mão."}</small></div>
           <div className="truco-hand">
             {currentHand.map(card=><button type="button" key={card.id} className="truco-hand-card" onClick={()=>playCard(card.id)} aria-label={`Jogar ${card.rank} de ${labels[card.suit]}`}><TrucoCard card={card}/></button>)}
           </div>
           <div className="truco-call-actions">
             <button type="button" className="truco-call-button" onClick={callRaise} disabled={!canRaise}><Swords aria-hidden="true"/> Pedir {nextRaise(game.handPoints)===3?"Truco":nextRaise(game.handPoints)===6?"Seis":nextRaise(game.handPoints)===9?"Nove":"Doze"}</button>
             <small>Manilhas: {game.manilha} · Paus, copas, espadas e ouros (nessa ordem).</small>
-          </div>
+          </div></> : <div className="truco-ai-thinking">Morados estão escolhendo uma carta em segredo…</div>}
         </>
       )}
       {game.phase==="trick-result"&&(
-        <div className="truco-result-panel"><strong>{game.lastTrick==="tie"?"Empate nesta rodada.":`Pessoa ${(game.lastTrick??0)+1} ganhou a rodada.`}</strong><p>A próxima rodada começa por quem venceu; se houve empate, a mão segue as regras de desempate.</p><button type="button" className="primary-action" onClick={continueTrick}>Próxima rodada</button></div>
+        <div className="truco-result-panel"><strong>{game.lastTrick==="tie"?"Empate nesta rodada.":solo?(game.lastTrick===0?"Você ganhou a rodada.":"Morados ganharam a rodada."):`Pessoa ${(game.lastTrick??0)+1} ganhou a rodada.`}</strong><p>A próxima rodada começa por quem venceu; se houve empate, a mão segue as regras de desempate.</p><button type="button" className="primary-action" onClick={continueTrick}>Próxima rodada</button></div>
       )}
       {(game.phase==="hand-result"||game.phase==="match-result")&&(
-        <div className="truco-result-panel is-hand-end"><strong>{game.phase==="match-result"?`Pessoa ${(game.matchWinner??0)+1} venceu o jogo!`:`Pessoa ${(game.handWinner??0)+1} venceu a mão.`}</strong><p>{game.handReason}</p><div className="truco-final-score"><span>Pessoa 1 <strong>{game.score[0]}</strong></span><span>Pessoa 2 <strong>{game.score[1]}</strong></span></div>{game.phase==="hand-result"?<button type="button" className="primary-action" onClick={nextHand}>Nova mão</button>:<button type="button" className="primary-action" onClick={restart}>Nova partida</button>}</div>
+        <div className="truco-result-panel is-hand-end"><strong>{game.phase==="match-result"?solo?(game.matchWinner===0?"Você venceu o jogo!":"Morados venceram o jogo!"):`Pessoa ${(game.matchWinner??0)+1} venceu o jogo!`:`Pessoa ${(game.handWinner??0)+1} venceu a mão.`}</strong><p>{game.handReason}</p><div className="truco-final-score"><span>{solo ? "Você" : "Pessoa 1"} <strong>{game.score[0]}</strong></span><span>{solo ? "Morados" : "Pessoa 2"} <strong>{game.score[1]}</strong></span></div>{game.phase==="hand-result"?<button type="button" className="primary-action" onClick={nextHand}>Nova mão</button>:<button type="button" className="primary-action" onClick={restart}>Nova partida</button>}</div>
       )}
-      <footer className="truco-footer"><span>Truco Paulista · primeiro a 12 pontos</span><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
+      <footer className="truco-footer"><span>Truco Paulista · {solo ? "Contra Morados" : "primeiro a 12 pontos"}</span><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
       {error&&<p className="couple-game-error">{error}</p>}
     </section>
   );
