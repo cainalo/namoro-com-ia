@@ -715,8 +715,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     }
   }
 
-  async function sendFile(file: File, messageTypeOverride?: CoupleMessageType, extraMetadata?: Record<string, unknown>) {
-    if (state.status !== "active" || busy) return;
+  async function sendFile(file: File, messageTypeOverride?: CoupleMessageType, extraMetadata?: Record<string, unknown>): Promise<boolean> {
+    if (state.status !== "active" || busy) return false;
     setBusy(true);
     setError(null);
     try {
@@ -745,9 +745,11 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       setGiftMediaFile(null);
       setRefreshKey((key) => key + 1);
       if (Capacitor.isNativePlatform()) void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+      return true;
     } catch (cause) {
       console.error("Falha ao enviar arquivo.", cause);
       setError(cause instanceof Error ? cause.message : "Não foi possível enviar este arquivo.");
+      return false;
     } finally {
       setBusy(false);
     }
