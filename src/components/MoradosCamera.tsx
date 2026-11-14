@@ -25,8 +25,10 @@ function drawFrame(canvas: HTMLCanvasElement, video: HTMLVideoElement, zoom: num
   const width = video.videoWidth;
   const height = video.videoHeight;
   if (!width || !height) return false;
-  canvas.width = width;
-  canvas.height = height;
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
   const ctx = canvas.getContext("2d");
   if (!ctx) return false;
 
@@ -249,7 +251,17 @@ export function MoradosCamera({ open, initialMode = "photo", onClose, onCaptured
           <button type="button" className="morados-camera-icon-button" onClick={() => setFacing((value) => value === "environment" ? "user" : "environment")} disabled={recording || finalizing || opening} aria-label="Virar câmera"><RefreshCw aria-hidden="true" /></button>
         </header>
         <div className="morados-camera-viewfinder">
-          <video ref={videoRef} className={"morados-camera-preview" + (facing === "user" ? " is-selfie" : "")} autoPlay muted playsInline />
+          <video
+            ref={videoRef}
+            className={"morados-camera-preview" + (facing === "user" ? " is-selfie" : "")}
+            style={{
+              filter: selectedEffect.filter,
+              transform: (facing === "user" ? "scaleX(-1) " : "") + "scale(" + zoom + ")",
+            }}
+            autoPlay
+            muted
+            playsInline
+          />
           {(!ready || opening) && <div className="morados-camera-loading"><LoaderCircle aria-hidden="true" /><span>{opening ? "Abrindo câmera…" : "Preparando imagem…"}</span></div>}
           {recording && <div className="morados-camera-recording-indicator"><span /> REC {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}</div>}
         </div>

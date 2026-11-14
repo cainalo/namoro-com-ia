@@ -59,6 +59,7 @@ import {
   type CouplePostBlockType,
 } from "@/lib/couple-feed";
 import { getMoradosMusicTrack, MORADOS_MUSIC_TRACKS, renderMoradosMusic } from "@/lib/morados-music-library";
+import { openMoradosAppSettings } from "@/lib/device-settings";
 import { MoradosCameraLauncher as InAppMediaCapture } from "@/components/MoradosCamera";
 
 type FeedBlockView = CouplePostBlock & { media_url: string | null };
