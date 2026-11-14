@@ -303,7 +303,7 @@ export function MoradosCameraLauncher({ kind, onCaptured }: { kind: MoradosCamer
         {kind === "photo" ? <Camera aria-hidden="true" /> : <Video aria-hidden="true" />}
         {kind === "photo" ? "Tirar foto no Morados" : "Gravar vídeo no Morados"}
       </button>
-      <MoradosCamera open={open} initialMode={kind} onClose={() => setOpen(false)} onCaptured={onCaptured} />
+      <MoradosCamera key={open ? "open" : "closed"} open={open} initialMode={kind} onClose={() => setOpen(false)} onCaptured={onCaptured} />
     </>
   );
 }
