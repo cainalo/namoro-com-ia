@@ -217,7 +217,7 @@ function GamePage({
                   <span className="game-mode-arrow">Conectar partida <ArrowLeft aria-hidden="true" /></span>
                 </button>
               </div>
-              <p className="game-mode-footnote">Todas as partidas começam do zero ao escolher outro modo. O progresso de uma partida online continua salvo para os dois.</p>
+              <p className="game-mode-footnote">Ao trocar de modo, uma nova partida começa; casos e desafios com progresso salvo podem manter suas pistas no aparelho.</p>
             </section>
           ) : (
             <>
