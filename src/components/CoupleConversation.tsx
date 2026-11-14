@@ -1177,10 +1177,19 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     setError(null);
     try {
       const result = await updateCoupleMessage({ messageId, senderId: userId, body });
-      if (result.error || !result.data) throw result.error ?? new Error("message_not_updated");
-      const updated = normalizedMessage(result.data);
+      if (result.error) throw result.error;
+
+      // O PostgREST pode confirmar o UPDATE sem devolver a linha (por políticas
+      // de retorno/SELECT). Isso não significa que a edição falhou: nesse caso
+      // atualizamos o estado local com o texto que acabou de ser salvo.
+      const updated = result.data ? normalizedMessage(result.data) : null;
       setState((current) => current.status === "active"
-        ? { ...current, messages: current.messages.map((message) => message.id === messageId ? updated : message) }
+        ? {
+            ...current,
+            messages: current.messages.map((message) =>
+              message.id === messageId ? (updated ?? { ...message, body }) : message,
+            ),
+          }
         : current);
       setEditingMessageId(null);
       setEditingDraft("");
