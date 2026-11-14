@@ -14,7 +14,7 @@ import {
   LogOut,
   type LucideIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Component, Fragment, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
@@ -40,6 +40,59 @@ type NavigationItem = {
   label: string;
   icon: LucideIcon;
 };
+
+type ConversationGuardProps = {
+  children: ReactNode;
+  onBack: () => void;
+};
+
+type ConversationGuardState = {
+  error: Error | null;
+  retryKey: number;
+};
+
+// Um erro isolado no histórico ou em um componente da conversa não deve
+// derrubar o aplicativo inteiro nem a navegação principal.
+class ConversationGuard extends Component<ConversationGuardProps, ConversationGuardState> {
+  state: ConversationGuardState = { error: null, retryKey: 0 };
+
+  static getDerivedStateFromError(error: unknown): Partial<ConversationGuardState> {
+    return {
+      error: error instanceof Error ? error : new Error(String(error)),
+    };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Falha isolada na tela de conversa do Morados.", error, info.componentStack);
+  }
+
+  retry = () => {
+    this.setState((current) => ({ error: null, retryKey: current.retryKey + 1 }));
+  };
+
+  render() {
+    if (this.state.error) {
+      return (
+        <section className="conversation-state" role="alert" aria-live="assertive">
+          <h2>Não foi possível abrir as mensagens.</h2>
+          <p>A conversa encontrou um erro ao montar o histórico. O restante do Morados continua disponível.</p>
+          <details>
+            <summary>Detalhes do erro</summary>
+            <pre style={{ maxWidth: "min(88vw, 520px)", maxHeight: 180, overflow: "auto", whiteSpace: "pre-wrap", textAlign: "left", fontSize: 11 }}>
+              {this.state.error.stack || this.state.error.message}
+            </pre>
+          </details>
+          <div className="conversation-state-actions">
+            <button type="button" className="inline-action" onClick={this.retry}>Tentar novamente</button>
+            <button type="button" className="inline-action" onClick={this.props.onBack}>Voltar ao Feed</button>
+          </div>
+        </section>
+      );
+    }
+    return <Fragment key={this.state.retryKey}>{this.props.children}</Fragment>;
+  }
+}
+
 
 const navigation: NavigationItem[] = [
   { id: "home", label: "Feed", icon: Home },
@@ -240,7 +293,7 @@ function Index() {
 
           <main className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
             {activeSection === "messages" ? (
-              <CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} />
+              <ConversationGuard onBack={goBack}><CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} /></ConversationGuard>
             ) : (
               <div className="page-frame">
               {activeSection === "home" || activeSection === "create-post" ? (

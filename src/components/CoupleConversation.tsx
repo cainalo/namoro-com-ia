@@ -104,14 +104,30 @@ function isCoupleMessage(value: unknown): value is CoupleMessage {
   );
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const SUPPORTED_MESSAGE_TYPES: CoupleMessageType[] = ["text", "image", "video", "audio", "file"];
+
 function normalizedMessage(value: CoupleMessage): CoupleMessage {
+  const source = value as unknown as Record<string, unknown>;
+  const messageType = typeof source.message_type === "string" &&
+    SUPPORTED_MESSAGE_TYPES.includes(source.message_type as CoupleMessageType)
+    ? source.message_type as CoupleMessageType
+    : "text";
+
   return {
-    ...value,
-    message_type: value.message_type ?? "text",
-    attachment_path: value.attachment_path ?? null,
-    attachment_name: value.attachment_name ?? null,
-    attachment_mime: value.attachment_mime ?? null,
-    metadata: value.metadata ?? {},
+    id: typeof source.id === "string" ? source.id : "",
+    couple_id: typeof source.couple_id === "string" ? source.couple_id : "",
+    sender_id: typeof source.sender_id === "string" ? source.sender_id : "",
+    body: typeof source.body === "string" ? source.body : "",
+    created_at: typeof source.created_at === "string" ? source.created_at : new Date(0).toISOString(),
+    message_type: messageType,
+    attachment_path: typeof source.attachment_path === "string" ? source.attachment_path : null,
+    attachment_name: typeof source.attachment_name === "string" ? source.attachment_name : null,
+    attachment_mime: typeof source.attachment_mime === "string" ? source.attachment_mime : null,
+    metadata: isPlainRecord(source.metadata) ? source.metadata : {},
   };
 }
 
@@ -169,7 +185,8 @@ function compressAudioWaveform(samples: number[], barCount = 56): number[] {
 }
 
 function readMessageAudioWaveform(message: CoupleMessage): number[] | undefined {
-  const value = message.metadata?.waveform;
+  const metadata = isPlainRecord(message.metadata) ? message.metadata : {};
+  const value = metadata.waveform;
   if (!Array.isArray(value)) return undefined;
   const waveform = value
     .filter((item): item is number => typeof item === "number" && Number.isFinite(item))
@@ -179,7 +196,8 @@ function readMessageAudioWaveform(message: CoupleMessage): number[] | undefined 
 }
 
 function readMessageAudioDuration(message: CoupleMessage): number | undefined {
-  const value = message.metadata?.durationSeconds;
+  const metadata = isPlainRecord(message.metadata) ? message.metadata : {};
+  const value = metadata.durationSeconds;
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
@@ -535,8 +553,9 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
               .normalize("NFD")
               .replace(/[\u0300-\u036f]/g, "");
           const query = normalize(messageSearch.trim());
-          return !query || normalize(message.body).includes(query) ||
-            normalize(message.attachment_name ?? "").includes(query);
+          const body = typeof message.body === "string" ? message.body : "";
+          const attachmentName = typeof message.attachment_name === "string" ? message.attachment_name : "";
+          return !query || normalize(body).includes(query) || normalize(attachmentName).includes(query);
         })
       : [];
 
@@ -544,7 +563,13 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     const thread = threadRef.current;
     if (!thread) return;
     // Fim exato: a última mensagem encosta no compositor, sem espaço extra.
-    thread.scrollTo({ top: Math.max(0, thread.scrollHeight - thread.clientHeight), behavior });
+    const top = Math.max(0, thread.scrollHeight - thread.clientHeight);
+    try {
+      thread.scrollTo({ top, behavior });
+    } catch {
+      // WebView legado: manter a conversa funcional mesmo sem Element.scrollTo.
+      thread.scrollTop = top;
+    }
     wasAtBottomRef.current = true;
   }
 
@@ -696,7 +721,11 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         const result = await listCoupleMessages(couple.id);
         if (result.error) throw result.error;
         if (!active) return;
-        const messages = (result.data ?? []).slice().reverse().map(normalizedMessage);
+        const messages = (Array.isArray(result.data) ? result.data : [])
+          .filter(isCoupleMessage)
+          .slice()
+          .reverse()
+          .map(normalizedMessage);
 
         // A conversa não depende do Storage. As URLs são assinadas em segundo
         // plano pelo efeito de mídias depois que a lista já estiver montada.
