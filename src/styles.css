@@ -24268,3 +24268,542 @@ body {
   left: 12px !important; width: auto !important; max-height: min(44dvh,360px) !important;
   overflow-y: auto !important; transform: none !important; margin: 0 !important;
 }
+
+
+/* MORADOS — refinamento de mensagens, áudio, chamadas e personalização. */
+
+/* Ações contextuais aparecem somente após pressionar a mensagem. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-copy-action {
+  display: none !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread {
+  gap: 2px !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message {
+  margin: 4px 0 0 !important;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-grouped {
+  margin-top: 1px !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text {
+  border: 0 !important;
+  box-shadow: 0 2px 7px rgb(22 28 23 / 9%) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-content.is-text {
+  border: 0 !important;
+}
+.conversation-message-actions {
+  position: absolute;
+  z-index: 60;
+  bottom: calc(100% + 8px);
+  left: 0;
+  display: flex;
+  max-width: min(94vw, 430px);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 65%, transparent);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--color-card) 96%, transparent);
+  padding: 6px;
+  box-shadow: 0 12px 34px rgb(19 31 25 / 20%);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+.conversation-message-actions.is-own {
+  right: 0;
+  left: auto;
+}
+.conversation-message-actions button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  padding: 0 9px;
+  color: var(--color-foreground);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+  box-shadow: none;
+}
+.conversation-message-actions button:active {
+  background: var(--color-secondary);
+}
+.conversation-message-actions button svg {
+  width: 14px;
+  height: 14px;
+}
+.conversation-message-actions button.is-danger {
+  color: var(--color-destructive);
+}
+.conversation-message-favorite {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  z-index: 8;
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-card);
+  color: var(--color-accent);
+  box-shadow: 0 2px 8px rgb(16 30 24 / 18%);
+}
+.conversation-message-favorite svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}
+.conversation-inline-edit {
+  display: grid;
+  min-width: min(68vw, 340px);
+  gap: 8px;
+}
+.conversation-inline-edit textarea {
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  border: 1px solid color-mix(in srgb, var(--conversation-own-ink, var(--color-primary)) 18%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--color-card) 24%, transparent);
+  padding: 9px 11px;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+}
+.conversation-inline-edit > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.conversation-inline-edit button {
+  display: inline-flex;
+  min-height: 31px;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 9px;
+  background: color-mix(in srgb, currentColor 10%, transparent);
+  padding: 0 10px;
+  color: inherit;
+  font-size: 11px;
+  font-weight: 650;
+}
+.conversation-inline-edit button:disabled {
+  opacity: .5;
+}
+
+/* O áudio é um balão de mensagem: recebe a mesma cor, raio e sombra do texto. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-player {
+  display: grid !important;
+  width: min(100%, 360px);
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 0;
+  box-sizing: border-box;
+  padding: 10px 13px !important;
+  border: 0 !important;
+  border-radius: var(--conversation-message-radius, 20px) !important;
+  background: var(--conversation-bubble-other, var(--color-card)) !important;
+  color: var(--conversation-other-ink, var(--color-foreground)) !important;
+  box-shadow: 0 2px 7px rgb(22 28 23 / 9%) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-audio-player {
+  border: 0 !important;
+  border-bottom-left-radius: var(--conversation-message-radius, 20px) !important;
+  border-bottom-right-radius: 6px !important;
+  background: var(--conversation-bubble-own, var(--color-primary)) !important;
+  color: var(--conversation-own-ink, var(--color-primary-foreground)) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-play {
+  grid-column: 1;
+  grid-row: 1;
+  background: color-mix(in srgb, currentColor 13%, transparent) !important;
+  color: inherit !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-main {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  gap: 4px;
+  color: inherit;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  line-height: 1;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-message-time {
+  position: static !important;
+  display: inline-flex;
+  min-width: 0;
+  grid-column: auto;
+  justify-self: start;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-size: 9px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  opacity: .66;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-duration {
+  margin-left: auto;
+  color: inherit !important;
+  font-size: 9px;
+  font-weight: 500;
+  opacity: .72;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-wave {
+  height: 27px;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-wave span {
+  background: color-mix(in srgb, currentColor 27%, transparent) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-wave span.is-played {
+  background: currentColor !important;
+  opacity: .9;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-progress {
+  background: color-mix(in srgb, currentColor 19%, transparent);
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-progress-fill {
+  background: currentColor;
+  opacity: .72;
+}
+
+/* Cabeçalho da conversa avança até o limite superior da tela imersiva. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading {
+  top: 0 !important;
+  padding-top: 0 !important;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading > .conversation-floating-action,
+.app-shell.is-conversation-mode .conversation-heading-trailing > .conversation-floating-action {
+  top: -4px !important;
+}
+
+/* Fundo fotográfico preenche a tela toda, sem filete exposto na lateral. */
+.app-shell.is-conversation-mode .conversation-screen {
+  overflow: hidden !important;
+}
+.app-shell.is-conversation-mode .conversation-screen .conversation-wallpaper-image {
+  inset: -2px !important;
+  width: calc(100% + 4px) !important;
+  height: calc(100% + 4px) !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+
+/* Personalização: chrome sobreposto e transparente. A área de conteúdo continua
+   rolando por trás dele; quando o cabeçalho some não sobra uma faixa vazia. */
+.app-shell.is-conversation-mode .secondary-page-chrome {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  z-index: 170 !important;
+  display: block !important;
+  width: 100% !important;
+  height: 66px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}
+.app-shell.is-conversation-mode .secondary-page-chrome .app-topbar {
+  display: block !important;
+  position: relative !important;
+  width: 100% !important;
+  height: 66px !important;
+  min-height: 66px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+}
+.app-shell.is-conversation-mode .secondary-page-chrome .secondary-page-topbar-inner {
+  height: 66px !important;
+  min-height: 66px !important;
+  border: 0 !important;
+  background: transparent !important;
+  padding-inline: 12px !important;
+}
+.app-shell.is-conversation-mode .secondary-page-chrome[data-hidden="true"] {
+  transform: translateY(calc(-100% - 2px)) !important;
+  pointer-events: none !important;
+}
+.app-shell.is-conversation-mode .secondary-page-floating-wordmark {
+  z-index: 190 !important;
+  top: calc(env(safe-area-inset-top) + 8px) !important;
+}
+.app-shell.is-conversation-mode .app-main-conversation .conversation-settings-page {
+  width: 100% !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  flex: 1 1 auto !important;
+  padding-top: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: var(--color-background) !important;
+}
+.app-shell.is-conversation-mode .conversation-settings-body {
+  min-height: 100%;
+  padding-top: 66px;
+  background: var(--color-background);
+}
+@media (max-width: 680px) {
+  .app-shell.is-conversation-mode .secondary-page-chrome,
+  .app-shell.is-conversation-mode .secondary-page-chrome .app-topbar,
+  .app-shell.is-conversation-mode .secondary-page-chrome .secondary-page-topbar-inner {
+    height: 58px !important;
+    min-height: 58px !important;
+  }
+  .app-shell.is-conversation-mode .conversation-settings-body {
+    padding-top: 58px;
+  }
+}
+
+/* Prévia em tamanho realista: foto, mensagens recebidas/enviadas e áudio. */
+.conversation-settings-live-preview {
+  position: relative;
+  display: flex;
+  min-height: 230px;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 10px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--color-border) 55%, transparent);
+  border-radius: 19px;
+  background: var(--color-secondary);
+  padding: 17px 13px 14px;
+  box-shadow: 0 12px 28px -23px rgb(18 34 26 / 44%);
+}
+.conversation-settings-live-preview-wallpaper {
+  position: absolute;
+  z-index: -1;
+  inset: -2px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.conversation-settings-live-preview-label {
+  position: absolute;
+  top: 11px;
+  left: 12px;
+  border-radius: 999px;
+  background: rgb(20 28 22 / 58%);
+  padding: 4px 7px;
+  color: white;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .09em;
+}
+.conversation-settings-live-preview-bubble {
+  display: flex;
+  width: fit-content;
+  max-width: 82%;
+  flex-direction: column;
+  gap: 4px;
+  padding: 9px 12px;
+  box-shadow: 0 2px 8px rgb(18 28 23 / 14%);
+}
+.conversation-settings-live-preview-bubble.is-own,
+.conversation-settings-live-preview-audio {
+  align-self: flex-end;
+}
+.conversation-settings-live-preview-bubble.is-other {
+  align-self: flex-start;
+}
+.conversation-settings-live-preview-bubble small,
+.conversation-settings-live-preview-audio small {
+  font-size: 8px;
+  opacity: .68;
+}
+.conversation-settings-live-preview-bubble p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.conversation-settings-live-preview-audio {
+  display: flex;
+  width: 70%;
+  max-width: 250px;
+  min-height: 39px;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px;
+  box-shadow: 0 2px 8px rgb(18 28 23 / 14%);
+}
+.conversation-settings-live-preview-audio > span {
+  font-size: 13px;
+}
+.conversation-settings-live-preview-audio > div {
+  display: flex;
+  height: 20px;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+.conversation-settings-live-preview-audio i {
+  width: 2px;
+  height: 35%;
+  border-radius: 99px;
+  background: currentColor;
+  opacity: .72;
+}
+.conversation-settings-live-preview-audio i:nth-child(3n) { height: 88%; }
+.conversation-settings-live-preview-audio i:nth-child(3n + 1) { height: 58%; }
+
+/* Chamada ocupa o aplicativo inteiro e nunca fica sob o compositor da conversa. */
+.app-shell.is-conversation-mode .call-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 30000 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  overflow: hidden !important;
+  padding: max(8px, env(safe-area-inset-top)) 0 max(8px, env(safe-area-inset-bottom)) !important;
+  background:
+    radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--color-primary) 35%, #132b2a), #102422 72%);
+  color: #fffdf7;
+}
+.call-screen-top {
+  height: 58px;
+  min-height: 58px;
+  padding-inline: 15px;
+}
+.call-screen-secure {
+  color: rgb(255 253 247 / 58%);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.call-screen-stage {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 24px;
+}
+.call-screen-local-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  background: #142a28;
+  transition: opacity 180ms ease;
+}
+.call-screen-local-video.is-visible {
+  opacity: .38;
+}
+.call-screen-identity {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  max-width: 320px;
+  gap: 12px;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 45%);
+}
+.call-screen-avatar {
+  width: 104px;
+  height: 104px;
+  border: 2px solid rgb(255 255 255 / 25%);
+  background: color-mix(in srgb, var(--color-primary) 85%, #132d2a);
+}
+.call-screen-identity strong {
+  color: #fffdf7;
+}
+.call-screen-status {
+  color: #fffdf7;
+}
+.call-screen-identity small {
+  color: rgb(255 253 247 / 78%);
+}
+.call-screen-notice {
+  width: min(92%, 520px);
+  align-self: center;
+  padding: 8px 14px;
+  color: rgb(255 253 247 / 66%);
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+}
+.call-screen-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 12px max(18px, env(safe-area-inset-bottom));
+}
+.call-screen-controls button {
+  display: flex;
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  background: rgb(255 255 255 / 11%);
+  color: #fffdf7;
+}
+.call-screen-controls button.is-muted {
+  background: rgb(255 255 255 / 20%);
+}
+.call-screen-controls button.is-active {
+  background: rgb(255 255 255 / 20%);
+}
+.call-screen-controls button.is-end {
+  background: #b84043;
+  color: white;
+}
+.call-screen-controls button small {
+  font-size: 8px;
+  line-height: 1;
+}
+@media (max-width: 380px) {
+  .call-screen-controls { gap: 7px; }
+  .call-screen-controls button { width: 58px; height: 58px; flex-basis: 58px; }
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-audio-player {
+  border-bottom-left-radius: 6px !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-audio-player {
+  border-bottom-left-radius: var(--conversation-message-radius, 20px) !important;
+  border-bottom-right-radius: 6px !important;
+}

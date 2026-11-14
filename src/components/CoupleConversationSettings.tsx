@@ -21,6 +21,7 @@ import {
 } from "@/lib/couple-conversation-settings";
 import { MAX_COUPLE_MEDIA_BYTES, uploadCoupleMedia } from "@/lib/couple-media";
 import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
+import { readableInk } from "@/lib/readable-ink";
 
 type SettingsTab = "general" | "appearance" | "media" | "notifications";
 type MediaFilter = "all" | "image" | "video" | "audio" | "file";
@@ -284,8 +285,50 @@ export function CoupleConversationSettings({
                   </div>
                 )}
                 {backgroundImageUrl && appearance.wallpaper === "photo" && (
-                  <div className="conversation-settings-background-thumb">
-                    <img src={backgroundImageUrl} alt="Prévia do fundo personalizado" />
+                  <div className="conversation-settings-live-preview" aria-label="Prévia de como a conversa ficará com esta foto">
+                    <div
+                      className="conversation-settings-live-preview-wallpaper"
+                      style={{
+                        backgroundImage: 'url("' + backgroundImageUrl + '")',
+                        opacity: appearance.backgroundOpacity / 100,
+                        filter: "brightness(" + appearance.backgroundBrightness + "%)",
+                      }}
+                    />
+                    <div className="conversation-settings-live-preview-label">PRÉVIA DA CONVERSA</div>
+                    <div
+                      className="conversation-settings-live-preview-bubble is-other"
+                      style={{
+                        backgroundColor: appearance.otherBubbleColor,
+                        color: readableInk(appearance.otherBubbleColor, appearance.messageTextColor),
+                        borderRadius: appearance.bubbleRadius + "px",
+                      }}
+                    >
+                      <small>18:42</small>
+                      <p>Olha como a conversa está ficando!</p>
+                    </div>
+                    <div
+                      className="conversation-settings-live-preview-bubble is-own"
+                      style={{
+                        backgroundColor: appearance.ownBubbleColor,
+                        color: readableInk(appearance.ownBubbleColor, appearance.messageTextColor),
+                        borderRadius: appearance.bubbleRadius + "px",
+                      }}
+                    >
+                      <small>18:43</small>
+                      <p>Ficou linda com essa foto. ♡</p>
+                    </div>
+                    <div
+                      className="conversation-settings-live-preview-audio"
+                      style={{
+                        backgroundColor: appearance.ownBubbleColor,
+                        color: readableInk(appearance.ownBubbleColor, appearance.messageTextColor),
+                        borderRadius: appearance.bubbleRadius + "px",
+                      }}
+                    >
+                      <span aria-hidden="true">▶</span>
+                      <div><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
+                      <small>0:18</small>
+                    </div>
                   </div>
                 )}
               </div>

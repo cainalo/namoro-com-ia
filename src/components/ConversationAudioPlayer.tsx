@@ -222,7 +222,6 @@ export function ConversationAudioPlayer({
       ref={playerRef}
       className={"conversation-audio-player" + (playing ? " is-playing" : "") + (messageTime ? " has-message-time" : "")}
     >
-      {messageTime && <time className="conversation-audio-message-time">{messageTime}</time>}
       <button
         type="button"
         className="conversation-audio-play"
@@ -234,6 +233,7 @@ export function ConversationAudioPlayer({
       </button>
       <div className="conversation-audio-main">
         <div className="conversation-audio-title-row">
+          {messageTime && <time className="conversation-audio-message-time">{messageTime}</time>}
           <span className="conversation-audio-duration">
             {formatAudioTime(currentTime)} / {formatAudioTime(duration)}
           </span>

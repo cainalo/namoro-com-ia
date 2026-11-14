@@ -12,6 +12,9 @@ import {
   ArrowLeft,
   Check,
   Copy,
+  Pencil,
+  Star,
+  Trash2,
   File,
   Image,
   Camera,
@@ -56,6 +59,8 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   listCoupleMessages,
   sendCoupleMessage,
+  updateCoupleMessage,
+  deleteCoupleMessage,
   type CoupleMessage,
   type CoupleMessageType,
 } from "@/lib/couple-messages";
@@ -215,6 +220,19 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   const [error, setError] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [copyError, setCopyError] = useState<string | null>(null);
+  const [selectedActionMessageId, setSelectedActionMessageId] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingDraft, setEditingDraft] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [favoriteMessageIds, setFavoriteMessageIds] = useState<string[]>(() => {
+    try {
+      const raw = typeof window !== "undefined" ? window.localStorage.getItem("morados-favorite-messages-" + userId) : null;
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : [];
+    } catch {
+      return [];
+    }
+  });
   const [refreshKey, setRefreshKey] = useState(0);
   const [, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
   const [appearance, setAppearance] = useState<ConversationAppearance>(DEFAULT_CONVERSATION_APPEARANCE);
@@ -241,6 +259,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   const mediaSigningRef = useRef(false);
   const mountedRef = useRef(true);
   const settingsScrollTopRef = useRef(0);
+  const settingsWasAtBottomRef = useRef(true);
+  const messageHoldTimerRef = useRef<number | null>(null);
   const appearanceSaveTimerRef = useRef<number | null>(null);
   const notificationsSaveTimerRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -265,6 +285,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      if (messageHoldTimerRef.current !== null) window.clearTimeout(messageHoldTimerRef.current);
       if (appearanceSaveTimerRef.current !== null) window.clearTimeout(appearanceSaveTimerRef.current);
       if (notificationsSaveTimerRef.current !== null) window.clearTimeout(notificationsSaveTimerRef.current);
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
@@ -380,16 +401,31 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   }
 
   function openConversationSettings() {
-    settingsScrollTopRef.current = threadRef.current?.scrollTop ?? 0;
+    const thread = threadRef.current;
+    settingsScrollTopRef.current = thread?.scrollTop ?? 0;
+    settingsWasAtBottomRef.current = thread
+      ? thread.scrollHeight - thread.scrollTop - thread.clientHeight <= 90
+      : wasAtBottomRef.current;
     setSettingsPageOpen(true);
   }
 
   useEffect(() => {
     if (settingsPageOpen) return;
-    const frame = window.requestAnimationFrame(() => {
-      if (threadRef.current) threadRef.current.scrollTop = settingsScrollTopRef.current;
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      const thread = threadRef.current;
+      if (!thread) return;
+      if (settingsWasAtBottomRef.current) {
+        scrollThreadToEnd("auto");
+        secondFrame = window.requestAnimationFrame(() => scrollThreadToEnd("auto"));
+      } else {
+        thread.scrollTop = settingsScrollTopRef.current;
+      }
     });
-    return () => window.cancelAnimationFrame(frame);
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame) window.cancelAnimationFrame(secondFrame);
+    };
   }, [settingsPageOpen]);
 
   useEffect(() => {
@@ -522,7 +558,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       window.visualViewport?.removeEventListener("resize", updateClearance);
       thread.style.removeProperty("--conversation-composer-clearance");
     };
-  }, [state.status, recordingStatus, attachmentOpen]);
+  }, [state.status, recordingStatus, attachmentOpen, settingsPageOpen]);
 
   useEffect(() => {
     const thread = threadRef.current;
@@ -540,11 +576,16 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       thread.removeEventListener("loadedmetadata", keepPinned, true);
       observer?.disconnect();
     };
-  }, [state.status]);
+  }, [state.status, settingsPageOpen]);
 
   function handleThreadScroll() {
     const thread = threadRef.current;
     if (!thread) return;
+    if (selectedActionMessageId) setSelectedActionMessageId(null);
+    if (messageHoldTimerRef.current !== null) {
+      window.clearTimeout(messageHoldTimerRef.current);
+      messageHoldTimerRef.current = null;
+    }
     const distanceFromBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight;
     wasAtBottomRef.current = distanceFromBottom <= 90;
   }
@@ -1024,6 +1065,24 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     if (sent) discardRecordedAudio();
   }
 
+  function clearMessageHold() {
+    if (messageHoldTimerRef.current !== null) {
+      window.clearTimeout(messageHoldTimerRef.current);
+      messageHoldTimerRef.current = null;
+    }
+  }
+
+  function startMessageHold(messageId: string) {
+    clearMessageHold();
+    messageHoldTimerRef.current = window.setTimeout(() => {
+      setSelectedActionMessageId(messageId);
+      messageHoldTimerRef.current = null;
+      if (Capacitor.isNativePlatform()) {
+        void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
+      }
+    }, 1000);
+  }
+
   async function copyMessage(messageId: string, body: string) {
     setCopyError(null);
     setCopiedMessageId(null);
@@ -1031,8 +1090,71 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       if (!navigator.clipboard?.writeText) throw new Error("clipboard_unavailable");
       await navigator.clipboard.writeText(body);
       setCopiedMessageId(messageId);
+      setSelectedActionMessageId(null);
     } catch {
       setCopyError("Não foi possível copiar esta mensagem neste navegador.");
+    }
+  }
+
+  function toggleFavoriteMessage(messageId: string) {
+    setFavoriteMessageIds((current) =>
+      current.includes(messageId)
+        ? current.filter((id) => id !== messageId)
+        : [...current, messageId],
+    );
+    setSelectedActionMessageId(null);
+  }
+
+  function beginEditMessage(message: CoupleMessage) {
+    setEditingMessageId(message.id);
+    setEditingDraft(message.body);
+    setSelectedActionMessageId(null);
+  }
+
+  async function saveEditedMessage(messageId: string) {
+    const body = editingDraft.trim();
+    if (!body || body.length > 2000 || savingEdit) return;
+    setSavingEdit(true);
+    setError(null);
+    try {
+      const result = await updateCoupleMessage({ messageId, senderId: userId, body });
+      if (result.error || !result.data) throw result.error ?? new Error("message_not_updated");
+      const updated = normalizedMessage(result.data);
+      setState((current) => current.status === "active"
+        ? { ...current, messages: current.messages.map((message) => message.id === messageId ? updated : message) }
+        : current);
+      setEditingMessageId(null);
+      setEditingDraft("");
+    } catch (cause) {
+      console.error("Falha ao editar mensagem.", cause);
+      setError("Não foi possível editar. Confira a permissão de edição no banco de dados.");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+  async function deleteMessage(message: CoupleMessage) {
+    setSelectedActionMessageId(null);
+    if (!window.confirm("Excluir esta mensagem? Essa ação não pode ser desfeita.")) return;
+    setError(null);
+    try {
+      const result = await deleteCoupleMessage({ messageId: message.id, coupleId: message.couple_id });
+      if (result.error || !result.data) throw result.error ?? new Error("message_not_deleted");
+      setState((current) => current.status === "active"
+        ? { ...current, messages: current.messages.filter((item) => item.id !== message.id) }
+        : current);
+      if (message.attachment_path) {
+        await removeCoupleMedia(message.attachment_path).catch(() => undefined);
+      }
+      setMediaUrls((current) => {
+        const next = { ...current };
+        delete next[message.id];
+        return next;
+      });
+      delete mediaUrlsCacheRef.current[message.id];
+    } catch (cause) {
+      console.error("Falha ao excluir mensagem.", cause);
+      setError("Não foi possível excluir. Confira a permissão de exclusão no banco de dados.");
     }
   }
 
@@ -1071,6 +1193,25 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       ) : <p className="conversation-attachment-pending">Carregando arquivo…</p>;
     }
     return <p className="conversation-message-text">{message.body}</p>;
+  }
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("morados-favorite-messages-" + userId, JSON.stringify(favoriteMessageIds));
+    } catch {
+      // Favoritos permanecem disponíveis durante a sessão mesmo sem armazenamento local.
+    }
+  }, [favoriteMessageIds, userId]);
+
+  if (callKind && state.status === "active") {
+    return (
+      <ConversationCallScreen
+        kind={callKind}
+        name={state.otherName}
+        avatarUrl={state.otherAvatarUrl}
+        onClose={() => setCallKind(null)}
+      />
+    );
   }
 
   if (settingsPageOpen && state.status === "active") {
@@ -1130,9 +1271,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       data-message-font={appearance.messageFont}
       aria-label="Conversa do casal"
     >
-      {callKind && state.status === "active" && (
-        <ConversationCallScreen kind={callKind} name={state.otherName} avatarUrl={state.otherAvatarUrl} onClose={() => setCallKind(null)} />
-      )}
       {wallpaperImageStyle && (
         <div className="conversation-wallpaper-image" aria-hidden="true" style={wallpaperImageStyle} />
       )}
@@ -1262,12 +1400,57 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
                         "conversation-message" +
                         (ownMessage ? " is-own" : "") +
                         (previousMessage && !showDayDivider && previousMessage.sender_id === message.sender_id ? " is-grouped" : "") +
-                        " is-kind-" + message.message_type
+                        " is-kind-" + message.message_type +
+                        (favoriteMessageIds.includes(message.id) ? " is-favorite" : "")
                       }
+                      onPointerDown={(event) => {
+                        if (event.pointerType === "mouse" && event.button !== 0) return;
+                        startMessageHold(message.id);
+                      }}
+                      onPointerUp={clearMessageHold}
+                      onPointerCancel={clearMessageHold}
+                      onPointerLeave={clearMessageHold}
+                      onContextMenu={(event) => {
+                        event.preventDefault();
+                        clearMessageHold();
+                        setSelectedActionMessageId(message.id);
+                      }}
                     >
                       <span className="conversation-sender sr-only">{ownMessage ? "Você" : state.otherName}</span>
+                      {favoriteMessageIds.includes(message.id) && (
+                        <span className="conversation-message-favorite" aria-label="Mensagem favorita">
+                          <Star aria-hidden="true" />
+                        </span>
+                      )}
+                      {selectedActionMessageId === message.id && (
+                        <div className={"conversation-message-actions" + (ownMessage ? " is-own" : "")} role="group" aria-label="Ações da mensagem" onPointerDown={(event) => event.stopPropagation()}>
+                          {ownMessage && message.message_type === "text" && (
+                            <button type="button" onClick={() => beginEditMessage(message)}><Pencil aria-hidden="true" /><span>Editar</span></button>
+                          )}
+                          <button type="button" className="is-danger" onClick={() => void deleteMessage(message)}><Trash2 aria-hidden="true" /><span>Excluir</span></button>
+                          <button type="button" onClick={() => void copyMessage(message.id, message.body.trim() || message.attachment_name || ("Mensagem de " + message.message_type))}>
+                            {copiedMessageId === message.id ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+                            <span>{copiedMessageId === message.id ? "Copiada" : "Copiar"}</span>
+                          </button>
+                          <button type="button" onClick={() => toggleFavoriteMessage(message.id)}>
+                            <Star aria-hidden="true" />
+                            <span>{favoriteMessageIds.includes(message.id) ? "Desfavoritar" : "Favoritar"}</span>
+                          </button>
+                        </div>
+                      )}
                       <div className={"conversation-message-content is-" + message.message_type}>
-                        {message.message_type === "audio" ? (
+                        {editingMessageId === message.id ? (
+                          <div className="conversation-inline-edit" onPointerDown={(event) => event.stopPropagation()}>
+                            <textarea value={editingDraft} maxLength={2000} onChange={(event) => setEditingDraft(event.target.value)} aria-label="Editar mensagem" />
+                            <div>
+                              <button type="button" onClick={() => { setEditingMessageId(null); setEditingDraft(""); }}>Cancelar</button>
+                              <button type="button" onClick={() => void saveEditedMessage(message.id)} disabled={!editingDraft.trim() || savingEdit}>
+                                {savingEdit ? <LoaderCircle aria-hidden="true" /> : <Check aria-hidden="true" />}
+                                Salvar
+                              </button>
+                            </div>
+                          </div>
+                        ) : message.message_type === "audio" ? (
                           renderMessageContent(message, formatMessageTime(message.created_at))
                         ) : (
                           <>
@@ -1278,15 +1461,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
                           </>
                         )}
                       </div>
-                      <button
-                        type="button"
-                        className="conversation-copy-action"
-                        onClick={() => void copyMessage(message.id, message.body)}
-                        aria-label={copiedMessageId === message.id ? "Mensagem copiada" : "Copiar mensagem"}
-                        title={copiedMessageId === message.id ? "Copiada" : "Copiar mensagem"}
-                      >
-                        {copiedMessageId === message.id ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-                      </button>
                     </article>
                   </Fragment>
                 );

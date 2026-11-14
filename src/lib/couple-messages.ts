@@ -106,3 +106,58 @@ export async function sendCoupleMessage(input: {
     metadata: input.metadata ?? {},
   }).select(MESSAGE_COLUMNS).single();
 }
+
+
+export async function updateCoupleMessage(input: {
+  messageId: string;
+  senderId: string;
+  body: string;
+}) {
+  const client = supabase as unknown as {
+    from: (table: "couple_messages") => {
+      update: (values: { body: string }) => {
+        eq: (column: "id" | "sender_id", value: string) => {
+          eq: (column: "id" | "sender_id", value: string) => {
+            select: (columns: string) => {
+              single: () => PromiseLike<MessageInsertResponse>;
+            };
+          };
+        };
+      };
+    };
+  };
+  return client.from("couple_messages")
+    .update({ body: input.body })
+    .eq("id", input.messageId)
+    .eq("sender_id", input.senderId)
+    .select(MESSAGE_COLUMNS)
+    .single();
+}
+
+export async function deleteCoupleMessage(input: {
+  messageId: string;
+  coupleId: string;
+}) {
+  const client = supabase as unknown as {
+    from: (table: "couple_messages") => {
+      delete: () => {
+        eq: (column: "id" | "couple_id", value: string) => {
+          eq: (column: "id" | "couple_id", value: string) => {
+            select: (columns: string) => {
+              single: () => PromiseLike<{
+                data: { id: string } | null;
+                error: CoupleMessageError | null;
+              }>;
+            };
+          };
+        };
+      };
+    };
+  };
+  return client.from("couple_messages")
+    .delete()
+    .eq("id", input.messageId)
+    .eq("couple_id", input.coupleId)
+    .select("id")
+    .single();
+}
