@@ -795,7 +795,19 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     event.preventDefault();
     const body = draft.trim();
     if (!body || state.status !== "active" || busy) return;
+    if (editingMessageId) {
+      await persistEditedMessage(editingMessageId, body);
+      if (!savingEdit) setDraft("");
+      return;
+    }
     await saveMessage({ body, messageType: "text" });
+  }
+
+  function cancelMessageEdit() {
+    setEditingMessageId(null);
+    setEditingDraft("");
+    setDraft("");
+    setError(null);
   }
 
   async function openNativeMessageComposer() {
@@ -1155,9 +1167,21 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       return;
     }
 
-    // No navegador, mantém a edição inline tradicional.
+    // No navegador, reutiliza o campo de composição já estabilizado.
+    // Não cria um segundo textarea dentro da lista rolável de mensagens,
+    // evitando o travamento de foco/teclado observado no WebView.
     setEditingMessageId(message.id);
     setEditingDraft(message.body);
+    setDraft(message.body);
+    window.requestAnimationFrame(() => {
+      const composer = composerRef.current;
+      const input = composer?.querySelector<HTMLTextAreaElement>(".conversation-message-input");
+      if (input) {
+        input.focus({ preventScroll: true });
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+      composer?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    });
   }
 
   async function saveEditedMessage(messageId: string) {
@@ -1470,18 +1494,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
                         </div>
                       )}
                       <div className={"conversation-message-content is-" + message.message_type}>
-                        {editingMessageId === message.id ? (
-                          <div className="conversation-inline-edit" onPointerDown={(event) => event.stopPropagation()}>
-                            <textarea value={editingDraft} maxLength={2000} onChange={(event) => setEditingDraft(event.target.value)} aria-label="Editar mensagem" />
-                            <div>
-                              <button type="button" onClick={() => { setEditingMessageId(null); setEditingDraft(""); }}>Cancelar</button>
-                              <button type="button" onClick={() => void saveEditedMessage(message.id)} disabled={!editingDraft.trim() || savingEdit}>
-                                {savingEdit ? <LoaderCircle aria-hidden="true" /> : <Check aria-hidden="true" />}
-                                Salvar
-                              </button>
-                            </div>
-                          </div>
-                        ) : message.message_type === "audio" ? (
+                        {message.message_type === "audio" ? (
                           renderMessageContent(message, formatMessageTime(message.created_at))
                         ) : (
                           <>
@@ -1525,7 +1538,13 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
               onChange={(event) => void sendAttachment(event)}
               aria-label="Escolher arquivo para enviar"
             />
-            <div className="conversation-composer-row">
+            <div className={"conversation-composer-row" + (editingMessageId ? " is-editing-message" : "")}>
+              {editingMessageId && (
+                <div className="conversation-editing-banner">
+                  <span>Editando mensagem</span>
+                  <button type="button" onClick={cancelMessageEdit} aria-label="Cancelar edição">Cancelar</button>
+                </div>
+              )}
               <div className="conversation-input-shell">
                 {recordingStatus === "idle" ? (
                   <>
@@ -1576,8 +1595,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
                       <Mic aria-hidden="true" />
                     </button>
                     {!Capacitor.isNativePlatform() && (
-                      <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0} aria-label="Enviar mensagem" title="Enviar">
-                        {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
+                      <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0 || (editingMessageId !== null && savingEdit)} aria-label={editingMessageId ? "Salvar edição" : "Enviar mensagem"} title={editingMessageId ? "Salvar edição" : "Enviar"}>
+                        {busy || savingEdit ? <LoaderCircle aria-hidden="true" /> : editingMessageId ? <Check aria-hidden="true" /> : <Send aria-hidden="true" />}
                       </button>
                     )}
                   </>
@@ -1628,7 +1647,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
                 )}
               </div>
             </div>
-            {recordingStatus === "idle" && <p className="conversation-composer-hint">Enter envia · Shift + Enter quebra a linha</p>}
+            {recordingStatus === "idle" && <p className="conversation-composer-hint">{editingMessageId ? "Altere o texto e salve a edição" : "Enter envia · Shift + Enter quebra a linha"}</p>}
           </form>
         </>
       )}
