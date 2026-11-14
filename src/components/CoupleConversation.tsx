@@ -462,6 +462,35 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   }
 
   useEffect(() => {
+    const composer = composerRef.current;
+    const thread = threadRef.current;
+    if (state.status !== "active" || !composer || !thread) return;
+
+    const updateClearance = () => {
+      const composerHeight = composer.getBoundingClientRect().height;
+      // Reserva a altura real do compositor e uma folga para que o último balão
+      // ou player termine inteiramente acima dos controles.
+      const clearance = Math.ceil(composerHeight + 26);
+      thread.style.setProperty("--conversation-composer-clearance", clearance + "px");
+      if (wasAtBottomRef.current) {
+        window.requestAnimationFrame(() => {
+          if (threadRef.current === thread && wasAtBottomRef.current) scrollThreadToEnd("auto");
+        });
+      }
+    };
+
+    updateClearance();
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateClearance);
+    observer?.observe(composer);
+    window.addEventListener("resize", updateClearance);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateClearance);
+      thread.style.removeProperty("--conversation-composer-clearance");
+    };
+  }, [state.status, recordingStatus, attachmentOpen, stickerOpen, giftOpen]);
+
+  useEffect(() => {
     const thread = threadRef.current;
     if (state.status !== "active" || !thread) return;
     const keepPinned = () => {
