@@ -73,7 +73,7 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }){
   if(id==="rest"){next.health[game.player-1]=Math.min(3,next.health[game.player-1]+1);next.morale=limit(next.morale+1);}
   if(id==="treat"&&next.medicine>=1){next.medicine-=1;next.health[game.player-1]=Math.min(3,next.health[game.player-1]+2);}
   next.log=[`Dia ${game.day} · Pessoa ${game.player}: ${messages[id]}`,...next.log].slice(0,8);
-  setGame({...next,phase:game.player===1?(solo?"action":"handoff"):"night",player:game.player===1?2:1});
+  setGame({...next,phase:game.player===1?((solo||sync.online)?"action":"handoff"):"night",player:game.player===1?2:1});
   setFeedback(messages[id]);
   setChoice(null);
  }
