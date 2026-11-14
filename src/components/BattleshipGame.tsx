@@ -158,7 +158,7 @@ export function BattleshipGame({ solo = false }: { solo?: boolean }){
               <span className="naval-row-label">{row+1}</span>
               {Array.from({length:SIZE},(_,col)=>{
                 const square=row*SIZE+col,shot=myShots[square];
-                return <button key={col} type="button" className={"naval-cell"+(shot==="hit"?" is-hit":shot==="miss"?" is-miss":"")} onClick={()=>fire(square)} disabled={shot!==null||game.phase==="finished"} aria-label={`Disparo em ${axis[col]}${row+1}: ${shot==="hit"?"acerto":shot==="miss"?"água":"não disparado"}`}>
+                return <button key={col} type="button" className={"naval-cell"+(shot==="hit"?" is-hit":shot==="miss"?" is-miss":"")} onClick={()=>fire(square)} disabled={shot!==null||game.phase==="finished"||(solo&&game.computerTurn)} aria-label={`Disparo em ${axis[col]}${row+1}: ${shot==="hit"?"acerto":shot==="miss"?"água":"não disparado"}`}>
                   {shot==="hit"?"✦":shot==="miss"?"·":""}
                 </button>;
               })}
