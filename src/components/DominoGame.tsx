@@ -92,9 +92,9 @@ export function DominoGame({ solo = false }: { solo?: boolean }){
         const passes = game.passes + 1;
         if (passes >= 2) {
           const winner = pips[0] === pips[1] ? "draw" : pips[0] < pips[1] ? 0 : 1;
-          setGame({ ...game, passes, pips, winner, reason: "Mesa bloqueada. Vence quem terminou com menos pontos na mão." });
+          setGame({ ...game, passes, winner, reason: "Mesa bloqueada. Vence quem terminou com menos pontos na mão." });
         } else {
-          setGame({ ...game, passes, turn: 0, selected: null, pips });
+          setGame({ ...game, passes, turn: 0, selected: null });
         }
         return;
       }
@@ -137,7 +137,7 @@ export function DominoGame({ solo = false }: { solo?: boolean }){
   }
   function restart(){setGame(newDominoGame());}
   const lineText=useMemo(()=>game.line.length?game.line.map(item=>`${item.a}|${item.b}`).join(" — "):"A mesa ainda está vazia.",[game.line]);
-  const status=game.winner==="draw"?"Empate!":typeof game.winner==="number"?`Pessoa ${game.winner+1} venceu!`:`Vez da Pessoa ${game.turn+1}`;
+  const status=game.winner==="draw"?"Empate!":typeof game.winner==="number"?(solo?(game.winner===0?"Você venceu!":"Morados venceram!"):`Pessoa ${game.winner+1} venceu!`):`Vez da ${solo?(game.turn===0?"sua vez":"vez dos Morados"):"Pessoa "+(game.turn+1)}`;
 
   return (
     <section className={"domino-game" + (solo ? " is-solo" : "")}>
