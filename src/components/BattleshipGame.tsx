@@ -66,7 +66,7 @@ export function BattleshipGame({ solo = false }: { solo?: boolean }){
       const ownShots = game.shots[1];
       const available = ownShots.map((shot, square) => shot === null ? square : -1).filter((square) => square >= 0);
       if (!available.length) {
-        setGame((current) => ({ ...current, computerTurn: false, draw: true }));
+        setGame((current) => ({ ...current, computerTurn: false, phase: "finished", winner: current.hitCount[0] >= current.hitCount[1] ? 0 : 1 }));
         return;
       }
       const recentHits = ownShots.map((shot, square) => shot === "hit" ? square : -1).filter((square) => square >= 0);
