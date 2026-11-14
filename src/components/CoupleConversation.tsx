@@ -826,20 +826,24 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     if (!analyser) return;
     stopRecordingVisualizer();
     const samples = new Uint8Array(analyser.fftSize);
-    const draw = () => {
+    let lastPaintAt = 0;
+    const draw = (timestamp: number) => {
       const activeAnalyser = recordingAnalyserRef.current;
       if (!activeAnalyser || mediaRecorderRef.current?.state !== "recording") {
         recordingVisualFrameRef.current = null;
         return;
       }
-      activeAnalyser.getByteTimeDomainData(samples);
-      let energy = 0;
-      for (let index = 0; index < samples.length; index += 1) {
-        const normalized = (samples[index] - 128) / 128;
-        energy += normalized * normalized;
+      if (timestamp - lastPaintAt >= 80) {
+        lastPaintAt = timestamp;
+        activeAnalyser.getByteTimeDomainData(samples);
+        let energy = 0;
+        for (let index = 0; index < samples.length; index += 1) {
+          const normalized = (samples[index] - 128) / 128;
+          energy += normalized * normalized;
+        }
+        const level = Math.max(0.08, Math.min(1, Math.sqrt(energy / samples.length) * 3.8));
+        setRecordingLevels((current) => [...current.slice(1), level]);
       }
-      const level = Math.max(0.08, Math.min(1, Math.sqrt(energy / samples.length) * 3.8));
-      setRecordingLevels((current) => [...current.slice(1), level]);
       recordingVisualFrameRef.current = window.requestAnimationFrame(draw);
     };
     recordingVisualFrameRef.current = window.requestAnimationFrame(draw);
@@ -932,6 +936,11 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
       recordingStreamRef.current = null;
       recordingAnalyserRef.current = null;
+      stopRecordingVisualizer();
+      const audioContext = recordingAudioContextRef.current;
+      recordingAudioContextRef.current = null;
+      if (audioContext && audioContext.state !== "closed") void audioContext.close();
+      mediaRecorderRef.current = null;
       setRecordingStatus("idle");
       setError(cause instanceof Error ? cause.message : "Não foi possível acessar o microfone.");
     }
@@ -1508,13 +1517,13 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                 )}
                 <button
                   type="button"
-                  className={"conversation-audio-button" + (recordingAudio ? " is-recording" : "")}
-                  onClick={() => void toggleAudioRecording()}
-                  aria-label={recordingAudio ? "Parar gravação de áudio" : "Gravar áudio"}
-                  title={recordingAudio ? "Parar gravação" : "Gravar áudio"}
+                  className="conversation-audio-button"
+                  onClick={() => void startAudioRecording()}
+                  aria-label="Gravar áudio"
+                  title="Gravar áudio"
                   disabled={busy || state.status !== "active"}
                 >
-                  {recordingAudio ? <Square aria-hidden="true" /> : <Mic aria-hidden="true" />}
+                  <Mic aria-hidden="true" />
                 </button>
                 {!Capacitor.isNativePlatform() && (
                   <button type="submit" className="conversation-send-button" disabled={busy || draft.trim().length === 0} aria-label="Enviar mensagem" title="Enviar">
