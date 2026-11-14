@@ -4,7 +4,7 @@ import { AudioLines, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Heart, K
 
 type Cell = "wall" | "floor" | "start" | "gate" | "enemy" | "relic" | "key" | "potion";
 type Point = { x: number; y: number };
-type CaveState = { player: Point; hp: number; maxHp: number; key: boolean; relic: boolean; bossHp: number; revealed: string[]; turn: 0 | 1; moves: number; status: "playing" | "won" | "lost"; log: string[] };
+type CaveState = { player: Point; hp: number; maxHp: number; key: boolean; relic: boolean; bossHp: number; revealed: string[]; turn: 0 | 1; moves: number; status: "playing" | "won" | "lost"; log: string[]; collected: string[] };
 const MAP: Cell[][] = [
  ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"],
  ["wall","start","floor","floor","wall","floor","floor","floor","gate","floor","wall"],
@@ -17,7 +17,7 @@ const MAP: Cell[][] = [
  ["wall","wall","wall","wall","wall","wall","wall","wall","wall","wall","wall"],
 ];
 const keyOf = (p: Point) => p.x + "," + p.y;
-const initial = (): CaveState => ({ player:{x:1,y:1},hp:6,maxHp:6,key:false,relic:false,bossHp:4,revealed:["1,1","2,1","1,2"],turn:0,moves:0,status:"playing",log:["A entrada desabou atrás de vocês. A relíquia está no coração da caverna."] });
+const initial = (): CaveState => ({ player:{x:1,y:1},hp:6,maxHp:6,key:false,relic:false,bossHp:4,revealed:["1,1","2,1","1,2"],turn:0,moves:0,status:"playing",log:["A entrada desabou atrás de vocês. A relíquia está no coração da caverna."],collected:[] });
 const TILE: Record<Cell,{icon:string;label:string}> = { wall:{icon:"▩",label:"Rocha"},floor:{icon:"",label:"Caminho"},start:{icon:"⌂",label:"Entrada"},gate:{icon:"✦",label:"Portal antigo"},enemy:{icon:"☠",label:"Guardião"},relic:{icon:"◆",label:"Relíquia"},key:{icon:"⚿",label:"Chave"},potion:{icon:"✚",label:"Poção"} };
 function sound(frequency:number,duration=0.12) {
  try { const ctx=new AudioContext(); const osc=ctx.createOscillator(); const gain=ctx.createGain(); osc.type="triangle"; osc.frequency.value=frequency; gain.gain.setValueAtTime(.0001,ctx.currentTime); gain.gain.exponentialRampToValueAtTime(.06,ctx.currentTime+.015); gain.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+duration); osc.connect(gain);gain.connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+duration);osc.onended=()=>void ctx.close(); } catch { /* áudio opcional */ }
@@ -34,14 +34,14 @@ export function CaveExpeditionGame({solo=false}:{solo?:boolean}) {
  }
  function act(dx:number,dy:number){
   if(game.status!=="playing")return;
-  const next={x:game.player.x+dx,y:game.player.y+dy};const cell=MAP[next.y]?.[next.x];
+  const next={x:game.player.x+dx,y:game.player.y+dy};const rawCell=MAP[next.y]?.[next.x];const cell=game.collected.includes(keyOf(next))||(rawCell==="enemy"&&game.bossHp===0)?"floor":rawCell;
   if(!cell||cell==="wall"){emit(95,.07);setMessage("A passagem está bloqueada por rocha.");return}
   if(cell==="gate"&&(!game.key||!game.relic||game.bossHp>0)){setMessage("O portal exige a chave, a relíquia e a derrota do guardião.");emit(180);return}
   const revealed=[...new Set([...game.revealed,keyOf(next),keyOf({x:next.x+1,y:next.y}),keyOf({x:next.x-1,y:next.y}),keyOf({x:next.x,y:next.y+1}),keyOf({x:next.x,y:next.y-1})])];
-  const n:CaveState={...game,player:next,moves:game.moves+1,revealed};
-  if(cell==="key"){n.key=true;setMessage("Chave antiga encontrada. Ela abre o portal da câmara.");n.log=["Vocês encontraram uma chave antiga.",...game.log];emit(620)}
-  else if(cell==="relic"){n.relic=true;setMessage("A relíquia foi recuperada. O guardião despertou!");n.log=["A relíquia despertou o guardião da caverna.",...game.log];emit(760)}
-  else if(cell==="potion"){n.hp=Math.min(n.maxHp,n.hp+3);setMessage("Poção encontrada: +3 de vida.");n.log=["Uma poção restaurou parte da vida.",...game.log];emit(520)}
+  const n:CaveState={...game,player:next,moves:game.moves+1,revealed,collected:[...game.collected]};
+  if(cell==="key"){n.collected.push(keyOf(next));n.key=true;setMessage("Chave antiga encontrada. Ela abre o portal da câmara.");n.log=["Vocês encontraram uma chave antiga.",...game.log];emit(620)}
+  else if(cell==="relic"){n.collected.push(keyOf(next));n.relic=true;setMessage("A relíquia foi recuperada. O guardião despertou!");n.log=["A relíquia despertou o guardião da caverna.",...game.log];emit(760)}
+  else if(cell==="potion"){n.collected.push(keyOf(next));n.hp=Math.min(n.maxHp,n.hp+3);setMessage("Poção encontrada: +3 de vida.");n.log=["Uma poção restaurou parte da vida.",...game.log];emit(520)}
   else if(cell==="enemy"&&game.bossHp>0){n.hp=Math.max(0,n.hp-1);n.bossHp=Math.max(0,n.bossHp-2);setMessage(n.bossHp===0?"O guardião foi derrotado! O caminho está livre.":"Golpe contra o guardião! Ele também feriu vocês.");n.log=["Vocês enfrentaram o guardião.",...game.log];emit(n.bossHp===0?880:150,.2);if(n.hp===0)n.status="lost"}
   else if(cell==="gate"){n.status="won";setMessage("A relíquia foi devolvida ao altar. Vocês escaparam!");emit(940,.35)}
   else{setMessage("Passagem explorada.");emit(240,.05)}
