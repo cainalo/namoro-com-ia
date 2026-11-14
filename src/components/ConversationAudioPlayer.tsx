@@ -1,15 +1,10 @@
-import { useRef, useState } from "react";
-import { Pause, Play, Volume2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
 
 type ConversationAudioPlayerProps = {
   src: string;
-  label?: string;
+  waveform?: number[];
 };
-
-const waveformHeights = [
-  7, 12, 9, 17, 11, 21, 14, 25, 16, 11, 19, 27, 15, 9, 18, 24,
-  13, 20, 29, 16, 10, 23, 17, 12, 26, 15, 21, 9, 18, 25, 13, 19,
-];
 
 function formatAudioTime(value: number) {
   if (!Number.isFinite(value) || value < 0) return "0:00";
@@ -17,14 +12,88 @@ function formatAudioTime(value: number) {
   return Math.floor(seconds / 60) + ":" + String(seconds % 60).padStart(2, "0");
 }
 
-export function ConversationAudioPlayer({ src, label = "Mensagem de voz" }: ConversationAudioPlayerProps) {
+function normalizeWaveform(values: number[]) {
+  return values
+    .filter((value) => Number.isFinite(value))
+    .slice(0, 96)
+    .map((value) => Math.max(0.07, Math.min(1, value)));
+}
+
+function waveformFromBuffer(buffer: AudioBuffer, barCount = 56) {
+  const peaks = Array.from({ length: barCount }, (_, index) => {
+    const start = Math.floor((index * buffer.length) / barCount);
+    const end = Math.max(start + 1, Math.floor(((index + 1) * buffer.length) / barCount));
+    const stride = Math.max(1, Math.floor((end - start) / 180));
+    let sum = 0;
+    let count = 0;
+
+    for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+      const samples = buffer.getChannelData(channel);
+      for (let frame = start; frame < Math.min(end, buffer.length); frame += stride) {
+        const sample = samples[frame] ?? 0;
+        sum += sample * sample;
+        count += 1;
+      }
+    }
+
+    return count > 0 ? Math.sqrt(sum / count) : 0;
+  });
+
+  const maximum = Math.max(0.0001, ...peaks);
+  return peaks.map((peak) => Math.round(Math.max(0.07, peak / maximum) * 100) / 100);
+}
+
+export function ConversationAudioPlayer({ src, waveform }: ConversationAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackError, setPlaybackError] = useState(false);
+  const [waveformBars, setWaveformBars] = useState<number[]>([]);
 
+  const waveformKey = waveform?.length
+    ? normalizeWaveform(waveform).join(",")
+    : "";
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
+
+  useEffect(() => {
+    let active = true;
+    let audioContext: AudioContext | null = null;
+
+    if (waveformKey) {
+      setWaveformBars(waveformKey.split(",").map(Number));
+      return () => {
+        active = false;
+      };
+    }
+
+    // Áudios enviados por anexo ou mensagens antigas não têm forma de onda no
+    // metadado. Nesse caso, calculamos os picos a partir dos próprios samples.
+    setWaveformBars([]);
+    void (async () => {
+      try {
+        const response = await fetch(src);
+        if (!response.ok) throw new Error("audio_fetch_failed");
+        const data = await response.arrayBuffer();
+        if (!active) return;
+        audioContext = new window.AudioContext();
+        const decoded = await audioContext.decodeAudioData(data);
+        if (active) setWaveformBars(waveformFromBuffer(decoded));
+      } catch {
+        // Sem waveform disponível, mantemos o controle de progresso sem
+        // desenhar um padrão fictício.
+      } finally {
+        if (audioContext && audioContext.state !== "closed") {
+          await audioContext.close().catch(() => undefined);
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+      if (audioContext && audioContext.state !== "closed") void audioContext.close();
+    };
+  }, [src, waveformKey]);
 
   async function togglePlayback() {
     const audio = audioRef.current;
@@ -63,18 +132,19 @@ export function ConversationAudioPlayer({ src, label = "Mensagem de voz" }: Conv
       </button>
       <div className="conversation-audio-main">
         <div className="conversation-audio-title-row">
-          <span className="conversation-audio-title"><Volume2 aria-hidden="true" /> {label}</span>
           <span className="conversation-audio-duration">{formatAudioTime(currentTime)} / {formatAudioTime(duration)}</span>
         </div>
-        <div className="conversation-audio-wave" aria-hidden="true">
-          {waveformHeights.map((height, index) => (
-            <span
-              key={index}
-              className={index / waveformHeights.length <= progress / 100 ? "is-played" : ""}
-              style={{ height: height + "px" }}
-            />
-          ))}
-        </div>
+        {waveformBars.length > 0 && (
+          <div className="conversation-audio-wave" role="img" aria-label="Forma de onda real do áudio">
+            {waveformBars.map((height, index) => (
+              <span
+                key={index}
+                className={index / waveformBars.length <= progress / 100 ? "is-played" : ""}
+                style={{ height: Math.max(4, Math.round(height * 25)) + "px" }}
+              />
+            ))}
+          </div>
+        )}
         <div className="conversation-audio-progress">
           <div className="conversation-audio-progress-fill" style={{ width: progress + "%" }} />
           <input
