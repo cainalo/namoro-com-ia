@@ -151,7 +151,7 @@ function GamePage({gameId,userId,onBack}:{gameId:GameId;userId:string;onBack:()=
   const prior=document.body.style.overflow;document.body.style.overflow="hidden";
   const goBack=()=>{if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="briefing")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
   const escape=(e:KeyboardEvent)=>{if(e.key==="Escape"){e.preventDefault();goBack();}};
-  const onGameExit=()=>setConfirmExit(true);
+  const onGameExit=()=>onBack();
   window.addEventListener("keydown",escape);window.addEventListener("morados:game-back",goBack);window.addEventListener("morados:game-exit",onGameExit);
   return()=>{delete document.documentElement.dataset.moradosGameOpen;document.body.style.overflow=prior;window.removeEventListener("keydown",escape);window.removeEventListener("morados:game-back",goBack);window.removeEventListener("morados:game-exit",onGameExit);};
  },[onBack,confirmExit,stage]);

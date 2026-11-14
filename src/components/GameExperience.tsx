@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { AudioLines, AudioOff, ArrowLeft, Crown, RotateCcw, ShieldAlert, Sparkles, Trophy } from "lucide-react";
+import { AudioLines, VolumeX, ArrowLeft, Crown, RotateCcw, ShieldAlert, Sparkles, Trophy } from "lucide-react";
 
 type SoundKind = "tap" | "move" | "success" | "warning" | "impact" | "discovery";
 type AudioGraph = {
@@ -167,7 +167,7 @@ export function GameAudioToggle() {
       aria-label={enabled ? "Desativar música e sons" : "Ativar música e sons"}
       title={enabled ? "Som ligado" : "Ativar som"}
     >
-      {enabled ? <AudioLines aria-hidden="true" /> : <AudioOff aria-hidden="true" />}
+      {enabled ? <AudioLines aria-hidden="true" /> : <VolumeX aria-hidden="true" />}
       <span>{enabled ? "Som ligado" : "Som desligado"}</span>
     </button>
   );
