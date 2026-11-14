@@ -23675,3 +23675,34 @@ body {
     font-size: 10px;
   }
 }
+
+
+/* Ajuste final de rolagem: spacer real depois das mensagens, calculado da base
+   do histórico até o topo da fileira de ferramentas fixa. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-thread {
+  padding-bottom: 6px !important;
+  scroll-padding-bottom: calc(var(--conversation-composer-clearance, 180px) + 6px) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-scroll-end-spacer {
+  display: block;
+  width: 100%;
+  height: var(--conversation-composer-clearance, 180px);
+  min-height: var(--conversation-composer-clearance, 180px);
+  flex: 0 0 var(--conversation-composer-clearance, 180px);
+  pointer-events: none;
+}
+
+/* O player mostra apenas duração e forma de onda: nenhum nome de arquivo. */
+.app-shell.is-conversation-mode .conversation-audio-title-row {
+  justify-content: flex-end;
+}
+.app-shell.is-conversation-mode .conversation-audio-title {
+  display: none !important;
+}
+.app-shell.is-conversation-mode .conversation-audio-wave {
+  width: 100%;
+  min-height: 27px;
+}
+.app-shell.is-conversation-mode .conversation-audio-wave span {
+  min-height: 3px;
+}
