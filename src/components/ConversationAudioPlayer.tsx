@@ -4,6 +4,8 @@ import { Pause, Play } from "lucide-react";
 type ConversationAudioPlayerProps = {
   src: string;
   waveform?: number[];
+  durationSeconds?: number;
+  messageTime?: string;
 };
 
 function formatAudioTime(value: number) {
@@ -19,87 +21,62 @@ function normalizeWaveform(values: number[]) {
     .map((value) => Math.max(0.07, Math.min(1, value)));
 }
 
-function waveformFromBuffer(buffer: AudioBuffer, barCount = 56) {
-  const peaks = Array.from({ length: barCount }, (_, index) => {
-    const start = Math.floor((index * buffer.length) / barCount);
-    const end = Math.max(start + 1, Math.floor(((index + 1) * buffer.length) / barCount));
-    const stride = Math.max(1, Math.floor((end - start) / 180));
-    let sum = 0;
-    let count = 0;
-
-    for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
-      const samples = buffer.getChannelData(channel);
-      for (let frame = start; frame < Math.min(end, buffer.length); frame += stride) {
-        const sample = samples[frame] ?? 0;
-        sum += sample * sample;
-        count += 1;
-      }
-    }
-
-    return count > 0 ? Math.sqrt(sum / count) : 0;
-  });
-
-  const maximum = Math.max(0.0001, ...peaks);
-  return peaks.map((peak) => Math.round(Math.max(0.07, peak / maximum) * 100) / 100);
-}
-
-export function ConversationAudioPlayer({ src, waveform }: ConversationAudioPlayerProps) {
+export function ConversationAudioPlayer({
+  src,
+  waveform,
+  durationSeconds,
+  messageTime,
+}: ConversationAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState(
+    typeof durationSeconds === "number" && Number.isFinite(durationSeconds) && durationSeconds > 0
+      ? durationSeconds
+      : 0,
+  );
   const [playbackError, setPlaybackError] = useState(false);
-  const [waveformBars, setWaveformBars] = useState<number[]>([]);
-
-  const waveformKey = waveform?.length
-    ? normalizeWaveform(waveform).join(",")
-    : "";
+  const waveformKey = waveform?.length ? normalizeWaveform(waveform).join(",") : "";
+  const waveformBars = waveformKey ? waveformKey.split(",").map(Number) : [];
   const progress = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
 
   useEffect(() => {
-    let active = true;
-    let audioContext: AudioContext | null = null;
-
-    if (waveformKey) {
-      setWaveformBars(waveformKey.split(",").map(Number));
-      return () => {
-        active = false;
-      };
+    if (typeof durationSeconds === "number" && Number.isFinite(durationSeconds) && durationSeconds > 0) {
+      setDuration(durationSeconds);
     }
+  }, [durationSeconds]);
 
-    // Áudios enviados por anexo ou mensagens antigas não têm forma de onda no
-    // metadado. Nesse caso, calculamos os picos a partir dos próprios samples.
-    setWaveformBars([]);
-    void (async () => {
-      try {
-        const response = await fetch(src);
-        if (!response.ok) throw new Error("audio_fetch_failed");
-        const data = await response.arrayBuffer();
-        if (!active) return;
-        audioContext = new window.AudioContext();
-        const decoded = await audioContext.decodeAudioData(data);
-        if (active) setWaveformBars(waveformFromBuffer(decoded));
-      } catch {
-        // Sem waveform disponível, mantemos o controle de progresso sem
-        // desenhar um padrão fictício.
-      } finally {
-        if (audioContext && audioContext.state !== "closed") {
-          await audioContext.close().catch(() => undefined);
-        }
-      }
-    })();
-
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    // Solicita os metadados ainda na montagem, antes do primeiro toque.
+    audio.preload = "auto";
+    audio.load();
     return () => {
-      active = false;
-      if (audioContext && audioContext.state !== "closed") void audioContext.close();
+      audio.pause();
     };
-  }, [src, waveformKey]);
+  }, [src]);
+
+  useEffect(() => {
+    if (!playing) return;
+    let frame = 0;
+    const updateProgress = () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      setCurrentTime(audio.currentTime);
+      if (!audio.ended) frame = window.requestAnimationFrame(updateProgress);
+    };
+    frame = window.requestAnimationFrame(updateProgress);
+    return () => window.cancelAnimationFrame(frame);
+  }, [playing]);
 
   async function togglePlayback() {
     const audio = audioRef.current;
     if (!audio) return;
     setPlaybackError(false);
     if (audio.paused) {
+      // Resposta imediata ao toque; o preload deixa o fluxo de áudio pronto.
+      setPlaying(true);
       try {
         await audio.play();
       } catch {
@@ -108,6 +85,13 @@ export function ConversationAudioPlayer({ src, waveform }: ConversationAudioPlay
       }
     } else {
       audio.pause();
+      setPlaying(false);
+    }
+  }
+
+  function updateDuration(audio: HTMLAudioElement) {
+    if (Number.isFinite(audio.duration) && audio.duration > 0) {
+      setDuration(audio.duration);
     }
   }
 
@@ -120,7 +104,8 @@ export function ConversationAudioPlayer({ src, waveform }: ConversationAudioPlay
   }
 
   return (
-    <div className={"conversation-audio-player" + (playing ? " is-playing" : "")}>
+    <div className={"conversation-audio-player" + (playing ? " is-playing" : "") + (messageTime ? " has-message-time" : "")}>
+      {messageTime && <time className="conversation-audio-message-time">{messageTime}</time>}
       <button
         type="button"
         className="conversation-audio-play"
@@ -163,14 +148,16 @@ export function ConversationAudioPlayer({ src, waveform }: ConversationAudioPlay
       <audio
         ref={audioRef}
         src={src}
-        preload="metadata"
-        onLoadedMetadata={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
-        onDurationChange={(event) => setDuration(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0)}
+        preload="auto"
+        onLoadedMetadata={(event) => updateDuration(event.currentTarget)}
+        onDurationChange={(event) => updateDuration(event.currentTarget)}
+        onCanPlay={(event) => updateDuration(event.currentTarget)}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={(event) => {
           setPlaying(false);
+          updateDuration(event.currentTarget);
           setCurrentTime(Number.isFinite(event.currentTarget.duration) ? event.currentTarget.duration : 0);
         }}
         onError={() => {

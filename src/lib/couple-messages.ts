@@ -5,9 +5,7 @@ export type CoupleMessageType =
   | "image"
   | "video"
   | "audio"
-  | "file"
-  | "sticker"
-  | "gift";
+  | "file";
 
 export type CoupleMessage = {
   id: string;

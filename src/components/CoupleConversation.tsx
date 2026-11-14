@@ -13,25 +13,17 @@ import {
   Check,
   Copy,
   File,
-  Gift,
   Image,
   Camera,
-  Coffee,
-  Flower2,
   HandHeart,
-  Mail,
   Mic,
-  PawPrint,
-  Sparkles,
   Square,
-  Sun,
   LoaderCircle,
   MoreVertical,
   Paperclip,
   Search,
   Send,
   Smile,
-  Sticker,
   Video,
   Phone,
   X,
@@ -68,7 +60,6 @@ import {
 } from "@/lib/couple-messages";
 import {
   createCoupleMediaUrl,
-  MAX_COUPLE_MEDIA_BYTES,
   removeCoupleMedia,
   uploadCoupleMedia,
 } from "@/lib/couple-media";
@@ -90,23 +81,6 @@ type ConversationProps = {
   userId: string;
   onBack: () => void;
 };
-
-const stickerOptions = [
-  { id: "affection", label: "Carinho", Icon: HandHeart },
-  { id: "flowers", label: "Flores", Icon: Flower2 },
-  { id: "company", label: "Companhia", Icon: PawPrint },
-  { id: "sparkle", label: "Brilho", Icon: Sparkles },
-  { id: "sunshine", label: "Bom dia", Icon: Sun },
-  { id: "letter", label: "Cartinha", Icon: Mail },
-];
-const giftArtworks = [
-  { id: "flowers", label: "Flores", Icon: Flower2 },
-  { id: "embrace", label: "Abraço", Icon: HandHeart },
-  { id: "coffee", label: "Café", Icon: Coffee },
-  { id: "letter", label: "Carta", Icon: Mail },
-  { id: "surprise", label: "Surpresa", Icon: Gift },
-  { id: "sunshine", label: "Luz do dia", Icon: Sun },
-];
 
 function isCoupleMessage(value: unknown): value is CoupleMessage {
   if (typeof value !== "object" || value === null) return false;
@@ -194,6 +168,38 @@ function readMessageAudioWaveform(message: CoupleMessage): number[] | undefined 
   return waveform.length >= 8 ? waveform : undefined;
 }
 
+function readMessageAudioDuration(message: CoupleMessage): number | undefined {
+  const value = message.metadata?.durationSeconds;
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+async function readAudioFileDuration(file: File): Promise<number | undefined> {
+  if (!file.type.startsWith("audio/")) return undefined;
+  const url = URL.createObjectURL(file);
+  const audio = document.createElement("audio");
+  audio.preload = "metadata";
+
+  return new Promise((resolve) => {
+    let finished = false;
+    const finish = (duration?: number) => {
+      if (finished) return;
+      finished = true;
+      window.clearTimeout(timeout);
+      audio.onloadedmetadata = null;
+      audio.onerror = null;
+      audio.removeAttribute("src");
+      audio.load();
+      URL.revokeObjectURL(url);
+      resolve(duration && Number.isFinite(duration) && duration > 0 ? duration : undefined);
+    };
+    const timeout = window.setTimeout(() => finish(), 2500);
+    audio.onloadedmetadata = () => finish(audio.duration);
+    audio.onerror = () => finish();
+    audio.src = url;
+    audio.load();
+  });
+}
+
 export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
   const [draft, setDraft] = useState("");
@@ -218,8 +224,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
   const [backgroundImageError, setBackgroundImageError] = useState<string | null>(null);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
-  const [stickerOpen, setStickerOpen] = useState(false);
-  const [giftOpen, setGiftOpen] = useState(false);
   const [attachmentAccept, setAttachmentAccept] = useState("*/*");
   const [attachmentCapture, setAttachmentCapture] = useState<"environment" | undefined>(undefined);
   const [recordingStatus, setRecordingStatus] = useState<AudioRecordingStatus>("idle");
@@ -228,11 +232,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
   const [recordingElapsedMs, setRecordingElapsedMs] = useState(0);
   const [recordingLevels, setRecordingLevels] = useState<number[]>(Array.from({ length: 34 }, () => 0.08));
   const [recordingWaveform, setRecordingWaveform] = useState<number[]>([]);
-  const [giftTitle, setGiftTitle] = useState("");
-  const [giftNote, setGiftNote] = useState("");
-  const [giftArtwork, setGiftArtwork] = useState("flowers");
-  const [giftMediaFile, setGiftMediaFile] = useState<File | null>(null);
-  const [giftMediaPreview, setGiftMediaPreview] = useState<string | null>(null);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
   const mediaUrlsCacheRef = useRef<Record<string, string>>({});
   const mediaQueueRef = useRef<CoupleMessage[]>([]);
@@ -278,16 +277,6 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       if (audioContext && audioContext.state !== "closed") void audioContext.close();
     };
   }, []);
-
-  useEffect(() => {
-    if (!giftMediaFile) {
-      setGiftMediaPreview(null);
-      return;
-    }
-    const previewUrl = URL.createObjectURL(giftMediaFile);
-    setGiftMediaPreview(previewUrl);
-    return () => URL.revokeObjectURL(previewUrl);
-  }, [giftMediaFile]);
 
   useEffect(() => {
     if (!recordingFile) {
@@ -463,12 +452,12 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     })();
   }, [state]);
 
-  const selectedGiftArtwork = giftArtworks.find((item) => item.id === giftArtwork) ?? giftArtworks[0];
-  const SelectedGiftArtworkIcon = selectedGiftArtwork.Icon;
 
   const visibleMessages =
     state.status === "active"
       ? state.messages.filter((message) => {
+          const legacyType = message.message_type as string;
+          if (legacyType === "sticker" || legacyType === "gift") return false;
           const normalize = (value: string) =>
             value.toLocaleLowerCase("pt-BR")
               .normalize("NFD")
@@ -519,7 +508,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       window.visualViewport?.removeEventListener("resize", updateClearance);
       thread.style.removeProperty("--conversation-composer-clearance");
     };
-  }, [state.status, recordingStatus, attachmentOpen, stickerOpen, giftOpen]);
+  }, [state.status, recordingStatus, attachmentOpen]);
 
   useEffect(() => {
     const thread = threadRef.current;
@@ -734,8 +723,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       if (result.error) throw result.error;
       setDraft("");
       setAttachmentOpen(false);
-      setStickerOpen(false);
-      setGiftOpen(false);
+
       if (Capacitor.isNativePlatform()) {
         void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
       }
@@ -801,8 +789,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         throw result.error;
       }
       setAttachmentOpen(false);
-      setGiftOpen(false);
-      setGiftMediaFile(null);
+
       setRefreshKey((key) => key + 1);
       if (Capacitor.isNativePlatform()) void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
       return true;
@@ -819,23 +806,10 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
     setAttachmentCapture(undefined);
-    if (file) await sendFile(file);
-  }
-
-  function handleGiftMediaChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0] ?? null;
-    event.target.value = "";
-    if (!file) return;
-    if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-      setError("Escolha uma foto ou um vídeo para o presente.");
-      return;
+    if (file) {
+      const durationSeconds = await readAudioFileDuration(file);
+      await sendFile(file, undefined, durationSeconds ? { durationSeconds } : undefined);
     }
-    if (file.size > MAX_COUPLE_MEDIA_BYTES) {
-      setError("A mídia do presente deve ter no máximo 35 MB.");
-      return;
-    }
-    setError(null);
-    setGiftMediaFile(file);
   }
 
   function openAttachmentPicker(accept: string, capture?: "environment") {
@@ -967,8 +941,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
       recordingStartedAtRef.current = Date.now();
       setRecordingStatus("recording");
       setAttachmentOpen(false);
-      setStickerOpen(false);
-      setGiftOpen(false);
+
       startRecordingVisualizer();
     } catch (cause) {
       recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
@@ -1035,74 +1008,9 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     const sent = await sendFile(recordingFile, "audio", {
       waveform: recordingWaveform,
       waveformVersion: 1,
+      durationSeconds: Math.max(0.1, Math.round(recordingElapsedMs / 10) / 100),
     });
     if (sent) discardRecordedAudio();
-  }
-
-  async function sendSticker(sticker: (typeof stickerOptions)[number]) {
-    await saveMessage({
-      body: sticker.label,
-      messageType: "sticker",
-      metadata: { sticker: sticker.id, label: sticker.label },
-    });
-  }
-
-  async function sendGift() {
-    if (!giftTitle.trim() || state.status !== "active" || busy) return;
-    setBusy(true);
-    setError(null);
-    let uploadedPath: string | null = null;
-    try {
-      let attachmentName: string | null = null;
-      let attachmentMime: string | null = null;
-      if (giftMediaFile) {
-        const uploaded = await uploadCoupleMedia({ coupleId: state.coupleId, userId, scope: "chat", file: giftMediaFile });
-        if (uploaded.error || !uploaded.path) {
-          throw uploaded.error ?? new Error("Não foi possível adicionar a mídia ao presente.");
-        }
-        uploadedPath = uploaded.path;
-        attachmentName = giftMediaFile.name;
-        attachmentMime = giftMediaFile.type;
-      }
-
-      const result = await sendCoupleMessage({
-        coupleId: state.coupleId,
-        senderId: userId,
-        body: giftTitle.trim(),
-        messageType: "gift",
-        attachmentPath: uploadedPath,
-        attachmentName,
-        attachmentMime,
-        metadata: {
-          artwork: selectedGiftArtwork.id,
-          title: giftTitle.trim(),
-          note: giftNote.trim() || "Um presente criado especialmente para você.",
-        },
-      });
-      if (result.error) throw result.error;
-
-      uploadedPath = null;
-      setGiftTitle("");
-      setGiftNote("");
-      setGiftMediaFile(null);
-      setGiftOpen(false);
-      setRefreshKey((key) => key + 1);
-      if (Capacitor.isNativePlatform()) {
-        void Haptics.impact({ style: ImpactStyle.Light }).catch(() => undefined);
-      }
-    } catch (cause) {
-      console.error("Falha ao enviar presente.", cause);
-      if (uploadedPath) {
-        try {
-          await removeCoupleMedia(uploadedPath);
-        } catch {
-          // Não substitui o erro original de envio.
-        }
-      }
-      setError("Não foi possível enviar o presente. Seu texto e sua mídia foram mantidos para tentar novamente.");
-    } finally {
-      setBusy(false);
-    }
   }
 
   async function copyMessage(messageId: string, body: string) {
@@ -1123,35 +1031,8 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     if (!busy && draft.trim()) composerRef.current?.requestSubmit();
   }
 
-  function renderMessageContent(message: CoupleMessage) {
+  function renderMessageContent(message: CoupleMessage, messageTime?: string) {
     const url = mediaUrls[message.id];
-    if (message.message_type === "sticker") {
-      const stickerId = typeof message.metadata?.sticker === "string" ? message.metadata.sticker : "";
-      const sticker = stickerOptions.find((item) => item.id === stickerId) ?? stickerOptions[0];
-      const StickerIcon = sticker.Icon;
-      return <div className="conversation-sticker"><StickerIcon aria-hidden="true" /><span>{sticker.label}</span></div>;
-    }
-    if (message.message_type === "gift") {
-      const artworkId = typeof message.metadata?.artwork === "string" ? message.metadata.artwork : "";
-      const artwork = giftArtworks.find((item) => item.id === artworkId) ?? giftArtworks[4];
-      const GiftIcon = artwork.Icon;
-      const title = typeof message.metadata?.title === "string" ? message.metadata.title : message.body;
-      const note = typeof message.metadata?.note === "string" ? message.metadata.note : "Um presente para você";
-      return (
-        <div className="conversation-gift-card">
-          {url && message.attachment_mime?.startsWith("image/") ? (
-            <img className="conversation-gift-media" src={url} alt={title} loading="lazy" />
-          ) : url && message.attachment_mime?.startsWith("video/") ? (
-            <video className="conversation-gift-media" src={url} controls playsInline preload="metadata" />
-          ) : (
-            <span className="conversation-gift-art"><GiftIcon aria-hidden="true" /></span>
-          )}
-          <span className="conversation-gift-kicker">Uma criação para você</span>
-          <strong>{title}</strong>
-          <span>{note}</span>
-        </div>
-      );
-    }
     if (message.message_type === "image") {
       return url ? (
         <a className="conversation-image-link" href={url} target="_blank" rel="noreferrer">
@@ -1166,7 +1047,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
     }
     if (message.message_type === "audio") {
       return url ? (
-        <ConversationAudioPlayer src={url} waveform={readMessageAudioWaveform(message)} />
+        <ConversationAudioPlayer src={url} waveform={readMessageAudioWaveform(message)} durationSeconds={readMessageAudioDuration(message)} messageTime={messageTime} />
       ) : <p className="conversation-attachment-pending">Carregando áudio…</p>;
     }
     if (message.message_type === "file") {
@@ -1374,13 +1255,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                     >
                       <span className="conversation-sender sr-only">{ownMessage ? "Você" : state.otherName}</span>
                       <div className={"conversation-message-content is-" + message.message_type}>
-                        <time
-                          className="conversation-message-time"
-                          dateTime={message.created_at}
-                        >
-                          {formatMessageTime(message.created_at)}
-                        </time>
-                        {renderMessageContent(message)}
+                        {message.message_type === "audio" ? (
+                          renderMessageContent(message, formatMessageTime(message.created_at))
+                        ) : (
+                          <>
+                            <time className="conversation-message-time" dateTime={message.created_at}>
+                              {formatMessageTime(message.created_at)}
+                            </time>
+                            {renderMessageContent(message)}
+                          </>
+                        )}
                       </div>
                       <button
                         type="button"
@@ -1402,79 +1286,16 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
           {copyError && <p className="conversation-error" role="alert">{copyError}</p>}
           {error && <p className="conversation-error" role="alert">{error}</p>}
 
-          {(attachmentOpen || stickerOpen || giftOpen) && (
+          {attachmentOpen && (
             <div className="conversation-tools-panel">
-              {attachmentOpen && (
-                <div className="conversation-attachment-grid">
-                  <button type="button" onClick={() => openAttachmentPicker("image/*")}><Image aria-hidden="true" /><span>Galeria</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("image/*", "environment")}><Camera aria-hidden="true" /><span>Tirar foto</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("video/*")}><Video aria-hidden="true" /><span>Vídeo</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("video/*", "environment")}><Video aria-hidden="true" /><span>Gravar vídeo</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("audio/*")}><Music2 aria-hidden="true" /><span>Enviar áudio</span></button>
-                  <button type="button" onClick={() => openAttachmentPicker("application/pdf,text/plain,application/zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}><File aria-hidden="true" /><span>Arquivos</span></button>
-                </div>
-              )}
-              {stickerOpen && (
-                <div className="conversation-sticker-grid">
-                  {stickerOptions.map((sticker) => {
-                    const StickerIcon = sticker.Icon;
-                    return <button type="button" key={sticker.id} onClick={() => void sendSticker(sticker)} disabled={busy} title={sticker.label}>
-                      <StickerIcon aria-hidden="true" /><span>{sticker.label}</span>
-                    </button>;
-                  })}
-                </div>
-              )}
-              {giftOpen && (
-                <div className="conversation-gift-workshop">
-                  <div className="conversation-gift-workshop-head">
-                    <Gift aria-hidden="true" />
-                    <div><strong>Oficina de presentes</strong><small>Monte um cartão com texto e mídia para enviar na conversa.</small></div>
-                  </div>
-                  <div className="conversation-gift-live-preview" aria-label="Prévia do cartão de presente">
-                    <span className="conversation-gift-live-art">
-                      {giftMediaPreview && giftMediaFile?.type.startsWith("image/") ? (
-                        <img src={giftMediaPreview} alt="Prévia da foto do presente" />
-                      ) : giftMediaPreview && giftMediaFile?.type.startsWith("video/") ? (
-                        <video src={giftMediaPreview} controls playsInline preload="metadata" aria-label="Prévia do vídeo do presente" />
-                      ) : (
-                        <SelectedGiftArtworkIcon aria-hidden="true" />
-                      )}
-                    </span>
-                    <div className="conversation-gift-live-copy">
-                      <small>Prévia do cartão</small>
-                      <strong>{giftTitle.trim() || "Um presente para você"}</strong>
-                      <p>{giftNote.trim() || "Sua mensagem especial aparecerá aqui."}</p>
-                    </div>
-                  </div>
-                  <div className="conversation-gift-artworks">
-                    {giftArtworks.map((artwork) => {
-                      const ArtworkIcon = artwork.Icon;
-                      return <button type="button" key={artwork.id} className={giftArtwork === artwork.id ? "is-selected" : ""} onClick={() => setGiftArtwork(artwork.id)} aria-pressed={giftArtwork === artwork.id}>
-                        <ArtworkIcon aria-hidden="true" /><span>{artwork.label}</span>
-                      </button>;
-                    })}
-                  </div>
-                  <label className="conversation-gift-field">Título<input value={giftTitle} onChange={(event) => setGiftTitle(event.target.value)} maxLength={70} placeholder="Um presente para você" /></label>
-                  <label className="conversation-gift-field">Mensagem<textarea value={giftNote} onChange={(event) => setGiftNote(event.target.value)} maxLength={360} rows={3} placeholder="Escreva algo especial…" /></label>
-                  <label className="conversation-gift-media-picker">
-                    <Image aria-hidden="true" />
-                    <span>{giftMediaFile ? "Trocar foto ou vídeo" : "Adicionar foto ou vídeo"}</span>
-                    <input className="sr-only" type="file" accept="image/*,video/*" onChange={handleGiftMediaChange} />
-                  </label>
-                  {giftMediaFile && (
-                    <div className="conversation-gift-media-selected">
-                      <span><strong>{giftMediaFile.name}</strong><small>{(giftMediaFile.size / (1024 * 1024)).toFixed(1)} MB</small></span>
-                      <button type="button" onClick={() => setGiftMediaFile(null)} aria-label="Remover mídia do presente" title="Remover mídia" disabled={busy}>
-                        <X aria-hidden="true" />
-                      </button>
-                    </div>
-                  )}
-                  <button type="button" className="conversation-gift-send" onClick={() => void sendGift()} disabled={busy || !giftTitle.trim()}>
-                    {busy ? <LoaderCircle aria-hidden="true" /> : <Send aria-hidden="true" />}
-                    {busy ? "Enviando presente…" : "Enviar presente"}
-                  </button>
-                </div>
-              )}
+              <div className="conversation-attachment-grid">
+                <button type="button" onClick={() => openAttachmentPicker("image/*")}><Image aria-hidden="true" /><span>Galeria</span></button>
+                <button type="button" onClick={() => openAttachmentPicker("image/*", "environment")}><Camera aria-hidden="true" /><span>Tirar foto</span></button>
+                <button type="button" onClick={() => openAttachmentPicker("video/*")}><Video aria-hidden="true" /><span>Vídeo</span></button>
+                <button type="button" onClick={() => openAttachmentPicker("video/*", "environment")}><Video aria-hidden="true" /><span>Gravar vídeo</span></button>
+                <button type="button" onClick={() => openAttachmentPicker("audio/*")}><Music2 aria-hidden="true" /><span>Enviar áudio</span></button>
+                <button type="button" onClick={() => openAttachmentPicker("application/pdf,text/plain,application/zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}><File aria-hidden="true" /><span>Arquivos</span></button>
+              </div>
             </div>
           )}
 
@@ -1494,32 +1315,12 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
                   <button
                     type="button"
                     className={attachmentOpen ? "is-active" : ""}
-                    onClick={() => { setAttachmentOpen((value) => !value); setStickerOpen(false); setGiftOpen(false); }}
+                    onClick={() => setAttachmentOpen((value) => !value)}
                     aria-label="Anexar mídia"
                     title="Foto, vídeo, áudio ou arquivo"
                     disabled={busy}
                   >
                     <Paperclip aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    className={stickerOpen ? "is-active" : ""}
-                    onClick={() => { setStickerOpen((value) => !value); setAttachmentOpen(false); setGiftOpen(false); }}
-                    aria-label="Enviar figurinha"
-                    title="Figurinhas"
-                    disabled={busy}
-                  >
-                    <Sticker aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    className={giftOpen ? "is-active" : ""}
-                    onClick={() => { setGiftOpen((value) => !value); setAttachmentOpen(false); setStickerOpen(false); }}
-                    aria-label="Abrir oficina de presentes"
-                    title="Oficina de presentes"
-                    disabled={busy}
-                  >
-                    <Gift aria-hidden="true" />
                   </button>
                 </div>
               )}
