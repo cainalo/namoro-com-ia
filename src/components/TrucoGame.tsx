@@ -56,7 +56,7 @@ export function decideHand(wins:TrickWinner[],starter:Player):Player|null{
   if(w0>=2)return 0;if(w1>=2)return 1;
   if(wins.length<3)return null;
   const firstDecisive=wins.find(x=>x!=="tie");
-  return firstDecisive==="tie"||firstDecisive===undefined?starter:firstDecisive;
+  return firstDecisive===undefined||(firstDecisive as unknown)==="tie"?starter:(firstDecisive as Player);
 }
 export function endHand(state:TrucoState,winner:Player,reason:string):TrucoState{
   const score=[...state.score] as [number,number];

@@ -35,7 +35,7 @@ export function useHideOnScroll(resetKey: string | number) {
       );
     };
     const readPosition = (source: ScrollSource) =>
-      source === window ? rootScrollTop() : Math.max(0, source.scrollTop);
+      source === window ? rootScrollTop() : Math.max(0, (source as HTMLElement).scrollTop);
 
     previousPositions.set(window, rootScrollTop());
     document

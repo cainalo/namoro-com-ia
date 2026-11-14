@@ -1089,7 +1089,7 @@ export function CoupleFeed({
                                 aria-haspopup="listbox"
                                 onClick={() => setMusicPickerBlockId((current) => current === block.id ? null : block.id)}
                               >
-                                <span>{getMoradosMusicTrack(block.trackId)?.title ?? "Escolher uma música"}</span>
+                                <span>{getMoradosMusicTrack(block.trackId ?? undefined)?.title ?? "Escolher uma música"}</span>
                                 <ChevronDown aria-hidden="true" />
                               </button>
                               {musicPickerBlockId === block.id && (

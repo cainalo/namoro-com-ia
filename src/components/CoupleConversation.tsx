@@ -764,7 +764,7 @@ export function CoupleConversation({ userId, onBack }: ConversationProps) {
         mediaRecorderRef.current = null;
         recordingChunksRef.current = [];
         setRecordingAudio(false);
-        if (blob.size > 0) void sendFile(new File([blob], "mensagem-de-voz." + extension, { type: mime }));
+        if (blob.size > 0) void sendFile(new globalThis.File([blob], "mensagem-de-voz." + extension, { type: mime }));
         else setError("A gravação ficou vazia. Tente novamente.");
       };
       recorder.start(250);

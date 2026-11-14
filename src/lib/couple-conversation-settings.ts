@@ -201,7 +201,7 @@ export async function loadConversationNotifications(coupleId: string, userId: st
   const key = "morados-conversation-notifications:" + coupleId + ":" + userId;
   const fallback = readLocalConversationNotifications(coupleId, userId);
   try {
-    const { data, error } = await memberClient
+    const { data, error } = await (memberClient as any)
       .from("couple_conversation_member_settings")
       .select("preferences")
       .eq("couple_id", coupleId)
