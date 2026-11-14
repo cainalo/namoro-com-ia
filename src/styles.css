@@ -26909,3 +26909,159 @@ body {
   display: none;
   background: none;
 }
+
+
+/* MORADOS GAME EXPERIENCE — primeira arena de aventura 2D */
+.game-play-surface:has(.cave-expedition) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: #241b25;
+  border: 0;
+  border-radius: 0;
+}
+.cave-expedition {
+  --cave-ink: #fff4d7;
+  --cave-gold: #f5c65d;
+  display: grid;
+  width: 100%;
+  min-height: min(780px, calc(100dvh - 125px));
+  gap: 13px;
+  padding: clamp(12px, 2.5vw, 24px);
+  border: 2px solid #59402f;
+  border-radius: 24px;
+  background: #30232a;
+  color: var(--cave-ink);
+  box-shadow: inset 0 0 0 5px #3d2c30;
+}
+.cave-hud, .cave-brand, .cave-hud-actions, .cave-status-strip, .cave-scene-top,
+.cave-controls, .cave-footer, .cave-ending-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cave-brand { justify-content: flex-start; }
+.cave-brand > span {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 2px solid #f0bd52;
+  border-radius: 14px;
+  background: #a94e38;
+  color: #fff4d7;
+}
+.cave-brand small, .cave-scene-top, .cave-ending > span {
+  color: #f4c968;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .13em;
+}
+.cave-brand h2 { margin: 2px 0 0; color: #fff4d7; font-size: clamp(17px, 3vw, 24px); }
+.cave-hud-actions button {
+  display: grid; width: 40px; height: 40px; place-items: center;
+  border: 2px solid #76513c; border-radius: 12px; background: #49343a; color: #fff0ce;
+}
+.cave-hud-actions button[aria-pressed="true"] { border-color: #f5c65d; background: #b66b31; }
+.cave-status-strip { justify-content: flex-start; flex-wrap: wrap; }
+.cave-status-strip span {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #76513c; border-radius: 999px; background: #49343a;
+  padding: 7px 10px; color: #fff0ce; font-size: 10px; font-weight: 850;
+}
+.cave-status-strip span svg { width: 14px; height: 14px; color: #f5c65d; }
+.cave-stage {
+  display: grid; gap: 12px; justify-items: center;
+  border: 2px solid #73503b; border-radius: 19px;
+  background: #1d1922; padding: 13px;
+}
+.cave-scene-top { width: 100%; font-size: 8px; }
+.cave-scene-top span:last-child { color: #b4d4b4; }
+.cave-map {
+  display: grid;
+  width: min(100%, 550px);
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 3px;
+  padding: 5px;
+  border: 3px solid #6d4b38;
+  border-radius: 12px;
+  background: #100f16;
+  box-shadow: 0 7px 0 #17131a;
+}
+.cave-tile {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #594b48;
+  border-radius: 4px;
+  background: #6d5747;
+  color: #f7d17a;
+  font-size: clamp(10px, 2.4vw, 19px);
+  font-weight: 950;
+  transition: background 150ms ease, filter 150ms ease;
+}
+.cave-tile.is-wall { border-color: #5a4a47; background: #41343a; color: #75605b; }
+.cave-tile.is-floor { background: #8a7256; color: #f5d28c; }
+.cave-tile.is-start { background: #39745b; color: #d4f0b7; }
+.cave-tile.is-gate { border: 2px solid #e8bd52; background: #9c6336; color: #fff0a4; }
+.cave-tile.is-enemy { border: 2px solid #b94c43; background: #853b3a; color: #ffe1b7; }
+.cave-tile.is-relic { border: 2px solid #e5b94e; background: #96702d; color: #fff2a9; }
+.cave-tile.is-key { border: 2px solid #e4bd62; background: #a87937; color: #fff2b7; }
+.cave-tile.is-potion { border: 2px solid #7ec6a3; background: #317e70; color: #e1fff0; }
+.cave-tile.is-hidden { border-color: #28242a; background: #211d25; color: transparent; }
+.cave-tile.is-player { border: 2px solid #fff0a5; background: #e8a83d; box-shadow: 0 0 0 2px #7c4a2c; }
+.cave-hero { color: #382334; font-size: clamp(15px, 3vw, 25px); }
+.cave-scene-caption {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  border: 1px solid #76513c; border-radius: 12px; background: #49343a; padding: 10px 12px;
+}
+.cave-scene-caption > span { color: #f5c65d; font-size: 20px; }
+.cave-scene-caption p { margin: 0; color: #fff1d3; font-size: 12px; line-height: 1.45; }
+.cave-controls { justify-content: center; flex-wrap: wrap; }
+.cave-dpad {
+  display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(2, 40px);
+  gap: 5px;
+}
+.cave-dpad button {
+  display: grid; place-items: center; border: 2px solid #8c6645; border-radius: 11px;
+  background: #76503d; color: #fff0ce; touch-action: manipulation;
+}
+.cave-dpad button:first-child { grid-column: 2; }
+.cave-dpad button:nth-child(2) { grid-column: 1; grid-row: 2; }
+.cave-dpad button:nth-child(3) { grid-column: 2; grid-row: 2; }
+.cave-dpad button:nth-child(4) { grid-column: 3; grid-row: 2; }
+.cave-dpad button:active { transform: scale(.94); background: #ad6a37; }
+.cave-attack, .cave-ending button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 45px; border: 2px solid #f4c15b; border-radius: 13px;
+  background: #c4563c; color: #fff; padding: 0 18px; font-weight: 950;
+}
+.cave-attack:disabled { opacity: .4; }
+.cave-footer { flex-wrap: wrap; color: #c8b49b; font-size: 10px; }
+.cave-footer button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #76513c; border-radius: 10px; background: #49343a; color: #fff0ce; padding: 8px 10px; }
+.cave-ending {
+  position: fixed; z-index: 10000; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+  background: #241b25; color: #fff4d7; text-align: center;
+}
+.cave-ending.is-won { background: #1c453d; }
+.cave-ending.is-lost { background: #522d35; }
+.cave-ending-art { display: grid; width: 104px; height: 104px; place-items: center; border: 4px solid #f5c65d; border-radius: 50%; background: #a94e38; color: #fff0a4; }
+.cave-ending-art svg { width: 54px; height: 54px; }
+.cave-ending h2 { max-width: 600px; margin: 0; color: #fff4d7; font-size: clamp(27px, 6vw, 48px); line-height: 1.05; }
+.cave-ending p { max-width: 530px; margin: 0; color: #f0dfc6; line-height: 1.6; }
+.cave-ending-stats { justify-content: center; flex-wrap: wrap; }
+.cave-ending-stats strong { border: 1px solid #b28b54; border-radius: 12px; background: #493b37; padding: 10px 13px; color: #ffe4a2; font-size: 11px; }
+@media(max-width:520px) {
+ .cave-expedition { border-radius: 15px; padding: 10px; }
+ .cave-stage { padding: 8px; gap: 8px; }
+ .cave-map { gap: 2px; padding: 3px; }
+ .cave-tile { border-radius: 2px; }
+ .cave-status-strip { gap: 5px; }
+ .cave-status-strip span { font-size: 9px; padding: 6px 8px; }
+ .cave-controls { gap: 15px; }
+}
+@media(prefers-reduced-motion:reduce) { .cave-tile { transition: none; } }
