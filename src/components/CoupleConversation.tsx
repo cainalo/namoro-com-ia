@@ -615,7 +615,13 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
 
     async function loadConversation() {
       setState({ status: "loading" });
+      setThreadInitialPositioned(false);
       setError(null);
+      // Limpa URLs de uma abertura anterior antes de preparar o novo histórico.
+      mediaUrlsCacheRef.current = {};
+      mediaQueueRef.current = [];
+      pendingMediaIdsRef.current.clear();
+      setMediaUrls({});
 
       try {
         const { data: membership, error: membershipError } = await supabase
@@ -676,6 +682,34 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         if (result.error) throw result.error;
         if (!active) return;
         const messages = (result.data ?? []).slice().reverse().map(normalizedMessage);
+
+        // Não mostra o histórico enquanto as mídias das mensagens já carregadas
+        // ainda estão sendo assinadas. Se os áudios forem liberados um a um,
+        // cada player troca de placeholder e altera a altura da lista, fazendo
+        // a conversa saltar para pontos diferentes.
+        const attachmentMessages = messages.filter((message) => Boolean(message.attachment_path));
+        const signedMediaEntries = await mapWithConcurrency(
+          attachmentMessages,
+          6,
+          async (message) => {
+            try {
+              const media = await createCoupleMediaUrl(message.attachment_path as string);
+              return [message.id, media.url] as const;
+            } catch (mediaError) {
+              console.warn("Não foi possível preparar uma mídia antes de abrir a conversa.", mediaError);
+              return [message.id, null] as const;
+            }
+          },
+        );
+        if (!active) return;
+
+        const initialMediaUrls: Record<string, string> = {};
+        for (const [messageId, url] of signedMediaEntries) {
+          if (url) initialMediaUrls[messageId] = url;
+        }
+        mediaUrlsCacheRef.current = initialMediaUrls;
+        setMediaUrls(initialMediaUrls);
+
         setHasOlderMessages((result.data ?? []).length === 100);
         setState({
           status: "active",
