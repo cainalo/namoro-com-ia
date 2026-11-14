@@ -203,7 +203,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
 
   const statusText =
     game.status === "finished"
-      ? `${playerLabel(game.winner ?? game.turn)} venceram a partida.`
+      ? `${solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner ?? game.turn)} venceu a partida.`
       : solo && game.turn === "black"
         ? "Morados estão analisando o tabuleiro…"
         : selectedPath.length > 0
@@ -213,7 +213,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
             : `Vez das ${playerLabel(game.turn).toLowerCase()}.`;
 
   return (
-    <section className="checkers-game" aria-labelledby="checkers-title" className={solo ? "is-solo" : undefined}>
+    <section className={"checkers-game" + (solo ? " is-solo" : "")} aria-labelledby="checkers-title">
       <header className="connect-four-heading">
         <div>
           <p className="date-kicker">Estratégia · {solo ? "contra Morados" : "2 jogadores"}</p>
