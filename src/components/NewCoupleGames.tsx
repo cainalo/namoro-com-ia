@@ -1,54 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Brain, Eye, EyeOff, Layers, RotateCcw, Sparkles, Trophy } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
-
-const MEMORY_SYMBOLS = ["🌙", "🍃", "🔥", "💧", "⭐", "🌸", "🍊", "🪸"] as const;
-type MemoryState = {
-  deck: string[];
-  matched: number[];
-  revealed: number[];
-  scores: [number, number];
-  turn: 0 | 1;
-  attempts: number;
-  known: Record<number, string>;
-  phase: "playing" | "finished";
-};
-
-export function createMemoryDeck(random: () => number = Math.random): string[] {
-  const cards = [...MEMORY_SYMBOLS, ...MEMORY_SYMBOLS];
-  for (let index = cards.length - 1; index > 0; index -= 1) {
-    const other = Math.floor(random() * (index + 1));
-    [cards[index], cards[other]] = [cards[other], cards[index]];
-  }
-  return cards;
-}
-
-export function chooseMemoryBotPair(
-  deck: string[],
-  matched: number[],
-  known: Record<number, string>,
-  random: () => number = Math.random,
-): [number, number] | null {
-  const available = deck.map((_, index) => index).filter((index) => !matched.includes(index));
-  if (available.length < 2) return null;
-  const remembered = new Map<string, number[]>();
-  for (const index of available) {
-    const symbol = known[index];
-    if (!symbol) continue;
-    remembered.set(symbol, [...(remembered.get(symbol) ?? []), index]);
-  }
-  const pair = [...remembered.values()].find((indexes) => indexes.length >= 2);
-  if (pair) return [pair[0], pair[1]];
-  const unknown = available.filter((index) => !known[index]);
-  const firstPool = unknown.length ? unknown : available;
-  const first = firstPool[Math.floor(random() * firstPool.length)];
-  const secondKnown = available.find((index) => index !== first && known[index] === deck[first]);
-  if (secondKnown !== undefined) return [first, secondKnown];
-  const secondPool = available.filter((index) => index !== first && !known[index]);
-  const finalPool = secondPool.length ? secondPool : available.filter((index) => index !== first);
-  const second = finalPool[Math.floor(random() * finalPool.length)];
-  return [first, second];
-}
+import { chooseMemoryBotPair, createMemoryDeck, isSequencePrefix, MEMORY_SYMBOLS, SEQUENCE_TOKEN_IDS, type SequenceToken } from "@/lib/new-game-logic";
 
 function newMemoryState(): MemoryState {
   return { deck: createMemoryDeck(), matched: [], revealed: [], scores: [0, 0], turn: 0, attempts: 0, known: {}, phase: "playing" };
@@ -187,7 +140,6 @@ const SEQUENCE_TOKENS = [
   { id: "star", emoji: "⭐", label: "Estrela" },
   { id: "flower", emoji: "🌸", label: "Flor" },
 ] as const;
-type SequenceToken = typeof SEQUENCE_TOKENS[number]["id"];
 type SequenceState = {
   phase: "showing" | "input" | "turn-end" | "finished";
   turn: 0 | 1;
@@ -202,7 +154,7 @@ export function isSequencePrefix(target: SequenceToken[], input: SequenceToken[]
 }
 
 function newSequenceState(): SequenceState {
-  return { phase: "showing", turn: 0, sequence: Array.from({ length: 3 }, () => SEQUENCE_TOKENS[Math.floor(Math.random() * SEQUENCE_TOKENS.length)].id), input: [], scores: [null, null], completed: [false, false] };
+  return { phase: "showing", turn: 0, sequence: Array.from({ length: 3 }, () => SEQUENCE_TOKEN_IDS[Math.floor(Math.random() * SEQUENCE_TOKEN_IDS.length)]), input: [], scores: [null, null], completed: [false, false] };
 }
 
 function sequenceOutcome(state: SequenceState) {
@@ -220,10 +172,10 @@ export function SymbolSequenceGame({ solo = false }: { solo?: boolean }) {
   });
 
   useEffect(() => {
-    if (game.phase !== "showing") return;
+    if (game.phase !== "showing" || (sync.online && !sync.canAct)) return;
     const timer = window.setTimeout(() => setGame((current) => current.phase === "showing" ? { ...current, phase: "input", input: [] } : current), 1250 + game.sequence.length * 230);
     return () => window.clearTimeout(timer);
-  }, [game.phase, game.sequence, setGame]);
+  }, [game.phase, game.sequence, sync.online, sync.canAct, setGame]);
 
   function finishTurn(score: number) {
     const scores = [...game.scores] as [number | null, number | null];
@@ -244,7 +196,7 @@ export function SymbolSequenceGame({ solo = false }: { solo?: boolean }) {
       if (game.sequence.length >= 9) {
         finishTurn(9);
       } else {
-        const nextToken = SEQUENCE_TOKENS[Math.floor(Math.random() * SEQUENCE_TOKENS.length)].id;
+        const nextToken = SEQUENCE_TOKEN_IDS[Math.floor(Math.random() * SEQUENCE_TOKEN_IDS.length)];
         setGame({ ...game, sequence: [...game.sequence, nextToken], input: [], phase: "showing" });
       }
       return;
