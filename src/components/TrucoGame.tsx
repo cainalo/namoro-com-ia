@@ -168,12 +168,12 @@ export function TrucoGame({ solo = false }: { solo?: boolean }){
         <span className="truco-score-separator">×</span>
         <div className={game.turn===1?"is-active":""}><span className="truco-player-dot is-two"/>{solo ? "Morados" : "Pessoa 2"}<strong>{game.score[1]}</strong></div>
       </div>
-      <div className="truco-round-meta"><span>Mão vale <strong>{game.handPoints}</strong></span><span>Rodada {game.tricks.length+1}/3</span><span>Primeiro: Pessoa {game.handStarter+1}</span></div>
+      <div className="truco-round-meta"><span>Mão vale <strong>{game.handPoints}</strong></span><span>Rodada {game.tricks.length+1}/3</span><span>Primeiro: {solo ? (game.handStarter===0?"Você":"Morados") : `Pessoa ${game.handStarter+1}`}</span></div>
       <div className="truco-table">
         <div className="truco-vira"><small>VIRA · MANILHA</small><div className="truco-vira-cards"><TrucoCard card={game.vira}/><span className="truco-manilha">Manilha: {game.manilha}</span></div></div>
         <div className="truco-played-cards">
           {game.table.length===0?<p>As cartas jogadas aparecerão aqui.</p>:game.table.map(item=><div key={item.card.id}><small>{solo ? (item.player===0?"Você":"Morados") : `Pessoa ${item.player+1}`}</small><TrucoCard card={item.card}/></div>)}
-          {game.phase==="trick-result"&&<strong>{game.lastTrick==="tie"?"Rodada empatada.":`Rodada da Pessoa ${(game.lastTrick??0)+1}.`}</strong>}
+          {game.phase==="trick-result"&&<strong>{game.lastTrick==="tie"?"Rodada empatada.":solo?(game.lastTrick===0?"Rodada vencida por você.":"Rodada vencida pelos Morados."):`Rodada da Pessoa ${(game.lastTrick??0)+1}.`}</strong>}
         </div>
       </div>
 
@@ -189,7 +189,7 @@ export function TrucoGame({ solo = false }: { solo?: boolean }){
         <div className="truco-overlay is-challenge">
           <span><Swords aria-hidden="true"/></span><p className="date-kicker">Desafio aceito?</p>
           <h3>{solo ? (game.challenger===1?"Você recebeu um pedido de ":"Morados receberam um pedido de ") : `Pessoa ${other(game.challenger??0)+1}, pediram `}{raiseLabel(game.pendingRaise??3).toLowerCase()}!</h3>
-          <p>A mão passa a valer {game.pendingRaise} pontos se você aceitar. Se correr, {solo?(game.challenger===1?"você":"Morados"):"a outra pessoa"} leva os {game.handPoints} ponto(s) atuais.</p>
+          <p>A mão passa a valer {game.pendingRaise} pontos se você aceitar. Se correr, {solo?(game.challenger===0?"você":"Morados"):"a outra pessoa"} leva os {game.handPoints} ponto(s) atuais.</p>
           {!(solo && game.challenger===0) ? <div className="truco-challenge-actions">
             <button type="button" className="primary-action" onClick={()=>answerChallenge(true)}>Aceitar · {game.pendingRaise}</button>
             <button type="button" className="secondary-action" onClick={()=>answerChallenge(false)}>Correr · {game.handPoints} ponto(s)</button>
@@ -212,7 +212,7 @@ export function TrucoGame({ solo = false }: { solo?: boolean }){
         <div className="truco-result-panel"><strong>{game.lastTrick==="tie"?"Empate nesta rodada.":solo?(game.lastTrick===0?"Você ganhou a rodada.":"Morados ganharam a rodada."):`Pessoa ${(game.lastTrick??0)+1} ganhou a rodada.`}</strong><p>A próxima rodada começa por quem venceu; se houve empate, a mão segue as regras de desempate.</p><button type="button" className="primary-action" onClick={continueTrick}>Próxima rodada</button></div>
       )}
       {(game.phase==="hand-result"||game.phase==="match-result")&&(
-        <div className="truco-result-panel is-hand-end"><strong>{game.phase==="match-result"?solo?(game.matchWinner===0?"Você venceu o jogo!":"Morados venceram o jogo!"):`Pessoa ${(game.matchWinner??0)+1} venceu o jogo!`:`Pessoa ${(game.handWinner??0)+1} venceu a mão.`}</strong><p>{game.handReason}</p><div className="truco-final-score"><span>{solo ? "Você" : "Pessoa 1"} <strong>{game.score[0]}</strong></span><span>{solo ? "Morados" : "Pessoa 2"} <strong>{game.score[1]}</strong></span></div>{game.phase==="hand-result"?<button type="button" className="primary-action" onClick={nextHand}>Nova mão</button>:<button type="button" className="primary-action" onClick={restart}>Nova partida</button>}</div>
+        <div className="truco-result-panel is-hand-end"><strong>{game.phase==="match-result"?(solo?(game.matchWinner===0?"Você venceu o jogo!":"Morados venceram o jogo!"):`Pessoa ${(game.matchWinner??0)+1} venceu o jogo!`):(solo?(game.handWinner===0?"Você venceu a mão!":"Morados venceram a mão."):`Pessoa ${(game.handWinner??0)+1} venceu a mão.`)}</strong><p>{game.handReason}</p><div className="truco-final-score"><span>{solo ? "Você" : "Pessoa 1"} <strong>{game.score[0]}</strong></span><span>{solo ? "Morados" : "Pessoa 2"} <strong>{game.score[1]}</strong></span></div>{game.phase==="hand-result"?<button type="button" className="primary-action" onClick={nextHand}>Nova mão</button>:<button type="button" className="primary-action" onClick={restart}>Nova partida</button>}</div>
       )}
       <footer className="truco-footer"><span>Truco Paulista · {solo ? "Contra Morados" : "primeiro a 12 pontos"}</span><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></footer>
       {error&&<p className="couple-game-error">{error}</p>}
