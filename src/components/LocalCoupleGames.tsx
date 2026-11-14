@@ -222,11 +222,11 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
 }
 
 const dailyChallenges = [
-  {category:"Criatividade",title:"Desenho às cegas",instruction:"Escolham um objeto. Cada pessoa desenha sem olhar para o papel por um minuto. Depois comparem os resultados."},
-  {category:"Dedução",title:"Objeto misterioso",instruction:"Uma pessoa escolhe um objeto que esteja perto. A outra pode fazer até dez perguntas que só aceitam sim ou não."},
-  {category:"Memória",title:"Linha do tempo",instruction:"Cada pessoa conta três momentos marcantes da história de vocês. Tentem colocá-los na ordem correta."},
-  {category:"Improviso",title:"História em turnos",instruction:"Criem juntos uma história. Cada pessoa acrescenta duas frases, sem combinar o que vem depois."},
-  {category:"Observação",title:"Caça às cores",instruction:"Escolham uma cor. Cada pessoa tem um minuto para encontrar cinco objetos dessa cor e mostrar o resultado."},
+  {category:"Criatividade",title:"Desenho às cegas",instruction:"Escolham um objeto. Cada pessoa desenha sem olhar para o papel por um minuto. Depois comparem os resultados.",solo:"Escolha um objeto simples, feche os olhos e desenhe por um minuto. Depois observe o resultado e dê um nome à sua criação."},
+  {category:"Dedução",title:"Objeto misterioso",instruction:"Uma pessoa escolhe um objeto que esteja perto. A outra pode fazer até dez perguntas que só aceitam sim ou não.",solo:"Escolha um objeto próximo sem olhar diretamente para ele. Faça até dez perguntas de sim ou não e tente deduzir sua forma, material e uso antes de conferir."},
+  {category:"Memória",title:"Linha do tempo",instruction:"Cada pessoa conta três momentos marcantes da história de vocês. Tentem colocá-los na ordem correta.",solo:"Escolha três lembranças importantes e organize-as em ordem cronológica. Registre o que tornou cada momento especial."},
+  {category:"Improviso",title:"História em turnos",instruction:"Criem juntos uma história. Cada pessoa acrescenta duas frases, sem combinar o que vem depois.",solo:"Escreva uma história curta em seis frases. Cada frase deve acrescentar uma surpresa ou mudar o rumo da narrativa."},
+  {category:"Observação",title:"Caça às cores",instruction:"Escolham uma cor. Cada pessoa tem um minuto para encontrar cinco objetos dessa cor e mostrar o resultado.",solo:"Escolha uma cor e encontre cinco objetos dela em até um minuto. Depois tente organizá-los do mais claro ao mais escuro."},
 ];
 
 function localDateSeed() {
@@ -242,10 +242,10 @@ export function LocalDailyChallengeGame({ solo = false }: { solo?: boolean }) {
   const completeCount=Number(done[0])+Number(done[1]);
   return (
     <section className={"local-daily-game" + (solo ? " is-solo" : "")}>
-      <div className="local-daily-date">MISSÃO DO DIA · {new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"numeric",month:"long"}).format(new Date())}</div>
+      <div className="local-daily-date">{solo ? "DESAFIO INDIVIDUAL · " : "MISSÃO DO DIA · "} {new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"numeric",month:"long"}).format(new Date())}</div>
       <span className="local-game-category">{challenge.category}</span>
       <h3>{challenge.title}</h3>
-      <p>{challenge.instruction}</p>
+      <p>{solo ? challenge.solo : challenge.instruction}</p>
       <div className="local-daily-players">
         {(solo ? [0] as const : [0,1] as const).map((player)=>(
           <button type="button" key={player} className={done[player]?"is-complete":""} onClick={()=>setDone((current)=>current.map((value,index)=>index===player?!value:value) as [boolean,boolean])}>
