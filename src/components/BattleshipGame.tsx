@@ -139,7 +139,7 @@ export function BattleshipGame({ solo = false }: { solo?: boolean }){
   }
 
   return (
-    <section className="naval-game">
+    <section className={"naval-game" + (solo ? " is-solo" : "")}>
       <div className="naval-scorebar">
         <div className={active===0?"is-active":""}><span className="naval-player-token is-one"/>{solo ? "Você" : "Pessoa 1"} <strong>{game.hitCount[0]}</strong></div>
         <span className="naval-score-separator">×</span>
