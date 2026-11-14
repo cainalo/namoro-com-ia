@@ -1,6 +1,7 @@
 import {
   Fragment,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -209,6 +210,7 @@ async function readAudioFileDuration(file: File): Promise<number | undefined> {
 
 export function CoupleConversation({ userId, onBack, onNavigate }: ConversationProps) {
   const [state, setState] = useState<ConversationState>({ status: "loading" });
+  const [threadInitialPositioned, setThreadInitialPositioned] = useState(false);
   const [draft, setDraft] = useState("");
   const [messageSearch, setMessageSearch] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -427,24 +429,41 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     };
   }, [settingsPageOpen]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const thread = threadRef.current;
     if (state.status !== "active" || !thread) {
       previousMessageCountRef.current = 0;
+      setThreadInitialPositioned(false);
       return;
     }
 
     const previousHeight = pendingScrollHeightRef.current;
     if (previousHeight !== null) {
-      // Mensagens antigas entraram no topo: preserva a posição de leitura.
+      // Mensagens antigas entraram no topo: preserva a posição de leitura
+      // antes que o navegador pinte o histórico atualizado.
       thread.scrollTop = thread.scrollHeight - previousHeight;
       pendingScrollHeightRef.current = null;
     } else {
-      const isInitialLoad = previousMessageCountRef.current === 0 && messageCount > 0;
+      const isInitialLoad = previousMessageCountRef.current === 0;
       const last = state.messages[state.messages.length - 1];
       const ownNew = messageCount > previousMessageCountRef.current && last?.sender_id === userId;
-      if (isInitialLoad || ownNew || wasAtBottomRef.current) {
-        scrollThreadToEnd(isInitialLoad ? "auto" : "smooth");
+
+      if (isInitialLoad) {
+        // Calcula o espaço real do compositor antes de posicionar o histórico.
+        // O valor padrão do CSS é apenas provisório e não pode determinar
+        // a posição inicial exibida ao usuário.
+        const composer = composerRef.current;
+        if (composer) {
+          const composerTop = composer.getBoundingClientRect().top;
+          const threadBottom = thread.getBoundingClientRect().bottom;
+          const clearance = Math.max(0, Math.ceil(threadBottom - composerTop + 14));
+          thread.style.setProperty("--conversation-composer-clearance", clearance + "px");
+        }
+        thread.scrollTop = Math.max(0, thread.scrollHeight - thread.clientHeight);
+        wasAtBottomRef.current = true;
+        setThreadInitialPositioned(true);
+      } else if (ownNew || wasAtBottomRef.current) {
+        scrollThreadToEnd(ownNew ? "smooth" : "auto");
       }
     }
     previousMessageCountRef.current = messageCount;
@@ -452,7 +471,9 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
 
   useEffect(() => {
     if (state.status !== "active") return;
-    for (const message of state.messages) {
+    // Prioriza anexos das mensagens mais recentes: são os que aparecem
+    // quando a conversa abre já posicionada no fim do histórico.
+    for (const message of state.messages.slice().reverse()) {
       if (!message.attachment_path || mediaUrlsCacheRef.current[message.id] || pendingMediaIdsRef.current.has(message.id)) continue;
       pendingMediaIdsRef.current.add(message.id);
       mediaQueueRef.current.push(message);
@@ -1413,12 +1434,12 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           <div
             ref={threadRef}
             onScroll={handleThreadScroll}
-            className="conversation-thread"
+            className={"conversation-thread" + (!threadInitialPositioned ? " is-initial-positioning" : "")}
             data-chrome-scroll
             role="log"
             aria-label="Mensagens do casal"
             aria-live="polite"
-            aria-busy={loadingOlderMessages}
+            aria-busy={loadingOlderMessages || !threadInitialPositioned}
           >
             {olderMessagesError && <p className="conversation-history-error" role="alert">{olderMessagesError}</p>}
             {state.messages.length === 0 ? (
