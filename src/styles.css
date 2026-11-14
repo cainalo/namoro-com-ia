@@ -23706,3 +23706,224 @@ body {
 .app-shell.is-conversation-mode .conversation-audio-wave span {
   min-height: 3px;
 }
+
+
+/* MORADOS — refinamento da conversa: gravação no campo original, horários nos
+   balões e controles superiores distribuídos simetricamente. */
+
+/* Dois controles à esquerda e dois à direita. O wordmark central não se desloca. */
+.app-shell.is-conversation-mode .conversation-heading-leading,
+.app-shell.is-conversation-mode .conversation-heading-trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading > .conversation-floating-action,
+.app-shell.is-conversation-mode .conversation-heading-trailing > .conversation-floating-action {
+  position: relative;
+  top: -5px;
+}
+
+/* Durante a gravação, o mesmo campo translúcido permanece como superfície externa.
+   Somente os elementos internos são substituídos pelos controles de áudio. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-input-shell {
+  box-sizing: border-box;
+  min-height: 54px;
+  height: auto;
+  padding: 5px 7px 5px 12px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-inline,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-clock {
+  display: inline-flex;
+  min-width: 44px;
+  flex: 0 0 auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  color: var(--color-foreground);
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-clock strong {
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-destructive) 12%, transparent);
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-waveform {
+  min-width: 24px;
+  height: 34px;
+  flex: 1 1 auto;
+  gap: 2px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-waveform span {
+  width: 2px;
+  min-width: 2px;
+  max-height: 28px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-actions,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-actions button,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-discard,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-send {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  flex: 0 0 34px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-border) 68%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-card) 34%, transparent);
+  padding: 0;
+  color: var(--color-foreground);
+  box-shadow: none;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-actions button svg,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-discard svg,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-send svg {
+  width: 15px;
+  height: 15px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-actions .conversation-recording-stop {
+  border-color: color-mix(in srgb, var(--color-destructive) 36%, var(--color-border));
+  background: color-mix(in srgb, var(--color-destructive) 12%, transparent);
+  color: var(--color-destructive);
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-send {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-wait {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  place-items: center;
+  color: var(--color-primary);
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-wait svg {
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline {
+  gap: 5px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline .conversation-audio-player {
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline .conversation-audio-play {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline .conversation-audio-main {
+  gap: 0;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline .conversation-audio-wave {
+  height: 25px;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline .conversation-audio-progress {
+  display: none;
+}
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline .conversation-audio-duration {
+  font-size: 9px;
+}
+
+/* O horário fica dentro do próprio balão; em fotos e outras mídias recebe
+   uma pequena superfície translúcida para continuar legível sobre qualquer fundo. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message {
+  position: relative;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-time {
+  position: absolute;
+  z-index: 5;
+  right: 8px;
+  bottom: 7px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 5px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  background: rgb(25 31 27 / 68%);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  pointer-events: none;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-time.is-text {
+  border-color: color-mix(in srgb, var(--conversation-other-ink, var(--color-foreground)) 12%, transparent);
+  background: color-mix(in srgb, var(--conversation-bubble-other, var(--color-card)) 86%, var(--conversation-other-ink, var(--color-foreground)) 14%);
+  color: var(--conversation-other-ink, var(--color-foreground));
+  text-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-time.is-text {
+  border-color: color-mix(in srgb, var(--conversation-own-ink, var(--color-primary-foreground)) 12%, transparent);
+  background: color-mix(in srgb, var(--conversation-bubble-own, var(--color-primary)) 86%, var(--conversation-own-ink, var(--color-primary-foreground)) 14%);
+  color: var(--conversation-own-ink, var(--color-primary-foreground));
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text {
+  padding-bottom: 23px !important;
+}
+@media (max-width: 380px) {
+  .app-shell.is-conversation-mode .conversation-heading-leading,
+  .app-shell.is-conversation-mode .conversation-heading-trailing {
+    gap: 4px;
+  }
+  .app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-inline,
+  .app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-review-inline {
+    gap: 4px;
+  }
+  .app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-clock {
+    min-width: 40px;
+    gap: 5px;
+  }
+  .app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-actions button,
+  .app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-discard,
+  .app-shell.is-conversation-mode .conversation-input-shell .conversation-recording-send {
+    width: 31px;
+    height: 31px;
+    min-width: 31px;
+    flex-basis: 31px;
+  }
+}
