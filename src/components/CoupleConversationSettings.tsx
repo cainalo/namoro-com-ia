@@ -22,6 +22,7 @@ import {
 import { MAX_COUPLE_MEDIA_BYTES, uploadCoupleMedia } from "@/lib/couple-media";
 import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/SecondaryPageChrome";
 import { readableInk } from "@/lib/readable-ink";
+import { ConversationWallpaperArt } from "@/components/ConversationWallpaperArt";
 
 type SettingsTab = "general" | "appearance" | "media" | "notifications";
 type MediaFilter = "all" | "image" | "video" | "audio" | "file";
@@ -56,11 +57,11 @@ const tabs: { id: SettingsTab; label: string; description: string; Icon: typeof 
   { id: "notifications", label: "Notificações", description: "Preferências desta conta", Icon: Bell },
 ];
 
-const wallpaperOptions: { id: ConversationAppearance["wallpaper"]; title: string; detail: string }[] = [
-  { id: "paper", title: "Papel delicado", detail: "Creme suave" },
-  { id: "petals", title: "Pétalas", detail: "Flores discretas" },
-  { id: "confetti", title: "Confetes", detail: "Formas coloridas" },
-  { id: "night", title: "Noite", detail: "Escuro e estrelado" },
+const wallpaperOptions: { id: Exclude<ConversationAppearance["wallpaper"], "photo">; title: string; detail: string }[] = [
+  { id: "paper", title: "Ateliê", detail: "Arcos, folhas e luz" },
+  { id: "petals", title: "Jardim pop", detail: "Flores e formas suaves" },
+  { id: "confetti", title: "Formas vivas", detail: "Composição geométrica" },
+  { id: "night", title: "Órbita", detail: "Lua, estrelas e cor" },
 ];
 
 function formatMediaDate(value: string) {
@@ -233,7 +234,9 @@ export function CoupleConversationSettings({
                       onClick={() => onAppearanceChange({ ...appearance, wallpaper: option.id, backgroundImagePath: null })}
                       aria-pressed={appearance.wallpaper === option.id}
                     >
-                      <span className="conversation-settings-wallpaper-preview" />
+                      <span className="conversation-settings-wallpaper-preview">
+                        <ConversationWallpaperArt variant={option.id} compact />
+                      </span>
                       <strong>{option.title}</strong>
                       <small>{option.detail}</small>
                       {appearance.wallpaper === option.id && <Check aria-hidden="true" />}
