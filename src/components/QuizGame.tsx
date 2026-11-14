@@ -28,9 +28,9 @@ const questionBank:QuizQuestion[]=[
 
 const categories=["Todas","Ciência","Natureza","Geografia","Cultura"];
 function shuffle<T>(values:T[]){const items=values.slice();for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}return items;}
-type QuizShared={category:string;round:QuizQuestion[];index:number;player:0|1;scores:[number,number];phase:"setup"|"question"|"result"|"finished";selected:number|null;timedOut:boolean};
-export function QuizGame(){
-  const [quiz,setQuiz,sync]=useGameState<QuizShared>(()=>({category:"Todas",round:[],index:0,player:0,scores:[0,0],phase:"setup",selected:null,timedOut:false}),{
+type QuizShared={category:string;round:QuizQuestion[];index:number;player:0|1;scores:[number,number];phase:"setup"|"question"|"result"|"finished";selected:number|null;timedOut:boolean;opponentCorrect:boolean};
+export function QuizGame({ solo = false }: { solo?: boolean }){
+  const [quiz,setQuiz,sync]=useGameState<QuizShared>(()=>({category:"Todas",round:[],index:0,player:0,scores:[0,0],phase:"setup",selected:null,timedOut:false,opponentCorrect:false}),{
     turnSeat:(q)=>q.player,
     outcome:(q)=>q.phase!=="finished"?null:q.scores[0]===q.scores[1]?{kind:"draw"}:{kind:"win",winnerSeat:q.scores[0]>q.scores[1]?0:1},
   });
@@ -39,7 +39,7 @@ export function QuizGame(){
   const question=round[index];
   const correct=selected===question?.answer;
   const answeredCount=index+(phase==="result"?1:0);
-  const leader=scores[0]===scores[1]?"Empate":scores[0]>scores[1]?"Pessoa 1":"Pessoa 2";
+  const leader=scores[0]===scores[1]?"Empate":scores[0]>scores[1]?(solo?"Você":"Pessoa 1"):(solo?"Morados":"Pessoa 2");
   const setCategory=(value:string)=>setQuiz({...quiz,category:value});
 
   useEffect(()=>{setTimeLeft(20);},[index,phase]);
@@ -52,34 +52,42 @@ export function QuizGame(){
   useEffect(()=>{
     // No modo online, só quem está respondendo registra o tempo esgotado.
     if(phase==="question"&&timeLeft===0&&sync.canAct&&(!sync.online||sync.mySeat===player)){
-      setQuiz(q=>({...q,timedOut:true,selected:null,phase:"result"}));
+      setQuiz(q=>{
+        const botCorrect = solo && Math.floor(Math.random()*4) === (q.round[q.index]?.answer ?? -1);
+        const scores = [...q.scores] as [number,number];
+        if (botCorrect) scores[1] += 1;
+        return {...q,scores,opponentCorrect:botCorrect,timedOut:true,selected:null,phase:"result"};
+      });
     }
   },[phase,timeLeft,sync.canAct,sync.online,sync.mySeat,player,setQuiz]);
 
   function start(){
     const pool=category==="Todas"?questionBank:questionBank.filter(q=>q.category===category);
-    setQuiz({...quiz,round:shuffle(pool).slice(0,10),index:0,player:0,scores:[0,0],selected:null,timedOut:false,phase:"question"});
+    setQuiz({...quiz,round:shuffle(pool).slice(0,10),index:0,player:0,scores:[0,0],selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
   }
   function answer(choice:number){
     if(phase!=="question"||selected!==null||!question)return;
-    const nextScores=(choice===question.answer?scores.map((score,i)=>i===player?score+1:score):scores) as [number,number];
-    setQuiz({...quiz,selected:choice,scores:nextScores,phase:"result"});
+    const nextScores=[...scores] as [number,number];
+    if(choice===question.answer) nextScores[player]+=1;
+    const opponentCorrect = solo && Math.floor(Math.random()*4) === question.answer;
+    if(opponentCorrect) nextScores[1]+=1;
+    setQuiz({...quiz,selected:choice,scores:nextScores,opponentCorrect,phase:"result"});
   }
   function next(){
     if(index>=round.length-1){setQuiz({...quiz,phase:"finished"});return;}
-    setQuiz({...quiz,index:index+1,player:player===0?1:0,selected:null,timedOut:false,phase:"question"});
+    setQuiz({...quiz,index:index+1,player:solo?0:player===0?1:0,selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
   }
   function restart(){setQuiz({...quiz,phase:"setup",round:[],index:0,scores:[0,0],player:0,selected:null,timedOut:false});}
   const progress=round.length?Math.round((answeredCount/round.length)*100):0;
 
   return (
-    <section className="quiz-game">
+    <section className={"quiz-game" + (solo ? " is-solo" : "")}>
       {phase==="setup"&&(
         <div className="quiz-setup">
           <span className="quiz-mark"><Brain aria-hidden="true"/></span>
           <p className="date-kicker">Desafio de conhecimento</p>
-          <h3>Quiz dos dois</h3>
-          <p>Alternem as respostas, acertem as perguntas e descubram quem conhece mais assuntos diferentes.</p>
+          <h3>{solo ? "Desafio de conhecimento" : "Quiz dos dois"}</h3>
+          <p>{solo ? "Teste seus conhecimentos contra uma rodada de respostas do Morados. Escolha uma categoria e tente superar a pontuação." : "Alternem as respostas, acertem as perguntas e descubram quem conhece mais assuntos diferentes."}</p>
           <div className="quiz-category-picker" role="group" aria-label="Escolher categoria">
             {categories.map(item=><button type="button" key={item} className={category===item?"is-active":""} onClick={()=>setCategory(item)}>{item}</button>)}
           </div>
@@ -90,14 +98,14 @@ export function QuizGame(){
       {(phase==="question"||phase==="result")&&question&&(
         <>
           <div className="quiz-scoreboard">
-            <div className={player===0?"is-active":""}><span className="quiz-player-dot is-one"/>Pessoa 1 <strong>{scores[0]}</strong></div>
-            <div className={player===1?"is-active":""}><span className="quiz-player-dot is-two"/>Pessoa 2 <strong>{scores[1]}</strong></div>
+            <div className={player===0?"is-active":""}><span className="quiz-player-dot is-one"/>{solo ? "Você" : "Pessoa 1"} <strong>{scores[0]}</strong></div>
+            <div className={player===1?"is-active":""}><span className="quiz-player-dot is-two"/>{solo ? "Morados" : "Pessoa 2"} <strong>{scores[1]}</strong></div>
           </div>
           <div className="quiz-progress-meta"><span>Pergunta {index+1}/{round.length}</span><span><Clock3 aria-hidden="true"/> {phase==="result"?"Resposta registrada":`${timeLeft}s`}</span></div>
           <div className="quiz-progress"><span style={{width:progress+"%"}}/></div>
           <article className="quiz-question-card">
             <span className="quiz-category">{question.category}</span>
-            <p>Vez da Pessoa {player+1}</p>
+            <p>{solo ? "Sua vez" : `Vez da Pessoa ${player+1}`}</p>
             <h3>{question.question}</h3>
             <div className="quiz-options">
               {question.options.map((option,i)=><button type="button" key={option} onClick={()=>answer(i)} disabled={phase==="result"} className={phase==="result"&&i===question.answer?"is-correct":phase==="result"&&i===selected?"is-wrong":""}>
@@ -110,6 +118,7 @@ export function QuizGame(){
             <div className={"quiz-feedback"+(correct?" is-correct":"")}>
               <strong>{timedOut?"Tempo esgotado.":correct?"Muito bem!":"Desta vez não foi."}</strong>
               <p>{question.explanation}</p>
+              {solo && <small className={"quiz-opponent-feedback" + (opponentCorrect ? " is-correct" : "")}>Morados {opponentCorrect ? "acertaram" : "não acertaram"} esta pergunta.</small>}
               <button type="button" className="primary-action" onClick={next}>{index===round.length-1?"Ver placar final":"Próxima pergunta"}</button>
             </div>
           )}
@@ -117,9 +126,9 @@ export function QuizGame(){
       )}
       {phase==="finished"&&(
         <div className="quiz-finish">
-          <span><Trophy aria-hidden="true"/></span><p className="date-kicker">Fim do desafio</p><h3>{scores[0]===scores[1]?"Vocês empataram!":`${leader} venceu!`}</h3>
-          <div className="quiz-final-score"><div><span>Pessoa 1</span><strong>{scores[0]}</strong></div><div><span>Pessoa 2</span><strong>{scores[1]}</strong></div></div>
-          <p>Vocês responderam {round.length} perguntas na categoria {category.toLowerCase()}.</p>
+          <span><Trophy aria-hidden="true"/></span><p className="date-kicker">Fim do desafio</p><h3>{solo ? (scores[0]===scores[1]?"Vocês empataram!":`${leader} venceu!`) : (scores[0]===scores[1]?"Vocês empataram!":`${leader} venceu!`)}</h3>
+          <div className="quiz-final-score"><div><span>{solo ? "Você" : "Pessoa 1"}</span><strong>{scores[0]}</strong></div><div><span>{solo ? "Morados" : "Pessoa 2"}</span><strong>{scores[1]}</strong></div></div>
+          <p>{solo ? "Você respondeu" : "Vocês responderam"} {round.length} perguntas na categoria {category.toLowerCase()}.</p>
           <button type="button" className="primary-action" onClick={start}>Jogar novamente</button>
           <button type="button" className="inline-action" onClick={restart}>Trocar categoria</button>
         </div>
