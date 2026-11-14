@@ -24807,3 +24807,31 @@ body {
   border-bottom-left-radius: var(--conversation-message-radius, 20px) !important;
   border-bottom-right-radius: 6px !important;
 }
+
+/* Edição de mensagem: reutiliza o compositor estável em vez de montar
+   um segundo campo de texto dentro da lista rolável. */
+.app-shell.is-conversation-mode .conversation-composer-row.is-editing-message {
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+.app-shell.is-conversation-mode .conversation-editing-banner {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 8px 0;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.app-shell.is-conversation-mode .conversation-editing-banner button {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--color-muted-foreground);
+  font: inherit;
+  font-weight: 600;
+  padding: 4px 8px;
+}
