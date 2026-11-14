@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
-  Anchor, Backpack, CloudRain, Compass, Droplets, Flame, HeartPulse, Hammer,
+  CloudRain, Compass, Droplets, Flame, HeartPulse,
   Leaf, Map, Package, RotateCcw, Shield, Ship, Sparkles, Sun, Tent, Trees,
   Waves, Wind, Wrench, Trophy, ThermometerSun,
 } from "lucide-react";
