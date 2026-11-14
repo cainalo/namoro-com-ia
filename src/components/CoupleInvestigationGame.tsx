@@ -176,7 +176,7 @@ function loadProgress(): SavedProgress {
   }
 }
 
-export function CoupleInvestigationGame() {
+export function CoupleInvestigationGame({ solo = false }: { solo?: boolean }) {
   const [tab, setTab] = useState<InvestigationTab>("scene");
   const [progress, setProgress, sync] = useGameState<SavedProgress>(loadProgress, { onlineInitial: initialProgress });
   const [showHint, setShowHint] = useState(false);
@@ -252,7 +252,7 @@ export function CoupleInvestigationGame() {
       <div className="investigation-case-cover">
         <div className="investigation-case-cover-art">
           <div className="investigation-stamp"><Fingerprint aria-hidden="true" /></div>
-          <span>ARQUIVO CONFIDENCIAL · CASO 001</span>
+          <span>ARQUIVO CONFIDENCIAL · CASO 001{solo ? " · MODO INDIVIDUAL" : ""}</span>
           <h2 id="investigation-title">A Carta Celeste</h2>
           <p>O desaparecimento no Observatório Aurora</p>
           <div className="investigation-cover-meta">
@@ -303,7 +303,7 @@ export function CoupleInvestigationGame() {
           <div className="investigation-section-intro">
             <span className="investigation-kicker">21h30 · Sala do observatório</span>
             <h3>O que sabemos até agora</h3>
-            <p>Leia o registro inicial e escolha por onde começar a investigação.</p>
+            <p>{solo ? "Leia o registro inicial e conduza a investigação em seu próprio ritmo." : "Leia o registro inicial e escolha por onde começar a investigação."}</p>
           </div>
           <div className="investigation-scene-visual">
             <div className="investigation-scene-visual-caption">
@@ -316,7 +316,7 @@ export function CoupleInvestigationGame() {
               <button type="button" className="scene-hotspot hotspot-tubo" onClick={() => openSceneEvidence("tubo")}><span>03</span>Tubo de plantas</button>
               <button type="button" className="scene-hotspot hotspot-computador" onClick={() => openSceneEvidence("proposta")}><span>04</span>Computador da curadoria</button>
             </div>
-            <p className="investigation-scene-visual-hint">Toquem nos marcadores para investigar cada local.</p>
+            <p className="investigation-scene-visual-hint">{solo ? "Toque nos marcadores para investigar cada local." : "Toquem nos marcadores para investigar cada local."}</p>
           </div>
           <div className="investigation-scene-grid">
             <article className="investigation-scene-note">
