@@ -119,7 +119,7 @@ export async function updateCoupleMessage(input: {
         eq: (column: "id" | "sender_id", value: string) => {
           eq: (column: "id" | "sender_id", value: string) => {
             select: (columns: string) => {
-              single: () => PromiseLike<MessageInsertResponse>;
+              maybeSingle: () => PromiseLike<MessageInsertResponse>;
             };
           };
         };
@@ -131,7 +131,7 @@ export async function updateCoupleMessage(input: {
     .eq("id", input.messageId)
     .eq("sender_id", input.senderId)
     .select(MESSAGE_COLUMNS)
-    .single();
+    .maybeSingle();
 }
 
 export async function deleteCoupleMessage(input: {
