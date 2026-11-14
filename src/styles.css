@@ -23927,3 +23927,126 @@ body {
     flex-basis: 31px;
   }
 }
+
+
+/* MORADOS — ajuste fino solicitado para a conversa. */
+
+/* Sem wordmark no centro: somente dois controles em cada lado, encostados
+   visualmente à área segura superior, mas com uma pequena margem. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading {
+  top: calc(env(safe-area-inset-top) + 3px) !important;
+  min-height: 44px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 8px;
+  padding-inline: clamp(12px, 3.5vw, 22px);
+}
+.app-shell.is-conversation-mode .conversation-heading-leading,
+.app-shell.is-conversation-mode .conversation-heading-trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading {
+  justify-content: flex-start;
+}
+.app-shell.is-conversation-mode .conversation-heading-trailing {
+  justify-content: flex-end;
+}
+.app-shell.is-conversation-mode .conversation-heading-leading > .conversation-floating-action,
+.app-shell.is-conversation-mode .conversation-heading-trailing > .conversation-floating-action {
+  top: -2px;
+}
+
+/* Mensagens maiores, com largura e respiro melhores para leitura. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message {
+  max-width: min(86%, 620px) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text {
+  display: flex !important;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 12px 17px 14px !important;
+  border-radius: var(--conversation-message-radius, 20px) !important;
+  border-bottom-left-radius: 6px !important;
+  background: var(--conversation-bubble-other, var(--color-card)) !important;
+  color: var(--conversation-other-ink, var(--color-foreground)) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-content.is-text {
+  border-bottom-left-radius: var(--conversation-message-radius, 20px) !important;
+  border-bottom-right-radius: 6px !important;
+  background: var(--conversation-bubble-own, var(--color-primary)) !important;
+  color: var(--conversation-own-ink, var(--color-primary-foreground)) !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text > .conversation-message-time {
+  position: static !important;
+  display: block;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  font-size: 10px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  opacity: 0.72;
+  text-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-text {
+  font-size: 16px !important;
+  line-height: 1.52 !important;
+  letter-spacing: 0.005em;
+}
+
+/* Nas mensagens com foto, vídeo, áudio ou presente, a hora também permanece
+   dentro do conteúdo, sobre a mídia, e não fora do elemento da mensagem. */
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content:not(.is-text) {
+  position: relative;
+  max-width: 100%;
+}
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content:not(.is-text) > .conversation-message-time {
+  position: absolute;
+  z-index: 8;
+  top: 7px;
+  left: 7px;
+  right: auto;
+  bottom: auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 5px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  background: rgb(25 31 27 / 68%);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  pointer-events: none;
+}
+@media (max-width: 380px) {
+  .app-shell.is-conversation-mode .conversation-heading-leading,
+  .app-shell.is-conversation-mode .conversation-heading-trailing {
+    gap: 4px;
+  }
+  .app-shell.is-conversation-mode section.conversation-screen .conversation-message {
+    max-width: min(90%, 620px) !important;
+  }
+  .app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text {
+    padding: 11px 14px 13px !important;
+  }
+  .app-shell.is-conversation-mode section.conversation-screen .conversation-message-text {
+    font-size: 15.5px !important;
+  }
+}
