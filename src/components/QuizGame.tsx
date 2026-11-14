@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Brain, Clock3, RotateCcw, Trophy } from "lucide-react";
+import { Brain, Clock3, RotateCcw, Sparkles } from "lucide-react";
+import { GameVictoryScreen, useGameAudio } from "@/components/GameExperience";
 import { useGameState } from "@/components/OnlineGameHost";
 
 type QuizQuestion={id:string;category:string;question:string;options:[string,string,string,string];answer:number;explanation:string};
@@ -90,6 +91,7 @@ const categories=["Todas","Ciência","Natureza","Geografia","Cultura"];
 function shuffle<T>(values:T[]){const items=values.slice();for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}return items;}
 type QuizShared={category:string;round:QuizQuestion[];index:number;player:0|1;scores:[number,number];phase:"setup"|"question"|"result"|"finished";selected:number|null;timedOut:boolean;opponentCorrect:boolean;usedIds:string[]};
 export function QuizGame({ solo = false }: { solo?: boolean }){
+  const { play } = useGameAudio();
   const [quiz,setQuiz,sync]=useGameState<QuizShared>(()=>({category:"Todas",round:[],index:0,player:0,scores:[0,0],phase:"setup",selected:null,timedOut:false,opponentCorrect:false,usedIds:[]}),{
     turnSeat:(q)=>q.player,
     outcome:(q)=>q.phase!=="finished"?null:q.scores[0]===q.scores[1]?{kind:"draw"}:{kind:"win",winnerSeat:q.scores[0]>q.scores[1]?0:1},
@@ -97,6 +99,8 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
   const {category,round,index,player,scores,phase,selected,timedOut,opponentCorrect}=quiz;
   const [timeLeft,setTimeLeft]=useState(20);
   const question=round[index];
+  const quizArt:Record<string,string>={Ciência:"⚛",Natureza:"🌿",Geografia:"🌍",Cultura:"🎭"};
+  const questionArt=quizArt[question?.category??""]??"✦";
   const correct=selected===question?.answer;
   const answeredCount=index+(phase==="result"?1:0);
   const leader=scores[0]===scores[1]?"Empate":scores[0]>scores[1]?(solo?"Você":"Pessoa 1"):(solo?"Morados":"Pessoa 2");
@@ -128,11 +132,13 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
     const recentRoundIds=new Set((quiz.round??[]).map(question=>question.id));
     const candidates=fresh.length>=10?fresh:[...fresh,...pool.filter(question=>!fresh.some(item=>item.id===question.id)&&!recentRoundIds.has(question.id))];
     const round=shuffle(candidates).slice(0,10);
+    play("success");
     const nextUsed=[...(fresh.length>=10?usedIds:(quiz.round??[]).map(question=>question.id)),...round.map(question=>question.id)].slice(-80);
     setQuiz({...quiz,round,usedIds:nextUsed,index:0,player:0,scores:[0,0],selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
   }
   function answer(choice:number){
     if(phase!=="question"||selected!==null||!question)return;
+    play(choice===question.answer?"success":"warning");
     const nextScores=[...scores] as [number,number];
     if(choice===question.answer) nextScores[player]+=1;
     const opponentCorrect = solo && Math.floor(Math.random()*4) === question.answer;
@@ -140,16 +146,22 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
     setQuiz({...quiz,selected:choice,scores:nextScores,opponentCorrect,phase:"result"});
   }
   function next(){
+    play("tap");
     if(index>=round.length-1){setQuiz({...quiz,phase:"finished"});return;}
     setQuiz({...quiz,index:index+1,player:solo?0:player===0?1:0,selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
   }
-  function restart(){setQuiz({...quiz,phase:"setup",round:[],index:0,scores:[0,0],player:0,selected:null,timedOut:false});}
+  function restart(){play("tap");setQuiz({...quiz,phase:"setup",round:[],index:0,scores:[0,0],player:0,selected:null,timedOut:false});}
   const progress=round.length?Math.round((answeredCount/round.length)*100):0;
 
   return (
     <section className={"quiz-game" + (solo ? " is-solo" : "")}>
       {phase==="setup"&&(
-        <div className="quiz-setup">
+        <div className="quiz-setup quiz-show-setup">
+          <div className="quiz-show-stage">
+            <div><span className="quiz-show-live-dot"/> <strong>MORADOS QUIZ NIGHT</strong><small>CONHECIMENTO · VELOCIDADE · ESTRATÉGIA</small></div>
+            <div className="quiz-show-stage-art"><span>🌍</span><span>⚛</span><span>🎭</span><span>🌿</span></div>
+            <Sparkles aria-hidden="true"/>
+          </div>
           <span className="quiz-mark"><Brain aria-hidden="true"/></span>
           <p className="date-kicker">Desafio de conhecimento</p>
           <h3>{solo ? "Desafio de conhecimento" : "Quiz dos dois"}</h3>
@@ -164,18 +176,20 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
       )}
       {(phase==="question"||phase==="result")&&question&&(
         <>
+          <div className="quiz-show-topline"><span><i className="quiz-show-live-dot"/> AO VIVO · MORADOS QUIZ NIGHT</span><small>RODADA {index+1} / {round.length}</small></div>
           <div className="quiz-scoreboard">
             <div className={player===0?"is-active":""}><span className="quiz-player-dot is-one"/>{solo ? "Você" : "Pessoa 1"} <strong>{scores[0]}</strong></div>
             <div className={player===1?"is-active":""}><span className="quiz-player-dot is-two"/>{solo ? "Morados" : "Pessoa 2"} <strong>{scores[1]}</strong></div>
           </div>
-          <div className="quiz-progress-meta"><span>Pergunta {index+1}/{round.length}</span><span><Clock3 aria-hidden="true"/> {phase==="result"?"Resposta registrada":`${timeLeft}s`}</span></div>
+          <div className="quiz-progress-meta"><span>VALENDO PONTO · {player===0?(solo?"VOCÊ":"PESSOA 1"):(solo?"MORADOS":"PESSOA 2")}</span><span><Clock3 aria-hidden="true"/> {phase==="result"?"RESPOSTA REVELADA": "TEMPO " + timeLeft + "s"}</span></div>
           <div className="quiz-progress"><span style={{width:progress+"%"}}/></div>
           <article className="quiz-question-card">
+            <div className="quiz-show-question-art"><span>{questionArt}</span><div><small>PERGUNTA {String(index+1).padStart(2,"0")}</small><strong>{question.category.toUpperCase()}</strong></div><span className={"quiz-show-timer" + (timeLeft<=5&&phase==="question"?" is-urgent":"")}>{phase==="result"?"✓":timeLeft}</span></div>
             <span className="quiz-category">{question.category}</span>
             <p>{solo ? "Sua vez" : `Vez da Pessoa ${player+1}`}</p>
             <h3>{question.question}</h3>
             <div className="quiz-options">
-              {question.options.map((option,i)=><button type="button" key={option} onClick={()=>answer(i)} disabled={phase==="result"} className={phase==="result"&&i===question.answer?"is-correct":phase==="result"&&i===selected?"is-wrong":""}>
+              {question.options.map((option,i)=><button type="button" key={option} onClick={()=>answer(i)} disabled={phase==="result"} className={"quiz-answer-option option-"+i+(phase==="result"&&i===question.answer?" is-correct":phase==="result"&&i===selected?" is-wrong":"")}>
                 <span>{String.fromCharCode(65+i)}</span><strong>{option}</strong>
                 {phase==="result"&&i===question.answer&&<small>Resposta correta</small>}
               </button>)}
@@ -192,13 +206,20 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
         </>
       )}
       {phase==="finished"&&(
-        <div className="quiz-finish">
-          <span><Trophy aria-hidden="true"/></span><p className="date-kicker">Fim do desafio</p><h3>{solo ? (scores[0]===scores[1]?(solo?"Empate com Morados!":"Vocês empataram!"):`${leader} venceu!`) : (scores[0]===scores[1]?(solo?"Empate com Morados!":"Vocês empataram!"):`${leader} venceu!`)}</h3>
-          <div className="quiz-final-score"><div><span>{solo ? "Você" : "Pessoa 1"}</span><strong>{scores[0]}</strong></div><div><span>{solo ? "Morados" : "Pessoa 2"}</span><strong>{scores[1]}</strong></div></div>
-          <p>{solo ? "Você respondeu" : "Vocês responderam"} {round.length} perguntas na categoria {category.toLowerCase()}.</p>
-          <button type="button" className="primary-action" onClick={start}>Jogar novamente</button>
-          <button type="button" className="inline-action" onClick={restart}>Trocar categoria</button>
-        </div>
+        <GameVictoryScreen
+          won={scores[0]>=scores[1]}
+          title={scores[0]===scores[1]?"Empate no auditório!":leader+" venceu!"}
+          subtitle={"O desafio terminou com "+(scores[0]+scores[1])+" pontos somados em "+round.length+" perguntas da categoria "+category.toLowerCase()+"."}
+          eyebrow="MORADOS QUIZ NIGHT · RESULTADO FINAL"
+          stats={[
+            {label:solo?"Você":"Pessoa 1",value:scores[0]},
+            {label:solo?"Morados":"Pessoa 2",value:scores[1]},
+            {label:"Perguntas",value:round.length},
+            {label:"Categoria",value:category},
+          ]}
+          onReplay={start}
+          onExit={restart}
+        />
       )}
     </section>
   );
