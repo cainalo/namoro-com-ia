@@ -26909,3 +26909,468 @@ body {
   display: none;
   background: none;
 }
+
+
+/* MORADOS GAME EXPERIENCE — primeira arena de aventura 2D */
+.game-play-surface:has(.cave-expedition) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: #241b25;
+  border: 0;
+  border-radius: 0;
+}
+.cave-expedition {
+  --cave-ink: #fff4d7;
+  --cave-gold: #f5c65d;
+  display: grid;
+  width: 100%;
+  min-height: min(780px, calc(100dvh - 125px));
+  gap: 13px;
+  padding: clamp(12px, 2.5vw, 24px);
+  border: 2px solid #59402f;
+  border-radius: 24px;
+  background: #30232a;
+  color: var(--cave-ink);
+  box-shadow: inset 0 0 0 5px #3d2c30;
+}
+.cave-hud, .cave-brand, .cave-hud-actions, .cave-status-strip, .cave-scene-top,
+.cave-controls, .cave-footer, .cave-ending-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cave-brand { justify-content: flex-start; }
+.cave-brand > span {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 2px solid #f0bd52;
+  border-radius: 14px;
+  background: #a94e38;
+  color: #fff4d7;
+}
+.cave-brand small, .cave-scene-top, .cave-ending > span {
+  color: #f4c968;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .13em;
+}
+.cave-brand h2 { margin: 2px 0 0; color: #fff4d7; font-size: clamp(17px, 3vw, 24px); }
+.cave-hud-actions button {
+  display: grid; width: 40px; height: 40px; place-items: center;
+  border: 2px solid #76513c; border-radius: 12px; background: #49343a; color: #fff0ce;
+}
+.cave-hud-actions button[aria-pressed="true"] { border-color: #f5c65d; background: #b66b31; }
+.cave-status-strip { justify-content: flex-start; flex-wrap: wrap; }
+.cave-status-strip span {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid #76513c; border-radius: 999px; background: #49343a;
+  padding: 7px 10px; color: #fff0ce; font-size: 10px; font-weight: 850;
+}
+.cave-status-strip span svg { width: 14px; height: 14px; color: #f5c65d; }
+.cave-stage {
+  display: grid; gap: 12px; justify-items: center;
+  border: 2px solid #73503b; border-radius: 19px;
+  background: #1d1922; padding: 13px;
+}
+.cave-scene-top { width: 100%; font-size: 8px; }
+.cave-scene-top span:last-child { color: #b4d4b4; }
+.cave-map {
+  display: grid;
+  width: min(100%, 550px);
+  grid-template-columns: repeat(11, minmax(0, 1fr));
+  gap: 3px;
+  padding: 5px;
+  border: 3px solid #6d4b38;
+  border-radius: 12px;
+  background: #100f16;
+  box-shadow: 0 7px 0 #17131a;
+}
+.cave-tile {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #594b48;
+  border-radius: 4px;
+  background: #6d5747;
+  color: #f7d17a;
+  font-size: clamp(10px, 2.4vw, 19px);
+  font-weight: 950;
+  transition: background 150ms ease, filter 150ms ease;
+}
+.cave-tile.is-wall { border-color: #5a4a47; background: #41343a; color: #75605b; }
+.cave-tile.is-floor { background: #8a7256; color: #f5d28c; }
+.cave-tile.is-start { background: #39745b; color: #d4f0b7; }
+.cave-tile.is-gate { border: 2px solid #e8bd52; background: #9c6336; color: #fff0a4; }
+.cave-tile.is-enemy { border: 2px solid #b94c43; background: #853b3a; color: #ffe1b7; }
+.cave-tile.is-relic { border: 2px solid #e5b94e; background: #96702d; color: #fff2a9; }
+.cave-tile.is-key { border: 2px solid #e4bd62; background: #a87937; color: #fff2b7; }
+.cave-tile.is-potion { border: 2px solid #7ec6a3; background: #317e70; color: #e1fff0; }
+.cave-tile.is-hidden { border-color: #28242a; background: #211d25; color: transparent; }
+.cave-tile.is-player { border: 2px solid #fff0a5; background: #e8a83d; box-shadow: 0 0 0 2px #7c4a2c; }
+.cave-hero { color: #382334; font-size: clamp(15px, 3vw, 25px); }
+.cave-scene-caption {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  border: 1px solid #76513c; border-radius: 12px; background: #49343a; padding: 10px 12px;
+}
+.cave-scene-caption > span { color: #f5c65d; font-size: 20px; }
+.cave-scene-caption p { margin: 0; color: #fff1d3; font-size: 12px; line-height: 1.45; }
+.cave-controls { justify-content: center; flex-wrap: wrap; }
+.cave-dpad {
+  display: grid; grid-template-columns: repeat(3, 42px); grid-template-rows: repeat(2, 40px);
+  gap: 5px;
+}
+.cave-dpad button {
+  display: grid; place-items: center; border: 2px solid #8c6645; border-radius: 11px;
+  background: #76503d; color: #fff0ce; touch-action: manipulation;
+}
+.cave-dpad button:first-child { grid-column: 2; }
+.cave-dpad button:nth-child(2) { grid-column: 1; grid-row: 2; }
+.cave-dpad button:nth-child(3) { grid-column: 2; grid-row: 2; }
+.cave-dpad button:nth-child(4) { grid-column: 3; grid-row: 2; }
+.cave-dpad button:active { transform: scale(.94); background: #ad6a37; }
+.cave-attack, .cave-ending button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 45px; border: 2px solid #f4c15b; border-radius: 13px;
+  background: #c4563c; color: #fff; padding: 0 18px; font-weight: 950;
+}
+.cave-attack:disabled { opacity: .4; }
+.cave-footer { flex-wrap: wrap; color: #c8b49b; font-size: 10px; }
+.cave-footer button { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #76513c; border-radius: 10px; background: #49343a; color: #fff0ce; padding: 8px 10px; }
+.cave-ending {
+  position: fixed; z-index: 10000; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px; overflow-y: auto;
+  padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+  background: #241b25; color: #fff4d7; text-align: center;
+}
+.cave-ending.is-won { background: #1c453d; }
+.cave-ending.is-lost { background: #522d35; }
+.cave-ending-art { display: grid; width: 104px; height: 104px; place-items: center; border: 4px solid #f5c65d; border-radius: 50%; background: #a94e38; color: #fff0a4; }
+.cave-ending-art svg { width: 54px; height: 54px; }
+.cave-ending h2 { max-width: 600px; margin: 0; color: #fff4d7; font-size: clamp(27px, 6vw, 48px); line-height: 1.05; }
+.cave-ending p { max-width: 530px; margin: 0; color: #f0dfc6; line-height: 1.6; }
+.cave-ending-stats { justify-content: center; flex-wrap: wrap; }
+.cave-ending-stats strong { border: 1px solid #b28b54; border-radius: 12px; background: #493b37; padding: 10px 13px; color: #ffe4a2; font-size: 11px; }
+@media(max-width:520px) {
+ .cave-expedition { border-radius: 15px; padding: 10px; }
+ .cave-stage { padding: 8px; gap: 8px; }
+ .cave-map { gap: 2px; padding: 3px; }
+ .cave-tile { border-radius: 2px; }
+ .cave-status-strip { gap: 5px; }
+ .cave-status-strip span { font-size: 9px; padding: 6px 8px; }
+ .cave-controls { gap: 15px; }
+}
+@media(prefers-reduced-motion:reduce) { .cave-tile { transition: none; } }
+
+
+/* Encerramento de partida: vitória/derrota ocupa a tela inteira */
+.game-play-surface :is(
+  .quiz-finish,
+  .chess-end-panel,
+  .island-ending,
+  .escape-room-complete,
+  .investigation-result.is-correct,
+  .investigation-train-result.is-correct,
+  .naval-end-screen,
+  .domino-end-panel,
+  .truco-result-panel.is-hand-end,
+  .local-game-end-panel
+) {
+  position: fixed;
+  z-index: 9998;
+  inset: 0;
+  display: flex;
+  width: 100vw;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  overflow-y: auto;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: max(26px, env(safe-area-inset-top)) 22px max(26px, env(safe-area-inset-bottom));
+  background: #38263a;
+  color: #fff3dc;
+  box-shadow: none;
+  text-align: center;
+}
+.game-play-surface .quiz-finish { background: #49326d; }
+.game-play-surface .chess-end-panel { background: #493126; }
+.game-play-surface .island-ending.is-won { background: #205b4b; color: #fff3dc; }
+.game-play-surface .island-ending.is-lost { background: #713a3d; color: #fff3dc; }
+.game-play-surface .escape-room-complete { background: #315b56; color: #fff3dc; }
+.game-play-surface .investigation-result.is-correct { background: #254f61; color: #fff3dc; }
+.game-play-surface .naval-end-screen { background: #15536d; color: #fff3dc; }
+.game-play-surface .domino-end-panel { background: #315b3c; color: #fff3dc; }
+.game-play-surface .truco-result-panel.is-hand-end { background: #743a35; color: #fff3dc; }
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) h2,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) h3,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) h4,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) strong {
+  color: #fff3dc;
+}
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) p,
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) span {
+  color: #f0dfc8;
+}
+.game-play-surface :is(.quiz-finish,.chess-end-panel,.island-ending,.escape-room-complete,.investigation-result.is-correct,.naval-end-screen,.domino-end-panel,.truco-result-panel.is-hand-end,.local-game-end-panel) button {
+  min-height: 46px;
+  border: 2px solid #f4c65f;
+  border-radius: 14px;
+  background: #d76c3e;
+  color: #fff;
+  padding: 0 19px;
+  font-weight: 950;
+}
+
+/* Xadrez: arena ampla, tabuleiro como protagonista */
+.game-play-surface:has(.chess-game) {
+  width: 100%;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  background: #38271f;
+  padding: clamp(12px, 3vw, 25px);
+}
+.game-play-surface .chess-game {
+  display: grid;
+  width: min(100%, 760px);
+  justify-items: center;
+  gap: 14px;
+  margin: 0 auto;
+  padding: clamp(10px, 2vw, 20px);
+  border: 2px solid #8a5d3c;
+  border-radius: 20px;
+  background: #51382b;
+  color: #fff0d6;
+}
+.game-play-surface .chess-board {
+  width: min(100%, 560px);
+  margin: 5px auto;
+  border: 7px solid #b57b42;
+  border-radius: 5px;
+  background: #b57b42;
+  box-shadow: 0 12px 0 #2c201c, 0 18px 28px rgb(0 0 0 / 35%);
+}
+.game-play-surface .chess-square { aspect-ratio: 1; }
+.game-play-surface .chess-square.is-light { background: #f2dfb9; }
+.game-play-surface .chess-square.is-dark { background: #80513a; }
+.game-play-surface .chess-piece { font-size: clamp(24px, 5vw, 48px); }
+.game-play-surface .chess-status {
+  border: 1px solid #b57b42;
+  border-radius: 999px;
+  background: #35251f;
+  color: #ffe5b3;
+  padding: 9px 17px;
+  font-weight: 850;
+}
+.game-play-surface .chess-statusbar { width: min(100%, 560px); }
+.game-play-surface .chess-history {
+  width: min(100%, 560px);
+  border: 1px solid #8a5d3c;
+  border-radius: 12px;
+  background: #3d2a23;
+  color: #fff0d6;
+  padding: 10px 13px;
+}
+
+
+/* Quiz: palco de programa de perguntas e respostas */
+.game-play-surface:has(.quiz-game) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #291d48;
+  padding: clamp(12px, 3vw, 25px);
+}
+.game-play-surface .quiz-game {
+  display: grid;
+  width: min(100%, 900px);
+  gap: 18px;
+  margin: 0 auto;
+  padding: clamp(13px, 3vw, 26px);
+  border: 2px solid #8c65bb;
+  border-radius: 23px;
+  background: #38275d;
+  color: #fff3db;
+  box-shadow: inset 0 0 0 5px #49336f;
+}
+.game-play-surface .quiz-setup {
+  border: 2px solid #f2c75b;
+  border-radius: 20px;
+  background: #513b78;
+  color: #fff3db;
+}
+.game-play-surface .quiz-setup h3,
+.game-play-surface .quiz-question-card h3 { color: #33234f; }
+.game-play-surface .quiz-setup > p:not(.date-kicker) { color: #f1e4ff; }
+.game-play-surface .quiz-question-card {
+  border: 3px solid #f1c65b;
+  border-radius: 20px;
+  background: #fff4d8;
+  padding: clamp(19px, 4vw, 35px);
+  box-shadow: 0 8px 0 #8a5c35;
+}
+.game-play-surface .quiz-question-card h3 {
+  font-size: clamp(21px, 4vw, 34px);
+  line-height: 1.2;
+}
+.game-play-surface .quiz-options {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.game-play-surface .quiz-options button {
+  min-height: 72px;
+  border: 2px solid #8b6ab1;
+  border-radius: 14px;
+  background: #f0e6ff;
+  color: #382451;
+  box-shadow: 0 4px 0 #b8a2d3;
+}
+.game-play-surface .quiz-options button:nth-child(2) { border-color: #df934d; background: #fff0d9; }
+.game-play-surface .quiz-options button:nth-child(3) { border-color: #4b9c83; background: #e0f4e8; }
+.game-play-surface .quiz-options button:nth-child(4) { border-color: #4b8eaf; background: #e2f1fb; }
+.game-play-surface .quiz-options button > span { width: 30px; height: 30px; }
+.game-play-surface .quiz-scoreboard > div {
+  min-height: 58px;
+  border: 2px solid #8968ad;
+  border-radius: 15px;
+  background: #4c3772;
+  color: #fff3db;
+}
+.game-play-surface .quiz-scoreboard > div.is-active {
+  border-color: #f2c75b;
+  background: #7953a0;
+  box-shadow: 0 0 0 3px rgb(242 199 91 / 20%);
+}
+.game-play-surface .quiz-scoreboard span { color: #f5d58b; }
+.game-play-surface .quiz-progress-meta { color: #f5e8ff; }
+.game-play-surface .quiz-progress { height: 10px; border: 1px solid #a787c9; background: #211832; }
+.game-play-surface .quiz-progress span { background: #f2c75b; }
+.game-play-surface .quiz-feedback {
+  border: 2px solid #f2c75b;
+  border-radius: 17px;
+  background: #4e3974;
+  color: #fff3db;
+  padding: 16px;
+}
+.game-play-surface .quiz-feedback > strong,
+.game-play-surface .quiz-feedback p { color: #fff3db; }
+.game-play-surface .quiz-feedback button { background: #df7042; color: #fff; }
+
+/* Investigação: sala de operações e dossiês, não uma sequência de formulários */
+.game-play-surface:has(.investigation-game) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #1f3445;
+  padding: clamp(10px, 2.5vw, 22px);
+}
+.game-play-surface .investigation-game {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  border: 2px solid #52758a;
+  border-radius: 20px;
+  background: #e9e2d0;
+  color: #243745;
+  box-shadow: 0 12px 0 #152b39;
+}
+.game-play-surface .investigation-scene {
+  border-radius: 16px;
+  background: #263d4d;
+  padding: 12px;
+}
+.game-play-surface .investigation-scene-visual {
+  min-height: clamp(190px, 38vw, 340px);
+  border: 3px solid #a97948;
+  border-radius: 12px;
+  background-color: #345b66;
+  background-position: center;
+  background-size: cover;
+}
+.game-play-surface .investigation-scene-visual-caption {
+  border: 1px solid #7693a0;
+  border-radius: 10px;
+  background: #1d3443;
+  color: #fff0d6;
+  padding: 11px 13px;
+}
+.game-play-surface .investigation-scene-hotspots button {
+  border: 2px solid #efc15c;
+  border-radius: 50%;
+  background: #a64f38;
+  color: #fff;
+  box-shadow: 0 0 0 5px rgb(239 193 92 / 20%);
+}
+.game-play-surface .investigation-evidence-grid article,
+.game-play-surface .investigation-interview-layout > *,
+.game-play-surface .investigation-verdict {
+  border: 2px solid #bba783;
+  border-radius: 14px;
+  background: #fff8e8;
+  box-shadow: 0 4px 0 #d5c5a4;
+}
+.game-play-surface .investigation-game :is(h2,h3,h4) { color: #233b4a; }
+.game-play-surface .investigation-game :is(button,summary) { touch-action: manipulation; }
+.game-play-surface .investigation-kicker { color: #a24e35; font-weight: 950; letter-spacing: .1em; }
+.game-play-surface .investigation-game button.is-active { border-color: #e2a93f; background: #f7e6bc; }
+.game-play-surface .investigation-hint {
+  border: 2px solid #d6a74c;
+  border-radius: 13px;
+  background: #fff0c9;
+  color: #624b29;
+}
+.game-play-surface .investigation-game-footer {
+  border-top: 2px solid #c5b89d;
+  padding-top: 12px;
+}
+
+/* Sobrevivência: o mapa e a expedição ganham o protagonismo visual */
+.game-play-surface:has(.island-survival-game) {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #174e57;
+  padding: clamp(10px, 2.5vw, 22px);
+}
+.game-play-surface .island-survival-game.is-expanded {
+  width: min(100%, 1040px);
+  margin: 0 auto;
+  border: 2px solid #7ec1a2;
+  border-radius: 21px;
+  background: #f1ead8;
+  padding: clamp(10px, 2vw, 20px);
+}
+.game-play-surface .island-survival-game.is-expanded .island-survival-scene {
+  min-height: clamp(190px, 32vw, 300px);
+  border: 3px solid #e1b55d;
+  border-radius: 16px;
+  background-color: #3c9a9d;
+}
+.game-play-surface .island-survival-game.is-expanded .island-actions-panel {
+  border: 2px solid #4d8c67;
+  border-radius: 17px;
+  background: #e4f0dd;
+}
+.game-play-surface .island-survival-game.is-expanded .island-action-grid > button {
+  min-height: 105px;
+  border-width: 2px;
+  border-radius: 14px;
+  box-shadow: 0 4px 0 #d1d9c8;
+}
+@media(max-width:560px) {
+  .game-play-surface .quiz-options { grid-template-columns: 1fr; }
+  .game-play-surface .investigation-game { border-radius: 12px; }
+}
