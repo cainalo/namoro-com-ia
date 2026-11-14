@@ -3,7 +3,7 @@ import { Brain, Clock3, RotateCcw, Trophy } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 
 type QuizQuestion={id:string;category:string;question:string;options:[string,string,string,string];answer:number;explanation:string};
-const questionBank:QuizQuestion[]=[
+export const questionBank:QuizQuestion[]=[
 {id:"solar",category:"Ciência",question:"Qual planeta tem o dia mais longo em relação ao seu próprio ano?",options:["Mercúrio","Vênus","Marte","Netuno"],answer:1,explanation:"Vênus leva cerca de 243 dias terrestres para completar uma rotação, mas cerca de 225 dias para orbitar o Sol."},
 {id:"oceano",category:"Natureza",question:"Qual é o maior oceano da Terra?",options:["Atlântico","Índico","Pacífico","Ártico"],answer:2,explanation:"O Oceano Pacífico ocupa aproximadamente um terço da superfície do planeta."},
 {id:"brasil",category:"Geografia",question:"Qual estado brasileiro tem a maior extensão territorial?",options:["Pará","Amazonas","Mato Grosso","Minas Gerais"],answer:1,explanation:"O Amazonas é o maior estado brasileiro em área territorial."},
@@ -51,7 +51,7 @@ const questionBank:QuizQuestion[]=[
 {id:"koala",category:"Natureza",question:"Qual alimento é mais associado à dieta dos coalas?",options:["Folhas de eucalipto","Brotos de bambu","Frutos de palmeira","Algas marinhas"],answer:0,explanation:"Os coalas alimentam-se principalmente de folhas de determinadas espécies de eucalipto."},
 {id:"anfibio",category:"Natureza",question:"Qual característica é típica dos anfíbios?",options:["Penas impermeáveis","Pele permeável e ciclo de vida frequentemente ligado à água","Escamas secas e pelos","Respiração exclusiva por brânquias na fase adulta"],answer:1,explanation:"Muitos anfíbios têm pele permeável e passam por fases aquáticas e terrestres durante o desenvolvimento."},
 {id:"mangue",category:"Natureza",question:"Em qual ambiente costeiro os manguezais se desenvolvem?",options:["Em áreas de transição entre rios e mar","Em desertos de altitude","Em geleiras continentais","Em campos alpinos"],answer:0,explanation:"Manguezais ocupam zonas costeiras sujeitas à influência das marés e à mistura de água doce e salgada."},
-{id:"salmao",category:"Natureza",question:"O que muitas espécies de salmão fazem para se reproduzir?",options:["Voam para o interior das florestas","Mig ram rio acima até áreas de desova","Enterram ovos em desertos","Constroem ninhos em árvores"],answer:1,explanation:"Muitos salmões migram do mar para rios de água doce para se reproduzir; a rota varia conforme a espécie."},
+{id:"salmao",category:"Natureza",question:"O que muitas espécies de salmão fazem para se reproduzir?",options:["Voam para o interior das florestas","Migram rio acima até áreas de desova","Enterram ovos em desertos","Constroem ninhos em árvores"],answer:1,explanation:"Muitos salmões migram do mar para rios de água doce para se reproduzir; a rota varia conforme a espécie."},
 {id:"coniferas",category:"Natureza",question:"Qual estrutura é característica de muitas coníferas?",options:["Flores grandes e frutos carnosos","Estróbilos ou cones","Raízes aéreas obrigatórias","Folhas em forma de pétala"],answer:1,explanation:"Coníferas como pinheiros produzem estruturas reprodutivas chamadas cones ou estróbilos."},
 {id:"cacto",category:"Natureza",question:"Em muitos cactos, qual parte armazena água?",options:["As flores","O caule","As espinhas","A semente"],answer:1,explanation:"O caule suculento de muitos cactos armazena água e realiza fotossíntese."},
 {id:"polinizacao",category:"Natureza",question:"Qual processo permite que o pólen chegue à parte reprodutiva feminina de uma flor?",options:["Polinização","Germinação","Respiração","Fermentação"],answer:0,explanation:"A polinização é a transferência de pólen para a região receptora da flor, permitindo a fecundação em plantas com flores."},
@@ -124,11 +124,12 @@ export function QuizGame({ solo = false }: { solo?: boolean }){
 
   function start(){
     const pool=category==="Todas"?questionBank:questionBank.filter(q=>q.category===category);
-    const fresh=pool.filter(question=>!quiz.usedIds.includes(question.id));
-    const recentRoundIds=new Set(quiz.round.map(question=>question.id));
+    const usedIds=quiz.usedIds??[];
+    const fresh=pool.filter(question=>!usedIds.includes(question.id));
+    const recentRoundIds=new Set((quiz.round??[]).map(question=>question.id));
     const candidates=fresh.length>=10?fresh:[...fresh,...pool.filter(question=>!fresh.some(item=>item.id===question.id)&&!recentRoundIds.has(question.id))];
     const round=shuffle(candidates).slice(0,10);
-    const nextUsed=[...(fresh.length>=10?quiz.usedIds:quiz.round.map(question=>question.id)),...round.map(question=>question.id)].slice(-80);
+    const nextUsed=[...(fresh.length>=10?usedIds:(quiz.round??[]).map(question=>question.id)),...round.map(question=>question.id)].slice(-80);
     setQuiz({...quiz,round,usedIds:nextUsed,index:0,player:0,scores:[0,0],selected:null,timedOut:false,opponentCorrect:false,phase:"question"});
   }
   function answer(choice:number){
