@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Search,
   LockKeyhole,
+  Layers,
   MoreVertical,
   Shield,
   Sparkles,
@@ -29,6 +30,7 @@ import { TrucoGame } from "@/components/TrucoGame";
 import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
+import { MemoryMatchGame, SymbolSequenceGame } from "@/components/NewCoupleGames";
 import { InlineMenu } from "@/components/InlineMenu";
 import { OnlineGameHost } from "@/components/OnlineGameHost";
 import { OnlineBattleshipGame } from "@/components/OnlineBattleshipGame";
@@ -41,7 +43,7 @@ import {
   LocalThisOrThatGame,
 } from "@/components/LocalCoupleGames";
 
-type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room" | "island-survival";
+type GameId = "connect-four" | "checkers" | "this-or-that" | "daily-challenge" | "investigation" | "investigation-train" | "chess" | "battleship" | "domino" | "truco" | "quiz" | "escape-room" | "island-survival" | "memory-match" | "symbol-sequence";
 type GameMode = "solo" | "local" | "online" | null;
 
 const catalogue: Array<{
@@ -117,6 +119,8 @@ const catalogue: Array<{
   { id: "quiz", name: "Quiz dos dois", category: "Conhecimento", description: "Perguntas por categoria, tempo limitado e placar alternado.", players: "2 pessoas", icon: Brain, tone: "plum" },
   { id: "escape-room", name: "A sala do relógio", category: "Escape room", description: "Investiguem uma sala, encontrem objetos e descubram o código para escapar.", players: "Cooperativo · 1–2", icon: LockKeyhole, tone: "noir", new: true },
   { id: "island-survival", name: "Depois da tempestade", category: "Sobrevivência", description: "Administrem recursos, dividam tarefas e sobrevivam cinco dias numa ilha até o resgate.", players: "Cooperativo · 1–2", icon: Shield, tone: "olive", new: true },
+  { id: "memory-match", name: "Jogo da Memória", category: "Memória", description: "Encontrem pares, memorizem posições e disputem quem descobre mais cartas.", players: "1–2 pessoas", icon: Layers, tone: "plum", new: true },
+  { id: "symbol-sequence", name: "Sequência de Símbolos", category: "Atenção", description: "Observe uma sequência de símbolos e repita cada passo sem errar.", players: "1–2 pessoas", icon: Sparkles, tone: "petrol", new: true },
 ];
 
 function GamePage({
@@ -203,7 +207,7 @@ function GamePage({
               <div className="game-mode-options">
                 <button type="button" className="game-mode-card is-solo" onClick={() => setMode("solo")}>
                   <span className="game-mode-icon"><Crown aria-hidden="true" /></span>
-                  <span className="game-mode-copy"><strong>Sozinho</strong><small>Jogue no seu ritmo, com desafios individuais ou contra o Morados nos jogos de estratégia.</small></span>
+                  <span className="game-mode-copy"><strong>Sozinho</strong><small>Jogue no seu ritmo, supere desafios pessoais ou enfrente o Morados nos jogos competitivos.</small></span>
                   <span className="game-mode-arrow">Jogar sozinho <ArrowLeft aria-hidden="true" /></span>
                 </button>
                 <button type="button" className="game-mode-card is-local" onClick={() => setMode("local")}>
@@ -260,6 +264,8 @@ function renderSoloGame(gameId: GameId) {
     case "quiz": return <QuizGame solo />;
     case "escape-room": return <EscapeRoomGame solo />;
     case "island-survival": return <IslandSurvivalGame solo />;
+    case "memory-match": return <MemoryMatchGame solo />;
+    case "symbol-sequence": return <SymbolSequenceGame solo />;
   }
 }
 
@@ -278,6 +284,8 @@ function renderLocalGame(gameId: GameId) {
     case "quiz": return <QuizGame />;
     case "escape-room": return <EscapeRoomGame />;
     case "island-survival": return <IslandSurvivalGame />;
+    case "memory-match": return <MemoryMatchGame />;
+    case "symbol-sequence": return <SymbolSequenceGame />;
   }
 }
 
@@ -304,7 +312,7 @@ export function CoupleGames({ userId, onNavigate }: { userId: string; onNavigate
 
   const visibleGames = catalogue.filter((game) => {
     if (filter === "strategy") return game.category === "Estratégia";
-    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room","Sobrevivência"].includes(game.category);
+    if (filter === "cooperation") return ["Preferências","Cooperação","Conhecimento","Cartas","Escape room","Sobrevivência","Memória","Atenção"].includes(game.category);
     if (filter === "investigation") return game.category === "Investigação policial" || game.category === "Escape room";
     return true;
   });

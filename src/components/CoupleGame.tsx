@@ -5,6 +5,7 @@ import {
   saveCoupleGameChoice,
   type CoupleGameChoice,
 } from "@/lib/couple-game";
+import { getDailyThisOrThatRound } from "@/lib/this-or-that";
 
 type GameQuestion = {
   id: string;
@@ -13,44 +14,12 @@ type GameQuestion = {
   optionB: string;
 };
 
-const questions: GameQuestion[] = [
-  {
-    id: "viagem",
-    prompt: "Para viajar juntos, vocês preferem…",
-    optionA: "Praia e mar",
-    optionB: "Montanhas e frio",
-  },
-  {
-    id: "dia-livre",
-    prompt: "Em um dia livre, combina mais…",
-    optionA: "Sair para conhecer um lugar",
-    optionB: "Ficar em casa sem pressa",
-  },
-  {
-    id: "noite-a-dois",
-    prompt: "Para uma noite a dois…",
-    optionA: "Filme e cobertor",
-    optionB: "Jogo e brincadeira",
-  },
-  {
-    id: "cozinha",
-    prompt: "Na cozinha, vocês escolheriam…",
-    optionA: "Preparar uma receita juntos",
-    optionB: "Experimentar um restaurante novo",
-  },
-  {
-    id: "lembranca",
-    prompt: "Para guardar uma lembrança especial…",
-    optionA: "Fotos e vídeos",
-    optionB: "Cartas e bilhetes",
-  },
-  {
-    id: "surpresa",
-    prompt: "Uma surpresa gostosa seria…",
-    optionA: "Um passeio inesperado",
-    optionB: "Um presente escolhido com carinho",
-  },
-];
+const questions: GameQuestion[] = getDailyThisOrThatRound().map((item) => ({
+  id: item.id,
+  prompt: item.prompt,
+  optionA: item.a,
+  optionB: item.b,
+}));
 
 type GameState =
   | { status: "loading" }
