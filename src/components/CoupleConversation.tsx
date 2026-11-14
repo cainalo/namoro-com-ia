@@ -41,6 +41,8 @@ import { readableInk } from "@/lib/readable-ink";
 import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
 import { MoradosCamera, type MoradosCameraMode } from "@/components/MoradosCamera";
 import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
+import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
+import { ConversationWallpaperArt } from "@/components/ConversationWallpaperArt";
 import { mapWithConcurrency } from "@/lib/async-pool";
 import {
   DEFAULT_CONVERSATION_APPEARANCE,
@@ -673,8 +675,21 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             .maybeSingle();
           if (profile?.display_name?.trim()) otherName = profile.display_name.trim();
           if (profile?.avatar_path) {
-            const avatar = await createCoupleMediaUrl(profile.avatar_path);
-            otherAvatarUrl = avatar.url;
+            // O avatar não é requisito para abrir a conversa. Busca em segundo
+            // plano para que uma falha no Storage não prenda a tela inicial.
+            const avatarPath = profile.avatar_path;
+            void createCoupleMediaUrl(avatarPath)
+              .then((avatar) => {
+                if (!active || !avatar.url) return;
+                setState((current) =>
+                  current.status === "active" && current.coupleId === couple.id
+                    ? { ...current, otherAvatarUrl: avatar.url }
+                    : current,
+                );
+              })
+              .catch((avatarError) => {
+                console.warn("Não foi possível carregar a foto da outra pessoa.", avatarError);
+              });
           }
         }
 
@@ -683,33 +698,9 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         if (!active) return;
         const messages = (result.data ?? []).slice().reverse().map(normalizedMessage);
 
-        // Não mostra o histórico enquanto as mídias das mensagens já carregadas
-        // ainda estão sendo assinadas. Se os áudios forem liberados um a um,
-        // cada player troca de placeholder e altera a altura da lista, fazendo
-        // a conversa saltar para pontos diferentes.
-        const attachmentMessages = messages.filter((message) => Boolean(message.attachment_path));
-        const signedMediaEntries = await mapWithConcurrency(
-          attachmentMessages,
-          6,
-          async (message) => {
-            try {
-              const media = await createCoupleMediaUrl(message.attachment_path as string);
-              return [message.id, media.url] as const;
-            } catch (mediaError) {
-              console.warn("Não foi possível preparar uma mídia antes de abrir a conversa.", mediaError);
-              return [message.id, null] as const;
-            }
-          },
-        );
-        if (!active) return;
-
-        const initialMediaUrls: Record<string, string> = {};
-        for (const [messageId, url] of signedMediaEntries) {
-          if (url) initialMediaUrls[messageId] = url;
-        }
-        mediaUrlsCacheRef.current = initialMediaUrls;
-        setMediaUrls(initialMediaUrls);
-
+        // A conversa não depende do Storage. As URLs são assinadas em segundo
+        // plano pelo efeito de mídias depois que a lista já estiver montada.
+        // Assim, anexos antigos ou Storage lento nunca impedem a abertura.
         setHasOlderMessages((result.data ?? []).length === 100);
         setState({
           status: "active",
@@ -1283,17 +1274,30 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         <a className="conversation-image-link" href={url} target="_blank" rel="noreferrer">
           <img src={url} alt={message.attachment_name || "Imagem enviada"} loading="lazy" />
         </a>
-      ) : <p className="conversation-attachment-pending">Carregando foto…</p>;
+      ) : (
+        <div className="conversation-media-skeleton is-image" role="status" aria-label="Preparando foto">
+          <Image aria-hidden="true" /><span>Preparando foto</span>
+        </div>
+      );
     }
     if (message.message_type === "video") {
       return url ? (
         <video className="conversation-video" src={url} controls playsInline preload="metadata" />
-      ) : <p className="conversation-attachment-pending">Carregando vídeo…</p>;
+      ) : (
+        <div className="conversation-media-skeleton is-video" role="status" aria-label="Preparando vídeo">
+          <Video aria-hidden="true" /><span>Preparando vídeo</span>
+        </div>
+      );
     }
     if (message.message_type === "audio") {
       return url ? (
         <ConversationAudioPlayer src={url} waveform={readMessageAudioWaveform(message)} durationSeconds={readMessageAudioDuration(message)} messageTime={messageTime} />
-      ) : <p className="conversation-attachment-pending">Carregando áudio…</p>;
+      ) : (
+        <div className="conversation-media-skeleton is-audio" role="status" aria-label="Preparando áudio">
+          <span className="conversation-media-skeleton-play"><Play aria-hidden="true" /></span>
+          <span className="conversation-media-skeleton-wave" aria-hidden="true">{Array.from({ length: 30 }, (_, index) => <i key={index} />)}</span>
+        </div>
+      );
     }
     if (message.message_type === "file") {
       return url ? (
@@ -1302,7 +1306,11 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           <span><strong>{message.attachment_name || "Arquivo"}</strong><small>Toque para abrir</small></span>
           <ArrowLeft aria-hidden="true" />
         </a>
-      ) : <p className="conversation-attachment-pending">Carregando arquivo…</p>;
+      ) : (
+        <div className="conversation-media-skeleton is-file" role="status" aria-label="Preparando arquivo">
+          <File aria-hidden="true" /><span>Preparando arquivo</span>
+        </div>
+      );
     }
     return <p className="conversation-message-text">{message.body}</p>;
   }
@@ -1324,6 +1332,10 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         onClose={() => setCallKind(null)}
       />
     );
+  }
+
+  if (state.status === "loading") {
+    return <MoradosLoadingScreen message="Abrindo a conversa de vocês" />;
   }
 
   if (settingsPageOpen && state.status === "active") {
@@ -1386,6 +1398,14 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       {wallpaperImageStyle && (
         <div className="conversation-wallpaper-image" aria-hidden="true" style={wallpaperImageStyle} />
       )}
+      {appearance.wallpaper !== "photo" && (
+        <ConversationWallpaperArt variant={appearance.wallpaper} />
+      )}
+      {!threadInitialPositioned && (
+        <div className="morados-conversation-loading-overlay">
+          <MoradosLoadingScreen message="Organizando a conversa" compact />
+        </div>
+      )}
       <header className="conversation-heading" data-no-swipe>
         <div className="conversation-heading-leading">
           <button
@@ -1433,10 +1453,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
         </div>
       </header>
 
-
-      {state.status === "loading" && (
-        <p className="conversation-state" role="status">Abrindo a conversa…</p>
-      )}
 
       {state.status === "error" && (
         <div className="conversation-state">
