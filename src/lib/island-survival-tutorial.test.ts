@@ -3,6 +3,7 @@ import {
   advanceIslandTutorial,
   islandTutorialProgress,
   ISLAND_TUTORIAL_ORDER,
+  ISLAND_STORY_PAGE_COUNT,
   type IslandTutorialStep,
 } from "./island-survival-tutorial";
 
@@ -27,6 +28,10 @@ describe("island survival guided tutorial", () => {
     expect(advanceIslandTutorial("forage", "water")).toBe("forage");
     expect(advanceIslandTutorial("shelter", "forest")).toBe("shelter");
     expect(advanceIslandTutorial("free", "signal")).toBe("free");
+  });
+
+  it("defines the eight-page opening story", () => {
+    expect(ISLAND_STORY_PAGE_COUNT).toBe(8);
   });
 
   it("keeps the seven guided stages in the exact intended order", () => {
