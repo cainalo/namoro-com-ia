@@ -3,8 +3,9 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const BUCKET = "couple-media";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  // Keep in sync with headers emitted by the pinned supabase-js v2 SDK.
+  "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type, x-retry-count, traceparent, tracestate, baggage",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
   "Vary": "Origin",
 };
 
