@@ -1,4 +1,6 @@
 import { useId, useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { NativeAuth } from "@/lib/native-auth";
 import { ChevronDown, Settings, Trash2 } from "lucide-react";
 import { deleteCoupleAccount } from "@/lib/account-lifecycle";
 
@@ -16,6 +18,25 @@ export function AppGeneralSettings() {
     setConfirming(false);
     setConfirmation("");
     setError(null);
+  }
+
+  async function requestNativeConfirmation() {
+    setError(null);
+    try {
+      const result = await NativeAuth.showTextInputDialog({
+        title: "Confirmar exclusão da conta",
+        description: "Digite exatamente EXCLUIR para habilitar a exclusão permanente.",
+        hint: "EXCLUIR",
+        initialValue: confirmation,
+        confirmText: "Confirmar",
+        maxLength: 7,
+        singleLine: true,
+      });
+
+      if (!result.cancelled) setConfirmation(result.text ?? "");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível abrir a confirmação nativa.");
+    }
   }
 
   return (
@@ -85,16 +106,34 @@ export function AppGeneralSettings() {
                 </p>
               </div>
 
-              <label className="grid gap-2 text-sm font-medium text-foreground">
-                Digite EXCLUIR
-                <input
-                  value={confirmation}
-                  onChange={(event) => setConfirmation(event.target.value)}
-                  disabled={busy}
-                  autoComplete="off"
-                  className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-                />
-              </label>
+              {Capacitor.isNativePlatform() ? (
+                <div className="grid gap-2">
+                  <span className="text-sm font-medium text-foreground">Digite EXCLUIR</span>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void requestNativeConfirmation()}
+                    className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-left text-sm text-foreground outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                    aria-label={confirmation ? `Palavra digitada: ${confirmation}; toque para alterar` : "Digitar EXCLUIR"}
+                  >
+                    {confirmation || "Toque para digitar EXCLUIR"}
+                  </button>
+                  <p className="text-xs text-muted-foreground">
+                    A confirmação será digitada em uma janela segura do Android.
+                  </p>
+                </div>
+              ) : (
+                <label className="grid gap-2 text-sm font-medium text-foreground">
+                  Digite EXCLUIR
+                  <input
+                    value={confirmation}
+                    onChange={(event) => setConfirmation(event.target.value)}
+                    disabled={busy}
+                    autoComplete="off"
+                    className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+                  />
+                </label>
+              )}
 
               {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
