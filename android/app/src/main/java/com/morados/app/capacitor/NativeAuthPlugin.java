@@ -221,6 +221,7 @@ public class NativeAuthPlugin extends Plugin {
         );
         Integer requestedMaxLength = call.getInt("maxLength", 2000);
         int maxLength = Math.max(1, Math.min(requestedMaxLength == null ? 2000 : requestedMaxLength, 5000));
+        boolean singleLine = call.getBoolean("singleLine", false);
 
         call.setKeepAlive(true);
         getActivity().runOnUiThread(() -> {
@@ -242,17 +243,18 @@ public class NativeAuthPlugin extends Plugin {
 
             EditText editor = new EditText(getActivity());
             editor.setId(View.generateViewId());
-            editor.setSingleLine(false);
-            editor.setMinLines(3);
-            editor.setMaxLines(6);
-            editor.setGravity(Gravity.TOP | Gravity.START);
+            editor.setSingleLine(singleLine);
+            editor.setMinLines(singleLine ? 1 : 3);
+            editor.setMaxLines(singleLine ? 1 : 6);
+            editor.setGravity(singleLine ? Gravity.CENTER_VERTICAL | Gravity.START : Gravity.TOP | Gravity.START);
             editor.setHint(hint);
             editor.setText(initialValue);
             editor.setSelection(editor.length());
             editor.setInputType(
                 InputType.TYPE_CLASS_TEXT
-                    | InputType.TYPE_TEXT_FLAG_MULTI_LINE
-                    | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    | (singleLine
+                        ? InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+                        : InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES)
             );
             editor.setImeOptions(EditorInfo.IME_ACTION_DONE);
             editor.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
@@ -262,7 +264,7 @@ public class NativeAuthPlugin extends Plugin {
             editor.setFilters(new InputFilter[]{new InputFilter.LengthFilter(maxLength)});
             content.addView(editor, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(132)
+                dp(singleLine ? 54 : 132)
             ));
 
             AlertDialog dialog = new AlertDialog.Builder(getActivity())
@@ -301,6 +303,13 @@ public class NativeAuthPlugin extends Plugin {
                         call.resolve(result);
                     }
                     dialog.dismiss();
+                });
+                editor.setOnEditorActionListener((view, actionId, event) -> {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        submit.performClick();
+                        return true;
+                    }
+                    return false;
                 });
 
                 editor.requestFocus();
