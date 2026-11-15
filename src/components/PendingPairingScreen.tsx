@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, CircleUserRound, Heart, LoaderCircle, LogOut, RefreshCw, UserRound } from "lucide-react";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 import { CoupleProfile } from "@/components/CoupleProfile";
@@ -15,6 +15,7 @@ type PendingPairingScreenProps = {
 
 export function PendingPairingScreen({ userId, notice, onPaired }: PendingPairingScreenProps) {
   const [checking, setChecking] = useState(false);
+  const checkingRef = useRef(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -22,7 +23,8 @@ export function PendingPairingScreen({ userId, notice, onPaired }: PendingPairin
   const [statusError, setStatusError] = useState<string | null>(null);
 
   const refreshStatus = useCallback(async (runPairing = false) => {
-    if (checking) return;
+    if (checkingRef.current) return;
+    checkingRef.current = true;
     setChecking(true);
     setStatusError(null);
     try {
@@ -66,9 +68,10 @@ export function PendingPairingScreen({ userId, notice, onPaired }: PendingPairin
     } catch {
       setStatusError("Não foi possível consultar o estado do vínculo agora. Seu perfil continua disponível.");
     } finally {
+      checkingRef.current = false;
       setChecking(false);
     }
-  }, [checking, onPaired, userId]);
+  }, [onPaired, userId]);
 
   useEffect(() => {
     void refreshStatus(true);
