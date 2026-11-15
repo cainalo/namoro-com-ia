@@ -114,7 +114,7 @@ export function AppGeneralSettings() {
                     disabled={busy}
                     onClick={() => void requestNativeConfirmation()}
                     className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-left text-sm text-foreground outline-none transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-                    aria-label="Digitar EXCLUIR"
+                    aria-label={confirmation ? `Palavra digitada: ${confirmation}; toque para alterar` : "Digitar EXCLUIR"}
                   >
                     {confirmation || "Toque para digitar EXCLUIR"}
                   </button>
