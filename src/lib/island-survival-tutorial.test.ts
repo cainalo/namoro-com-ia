@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   advanceIslandTutorial,
   islandTutorialProgress,
+  ISLAND_TUTORIAL_ORDER,
   type IslandTutorialStep,
 } from "./island-survival-tutorial";
 
@@ -26,6 +27,10 @@ describe("island survival guided tutorial", () => {
     expect(advanceIslandTutorial("forage", "water")).toBe("forage");
     expect(advanceIslandTutorial("shelter", "forest")).toBe("shelter");
     expect(advanceIslandTutorial("free", "signal")).toBe("free");
+  });
+
+  it("keeps the seven guided stages in the exact intended order", () => {
+    expect(ISLAND_TUTORIAL_ORDER).toEqual(["forage", "water", "shelter", "night", "forest", "wreck", "signal", "free"]);
   });
 
   it("reports no chapter progress before starting and full progress after the final repair", () => {

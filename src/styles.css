@@ -30147,3 +30147,175 @@ html[data-morados-game-open="true"] .app-main,html[data-morados-game-open="true"
   .survival-tutorial-scene { min-height: 95px; }
   .survival-tutorial-scene-symbol { width: 63px; height: 63px; font-size: 36px; }
 }
+
+
+/* Livro interativo de abertura: páginas sequenciais, escolhas persistentes e leitura confortável no celular. */
+.game-play-surface .survival-story-screen {
+  width: min(100%, 820px);
+  border: 1px solid #d7c69f;
+  border-radius: 18px;
+  background: #fbf6e9;
+  color: #28484a;
+  box-shadow: 0 16px 40px rgb(21 48 48 / 17%);
+}
+.survival-book-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #d8c9a8;
+  background: #f1e7cf;
+  padding: 12px 18px;
+  color: #8b653d;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .13em;
+}
+.survival-book-header span:last-child { text-align: right; }
+.survival-story-art { min-height: 190px; background: #78c7c8; }
+.survival-story-art-page-1 { background: #547c8b; }
+.survival-story-art-page-2 { background: #87b7ad; }
+.survival-story-art-page-3 { background: #9eb3a0; }
+.survival-story-art-page-4 { background: #8ac7b9; }
+.survival-story-art .survival-story-boat {
+  font-size: 58px;
+  filter: drop-shadow(0 5px 0 rgb(25 56 57 / 15%));
+}
+.survival-book-scene-caption {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  z-index: 3;
+  border-radius: 999px;
+  background: #fff7e5;
+  padding: 6px 10px;
+  color: #315a5a;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .12em;
+}
+.survival-book-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #e5dac0;
+  padding: 10px clamp(18px, 4vw, 32px);
+  color: #927143;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .1em;
+}
+.survival-book-progress strong { color: #28716b; }
+.survival-book-copy {
+  min-height: 360px;
+  gap: 15px;
+  padding: clamp(20px, 4.5vw, 38px);
+}
+.survival-book-copy .survival-kicker { color: #b16b43; }
+.survival-book-copy h2 {
+  color: #234e4c;
+  font-size: clamp(27px, 5.4vw, 40px);
+}
+.survival-book-copy > p {
+  color: #425f5c;
+  font-family: Georgia, serif;
+  font-size: clamp(14px, 2.3vw, 16px);
+  line-height: 1.85;
+}
+.survival-book-quote {
+  border-left: 4px solid #d9a85c;
+  background: #f4ecd9;
+  padding: 13px 16px;
+  color: #8c5d3c;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.6;
+}
+.survival-book-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+}
+.survival-book-back {
+  min-height: 46px;
+  border: 1px solid #b7c9bd;
+  border-radius: 12px;
+  background: #e8f0e7;
+  padding: 10px 14px;
+  color: #31615b;
+  font-size: 11px;
+  font-weight: 850;
+}
+.survival-book-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+.survival-book-choice {
+  display: grid;
+  min-height: 190px;
+  align-content: start;
+  gap: 9px;
+  border: 2px solid #d8c89f;
+  border-radius: 17px;
+  background: #fffaf0;
+  padding: 16px;
+  color: #315350;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+.survival-book-choice:nth-child(2) {
+  border-color: #acc8bc;
+  background: #eff6ed;
+}
+.survival-book-choice:active { transform: translateY(2px); }
+.survival-book-choice-icon { font-size: 28px; }
+.survival-book-choice strong { color: #285d58; font-size: 14px; }
+.survival-book-choice small { color: #61766d; font-size: 11px; line-height: 1.55; }
+.survival-book-choice em {
+  align-self: end;
+  margin-top: auto;
+  color: #a35d3a;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 950;
+}
+.survival-book-inventory {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #c5d5c5;
+  border-radius: 15px;
+  background: #eaf2e8;
+  padding: 13px;
+}
+.survival-book-inventory > strong { color: #285e57; font-size: 11px; }
+.survival-book-inventory > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.survival-book-inventory span {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  border-radius: 9px;
+  background: #f8fbf3;
+  padding: 7px 9px;
+  color: #597269;
+  font-size: 10px;
+}
+.survival-book-inventory b { color: #1d655c; }
+@media (max-width: 560px) {
+  .survival-book-header { font-size: 8px; padding: 10px 12px; }
+  .survival-story-art { min-height: 158px; }
+  .survival-book-copy { min-height: 0; padding: 18px 15px 22px; }
+  .survival-book-choice-grid { grid-template-columns: 1fr; }
+  .survival-book-choice { min-height: 155px; }
+  .survival-book-inventory > div { grid-template-columns: 1fr; }
+  .survival-book-navigation { align-items: stretch; flex-direction: column-reverse; }
+  .survival-book-back { width: 100%; }
+}
