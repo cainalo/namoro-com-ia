@@ -1,0 +1,84 @@
+/* Capa dos jogos — a ilustração fica em uma linha própria no celular. */
+@media (max-width: 760px) {
+  .game-world-main.stage-cover {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .game-world-main.stage-cover .game-launch-cover {
+    display: grid;
+    width: min(100%, 560px);
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: 18px;
+    margin: 0 auto;
+    padding: 18px 16px max(26px, env(safe-area-inset-bottom));
+  }
+
+  .game-world-main.stage-cover .game-cover-copy {
+    position: relative;
+    z-index: auto;
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .game-world-main.stage-cover .game-cover-copy h1 {
+    max-width: 100%;
+    margin-top: 12px;
+    font-size: clamp(34px, 9.4vw, 46px);
+    line-height: 1.04;
+    overflow-wrap: anywhere;
+  }
+
+  .game-world-main.stage-cover .game-cover-art {
+    position: relative;
+    z-index: 0;
+    grid-column: 1;
+    grid-row: 2;
+    width: clamp(176px, 61vw, 252px);
+    max-width: 100%;
+    margin: 0 auto;
+    justify-self: center;
+  }
+
+  .game-world-main.stage-cover .game-cover-premise {
+    position: relative;
+    grid-column: 1;
+    grid-row: 3;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 12px 13px;
+  }
+
+  .game-world-main.stage-cover .game-cover-premise p {
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .game-world-main.stage-cover .game-cover-brand {
+    margin-top: 17px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 920px) {
+  .game-world-main.stage-cover .game-launch-cover {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, .82fr);
+    gap: 22px;
+    padding: 24px;
+  }
+
+  .game-world-main.stage-cover .game-cover-art {
+    width: min(100%, 300px);
+  }
+
+  .game-world-main.stage-cover .game-cover-copy h1 {
+    font-size: clamp(36px, 4.7vw, 54px);
+  }
+}
