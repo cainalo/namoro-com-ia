@@ -30,7 +30,7 @@ type SurvivalBookState = {
 const STORAGE_KEY = "morados-island-storybook-v3";
 const initial: SurvivalBookState = {
   node: "day1-beach",
-  resources: { food: 3, water: 2, wood: 1, cloth: 1, metal: 0, medicine: 0, rope: 0, battery: 0 },
+  resources: { food: 4, water: 5, wood: 1, cloth: 1, metal: 0, medicine: 0, rope: 0, battery: 0 },
   inventory: ["transmissor quebrado", "chave de latão de Noah"],
   decisions: {}, flags: [], puzzleAnswers: {}, day: 1, health: 5, trust: 0, finished: false, ending: "",
 };
@@ -100,6 +100,7 @@ const scene: Record<string, StoryNode> = {
     id: "day2-dawn", day: 2, chapter: "Capítulo II · O que a mata guardou", title: "A manhã tem passos", scene: "forest",
     body: (s) => [
       s.decisions.watch === "noah" ? "Noah não dormiu. Perto das quatro, a voz voltou, desta vez pronunciando o nome dele. Não havia direção no som; parecia atravessar o chão e subir pelas raízes. Quando o dia clareou, ele encontrou marcas de botas junto ao abrigo — uma pessoa havia circulado o acampamento sem se aproximar da entrada." : "Lia ouviu o chamado e não respondeu. Esperou até que a mata ficasse silenciosa. Ao amanhecer, encontrou uma linha fina de cinzas sobre a areia, formando uma seta para o interior da ilha. Nenhuma fogueira fora acesa ali.",
+      s.resources.water <= 1 ? "O primeiro amanhecer trouxe também uma conta difícil: os recipientes estavam quase vazios. Noah passou a separar cada gole, enquanto Lia calculava quantos dias conseguiriam avançar sem encontrar outra fonte de água." : "A água recuperada na enseada ainda bastava para alguns dias. Lia marcou os recipientes com pequenas linhas para que nenhum dos dois confundisse o que restava com o que já havia sido consumido.",
       "O mapa náutico de bordo mostrava apenas mar aberto naquela região. A ilha não tinha nome, escala ou coordenadas. No entanto, entre as árvores havia um caminho de pedras cortadas, coberto por musgo. A vegetação crescera ao redor dele, mas não sobre ele.",
       "Noah reconheceu o padrão das pedras. Era uma antiga trilha de manutenção, usada para conduzir técnicos até alguma instalação. A pergunta deixou de ser se havia alguém na ilha. Agora era por que aquela pessoa não queria ser encontrada."
     ],
@@ -179,6 +180,7 @@ const scene: Record<string, StoryNode> = {
     id: "day4-station", day: 4, chapter: "Capítulo IV · A estação", title: "A sala que não aparece na planta", scene: "station",
     body: (s) => [
       "A construção escondida sob as raízes era uma estação meteorológica. O teto havia cedido, mas a sala principal permanecia seca. Mapas cobriam as paredes. Em todos, a ilha tinha nomes diferentes e contornos ligeiramente alterados, como se alguém tentasse apagar sua posição exata.",
+      s.resources.food === 0 || s.resources.water === 0 ? "A busca custava mais do que tempo. A comida já não dava para uma refeição inteira e a água restante mal cobria o fundo de um cantil. Noah caminhava devagar, escondendo o tremor nas mãos para que Lia não interrompesse a investigação." : "Ainda havia mantimentos, mas cada pacote aberto diminuía a margem de segurança. Lia anotou o que restava no mapa, ao lado das coordenadas que ninguém parecia querer registrar.",
       "No centro havia uma mesa, duas cadeiras e um gravador de rolo. Uma das cadeiras estava virada para a parede. A outra tinha marcas recentes nos braços, feitas por unhas ou por uma ferramenta estreita.",
       s.decisions.watch === "noah" ? "Noah reconheceu a caligrafia num dos mapas. Era a mesma de uma carta que recebera seis anos atrás, depois do desaparecimento do Aurora. Ele havia guardado a carta sem contar a Lia." : "Lia encontrou seu próprio nome numa lista de passageiros de seis anos atrás. O documento não dizia que ela estivera na ilha; dizia que alguém havia registrado a presença dela antes de sua primeira viagem ao Ventania.",
     ],
@@ -241,7 +243,7 @@ const scene: Record<string, StoryNode> = {
     id: "day7-rescue", day: 7, chapter: "Capítulo VII · A última maré", title: "O sinal para o mundo", scene: "radio",
     body: () => [
       "Lia transmitiu as coordenadas em intervalos regulares. Noah manteve o circuito aberto e repetiu a mensagem até a garganta ficar seca. No quarto minuto, alguém respondeu com o código internacional de resgate.",
-      "A confirmação deveria ter encerrado o medo. Em vez disso, o rádio captou uma segunda transmissão, na mesma frequência, com a voz de Maia: 'Não deixem que tragam o barco para a enseada'.",
+      s.flags.includes("radio-repaired") ? "A resposta chegou limpa, com o código internacional de resgate. A confirmação deveria ter encerrado o medo. Em vez disso, o rádio captou uma segunda transmissão, na mesma frequência, com a voz de Maia: 'Não deixem que tragam o barco para a enseada'." : "A bateria quase não sustentou a transmissão. A mensagem saiu em fragmentos, sem confirmação do continente. Antes que o circuito apagasse, uma voz feminina atravessou a estática: 'Não deixem que tragam o barco para a enseada'.",
       "Ao longe, uma luz avançou pela névoa. Não era uma embarcação de resgate. Era o Aurora, inteiro, com as luzes acesas e a mesma placa enferrujada que encontraram no casco do Ventania."
     ],
     next: "ending",
@@ -249,8 +251,9 @@ const scene: Record<string, StoryNode> = {
   "ending": {
     id: "ending", day: 7, chapter: "Epílogo · O que o mar devolve", title: "A ilha ainda tem uma página", scene: "night",
     body: (s) => [
-      s.decisions.final === "maia" ? "Maia caminhou com eles até a praia. Não havia barco à espera, nem helicóptero, nem luz de busca. Quando a maré recuou, a estação desapareceu atrás de uma parede de névoa. O caderno permaneceu com Lia. Na última folha, uma nova linha surgiu sob os nomes dos dois: 'Desta vez, responderam'." : "O resgate chegou ao amanhecer. A equipe encontrou Lia, Noah e os destroços do Ventania, mas nenhuma estação, nenhum gravador e nenhum vestígio do Aurora. A fotografia molhada estava em branco. O rádio, contudo, continuou recebendo uma transmissão às 23h17.",
+      s.decisions.final === "maia" ? "Maia caminhou com eles até a praia. Não havia barco à espera, nem helicóptero, nem luz de busca. Quando a maré recuou, a estação desapareceu atrás de uma parede de névoa. O caderno permaneceu com Lia. Na última folha, uma nova linha surgiu sob os nomes dos dois: 'Desta vez, responderam'." : s.flags.includes("radio-repaired") ? "O resgate chegou ao amanhecer. A equipe encontrou Lia, Noah e os destroços do Ventania, mas nenhuma estação, nenhum gravador e nenhum vestígio do Aurora. A fotografia molhada estava em branco. O rádio, contudo, continuou recebendo uma transmissão às 23h17." : "O sinal não alcançou o continente. Ao amanhecer, Lia e Noah seguiram a trilha de pedras em direção à costa baixa, guiados por uma luz que aparecia e desaparecia entre a névoa. A fotografia molhada estava em branco. O transmissor continuou emitindo três pulsos curtos às 23h17.",
       s.flags.includes("solved-stone-lock") ? "A fechadura da trilha ficou para trás, aberta. No verso dos discos, havia nomes gravados por dentro do metal. O último era o de Noah, seguido por uma data que ainda não chegou." : "A porta da estação foi encontrada fechada. A inscrição sobre a terceira maré havia desaparecido, como se nunca tivesse sido escrita.",
+      s.health <= 2 ? "Noah chegou ao fim da travessia exausto, com a febre aumentando e as mãos incapazes de fechar completamente. O cuidado improvisado e as provisões recuperadas foram o que os manteve juntos até o último amanhecer." : "A água medida, os alimentos divididos e os materiais recuperados deram a eles tempo suficiente para atravessar a última maré.",
       "Lia guardou a chave de latão. Noah deixou de dizer que o mar havia levado tudo. Algumas coisas tinham sido deixadas ali de propósito; outras, devolvidas tarde demais. E, em algum lugar além da costa, uma voz começou a contar os nomes de quem ainda não tinha chegado."
     ],
     ending: "A expedição terminou. A história não respondeu a todas as perguntas — algumas respostas ficaram escondidas entre as marés."
@@ -284,12 +287,39 @@ function applyEffect(state: SurvivalBookState, effect: string): SurvivalBookStat
   return next;
 }
 
+function transitionToNode(state: SurvivalBookState, target: string): SurvivalBookState {
+  const next: SurvivalBookState = {
+    ...state,
+    resources: { ...state.resources },
+    inventory: [...state.inventory],
+    decisions: { ...state.decisions },
+    flags: [...state.flags],
+    puzzleAnswers: { ...state.puzzleAnswers },
+  };
+  const targetDay = scene[target]?.day ?? state.day;
+  for (let day = state.day + 1; day <= targetDay; day += 1) {
+    if (next.resources.water > 0) next.resources.water -= 1;
+    else {
+      next.health = Math.max(0, next.health - 1);
+      if (!next.flags.includes("water-shortage")) next.flags.push("water-shortage");
+    }
+    if (day % 2 === 0) {
+      if (next.resources.food > 0) next.resources.food -= 1;
+      else {
+        next.health = Math.max(0, next.health - 1);
+        if (!next.flags.includes("food-shortage")) next.flags.push("food-shortage");
+      }
+    }
+  }
+  next.node = target;
+  next.day = targetDay;
+  return next;
+}
+
 function choose(state: SurvivalBookState, choice: Choice): SurvivalBookState {
   const next = applyEffect(state, choice.effect);
   next.decisions[choice.decisionKey] = choice.id;
-  next.node = choice.next;
-  next.day = scene[choice.next]?.day ?? state.day;
-  return next;
+  return transitionToNode(next, choice.next);
 }
 
 function completePuzzle(state: SurvivalBookState, puzzleId: string, answer: string, puzzle: Puzzle): SurvivalBookState {
@@ -394,8 +424,7 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
       return;
     }
     if (current.next) {
-      const next = scene[current.next];
-      setGame({ ...game, node: current.next, day: next?.day ?? game.day });
+      setGame(transitionToNode(game, current.next));
       setNotice("");
     }
   }
@@ -417,6 +446,9 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
         <div className="island-storybook-page">
           <div className="island-storybook-art-wrap"><SceneArt name={current.scene}/><span className="island-storybook-art-caption">DIA {current.day} · {current.chapter.toUpperCase()}</span></div>
           <div className="island-storybook-reading">
+            <div className="island-storybook-mobile-inventory" aria-label="Recursos restantes">
+              {resources.map(item => <span key={item.id} title={item.label}><item.Icon/><b>{game.resources[item.id]}</b></span>)}
+            </div>
             <div className="island-storybook-page-meta"><span>CAPÍTULO {current.day} · PÁGINA {Object.keys(game.decisions).length + Object.keys(game.puzzleAnswers).length + 1}</span><strong>7 DIAS ATÉ A MARÉ ABRIR</strong></div>
             <h1>{current.title}</h1>
             <div className="island-storybook-prose">{body.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
