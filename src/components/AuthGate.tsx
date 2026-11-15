@@ -12,10 +12,9 @@ import { MoradosMark } from "@/components/MoradosMark";
 import { supabase } from "@/integrations/supabase/client";
 import { completeCouplePairing, registerCouple } from "@/lib/couple-registration";
 import { ProfileOnboarding } from "@/components/ProfileOnboarding";
-import { PendingPairingScreen } from "@/components/PendingPairingScreen";
 
 type AuthGateProps = {
-  children: (session: Session) => ReactNode;
+  children: (session: Session, pairingPending: boolean) => ReactNode;
   emailRedirectTo?: () => string;
 };
 
@@ -173,17 +172,9 @@ export function AuthGate({ children }: AuthGateProps) {
     );
   }
 
-  if (access.stage === "pending") {
-    return (
-      <PendingPairingScreen
-        userId={session.user.id}
-        notice={access.notice}
-        onPaired={() => setAccess({ userId: session.user.id, stage: "ready", notice: null })}
-      />
-    );
-  }
-
-  return <>{children(session)}</>;
+  // A conta individual não espera o segundo e-mail: áreas pessoais ficam acessíveis.
+  // O espaço compartilhado é habilitado pelas páginas quando couples.status passa a active.
+  return <>{children(session, access.stage === "pending")}</>;
 }
 function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
   const [mode, setMode] = useState<AuthMode>("signin");
