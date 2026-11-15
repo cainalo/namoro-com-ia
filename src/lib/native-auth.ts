@@ -21,6 +21,7 @@ export interface NativeTextInputOptions {
   initialValue?: string;
   confirmText?: string;
   maxLength?: number;
+  singleLine?: boolean;
 }
 
 interface NativeAuthPlugin {
