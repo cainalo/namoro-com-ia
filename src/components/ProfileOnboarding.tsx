@@ -24,6 +24,8 @@ export function ProfileOnboarding({ userId, onComplete }: ProfileOnboardingProps
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+  const [loadRetry, setLoadRetry] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -33,6 +35,8 @@ export function ProfileOnboarding({ userId, onComplete }: ProfileOnboardingProps
     let active = true;
     async function loadProfile() {
       setLoading(true);
+      setError(null);
+      setProfileLoaded(false);
       const { data, error: loadError } = await supabase
         .from("profiles")
         .select("display_name,bio,headline,interests,favorite_song,favorite_place,personal_phrase,avatar_path,banner_path")
@@ -60,12 +64,13 @@ export function ProfileOnboarding({ userId, onComplete }: ProfileOnboardingProps
       if (active) {
         setAvatarUrl(avatar);
         setBannerUrl(banner);
+        setProfileLoaded(true);
         setLoading(false);
       }
     }
     void loadProfile();
     return () => { active = false; };
-  }, [userId]);
+  }, [userId, loadRetry]);
 
   useEffect(() => {
     if (!avatarFile) { setAvatarPreview(null); return; }
@@ -173,6 +178,13 @@ export function ProfileOnboarding({ userId, onComplete }: ProfileOnboardingProps
 
           {loading ? (
             <div className="profile-onboarding-loading"><LoaderCircle className="animate-spin" /> Preparando seu perfil…</div>
+          ) : !profileLoaded ? (
+            <div className="profile-onboarding-loading">
+              <p role="alert">{error ?? "Não foi possível carregar seu perfil."}</p>
+              <button type="button" className="pending-pairing-secondary" onClick={() => setLoadRetry((value) => value + 1)}>
+                Tentar novamente
+              </button>
+            </div>
           ) : (
             <>
               <label className="profile-onboarding-banner" style={bannerPreview || bannerUrl ? { backgroundImage: "url(" + (bannerPreview ?? bannerUrl) + ")" } : undefined}>
