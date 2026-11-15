@@ -457,7 +457,6 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
     : initial;
   const [openedArtifact, setOpenedArtifact] = useState<Artifact | null>(null);
   const [journalOpen, setJournalOpen] = useState(false);
-  const [notice, setNotice] = useState("");
   const current = scene[game.node] ?? scene["day1-beach"];
   const body = useMemo(() => current.body(game), [current, game]);
   const availableResources = resources.filter(item => game.resources[item.id] > 0);
@@ -475,13 +474,11 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
     const next = choose(game, choice);
     setGame(next);
     setJournalOpen(false);
-    setNotice("");
   }
 
   function answerPuzzle(answer: string) {
     if (!current.puzzle) return;
     setGame(completePuzzle(game, current.puzzle.id, answer, current.puzzle));
-    setNotice(answer === current.puzzle.answer ? current.puzzle.success : current.puzzle.failure);
   }
 
   function turnPage() {
