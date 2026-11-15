@@ -4,7 +4,7 @@ import { useGameState } from "@/components/OnlineGameHost";
 
 type ResourceId = "food" | "water" | "wood" | "cloth" | "metal" | "medicine" | "rope" | "battery";
 type ResourceBag = Record<ResourceId, number>;
-type Choice = { id: string; label: string; detail: string; next: string; effect: string };
+type Choice = { id: string; label: string; detail: string; next: string; effect: string; decisionKey: string };
 type Artifact = { id: string; label: string; type: string; teaser: string; body: string[] };
 type Puzzle = { id: string; title: string; prompt: string; options: { id: string; label: string; detail: string }[]; answer: string; success: string; failure: string };
 type StoryNode = {
@@ -53,8 +53,8 @@ const scene: Record<string, StoryNode> = {
       { id: "shells", label: "As três conchas", type: "Registro fotográfico", teaser: "Uma composição deliberada na areia molhada.", body: ["As conchas foram colocadas com a abertura voltada para o interior da ilha. A distância entre elas é quase idêntica.", "Não há pegadas em volta. A maré não alcançou o local e o vento soprava na direção oposta. Parece um sinal, não um acaso."] },
     ],
     choices: [
-      { id: "cove", label: "Seguir as pegadas até a enseada", detail: "A água pode esconder uma nascente. O caminho é estreito e a maré está subindo.", next: "day1-cove", effect: "cove" },
-      { id: "wreck", label: "Voltar aos destroços do Ventania", detail: "Recuperar ferramentas antes que o casco seja levado para o fundo.", next: "day1-wreck", effect: "wreck" },
+      { id: "cove", label: "Seguir as pegadas até a enseada", detail: "A água pode esconder uma nascente. O caminho é estreito e a maré está subindo.", next: "day1-cove", effect: "cove", decisionKey: "route" },
+      { id: "wreck", label: "Voltar aos destroços do Ventania", detail: "Recuperar ferramentas antes que o casco seja levado para o fundo.", next: "day1-wreck", effect: "wreck", decisionKey: "route" },
     ],
   },
   "day1-cove": {
@@ -91,8 +91,8 @@ const scene: Record<string, StoryNode> = {
       { id: "radio-voice", label: "Transcrição do rádio · 23h17", type: "Áudio transcrito", teaser: "Uma voz curta, sem identificação de frequência.", body: ["[23:17:04] Ruído de estática. Três estalos secos. [23:17:11] Voz feminina, baixa: 'Vocês chegaram tarde'. [23:17:16] Respiração próxima ao microfone. [23:17:21] Fim abrupto.", "O arquivo foi gravado na memória interna do transmissor, mas o rádio estava sem bateria. O registro não deveria existir."] },
     ],
     choices: [
-      { id: "noah-watch", label: "Noah fica de vigia", detail: "Ele conhece o rádio e insiste em entender o sinal.", next: "day2-dawn", effect: "watch-noah" },
-      { id: "lia-watch", label: "Lia fica de vigia", detail: "Ela conhece a mata e percebe detalhes que Noah ignora.", next: "day2-dawn", effect: "watch-lia" },
+      { id: "noah-watch", label: "Noah fica de vigia", detail: "Ele conhece o rádio e insiste em entender o sinal.", next: "day2-dawn", effect: "watch-noah", decisionKey: "watch" },
+      { id: "lia-watch", label: "Lia fica de vigia", detail: "Ela conhece a mata e percebe detalhes que Noah ignora.", next: "day2-dawn", effect: "watch-lia", decisionKey: "watch" },
     ],
   },
   "day2-dawn": {
@@ -104,8 +104,8 @@ const scene: Record<string, StoryNode> = {
     ],
     artifacts: [{ id: "ash-map", label: "Seta de cinzas", type: "Fotografia de campo", teaser: "A marca aponta para uma trilha que não aparece no mapa.", body: ["As cinzas estão frias, mas secas. A chuva da madrugada não as dispersou porque alguém as protegeu com uma folha larga.", "A seta termina diante de três pedras claras. A posição coincide com a trilha de manutenção encontrada por Noah."] }],
     choices: [
-      { id: "follow-stones", label: "Seguir a trilha de pedras", detail: "Procurar a instalação antes que a chuva volte.", next: "day2-stones", effect: "stones" },
-      { id: "follow-voice", label: "Seguir a direção do sinal", detail: "Tentar descobrir de onde a transmissão foi emitida.", next: "day2-signal", effect: "signal" },
+      { id: "follow-stones", label: "Seguir a trilha de pedras", detail: "Procurar a instalação antes que a chuva volte.", next: "day2-stones", effect: "stones", decisionKey: "approach" },
+      { id: "follow-voice", label: "Seguir a direção do sinal", detail: "Tentar descobrir de onde a transmissão foi emitida.", next: "day2-signal", effect: "signal", decisionKey: "approach" },
     ],
   },
   "day2-stones": {
@@ -152,8 +152,8 @@ const scene: Record<string, StoryNode> = {
       { id: "empty-coat", label: "Casaco sem corpo", type: "Vestígio material", teaser: "A peça foi deixada na chuva como se alguém a tivesse abandonado.", body: ["O casaco é pesado, de lã escura, com sinais de uso antigo. Os bolsos estão vazios, exceto por um pedaço de papel dobrado em quatro.", "No papel há duas linhas: 'Não confiem no primeiro resgate' e 'A casa não está vazia'. A caligrafia parece feminina."] },
     ],
     choices: [
-      { id: "save-photo", label: "Salvar a fotografia e procurar abrigo", detail: "A imagem pode provar que alguém os observava.", next: "day3-photo", effect: "photo" },
-      { id: "save-medicine", label: "Procurar o kit médico na encosta", detail: "A chuva pode piorar o ferimento de Noah.", next: "day3-medicine", effect: "medicine" },
+      { id: "save-photo", label: "Salvar a fotografia e procurar abrigo", detail: "A imagem pode provar que alguém os observava.", next: "day3-photo", effect: "photo", decisionKey: "storm" },
+      { id: "save-medicine", label: "Procurar o kit médico na encosta", detail: "A chuva pode piorar o ferimento de Noah.", next: "day3-medicine", effect: "medicine", decisionKey: "storm" },
     ],
   },
   "day3-photo": {
@@ -186,8 +186,8 @@ const scene: Record<string, StoryNode> = {
       { id: "passenger-list", label: "Lista de passageiros", type: "Documento recuperado", teaser: "Os nomes de Lia e Noah aparecem antes de se conhecerem.", body: ["A lista foi datilografada seis anos antes da viagem do Ventania. Entre os nomes, aparecem Lia Azevedo e Noah Ferraz, com datas de nascimento corretas.", "O documento tem uma observação: 'duas pessoas, mesma rota, primeira tentativa'. Não há assinatura de autoridade ou empresa responsável."] },
     ],
     choices: [
-      { id: "repair-radio", label: "Tentar reconstruir o transmissor", detail: "Talvez consigam falar com alguém antes de a estação voltar a ficar submersa.", next: "day5-radio", effect: "repair" },
-      { id: "search-lower-room", label: "Descer ao compartimento inferior", detail: "A anotação sobre a porta aponta para algo escondido sob a estação.", next: "day5-lower-room", effect: "lower-room" },
+      { id: "repair-radio", label: "Tentar reconstruir o transmissor", detail: "Talvez consigam falar com alguém antes de a estação voltar a ficar submersa.", next: "day5-radio", effect: "repair", decisionKey: "station" },
+      { id: "search-lower-room", label: "Descer ao compartimento inferior", detail: "A anotação sobre a porta aponta para algo escondido sob a estação.", next: "day5-lower-room", effect: "lower-room", decisionKey: "station" },
     ],
   },
   "day5-radio": {
@@ -222,8 +222,8 @@ const scene: Record<string, StoryNode> = {
       { id: "death-certificate", label: "Certidão de óbito", type: "Documento civil", teaser: "Maia foi declarada morta, mas há uma foto recente.", body: ["O documento registra o desaparecimento do Aurora e um óbito presumido. A assinatura da autoridade é real; o número do processo, porém, pertence a outro município.", "A fotografia recente mostra Maia com o mesmo casaco descrito na transcrição do rádio. O carimbo no verso é da Estação Aurora."] },
     ],
     choices: [
-      { id: "search-maia", label: "Procurar Maia dentro da estação", detail: "A verdade pode estar com a pessoa que deixou os registros.", next: "day7-maia", effect: "maia" },
-      { id: "send-rescue", label: "Transmitir as coordenadas ao continente", detail: "Avisar o mundo antes que a ilha apague mais uma chegada.", next: "day7-rescue", effect: "rescue" },
+      { id: "search-maia", label: "Procurar Maia dentro da estação", detail: "A verdade pode estar com a pessoa que deixou os registros.", next: "day7-maia", effect: "maia", decisionKey: "final" },
+      { id: "send-rescue", label: "Transmitir as coordenadas ao continente", detail: "Avisar o mundo antes que a ilha apague mais uma chegada.", next: "day7-rescue", effect: "rescue", decisionKey: "final" },
     ],
   },
   "day7-maia": {
@@ -285,7 +285,7 @@ function applyEffect(state: SurvivalBookState, effect: string): SurvivalBookStat
 
 function choose(state: SurvivalBookState, choice: Choice): SurvivalBookState {
   const next = applyEffect(state, choice.effect);
-  next.decisions[scene[state.node].id] = choice.id;
+  next.decisions[choice.decisionKey] = choice.id;
   next.node = choice.next;
   next.day = scene[choice.next]?.day ?? state.day;
   return next;
