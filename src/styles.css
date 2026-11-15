@@ -30658,3 +30658,29 @@ body {
   .survival-book-choice em { font-size: 7px; }
   .survival-book-inventory > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+/* O contêiner do livro usa a área útil abaixo da barra do jogo, sem subtrair a barra duas vezes. */
+.game-world-main.stage-play:has(.survival-story-screen) {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  padding: calc(env(safe-area-inset-top) + 62px) 0 max(8px, env(safe-area-inset-bottom)) !important;
+}
+.game-world-main.stage-play:has(.survival-story-screen) .game-session-stage {
+  height: 100%;
+  min-height: 0 !important;
+  max-height: 100%;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+.game-world-main.stage-play:has(.survival-story-screen) .game-play-surface {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+.game-world .game-play-surface .immersive-survival-game:has(.survival-story-screen) {
+  box-sizing: border-box;
+}
