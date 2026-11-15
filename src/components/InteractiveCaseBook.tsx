@@ -31,9 +31,9 @@ const CASE_001: CaseBookData = {
       title: "O telefone atrás da parede",
       paragraphs: () => [
         "O primeiro operário ouviu o telefone tocar às seis e doze da manhã. Não era um toque eletrônico, desses que saem de um aparelho esquecido dentro de uma gaveta. Era o som antigo de campainha metálica, insistente, abafado por tijolos e pelo pó de dezenove anos. Quando desligaram a energia do prédio, o telefone continuou tocando.",
-        "O Hotel Orfeu estava fechado desde 2007. A fachada havia perdido as letras douradas, as janelas do terceiro andar tinham sido cobertas por tábuas e a prefeitura autorizara a demolição depois de três inspeções estruturais. Não havia motivo para existir uma linha ativa ali. Mesmo assim, o som vinha do fundo do corredor, atrás de uma parede que não constava em nenhuma planta.",
-        "Quando os trabalhadores abriram a alvenaria, encontraram a porta de um quarto. Do lado de dentro, uma lâmpada pendia do teto. Havia uma cama feita, dois copos sobre a mesa, uma mala aberta e um telefone fora do gancho. Na poltrona, um homem estava sentado com as mãos apoiadas nos joelhos, como se tivesse adormecido enquanto esperava alguém voltar.",
-        "A perícia não encontrou sinais de luta. O relógio de pulso do homem parara às 03h17. Sobre a mesa, um cartão de boas-vindas trazia o número 17 — embora o hotel tivesse apenas dezesseis quartos registrados. No verso, alguém escrevera: 'A recepção sabe que você chegou'."
+        "O Hotel Orfeu estava fechado desde 2007. A fachada havia perdido as letras douradas, as janelas do terceiro andar tinham sido cobertas por tábuas e a prefeitura autorizara a demolição depois de três inspeções estruturais. Não havia motivo para existir uma linha ativa ali. Mesmo assim, o som vinha do fundo do corredor, atrás de uma parede que não constava em nenhuma planta. Um [[press-orfeo|recorte de jornal de 2007]] descrevia o fechamento do hotel, mas não mencionava aquela ala.",
+        "Quando os trabalhadores abriram a alvenaria, encontraram a porta de um quarto. Do lado de dentro, uma lâmpada pendia do teto. Havia uma cama feita, dois copos sobre a mesa, uma mala aberta e um telefone fora do gancho. Na poltrona, um homem estava sentado com as mãos apoiadas nos joelhos, como se tivesse adormecido enquanto esperava alguém voltar. A equipe registrou o cômodo numa [[room-photo|fotografia panorâmica da cena]].",
+        "A perícia não encontrou sinais de luta. O relógio de pulso do homem parara às 03h17. Sobre a mesa, um cartão de boas-vindas trazia o número 17 — embora o hotel tivesse apenas dezesseis quartos registrados, como confirma a [[plan-17|planta arquitetônica oficial]]. No verso, alguém escrevera: 'A recepção sabe que você chegou'."
       ],
       artifacts: [
         { id: "press-orfeo", title: "Jornal da manhã · O hotel fechado", type: "Manchete de jornal · 2007", teaser: "O Orfeu encerrou as atividades depois de três hóspedes desaparecerem na mesma semana.", content: ["PEDRA BAIXA — O Hotel Orfeu encerrou as atividades após uma sequência de ocorrências ainda sem explicação. Três hóspedes deixaram pertences nos quartos e não foram vistos saindo do prédio. A direção alegou uma falha elétrica e informou que todos haviam sido transferidos para outra unidade.", "A polícia não encontrou registros de transferência. O incêndio mencionado pela administração também não aparece nos relatórios do Corpo de Bombeiros: naquela noite, não houve incêndio, apenas um chamado por ruído na linha telefônica.", "A edição foi publicada em 16 de novembro de 2007. O recorte encontrado no quarto estava dobrado na notícia sobre o fechamento."], visual: "none" },
@@ -46,9 +46,9 @@ const CASE_001: CaseBookData = {
       eyebrow: "Capítulo I · O livro de hóspedes",
       title: "Nomes que nunca fizeram check-out",
       paragraphs: (s) => [
-        "A investigadora Elisa Noronha pediu o livro de hóspedes antes de perguntar pela identidade do morto. A escolha pareceu estranha aos funcionários da prefeitura. O documento estava guardado num armário de metal, junto a recibos de lavanderia e formulários de manutenção. As páginas de novembro de 2007 tinham sido arrancadas; as cópias carbonadas, porém, continuavam no fundo da gaveta.",
+        "A investigadora Elisa Noronha pediu o livro de hóspedes antes de perguntar pela identidade do morto. A escolha pareceu estranha aos funcionários da prefeitura. O documento estava guardado num armário de metal, junto a recibos de lavanderia e formulários de manutenção. As páginas de novembro de 2007 tinham sido arrancadas; as [[guest-ledger|cópias carbonadas do livro de hóspedes]], porém, continuavam no fundo da gaveta.",
         "Havia doze registros do quarto 17. Nenhum nome aparecia na lista oficial de hóspedes. As entradas eram sempre feitas às 03h17, com a mesma caligrafia, e as saídas tinham um horário impossível: 03h17 do dia anterior. Era como se cada pessoa chegasse depois de já ter ido embora.",
-        "A última assinatura era de Raul Faria, auditor do hotel. O nome constava num boletim de desaparecimento de 2007. A família reconheceu a fotografia do homem encontrado na poltrona, mas o perito pediu cautela: o relógio, a roupa e a aparência não provavam identidade. O cadáver parecia ter passado pouco tempo naquele quarto, embora o registro dissesse o contrário.",
+        "A última assinatura era de Raul Faria, auditor do hotel. Uma [[key-17|chave de latão marcada com o número 17]] aparecia na mesma ficha, mas não havia fechadura correspondente nos andares. O nome constava num boletim de desaparecimento de 2007. A família reconheceu a fotografia do homem encontrado na poltrona, mas o perito pediu cautela. A [[laundry|comanda de lavanderia]] associada ao terno indicava uma retirada recente: o relógio, a roupa e a aparência não provavam identidade. O cadáver parecia ter passado pouco tempo naquele quarto, embora o registro dissesse o contrário.",
         s.decisions["opening"] === "archive" ? "O arquivo municipal acrescentou uma irregularidade: três reformas foram pagas com verbas destinadas a obras que nunca aconteceram. Todas foram assinadas pelo mesmo administrador, Dimas Avelar." : "Na fotografia ampliada, Elisa percebeu um segundo copo sobre a mesa. A marca circular estava sobre a poeira, não sob ela. O quarto fora preparado para duas pessoas, mas apenas uma cadeira tinha marcas recentes."
       ],
       artifacts: [
@@ -62,10 +62,10 @@ const CASE_001: CaseBookData = {
       eyebrow: "Capítulo II · Pessoas que ficaram",
       title: "A mulher que nunca saiu da recepção",
       paragraphs: (s) => [
-        "Irene Sampaio foi encontrada numa casa térrea perto da estação rodoviária. Tinha setenta e dois anos, uma coleção de rádios desmontados e o hábito de deixar a luz da cozinha acesa durante o dia. Ao ver a fotografia do quarto 17, não perguntou pelo cadáver. Perguntou se o telefone ainda estava fora do gancho.",
+        "Irene Sampaio foi encontrada numa casa térrea perto da estação rodoviária. Tinha setenta e dois anos, uma coleção de rádios desmontados e o hábito de deixar a luz da cozinha acesa durante o dia. Ao ver a [[room-photo|fotografia do quarto 17]], não perguntou pelo cadáver. Perguntou se o telefone ainda estava fora do gancho.",
         "Em 2007, Irene trabalhava no turno da noite. Disse que o hotel tinha dezesseis quartos para hóspedes e um décimo sétimo para funcionários, mas que a direção jamais permitia chamar aquele espaço pelo número. O homem que dormia ali era apresentado como auditor. Às vezes, no entanto, a recepção recebia ligações dele antes de ele chegar ao prédio.",
-        "Ela contou que, na última semana de funcionamento, ouviu uma hóspede pedir ajuda pelo interfone. A mulher dizia estar no quarto 17 e não conseguia abrir a porta. Irene subiu até o corredor, mas encontrou uma parede lisa. No retorno, a recepção já tinha uma ficha de saída assinada pela hóspede. A assinatura era dela própria.",
-        s.decisions["interview"] === "irene" ? "Quando Elisa mostrou a chave de latão, Irene começou a chorar. Disse que a guardara por dezenove anos porque a pessoa que devia recebê-la nunca chegou. Não explicou quem era essa pessoa." : "O antigo gerente, Dimas Avelar, negou a existência do quarto. Mas, ao ouvir o relato de Irene, repetiu uma frase que não constava de nenhum relatório: 'A recepção não podia abrir a porta por dentro'."
+        "Ela contou que, na última semana de funcionamento, ouviu uma hóspede pedir ajuda pelo interfone. A mulher dizia estar no quarto 17 e não conseguia abrir a porta. O [[irene-statement|depoimento gravado de Irene]] preservou cada pausa daquela chamada. Irene subiu até o corredor, mas encontrou uma parede lisa. No retorno, a recepção já tinha uma ficha de saída assinada pela hóspede. A assinatura era dela própria.",
+        s.decisions["interview"] === "irene" ? "Quando Elisa mostrou a chave de latão, Irene começou a chorar. Disse que a guardara por dezenove anos porque a pessoa que devia recebê-la nunca chegou. Não explicou quem era essa pessoa." : "O antigo gerente, Dimas Avelar, negou a existência do quarto. Mas, ao ouvir o relato de Irene, repetiu uma frase que não constava de nenhum relatório: 'A recepção não podia abrir a porta por dentro'. O [[manager-interview|depoimento de Dimas Avelar]] registra a mesma frase, dita antes que Elisa mencionasse a porta."
       ],
       artifacts: [
         { id: "irene-statement", title: "Depoimento de Irene Sampaio", type: "Entrevista gravada", teaser: "A antiga recepcionista descreve uma chamada de um quarto inexistente.", content: ["'Eu ouvi a mulher pedir que abrissem. Ela não gritava. Falava baixo, como se alguém estivesse dormindo perto dela. Disse que a janela tinha sido parafusada e que havia outra pessoa no quarto, mas que a pessoa não respirava.'", "'Quando subi, o corredor estava vazio. Eu toquei a parede. Estava quente. Foi quando o telefone da recepção tocou e a mulher pediu desculpas por ter ligado. A voz era a minha.'", "A gravação apresenta uma pausa de 17 segundos entre as duas respostas. Irene não se recorda de ter feito essa pausa."], visual: "none" },
@@ -79,8 +79,8 @@ const CASE_001: CaseBookData = {
       title: "A porta do lado de dentro",
       paragraphs: (s) => [
         "A passagem de manutenção começava atrás de um armário de roupa de cama. Não havia maçaneta do lado de fora. A porta só podia ser aberta por quem estivesse no corredor inferior — uma solução que fazia sentido para armazenar equipamentos, mas não para um quarto de hóspedes.",
-        "O corredor terminava numa sala de gravação. Dezenas de fitas estavam organizadas por data, não por nome. Em cada caixa havia um número de quarto e uma hora: 03h17. Elisa encontrou a própria voz numa gravação feita antes de chegar a Pedra Baixa. A fita registrava uma pergunta que ela ainda não havia feito: 'Quem ocupou o quarto antes de mim?'",
-        "O arquivo mais antigo continha a voz de Raul Faria. Ele dizia que o quarto não servia para esconder pessoas, mas para esconder a prova de que elas tinham estado ali. A cada noite, uma ficha era criada, uma chamada era simulada e uma saída era registrada. Os hóspedes desapareciam dos livros porque nunca haviam entrado oficialmente.",
+        "O corredor terminava numa sala de gravação. Dezenas de fitas estavam organizadas por data, não por nome. A mais antiga, a [[tape-0317|gravação das 03h17]], levava a assinatura de Raul Faria. Em cada caixa havia um número de quarto e uma hora: 03h17. Elisa encontrou a própria voz numa gravação feita antes de chegar a Pedra Baixa. Numa [[corridor-plan|planta do corredor inferior]], o ponto da sala de fitas aparecia riscado a lápis. A fita registrava uma pergunta que ela ainda não havia feito: 'Quem ocupou o quarto antes de mim?'",
+        "O arquivo mais antigo continha a voz de Raul Faria. Ele dizia que o quarto não servia para esconder pessoas, mas para esconder a prova de que elas tinham estado ali. A cada noite, uma ficha era criada, uma chamada era simulada e uma saída era registrada. A [[room-photo-detail|ampliação da poltrona]] revelaria depois que até a identidade do morto fora montada. Os hóspedes desapareciam dos livros porque nunca haviam entrado oficialmente.",
         "No fim da gravação, Raul fala de uma segunda pessoa: 'Se encontrarem meu corpo, não confiem no rosto. A pessoa que está sentada na poltrona não é quem vocês vieram buscar'."
       ],
       artifacts: [
@@ -93,7 +93,7 @@ const CASE_001: CaseBookData = {
       eyebrow: "Capítulo IV · O nome sob o nome",
       title: "A última ficha",
       paragraphs: (s) => [
-        "A perícia odontológica confirmou que o homem na poltrona não era Raul Faria. Os registros dentários pertenciam a Dimas Avelar. O antigo gerente havia sido declarado morto em 2012, num acidente de estrada sem corpo identificado. A certidão fora emitida com base numa aliança encontrada perto de um veículo incendiado.",
+        "A perícia odontológica confirmou que o homem na poltrona não era Raul Faria. O [[identity-report|laudo de identificação]] confirmou que o corpo pertencia a Dimas Avelar. Os registros dentários pertenciam a Dimas Avelar. O antigo gerente havia sido declarado morto em 2012, num acidente de estrada sem corpo identificado. A certidão fora emitida com base numa aliança encontrada perto de um veículo incendiado.",
         "O quarto 17 não fora construído para esconder hóspedes. Fora construído para esconder a própria identidade do gerente. Dimas mantinha registros paralelos de pessoas que precisavam desaparecer por algumas horas, dias ou anos. Algumas fugiam de ameaças; outras eram levadas para ali contra a vontade. A recepção registrava saídas que nunca aconteceram.",
         "Raul descobrira o esquema e preparara as fitas para que alguém pudesse reconstituir a história. Irene o ajudou a retirar duas pessoas do prédio na última noite, mas não conseguiu voltar para buscar a terceira. A mulher do interfone era a irmã de Dimas, mantida no quarto até a morte. A voz que pedia desculpas era uma gravação dela, repetida pela central.",
         s.decisions["opening"] === "archive" ? "A reforma clandestina foi paga com dinheiro público e assinada por Dimas. O arquivo municipal tinha uma cópia do contrato, escondida entre processos de drenagem." : "A fotografia do segundo copo foi decisiva: o copo estava limpo na noite da descoberta, mas a poeira ao redor tinha dezenove anos. Alguém preparou a mesa para uma conversa que nunca ocorreu."
@@ -133,10 +133,10 @@ const CASE_002: CaseBookData = {
         "Às 22h08, o painel da Estação Central exibiu uma linha que não fazia parte da programação havia vinte e três anos: Santa Íria — Plataforma 4 — chegada 22h14. O anúncio sonoro veio logo depois, com a voz antiga da estação, a mesma gravação que ainda chamava passageiros para uma composição retirada de serviço em 2003.",
         "O inspetor Joel Ferreira estava no saguão quando ouviu o nome da linha. Disse à segurança que o sistema precisava de manutenção e caminhou até o corredor técnico. A câmera registrou o uniforme cinza, o rádio no ombro e uma pasta estreita debaixo do braço. Às 22h19, a imagem congelou durante sete segundos. Quando voltou, o corredor estava vazio.",
         "A equipe de limpeza encontrou uma mala preta no banco da plataforma. Não havia etiqueta, cadeado ou marca de companhia ferroviária. A alça estava úmida, embora não chovesse havia quatro dias. Dentro havia uma passagem antiga, um relógio sem ponteiros e uma fotografia da estação com um detalhe que não existia mais: uma quinta plataforma.",
-        "O registro de circulação confirmou que nenhum trem entrou na estação naquela noite. Ainda assim, o trilho da plataforma 4 amanheceu coberto por uma fina camada de água salgada."
+        "O [[platform-photo|registro de segurança da Plataforma 4]] mostrava uma sombra no fim dos trilhos. Ainda assim, o registro de circulação confirmou que nenhum trem entrou na estação naquela noite. Ainda assim, o trilho da plataforma 4 amanheceu coberto por uma fina camada de água salgada."
       ],
       artifacts: [
-        { id: "headline-train", title: "Jornal local · A linha que desapareceu", type: "Manchete de jornal · 2003", teaser: "A composição Santa Íria foi retirada depois de um acidente nunca explicado.", content: ["SANTA ÍRIA — A empresa ferroviária confirmou a suspensão da linha noturna após o desaparecimento de um vagão e de sete passageiros. A nota oficial atribuiu o episódio a uma falha de sinalização e informou que a composição havia sido recolhida para perícia.", "Nenhum acidente foi registrado na rodovia paralela, nenhuma equipe encontrou destroços e o maquinista não apareceu para prestar depoimento. A linha foi retirada dos mapas de circulação dois dias depois.", "O jornal recebeu uma carta anônima afirmando que o trem chegou à estação, mas ninguém abriu as portas."], visual: "none" },
+        { id: "headline-train", title: "Jornal local · A linha que desapareceu", type: "Manchete de jornal · 2003", teaser: "A composição Santa Íria foi retirada depois de um acidente nunca explicado.", content: ["SANTA ÍRIA — A empresa ferroviária confirmou a suspensão da linha noturna após o desaparecimento de um vagão e de sete passageiros. O [[headline-train|jornal de Santa Íria]] publicou uma manchete curta, sem fotografia e sem nomes. A nota oficial atribuiu o episódio a uma falha de sinalização e informou que a composição havia sido recolhida para perícia.", "Nenhum acidente foi registrado na rodovia paralela, nenhuma equipe encontrou destroços e o maquinista não apareceu para prestar depoimento. A linha foi retirada dos mapas de circulação dois dias depois.", "O jornal recebeu uma carta anônima afirmando que o trem chegou à estação, mas ninguém abriu as portas."], visual: "none" },
         { id: "platform-photo", title: "Fotografia da Plataforma 4", type: "Imagem de segurança reconstruída", teaser: "O banco, a mala e a sombra de um vagão no fim do trilho.", content: ["A reconstrução combina três câmeras. No quadro principal, a mala aparece às 22h11. A sombra no fim do trilho não corresponde a nenhum trem registrado.", "O relógio da parede marca 22h08, mas os arquivos digitais foram gravados às 22h14. A diferença entre o horário exibido e o horário real é de seis minutos."], visual: "platform" },
         { id: "timetable-2003", title: "Quadro de circulação de 2003", type: "Documento histórico", teaser: "A linha Santa Íria consta como cancelada às 22h14.", content: ["O quadro original registra a composição 417, com partida às 22h08 e chegada às 22h14. O cancelamento foi anotado a lápis, sem assinatura.", "Na margem há uma observação: 'não abrir as portas na quinta plataforma'. A estação atual possui quatro plataformas."], visual: "none" }
       ],
@@ -146,8 +146,8 @@ const CASE_002: CaseBookData = {
       eyebrow: "Capítulo I · A mala lacrada",
       title: "O que chegou sem passageiro",
       paragraphs: (s) => [
-        "A mala foi aberta na presença de dois peritos. Não havia roupa. Havia sete envelopes numerados, um bilhete de embarque ainda não utilizado e um gravador portátil embrulhado em jornal. Cada envelope tinha o nome de uma pessoa que constava no relatório de desaparecidos de 2003 — exceto o sétimo, que trazia o nome de Joel Ferreira.",
-        "O bilhete estava impresso em papel térmico novo. Indicava o assento 08, vagão 5, composição 417. A data era a do dia seguinte. O relógio sem ponteiros não tinha mecanismo interno; em seu lugar, havia um pequeno compartimento com uma chave de funcionário.",
+        "A mala foi aberta na presença de dois peritos. Não havia roupa. Havia sete envelopes numerados, um [[ticket-08|bilhete de embarque ainda não utilizado]] e um gravador portátil embrulhado em jornal. O [[suitcase-inventory|inventário da mala]] registrou também uma camada de sal nas costuras. Cada envelope tinha o nome de uma pessoa que constava no relatório de desaparecidos de 2003 — exceto o sétimo, que trazia o nome de Joel Ferreira.",
+        "O bilhete estava impresso em papel térmico novo. Indicava o assento 08, vagão 5, composição 417. A data era a do dia seguinte. O relógio sem ponteiros não tinha mecanismo interno; em seu lugar, havia um pequeno compartimento com uma chave de funcionário. A [[voice-tape|gravação encontrada no gravador]] começava com o anúncio da composição 417.",
         s.decisions["opening"] === "headline" ? "A notícia antiga registrava sete desaparecidos. A mala continha exatamente sete envelopes, mas os nomes não apareciam na mesma ordem do jornal. Alguém reorganizara a lista para que Joel fosse o último." : "Na fotografia ampliada, a sombra do quinto vagão tem janelas iluminadas. Uma delas mostra a silhueta de alguém sentado, olhando diretamente para a câmera."
       ],
       artifacts: [
@@ -160,9 +160,9 @@ const CASE_002: CaseBookData = {
       eyebrow: "Capítulo II · O turno de Joel",
       title: "O homem que deixou o próprio crachá",
       paragraphs: (s) => [
-        "O cartão JT-04 foi usado às 22h11 para abrir a porta de serviço. O sistema atribuiu o acesso a Joel, mas o crachá dele foi encontrado no bolso do uniforme deixado no armário. A câmera do corredor mostra uma pessoa usando o cartão e caminhando para a plataforma, embora o rosto esteja sempre fora do enquadramento.",
-        "Marta Siqueira, chefe da estação, disse que Joel costumava fazer rondas sozinho e que conhecia os códigos antigos. Lila Monteiro, que tocava perto da bilheteria, afirmou ter ouvido alguém chamando os passageiros pelo nome, um por um, mesmo quando o saguão estava vazio.",
-        "O mensageiro Enzo Prado entregou uma encomenda às 22h06 e saiu pela porta principal. O recibo comprova a saída. No entanto, o pacote entregue por ele tinha o mesmo peso da mala encontrada na plataforma e foi registrado como 'documentos de manutenção'.",
+        "O cartão JT-04 foi usado às 22h11 para abrir a porta de serviço. O sistema atribuiu o acesso a Joel, mas o [[joel-badge|cartão JT-04]] foi encontrado no bolso do uniforme deixado no armário. A câmera do corredor mostra uma pessoa usando o cartão e caminhando para a plataforma, embora o rosto esteja sempre fora do enquadramento.",
+        "Marta Siqueira, chefe da estação, disse — em seu [[marta-statement|depoimento à polícia]] — que Joel costumava fazer rondas sozinho e que conhecia os códigos antigos. Lila Monteiro, que tocava perto da bilheteria, afirmou ter ouvido alguém chamando os passageiros pelo nome. O [[lila-notebook|caderno de músicas de sua infância]] continha a mesma sequência que tocava ao fundo da gravação, um por um, mesmo quando o saguão estava vazio.",
+        "O mensageiro Enzo Prado entregou uma encomenda às 22h06 e saiu pela porta principal. A câmera da galeria, na [[subway-photo|fotografia do subsolo]], mostrava um movimento paralelo ao da plataforma. O recibo comprova a saída. No entanto, o pacote entregue por ele tinha o mesmo peso da mala encontrada na plataforma e foi registrado como 'documentos de manutenção'.",
         s.decisions["interview"] === "marta" ? "Marta pediu para ouvir a gravação do alto-falante. Quando a voz chamou Joel, ela desligou o aparelho e disse que aquela não era a gravação original." : "Lila reconheceu a voz feminina da fita. Disse que era a mesma mulher que cantava na estação quando ela era criança — uma funcionária que desapareceu em 2003."
       ],
       artifacts: [
@@ -190,7 +190,7 @@ const CASE_002: CaseBookData = {
       eyebrow: "Capítulo IV · A composição 417",
       title: "Os passageiros que não chegaram",
       paragraphs: (s) => [
-        "Marta reconheceu que, em 2003, a linha não foi cancelada por uma falha de sinalização. O trem 417 chegou à estação com todos os passageiros a bordo, mas nenhuma porta abriu. A equipe de plataforma recebeu ordem para manter o saguão vazio e não registrar o desembarque. Na manhã seguinte, sete famílias procuraram pessoas que nunca voltaram para casa.",
+        "Marta reconheceu que, em 2003, a linha não foi cancelada por uma falha de sinalização. O [[incident-report|relatório de ocorrência]] fora alterado depois que o trem já deveria estar fora de serviço. O trem 417 chegou à estação com todos os passageiros a bordo, mas nenhuma porta abriu. A equipe de plataforma recebeu ordem para manter o saguão vazio e não registrar o desembarque. Na manhã seguinte, sete famílias procuraram pessoas que nunca voltaram para casa. A [[passenger-list|lista dos sete passageiros]] ainda guardava os assentos e os destinos que foram apagados.",
         "A empresa declarou que a composição havia sido recolhida antes de chegar a Santa Íria. O maquinista assinou o relatório, mas sua assinatura foi reproduzida em outro documento no mesmo minuto em que ele aparecia na câmera, parado diante da quinta alavanca. O maquinista não era Joel. Era o pai de Joel, morto em 2004.",
         s.decisions["interview"] === "lila" ? "Lila entregou o caderno da infância. A melodia que ouvira na estação era uma gravação de chamada de embarque feita pela mãe, uma das sete pessoas desaparecidas. A última nota nunca foi tocada porque a composição não chegou ao destino." : "Marta revelou que assinou o cancelamento para proteger a estação. Não sabia que os passageiros continuavam dentro do trem. Disse que a ordem veio de uma pessoa que ainda trabalha no prédio, embora a folha de pagamento não mostre o nome."
       ],
@@ -258,6 +258,22 @@ function artifactIcon(type: string) {
   return FileText;
 }
 
+
+function renderInlineReferences(
+  paragraph: string,
+  artifacts: Map<string, Artifact>,
+  onOpen: (artifact: Artifact) => void,
+) {
+  const parts = paragraph.split(/(\\[\\[[a-z0-9-]+\\|[^\\]]+\\]\\])/g);
+  return parts.map((part, index) => {
+    const match = part.match(/^\\[\\[([^|]+)\\|([^\\]]+)\\]\\]$/);
+    if (!match) return part;
+    const artifact = artifacts.get(match[1]);
+    if (!artifact) return match[2];
+    return <button type="button" className="casebook-inline-link" key={index} onClick={() => onOpen(artifact)}>{match[2]}</button>;
+  });
+}
+
 function ArtifactPopup({ artifact, onClose, tone }: { artifact: Artifact; onClose: () => void; tone: "hotel" | "rail" }) {
   const Icon = artifactIcon(artifact.type);
   return (
@@ -295,13 +311,12 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
   const current = caseBook.chapters[chapterIndex];
   const paragraphs = current.paragraphs(book);
   const textPageCount = Math.max(1, Math.ceil(paragraphs.length / 2));
-  const hasInsertPage = Boolean(current.artifacts?.length);
   const hasChoicePage = Boolean(current.choice);
-  const contentPageCount = textPageCount + Number(hasInsertPage) + Number(hasChoicePage);
+  const contentPageCount = textPageCount + Number(hasChoicePage);
   const safeReaderPage = Math.min(book.readerPage ?? 0, contentPageCount - 1);
   const showingText = safeReaderPage < textPageCount;
-  const showingArtifacts = hasInsertPage && safeReaderPage === textPageCount;
-  const showingChoice = hasChoicePage && safeReaderPage === textPageCount + Number(hasInsertPage);
+  const showingChoice = hasChoicePage && safeReaderPage === textPageCount;
+  const artifactIndex = new Map(caseBook.chapters.flatMap(chapter => chapter.artifacts ?? []).map(item => [item.id, item]));
 
   useEffect(() => {
     if (sync.online && (typeof storedBook?.chapter !== "number" || !Array.isArray(storedBook.opened))) {
@@ -340,7 +355,7 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
     if (chapterIndex === 0) return;
     const previousChapter = caseBook.chapters[chapterIndex - 1];
     const previousTextPages = Math.max(1, Math.ceil(previousChapter.paragraphs(book).length / 2));
-    const previousContentPages = previousTextPages + Number(Boolean(previousChapter.artifacts?.length)) + Number(Boolean(previousChapter.choice));
+    const previousContentPages = previousTextPages + Number(Boolean(previousChapter.choice));
     setBook({ ...book, chapter: chapterIndex - 1, readerPage: previousContentPages - 1, finished: false });
   }
 
@@ -366,18 +381,7 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
           <main className="casebook-reading">
             <div className="casebook-kicker">{current.eyebrow}</div>
             <h1>{current.title}</h1>
-            {showingText && <div className="casebook-prose">{paragraphs.slice(safeReaderPage * 2, safeReaderPage * 2 + 2).map((paragraph,index)=><p key={safeReaderPage * 2 + index}>{paragraph}</p>)}</div>}
-            {showingArtifacts && current.artifacts && (
-              <section className="casebook-inserts">
-                <div className="casebook-inserts-heading"><span>MATERIAIS ENCONTRADOS NO CASO</span><small>{current.artifacts.filter(item=>book.opened.includes(item.id)).length}/{current.artifacts.length} abertos</small></div>
-                <div className="casebook-insert-list">{current.artifacts.map(item=>{
-                  const Icon=artifactIcon(item.type);
-                  return <button type="button" className={book.opened.includes(item.id)?"is-opened":""} key={item.id} onClick={()=>openArtifact(item)}>
-                    <span className="casebook-insert-icon"><Icon/></span><span className="casebook-insert-copy"><strong>{item.title}</strong><small>{item.teaser}</small></span><span className="casebook-insert-open">{book.opened.includes(item.id)?"Lido":"Abrir"} <ChevronRight/></span>
-                  </button>;
-                })}</div>
-              </section>
-            )}
+            {showingText && <div className="casebook-prose">{paragraphs.slice(safeReaderPage * 2, safeReaderPage * 2 + 2).map((paragraph,index)=><p key={safeReaderPage * 2 + index}>{renderInlineReferences(paragraph, artifactIndex, openArtifact)}</p>)}</div>}
             {showingChoice && current.choice && (
               <section className="casebook-reader-choice">
                 <span>{current.choice.prompt}</span>
