@@ -435,7 +435,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
 
       {state.status === "ready" && (
         <>
-          <form className="memory-composer" onSubmit={handleSubmit}>
+          <form className="memory-composer" data-tour-target="memory-composer" onSubmit={handleSubmit}>
             <div className="memory-composer-topline">
               <strong>Guardar lembrança</strong>
               <div className="memory-visibility-switch" role="group" aria-label="Privacidade da lembrança">
