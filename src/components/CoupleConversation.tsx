@@ -72,6 +72,7 @@ import {
   removeCoupleMedia,
   uploadCoupleMedia,
 } from "@/lib/couple-media";
+import { getProfileMediaUrl } from "@/lib/profile-media";
 
 type ConversationState =
   | { status: "loading" }
@@ -703,12 +704,12 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             // O avatar não é requisito para abrir a conversa. Busca em segundo
             // plano para que uma falha no Storage não prenda a tela inicial.
             const avatarPath = profile.avatar_path;
-            void createCoupleMediaUrl(avatarPath)
-              .then((avatar) => {
-                if (!active || !avatar.url) return;
+            void getProfileMediaUrl(avatarPath)
+              .then((avatarUrl) => {
+                if (!active || !avatarUrl) return;
                 setState((current) =>
                   current.status === "active" && current.coupleId === couple.id
-                    ? { ...current, otherAvatarUrl: avatar.url }
+                    ? { ...current, otherAvatarUrl: avatarUrl }
                     : current,
                 );
               })
