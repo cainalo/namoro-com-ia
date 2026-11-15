@@ -23,6 +23,7 @@ type AuthMode = "signin" | "signup";
 export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
+  const [pairingResolvedFor, setPairingResolvedFor] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -33,6 +34,7 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
       if (!active) return;
       authEventReceived = true;
       setSession(nextSession);
+      if (!nextSession) setPairingResolvedFor(null);
       setChecking(false);
     });
 
@@ -68,11 +70,20 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
       if (active && result.error) {
         console.warn("O vínculo compartilhado continua pendente; o acesso individual permanece liberado.", result.error);
       }
+      if (active && result.connected) {
+        window.dispatchEvent(new Event("morados:couple-updated"));
+      }
     }).catch((error: unknown) => {
-      if (active) console.warn("Não foi possível atualizar o vínculo do casal em segundo plano.", error);
+      if (active) console.warn("Não foi possível atualizar o vínculo do casal; o acesso individual permanece liberado.", error);
+    }).finally(() => {
+      if (active) setPairingResolvedFor(session.user.id);
     });
     return () => { active = false; };
   }, [session?.user.id]);
+
+  if (session && pairingResolvedFor !== session.user.id) {
+    return <MoradosLoadingScreen message="Preparando seu espaço pessoal" />;
+  }
 
   return <>{children(session)}</>;
 }
