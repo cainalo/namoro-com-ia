@@ -10,7 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
 import { MoradosMark } from "@/components/MoradosMark";
 import { supabase } from "@/integrations/supabase/client";
-import { completeCouplePairing, registerCouple } from "@/lib/couple-registration";
+import { registerCouple } from "@/lib/couple-registration";
 import { Button } from "@/components/ui/button";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 
@@ -61,29 +61,6 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
     };
   }, []);
 
-  const [pairing, setPairing] = useState<string | null>(null);
-  const [pairChecking, setPairChecking] = useState(false);
-  const [pairRetry, setPairRetry] = useState(0);
-  const pairToken = session?.user.user_metadata?.["morados_pair_token"];
-  useEffect(() => {
-    let active = true;
-    if (!session || !pairToken) { setPairing(null); return; }
-    setPairChecking(true);
-    void completeCouplePairing().then((result) => { if (active) setPairing(result.error); }).catch(() => { if (active) setPairing("Não foi possível verificar o pareamento. Tente novamente."); }).finally(() => { if (active) setPairChecking(false); });
-    return () => { active = false; };
-  }, [session?.user.id, pairToken, pairRetry]);
-
-  if (checking) {
-    return <MoradosLoadingScreen message="Preparando o espaço de vocês" />;
-  }
-
-  if (!session) {
-    return Capacitor.isNativePlatform()
-      ? <NativeAuthForm emailRedirectTo={emailRedirectTo} />
-      : <AuthForm emailRedirectTo={emailRedirectTo} />;
-  }
-  if (pairChecking) return <MoradosLoadingScreen message="Confirmando o cadastro do casal" />;
-  if (pairing) return <main className="auth-v2"><section className="auth-v2-card grid gap-4"><h1>Cadastro do casal</h1><p role="alert">{pairing}</p><Button onClick={() => setPairRetry((value) => value + 1)}>Verificar novamente</Button><AppGeneralSettings /><SignOutButton /></section></main>;
   return <>{children(session)}</>;
 }
 
