@@ -8,6 +8,7 @@ type InlineMenuProps = {
   triggerClassName?: string;
   menuClassName?: string;
   align?: "start" | "end";
+  triggerDataTourTarget?: string;
 };
 
 /**
@@ -22,6 +23,7 @@ export function InlineMenu({
   triggerClassName = "",
   menuClassName = "",
   align = "end",
+  triggerDataTourTarget,
 }: InlineMenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -64,6 +66,7 @@ export function InlineMenu({
         type="button"
         className={["safe-inline-menu-trigger", triggerClassName].filter(Boolean).join(" ")}
         aria-label={label}
+        data-tour-target={triggerDataTourTarget}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
