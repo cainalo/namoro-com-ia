@@ -30,6 +30,7 @@ import { TrucoGame } from "@/components/TrucoGame";
 import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
+import "./GameCover.css";
 import { CaveExpeditionGame } from "@/components/CaveExpeditionGame";
 import { InlineMenu } from "@/components/InlineMenu";
 import { GameAudioProvider, GameAudioToggle, useGameAudio } from "@/components/GameExperience";
