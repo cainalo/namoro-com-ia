@@ -989,3 +989,43 @@
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Os livros substituem a barra de contexto e ocupam a área inteira de jogo. */
+.game-world-main.stage-play:has(.island-storybook-game),
+.game-world-main.stage-play:has(.casebook-experience) {
+  height: calc(100dvh - 54px) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.game-world-main.stage-play:has(.island-storybook-game) .game-session-context,
+.game-world-main.stage-play:has(.casebook-experience) .game-session-context {
+  display: none !important;
+}
+.game-world-main.stage-play:has(.island-storybook-game) .game-session-stage,
+.game-world-main.stage-play:has(.casebook-experience) .game-session-stage {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+.game-world-main.stage-play:has(.island-storybook-game) .game-play-surface,
+.game-world-main.stage-play:has(.casebook-experience) .game-play-surface {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+.game-world .game-play-surface:has(.island-storybook-game),
+.game-world .game-play-surface:has(.casebook-experience) {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
