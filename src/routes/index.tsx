@@ -315,7 +315,7 @@ function Index() {
               ) : activeSection === "games" ? (
                 <div data-tour-target="tour-games" className="tour-anchor"><CoupleGames userId={session.user.id} onNavigate={goToSection} /></div>
               ) : activeSection === "profile" ? (
-                <div data-tour-target="tour-profile" className="tour-anchor"><CoupleProfile userId={session.user.id} /></div>
+                <div className="tour-anchor"><CoupleProfile userId={session.user.id} /></div>
               ) : activeSection === "universe" ? (
                 <div data-tour-target="tour-house" className="tour-anchor"><CoupleHouse /></div>
               ) : activeSection === "organize" ? (
