@@ -38,6 +38,7 @@ type SurvivalState = {
   storyPage?: number;
   /** Choices are saved with the shared match so both players follow the same path. */
   storyChoices?: IslandStoryChoice[];
+  storyVersion?: number;
 };
 const MAX_HEALTH = 5;
 const RESOURCE_LIMIT = 18;
@@ -47,6 +48,7 @@ const initial: SurvivalState = {
   tutorialStep: "story",
   storyPage: 0,
   storyChoices: [],
+  storyVersion: 2,
   weather: "clear",
   resources: { food: 6, water: 6, wood: 3, cloth: 1, metal: 0, medicine: 1, rope: 0 },
   health: [5, 5],
@@ -293,6 +295,23 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
     if (game.phase === "won") play("success");
     if (game.phase === "lost") play("warning");
   }, [game.phase, play]);
+
+  // Migra campanhas salvas pelo livro anterior sem conceder os bônus novamente.
+  useEffect(() => {
+    if (tutorialStep !== "story" || game.storyVersion === 2) return;
+    const oldPage = Math.max(0, Math.min(4, Math.floor(game.storyPage ?? 0)));
+    const oldChoices = game.storyChoices ?? [];
+    const migratedPage =
+      oldPage === 4 ? 7 :
+      oldPage === 3 ? (oldChoices[1] ? 6 : 5) :
+      oldPage === 2 ? 3 : oldPage;
+    setGame((current) => ({
+      ...copyState(current),
+      storyPage: migratedPage,
+      storyChoices: current.storyChoices ?? [],
+      storyVersion: 2,
+    }));
+  }, [game.storyPage, game.storyChoices, game.storyVersion, setGame, tutorialStep]);
 
   function spendAction(next: SurvivalState, message: string, sound: "move" | "discovery" | "impact" = "move") {
     next.actionsLeft = Math.max(0, next.actionsLeft - 1);
@@ -583,7 +602,7 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
   }
 
   function beginIslandAdventure() {
-    if (tutorialStep !== "story" || storyPage !== 4) return;
+    if (tutorialStep !== "story" || storyPage !== 7) return;
     const next = copyState(game);
     next.tutorialStep = advanceIslandTutorial("story", "begin");
     setGame(next);
