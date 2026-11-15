@@ -1632,7 +1632,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             </div>
           )}
 
-          <form ref={composerRef} className="conversation-composer" data-no-swipe onSubmit={handleSend}>
+          <form ref={composerRef} className="conversation-composer" data-tour-target="conversation-composer" data-no-swipe onSubmit={handleSend}>
             <input
               ref={fileInputRef}
               type="file"
