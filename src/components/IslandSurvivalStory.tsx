@@ -5,7 +5,7 @@ import "./StoryGames.css";
 
 type ResourceId = "food" | "water" | "wood" | "cloth" | "metal" | "medicine" | "rope" | "battery";
 type ResourceBag = Record<ResourceId, number>;
-type Choice = { id: string; label: string; detail: string; next: string; effect: string; decisionKey: string };
+type Choice = { id: string; label: string; detail: string; consequence: string; next: string; effect: string; decisionKey: string };
 type Artifact = { id: string; label: string; type: string; teaser: string; body: string[] };
 type Puzzle = { id: string; title: string; prompt: string; options: { id: string; label: string; detail: string }[]; answer: string; success: string; failure: string };
 type StoryNode = {
@@ -54,8 +54,8 @@ const scene: Record<string, StoryNode> = {
       { id: "shells", label: "As três conchas", type: "Registro fotográfico", teaser: "Uma composição deliberada na areia molhada.", body: ["As conchas foram colocadas com a abertura voltada para o interior da ilha. A distância entre elas é quase idêntica.", "Não há pegadas em volta. A maré não alcançou o local e o vento soprava na direção oposta. Parece um sinal, não um acaso."] },
     ],
     choices: [
-      { id: "cove", label: "Seguir as pegadas até a enseada", detail: "A água pode esconder uma nascente. O caminho é estreito e a maré está subindo.", next: "day1-cove", effect: "cove", decisionKey: "route" },
-      { id: "wreck", label: "Voltar aos destroços do Ventania", detail: "Recuperar ferramentas antes que o casco seja levado para o fundo.", next: "day1-wreck", effect: "wreck", decisionKey: "route" },
+      { id: "cove", label: "Seguir as pegadas até a enseada", detail: "Lia segue as pegadas até uma enseada escondida. O trajeto é estreito e a maré está subindo, mas há sinais de água doce entre as pedras.", consequence: "Vocês podem encontrar água potável e folhas medicinais, mas deixam os destroços para trás. Ferramentas e peças do transmissor podem afundar antes que consigam voltar.", next: "day1-cove", effect: "cove", decisionKey: "route" },
+      { id: "wreck", label: "Voltar aos destroços do Ventania", detail: "Noah retorna ao Ventania para retirar a caixa de ferramentas, cabos e peças metálicas. A estrutura está instável e cada minuto aumenta o risco de um novo desabamento.", consequence: "Vocês recuperam materiais úteis para construir e consertar equipamentos, mas não encontram uma fonte de água. A enseada pode continuar sendo um mistério por mais tempo.", next: "day1-wreck", effect: "wreck", decisionKey: "route" },
     ],
   },
   "day1-cove": {
@@ -92,8 +92,8 @@ const scene: Record<string, StoryNode> = {
       { id: "radio-voice", label: "Transcrição do rádio · 23h17", type: "Áudio transcrito", teaser: "Uma voz curta, sem identificação de frequência.", body: ["[23:17:04] Ruído de estática. Três estalos secos. [23:17:11] Voz feminina, baixa: 'Vocês chegaram tarde'. [23:17:16] Respiração próxima ao microfone. [23:17:21] Fim abrupto.", "O arquivo foi gravado na memória interna do transmissor, mas o rádio estava sem bateria. O registro não deveria existir."] },
     ],
     choices: [
-      { id: "noah-watch", label: "Noah fica de vigia", detail: "Ele conhece o rádio e insiste em entender o sinal.", next: "day2-dawn", effect: "watch-noah", decisionKey: "watch" },
-      { id: "lia-watch", label: "Lia fica de vigia", detail: "Ela conhece a mata e percebe detalhes que Noah ignora.", next: "day2-dawn", effect: "watch-lia", decisionKey: "watch" },
+      { id: "noah-watch", label: "Noah fica de vigia", detail: "Noah fica acordado perto do transmissor quebrado. Ele conhece os códigos de emergência e talvez reconheça a voz que saiu do aparelho, mas ainda está ferido e exausto.", consequence: "A vigia pode revelar por que a voz chamou Noah pelo nome e deixa marcas de botas próximas ao abrigo. Lia, porém, terá de descansar sem companhia.", next: "day2-dawn", effect: "watch-noah", decisionKey: "watch" },
+      { id: "lia-watch", label: "Lia fica de vigia", detail: "Lia assume a vigia porque reconhece rastros, plantas e mudanças no vento. Noah tenta dormir e recuperar as forças antes de avançarem.", consequence: "A vigia pode revelar um sinal escondido na areia e uma rota segura para o interior. Enquanto isso, Noah não acompanha a transmissão que parece conhecer o passado dele.", next: "day2-dawn", effect: "watch-lia", decisionKey: "watch" },
     ],
   },
   "day2-dawn": {
@@ -106,8 +106,8 @@ const scene: Record<string, StoryNode> = {
     ],
     artifacts: [{ id: "ash-map", label: "Seta de cinzas", type: "Fotografia de campo", teaser: "A marca aponta para uma trilha que não aparece no mapa.", body: ["As cinzas estão frias, mas secas. A chuva da madrugada não as dispersou porque alguém as protegeu com uma folha larga.", "A seta termina diante de três pedras claras. A posição coincide com a trilha de manutenção encontrada por Noah."] }],
     choices: [
-      { id: "follow-stones", label: "Seguir a trilha de pedras", detail: "Procurar a instalação antes que a chuva volte.", next: "day2-stones", effect: "stones", decisionKey: "approach" },
-      { id: "follow-voice", label: "Seguir a direção do sinal", detail: "Tentar descobrir de onde a transmissão foi emitida.", next: "day2-signal", effect: "signal", decisionKey: "approach" },
+      { id: "follow-stones", label: "Seguir a trilha de pedras", detail: "Seguir as pedras cortadas leva à antiga trilha de manutenção. O caminho pode terminar numa construção protegida, mas exige atravessar uma ponte deteriorada.", consequence: "Vocês se aproximam de documentos e mecanismos deixados na ilha. O percurso é mais físico e pode consumir tempo antes da próxima tempestade.", next: "day2-stones", effect: "stones", decisionKey: "approach" },
+      { id: "follow-voice", label: "Seguir a direção do sinal", detail: "Lia e Noah seguem a interferência do rádio pela mata. A origem do sinal pode revelar quem está falando, embora o caminho abandone a trilha mais segura.", consequence: "Vocês podem recuperar uma bateria e uma gravação antiga, aproximando-se da verdade sobre as chegadas anteriores. Em troca, deixam a instalação de manutenção sem ser explorada por enquanto.", next: "day2-signal", effect: "signal", decisionKey: "approach" },
     ],
   },
   "day2-stones": {
@@ -154,8 +154,8 @@ const scene: Record<string, StoryNode> = {
       { id: "empty-coat", label: "Casaco sem corpo", type: "Vestígio material", teaser: "A peça foi deixada na chuva como se alguém a tivesse abandonado.", body: ["O casaco é pesado, de lã escura, com sinais de uso antigo. Os bolsos estão vazios, exceto por um pedaço de papel dobrado em quatro.", "No papel há duas linhas: 'Não confiem no primeiro resgate' e 'A casa não está vazia'. A caligrafia parece feminina."] },
     ],
     choices: [
-      { id: "save-photo", label: "Salvar a fotografia e procurar abrigo", detail: "A imagem pode provar que alguém os observava.", next: "day3-photo", effect: "photo", decisionKey: "storm" },
-      { id: "save-medicine", label: "Procurar o kit médico na encosta", detail: "A chuva pode piorar o ferimento de Noah.", next: "day3-medicine", effect: "medicine", decisionKey: "storm" },
+      { id: "save-photo", label: "Salvar a fotografia e procurar abrigo", detail: "Lia protege a fotografia encontrada na encosta e procura abrigo antes que a chuva destrua o papel. A imagem pode mostrar quem acompanhou o naufrágio.", consequence: "Vocês preservam uma prova capaz de mudar a interpretação do naufrágio e descobrir a estação Aurora. O ferimento de Noah, porém, permanece sem tratamento adequado.", next: "day3-photo", effect: "photo", decisionKey: "storm" },
+      { id: "save-medicine", label: "Procurar o kit médico na encosta", detail: "Noah precisa de curativos e antisséptico antes de enfrentar outra caminhada. Lia procura o kit médico entre as pedras, mesmo com a encosta ficando escorregadia.", consequence: "Vocês recuperam remédios e estabilizam Noah, reduzindo o risco de perder forças mais adiante. A fotografia deixada na chuva pode ficar ilegível ou desaparecer.", next: "day3-medicine", effect: "medicine", decisionKey: "storm" },
     ],
   },
   "day3-photo": {
@@ -189,8 +189,8 @@ const scene: Record<string, StoryNode> = {
       { id: "passenger-list", label: "Lista de passageiros", type: "Documento recuperado", teaser: "Os nomes de Lia e Noah aparecem antes de se conhecerem.", body: ["A lista foi datilografada seis anos antes da viagem do Ventania. Entre os nomes, aparecem Lia Azevedo e Noah Ferraz, com datas de nascimento corretas.", "O documento tem uma observação: 'duas pessoas, mesma rota, primeira tentativa'. Não há assinatura de autoridade ou empresa responsável."] },
     ],
     choices: [
-      { id: "repair-radio", label: "Tentar reconstruir o transmissor", detail: "Talvez consigam falar com alguém antes de a estação voltar a ficar submersa.", next: "day5-radio", effect: "repair", decisionKey: "station" },
-      { id: "search-lower-room", label: "Descer ao compartimento inferior", detail: "A anotação sobre a porta aponta para algo escondido sob a estação.", next: "day5-lower-room", effect: "lower-room", decisionKey: "station" },
+      { id: "repair-radio", label: "Tentar reconstruir o transmissor", detail: "Noah quer reconstruir o transmissor com fio de cobre, bateria e peças metálicas. Se o circuito funcionar, a mensagem pode alcançar o continente — ou alguém que já esteja na ilha.", consequence: "Um rádio funcional aumenta a chance de pedir resgate e permite ouvir respostas com mais clareza. O tempo gasto na bancada deixa o compartimento inferior sem ser investigado.", next: "day5-radio", effect: "repair", decisionKey: "station" },
+      { id: "search-lower-room", label: "Descer ao compartimento inferior", detail: "Lia prefere descer ao compartimento inundado antes que a maré cubra a escada. O espaço pode guardar registros sobre os antigos ocupantes da ilha.", consequence: "Vocês podem encontrar gravações e lembranças de chegadas anteriores, inclusive uma fita com o nome de Lia. Mas o transmissor continuará quebrado até que encontrem outra oportunidade de repará-lo.", next: "day5-lower-room", effect: "lower-room", decisionKey: "station" },
     ],
   },
   "day5-radio": {
@@ -225,8 +225,8 @@ const scene: Record<string, StoryNode> = {
       { id: "death-certificate", label: "Certidão de óbito", type: "Documento civil", teaser: "Maia foi declarada morta, mas há uma foto recente.", body: ["O documento registra o desaparecimento do Aurora e um óbito presumido. A assinatura da autoridade é real; o número do processo, porém, pertence a outro município.", "A fotografia recente mostra Maia com o mesmo casaco descrito na transcrição do rádio. O carimbo no verso é da Estação Aurora."] },
     ],
     choices: [
-      { id: "search-maia", label: "Procurar Maia dentro da estação", detail: "A verdade pode estar com a pessoa que deixou os registros.", next: "day7-maia", effect: "maia", decisionKey: "final" },
-      { id: "send-rescue", label: "Transmitir as coordenadas ao continente", detail: "Avisar o mundo antes que a ilha apague mais uma chegada.", next: "day7-rescue", effect: "rescue", decisionKey: "final" },
+      { id: "search-maia", label: "Procurar Maia dentro da estação", detail: "Lia quer encontrar Maia, a mulher que aparece nos documentos e parece conhecer cada chegada à ilha. Seguir seus rastros pode explicar a história do Aurora e o medo de Noah.", consequence: "Vocês podem ouvir a versão de Maia e descobrir o que a ilha espera dos sobreviventes. A busca não garante que o continente saiba onde vocês estão.", next: "day7-maia", effect: "maia", decisionKey: "final" },
+      { id: "send-rescue", label: "Transmitir as coordenadas ao continente", detail: "Noah e Lia tentam transmitir as coordenadas para o continente antes que a maré cubra os equipamentos. É a decisão mais direta para buscar ajuda externa.", consequence: "Um resgate pode chegar, mas a transmissão também pode atrair a embarcação errada. Vocês talvez nunca descubram por que Maia os esperava nem o que aconteceu com o Aurora.", next: "day7-rescue", effect: "rescue", decisionKey: "final" },
     ],
   },
   "day7-maia": {
@@ -378,6 +378,70 @@ function ArtifactReader({ artifact, onClose }: { artifact: Artifact; onClose: ()
   );
 }
 
+
+function SurvivalJournalModal({
+  node, puzzleAnswer, onArtifact, onChoice, onPuzzle, onClose,
+}: {
+  node: StoryNode;
+  puzzleAnswer?: string;
+  onArtifact: (artifact: Artifact) => void;
+  onChoice: (choice: Choice) => void;
+  onPuzzle: (answer: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="island-journal-backdrop" role="presentation" onClick={onClose}>
+      <article className="island-journal-sheet" role="dialog" aria-modal="true" aria-labelledby="island-journal-title" onClick={event => event.stopPropagation()}>
+        <header className="island-journal-modal-header">
+          <div><span>ILHA DO ÚLTIMO SINAL · DIA {node.day}</span><h2 id="island-journal-title">Caderno de bordo</h2><p>Objetos recuperados, decisões e desafios desta passagem</p></div>
+          <button type="button" onClick={onClose} aria-label="Fechar caderno"><X/></button>
+        </header>
+        {node.artifacts?.length ? (
+          <section className="island-journal-section">
+            <div className="island-journal-section-title"><FileText/><span>OBJETOS E REGISTROS</span><small>{node.artifacts.length} encontrados</small></div>
+            <div className="island-journal-object-list">{node.artifacts.map(item => (
+              <button type="button" key={item.id} onClick={() => onArtifact(item)}>
+                <span className="island-journal-object-icon"><FileText/></span>
+                <span><strong>{item.label}</strong><small>{item.type} · {item.teaser}</small></span>
+                <ArrowRight/>
+              </button>
+            ))}</div>
+          </section>
+        ) : null}
+        {node.puzzle ? (
+          <section className="island-journal-section">
+            <div className="island-journal-section-title"><Sparkles/><span>DESAFIO DENTRO DA HISTÓRIA</span><small>Opcional</small></div>
+            <div className="island-journal-challenge">
+              <h3>{node.puzzle.title}</h3><p>{node.puzzle.prompt}</p>
+              <div className="island-journal-puzzle-options">{node.puzzle.options.map(option => (
+                <button type="button" key={option.id} disabled={Boolean(puzzleAnswer)} className={puzzleAnswer === option.id ? (option.id === node.puzzle?.answer ? "is-correct" : "is-selected") : ""} onClick={() => onPuzzle(option.id)}>
+                  <strong>{option.label}</strong><small>{option.detail}</small>{puzzleAnswer === option.id && <Check/>}
+                </button>
+              ))}</div>
+              {puzzleAnswer && <p className="island-journal-result">{puzzleAnswer === node.puzzle.answer ? node.puzzle.success : node.puzzle.failure}</p>}
+            </div>
+          </section>
+        ) : null}
+        {node.choices?.length ? (
+          <section className="island-journal-section">
+            <div className="island-journal-section-title"><Compass/><span>DECISÃO DESTA CENA</span><small>Escolham um caminho</small></div>
+            <p className="island-journal-decision-intro">As duas rotas continuam a história de maneiras diferentes. Leiam o que cada uma oferece e o que vocês podem deixar para trás.</p>
+            <div className="island-journal-decision-list">{node.choices.map(choice => (
+              <button type="button" key={choice.id} onClick={() => onChoice(choice)}>
+                <span className="island-journal-decision-label">{choice.label}</span>
+                <span className="island-journal-decision-detail">{choice.detail}</span>
+                <span className="island-journal-consequence"><strong>O que pode mudar</strong>{choice.consequence}</span>
+                <span className="island-journal-decision-cta">Seguir este caminho <ArrowRight/></span>
+              </button>
+            ))}</div>
+          </section>
+        ) : null}
+        <footer className="island-journal-modal-footer">AS DECISÕES FICAM REGISTRADAS NA MEMÓRIA DA EXPEDIÇÃO</footer>
+      </article>
+    </div>
+  );
+}
+
 export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
   const [storedGame, setGame, sync] = useGameState<SurvivalBookState>(loadProgress, { onlineInitial: initial });
   const game: SurvivalBookState = storedGame?.node && storedGame.resources && Array.isArray(storedGame.inventory)
@@ -392,6 +456,7 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
       }
     : initial;
   const [openedArtifact, setOpenedArtifact] = useState<Artifact | null>(null);
+  const [journalOpen, setJournalOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const current = scene[game.node] ?? scene["day1-beach"];
   const body = useMemo(() => current.body(game), [current, game]);
@@ -409,7 +474,8 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
   function takeChoice(choice: Choice) {
     const next = choose(game, choice);
     setGame(next);
-    setNotice("A escolha alterou a rota da história. As consequências foram guardadas no diário.");
+    setJournalOpen(false);
+    setNotice("");
   }
 
   function answerPuzzle(answer: string) {
@@ -433,6 +499,7 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
     if (!sync.online) localStorage.removeItem(STORAGE_KEY);
     setGame(initial);
     setOpenedArtifact(null);
+    setJournalOpen(false);
     setNotice("");
   }
 
@@ -453,41 +520,13 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
             <h1>{current.title}</h1>
             <div className="island-storybook-prose">{body.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
 
-            {current.artifacts && current.artifacts.length > 0 && (
-              <div className="island-storybook-artifacts">
-                <span className="island-storybook-section-label">MATERIAIS ENCONTRADOS NESTA CENA</span>
-                <div>{current.artifacts.map(item => (
-                  <button type="button" key={item.id} className="island-storybook-artifact" onClick={() => setOpenedArtifact(item)}>
-                    <span><FileText/></span><strong>{item.label}</strong><small>{item.teaser}</small><em>Abrir material <ArrowRight/></em>
-                  </button>
-                ))}</div>
-              </div>
-            )}
-
-            {current.puzzle && (
-              <section className="island-storybook-puzzle">
-                <span className="island-storybook-section-label"><Sparkles/> DESAFIO DE LÓGICA · RESOLVA DENTRO DA HISTÓRIA</span>
-                <h2>{current.puzzle.title}</h2><p>{current.puzzle.prompt}</p>
-                <div className="island-storybook-puzzle-options">{current.puzzle.options.map(option => (
-                  <button type="button" key={option.id} disabled={Boolean(puzzleAnswer)} className={puzzleAnswer === option.id ? (option.id === current.puzzle?.answer ? "is-correct" : "is-selected") : ""} onClick={() => answerPuzzle(option.id)}>
-                    <strong>{option.label}</strong><small>{option.detail}</small>{puzzleAnswer === option.id && <Check/>}
-                  </button>
-                ))}</div>
-                {puzzleAnswer && <p className="island-storybook-puzzle-result">{puzzleAnswer === current.puzzle.answer ? current.puzzle.success : current.puzzle.failure}</p>}
-              </section>
-            )}
-
-            {current.choices && (
-              <div className="island-storybook-choices">
-                <span className="island-storybook-section-label">A HISTÓRIA AGORA DEPENDE DE VOCÊS</span>
-                <div>{current.choices.map(choice => (
-                  <button type="button" key={choice.id} onClick={() => takeChoice(choice)}>
-                    <strong>{choice.label}</strong><small>{choice.detail}</small><ArrowRight/>
-                  </button>
-                ))}</div>
-              </div>
-            )}
-            {notice && <p className="island-storybook-notice" aria-live="polite">{notice}</p>}
+            {(current.artifacts?.length || current.choices?.length || current.puzzle) ? (
+              <button type="button" className="island-storybook-journal-trigger" onClick={() => setJournalOpen(true)}>
+                <BookOpen/><span>Abrir caderno de bordo</span>
+                <small>{(current.artifacts?.length ?? 0) + (current.choices?.length ?? 0) + (current.puzzle ? 1 : 0)} itens nesta cena</small>
+                <ArrowRight/>
+              </button>
+            ) : null}
             {!current.choices && (
               <footer className="island-storybook-footer">
                 <span>{current.next ? "A próxima página continua a expedição" : "Fim do capítulo"}</span>
@@ -510,6 +549,14 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
           <button type="button" onClick={restart}>Recomeçar a história <ArrowRight/></button>
         </div>
       )}
+      {journalOpen && <SurvivalJournalModal
+        node={current}
+        puzzleAnswer={puzzleAnswer}
+        onArtifact={setOpenedArtifact}
+        onChoice={takeChoice}
+        onPuzzle={answerPuzzle}
+        onClose={() => setJournalOpen(false)}
+      />}
       {openedArtifact && <ArtifactReader artifact={openedArtifact} onClose={() => setOpenedArtifact(null)}/>}
     </section>
   );
