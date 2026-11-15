@@ -31280,3 +31280,80 @@ body {
   .product-tour-progress span,
   .profile-completion-track span { transition: none; }
 }
+
+
+/* Status de pareamento sem bloquear o espaço pessoal. */
+.pairing-status-banner {
+  display: flex;
+  width: min(calc(100% - 28px), 1180px);
+  align-items: center;
+  gap: 12px;
+  margin: 12px auto 0;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--color-primary-soft) 64%, var(--color-card));
+  padding: 11px 14px;
+  color: var(--color-foreground);
+}
+.pairing-status-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
+}
+.pairing-status-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+.pairing-status-copy strong {
+  color: var(--color-foreground);
+  font-size: 11px;
+  font-weight: 850;
+}
+.pairing-status-copy span,
+.pairing-status-copy small {
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.pairing-status-copy small { color: var(--color-destructive); }
+.pairing-status-banner > button {
+  display: inline-flex;
+  min-height: 35px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-card);
+  padding: 6px 10px;
+  color: var(--color-foreground);
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.pairing-status-banner > button:disabled { opacity: .6; cursor: wait; }
+
+.product-tour-card[data-placement="top"] {
+  top: max(14px, env(safe-area-inset-top));
+  bottom: auto;
+}
+@media (max-width: 560px) {
+  .pairing-status-banner {
+    width: calc(100% - 20px);
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 8px;
+    padding: 9px 10px;
+  }
+  .pairing-status-icon { width: 31px; height: 31px; flex-basis: 31px; }
+  .pairing-status-banner > button { min-height: 32px; padding-inline: 8px; }
+  .pairing-status-banner > button span { display: none; }
+}
