@@ -782,7 +782,7 @@ export function CoupleFeed({
                     footer={
                       <div className="feed-post-footer mt-4 flex flex-nowrap items-start justify-evenly border-t border-border/50 pt-3">
                         <div className="flex w-16 shrink-0 flex-col items-center gap-0.5">
-                          <button type="button" data-tour-target="tour-message-button" onClick={onOpenConversation} aria-label="Conversa" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
+                          <button type="button" onClick={onOpenConversation} aria-label="Conversa" className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-secondary hover:text-foreground">
                             <MessageCircle className="h-4 w-4" aria-hidden="true" />
                           </button>
                           <span className="whitespace-nowrap text-[10px] leading-none text-muted-foreground">Conversa</span>
