@@ -75,9 +75,6 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const openedIds = useRef(new Set<string>());
-  const initialLoad = useRef(true);
-  const pendingRef = useRef<InvitationRow | null>(null);
-  pendingRef.current = pending;
 
   const open = useCallback((row: InvitationRow) => {
     const launch = invitationLaunch(row as unknown as Record<string, unknown>);
@@ -120,7 +117,6 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
     ) ?? null;
     setAccepted(recentAccepted);
 
-    initialLoad.current = false;
   }, [userId]);
 
   useEffect(() => {
@@ -158,11 +154,13 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
               : "Você recusou o convite da partida.");
           } else if (incoming.status === "cancelled") {
             setPending(null);
+            window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: incoming.game_key, invitationId: incoming.id, status: incoming.status } }));
             setNotice(incoming.to_user_id === userId
               ? "O convite de partida foi cancelado."
               : "Você cancelou o convite da partida.");
           } else if (incoming.status === "expired") {
             setPending(null);
+            window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: incoming.game_key, invitationId: incoming.id, status: incoming.status } }));
             setNotice("O convite de partida expirou.");
           } else {
             setPending(incoming);
@@ -212,6 +210,7 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
       const { error } = await cancelGameInvitation(pending.id);
       if (error) throw error;
       setPending(null);
+      window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: pending.game_key, invitationId: pending.id, status: "cancelled" } }));
       setNotice("Convite cancelado. A partida não foi iniciada.");
     } catch (cause) {
       const failure = cause as { code?: string; message?: string };
@@ -229,20 +228,29 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
       const { data, error } = await respondToGameInvitation(pending.id, accept);
       if (error) throw error;
       const raw = Array.isArray(data) ? data[0] : data;
-      const row = asInvitation(raw);
-      if (!row || row.status !== (accept ? "accepted" : "declined")) {
-        if (row?.status === "expired") {
-          setPending(null);
-          setNotice("Este convite expirou. Peça para enviarem outro.");
-          return;
-        }
+      const resultRow = raw && typeof raw === "object" ? raw as Record<string, unknown> : null;
+      const resultStatus = resultRow?.invitation_status;
+      if (resultStatus === "expired") {
+        setPending(null);
+        window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: pending.game_key, invitationId: pending.id, status: "expired" } }));
+        setNotice("Este convite expirou. Peça para enviarem outro.");
+        return;
+      }
+      if (resultStatus !== (accept ? "accepted" : "declined")) {
         throw new Error("Não foi possível confirmar a resposta do convite.");
       }
 
+      const responded: InvitationRow = {
+        ...pending,
+        status: resultStatus,
+        match_id: typeof resultRow?.match_id === "string" ? resultRow.match_id : null,
+        responded_at: new Date().toISOString(),
+      };
       setPending(null);
       if (accept) {
-        open(row);
+        open(responded);
       } else {
+        window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: pending.game_key, invitationId: pending.id, status: "declined" } }));
         setNotice("Convite recusado.");
       }
     } catch (cause) {
