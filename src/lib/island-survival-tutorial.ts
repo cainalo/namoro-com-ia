@@ -1,3 +1,5 @@
+export const ISLAND_STORY_PAGE_COUNT = 8;
+
 export type IslandTutorialStep =
   | "story"
   | "forage"
