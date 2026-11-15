@@ -989,7 +989,7 @@ export function CoupleFeed({
         {state.status === "no-couple" && (
           <p className="feed-create-state is-error" role="alert">Vincule a outra pessoa antes de publicar um momento compartilhado.</p>
         )}
-          <div className="feed-block-toolbox" role="toolbar" aria-label="Adicionar partes à publicação">
+          <div className="feed-block-toolbox" data-tour-target="feed-block-toolbox" role="toolbar" aria-label="Adicionar partes à publicação">
             <button type="button" onClick={() => addDraftBlock("photo")}><ImagePlus aria-hidden="true" /> Foto</button>
             <button type="button" onClick={() => addDraftBlock("title")}><Type aria-hidden="true" /> Título</button>
             <button type="button" onClick={() => addDraftBlock("text")}><span className="toolbox-text-icon">T</span> Texto</button>
@@ -1303,7 +1303,7 @@ export function CoupleFeed({
   return (
     <section className="social-feed">
       <audio ref={feedMusicRef} className="feed-ambient-audio" aria-hidden="true" preload="none" loop />
-      <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
+      <div className="feed-filter-bar" data-tour-target="feed-filter-bar" role="group" aria-label="Filtrar publicações">
         {([
           ["all", "Tudo"],
           ["photos", "Fotos"],
