@@ -43,6 +43,12 @@ export function FirstAccessGate({ userId, initialName = "", onNavigate, children
 
   useEffect(() => { void loadStatus(); }, [userId]);
 
+  useEffect(() => {
+    const replay = () => setMode("tour");
+    window.addEventListener("morados:show-tour", replay);
+    return () => window.removeEventListener("morados:show-tour", replay);
+  }, []);
+
   async function finishTour() {
     const { error: saveError } = await profileTable()
       .update({ app_tour_completed_at: new Date().toISOString() })
@@ -218,16 +224,17 @@ function FirstAccessProfile({
 
 const TOUR_STEPS: Array<{ section: AppSection; target: string; eyebrow: string; title: string; body: string }> = [
   { section: "home", target: "tour-feed", eyebrow: "01 · FEED", title: "O ponto de encontro", body: "Aqui ficam as publicações, fotos e lembranças compartilhadas. Use o botão de criar publicação para registrar um momento ou escrever algo para vocês." },
-  { section: "home", target: "tour-menu", eyebrow: "02 · MENU", title: "Atalhos e navegação", body: "Este menu reúne acessos rápidos às áreas do Morados, além das opções de instalação e saída da conta." },
-  { section: "messages", target: "tour-messages", eyebrow: "03 · CONVERSA", title: "Um espaço só de vocês", body: "A conversa é privada. Envie mensagens, áudios e anexos; use a barra superior para voltar ao restante do aplicativo ou abrir as configurações da conversa." },
-  { section: "games", target: "tour-games", eyebrow: "04 · JOGOS", title: "Brinquem juntos", body: "A área de jogos reúne experiências para jogar em dupla. Abra um jogo para conhecer as regras e iniciar uma partida compartilhada." },
-  { section: "memories", target: "tour-memories", eyebrow: "05 · MEMÓRIAS", title: "Guardem o que importa", body: "Aqui vocês organizam fotos, vídeos, textos e momentos importantes em uma coleção particular." },
-  { section: "organize", target: "tour-plans", eyebrow: "06 · PLANOS", title: "Organizem a vida a dois", body: "Registrem compromissos, ideias, datas especiais e planos para acompanhar o que vem pela frente." },
-  { section: "universe", target: "tour-house", eyebrow: "07 · CASA", title: "O universo de vocês", body: "A Casa é o espaço visual do casal. Explorem os elementos disponíveis e acompanhem a construção desse ambiente compartilhado." },
-  { section: "profile", target: "tour-profile", eyebrow: "08 · PERFIL", title: "Sua identidade no Morados", body: "Edite sua foto, banner, descrição e preferências. Cada pessoa tem seu próprio perfil e pode personalizá-lo independentemente." },
+  { section: "home", target: "tour-create-post", eyebrow: "02 · PUBLICAR", title: "Registre um momento", body: "O botão com o símbolo de mais abre o editor de publicação. Você pode compartilhar um texto, uma foto ou uma lembrança no Feed." },
+  { section: "home", target: "tour-menu", eyebrow: "03 · MENU", title: "Atalhos e navegação", body: "Este botão abre o menu com acesso rápido a Jogos, Memórias, Planos e Casa, além das opções de instalação e saída da conta." },
+  { section: "messages", target: "tour-messages", eyebrow: "04 · CONVERSA", title: "Um espaço só de vocês", body: "A conversa é privada. Envie mensagens, áudios e anexos; use a barra superior para voltar ao restante do aplicativo ou abrir as configurações da conversa." },
+  { section: "games", target: "tour-games", eyebrow: "05 · JOGOS", title: "Brinquem juntos", body: "A área de jogos reúne experiências para jogar em dupla. Abra um jogo para conhecer as regras e iniciar uma partida compartilhada." },
+  { section: "memories", target: "tour-memories", eyebrow: "06 · MEMÓRIAS", title: "Guardem o que importa", body: "Aqui vocês organizam fotos, vídeos, textos e momentos importantes em uma coleção particular." },
+  { section: "organize", target: "tour-plans", eyebrow: "07 · PLANOS", title: "Organizem a vida a dois", body: "Registrem compromissos, ideias, datas especiais e planos para acompanhar o que vem pela frente." },
+  { section: "universe", target: "tour-house", eyebrow: "08 · CASA", title: "O universo de vocês", body: "A Casa é o espaço visual do casal. Explorem os elementos disponíveis e acompanhem a construção desse ambiente compartilhado." },
+  { section: "profile", target: "tour-profile", eyebrow: "09 · PERFIL", title: "Sua identidade no Morados", body: "Edite sua foto, banner, descrição e preferências. Cada pessoa tem seu próprio perfil e pode personalizá-lo independentemente." },
 ];
 
-function AppTour({ onNavigate, onFinish }: { userId: string; onNavigate: (section: AppSection) => void; onFinish: () => void }) {
+function AppTour({ onNavigate, onFinish }: { onNavigate: (section: AppSection) => void; onFinish: () => void }) {
   const [index, setIndex] = useState(0);
   const step = TOUR_STEPS[index];
 
