@@ -16,20 +16,26 @@ export const PAIRING_NOTICE = "Cadastros enviados. Cada pessoa poderá entrar as
 
 export async function completeCouplePairing() {
   const { data: verified, error } = await supabase.auth.getUser();
-  if (error || !verified.user) return { pending: false, error: null };
+  if (error || !verified.user) return { pending: false, connected: false, error: null };
   const token = verified.user.user_metadata?.["morados_pair_token"];
-  if (typeof token !== "string") return { pending: false, error: null };
+  if (typeof token !== "string") return { pending: false, connected: false, error: null };
+
   const result = await callCoupleRpc("complete_couple_pairing", { p_token: token });
-  if (result.error) {
-    return { pending: true, error: result.error.code === "PGRST202"
-      ? "O pareamento ainda depende da atualização do Supabase. Nenhum casal foi confirmado."
-      : result.error.message.includes("pair_waiting")
-        ? "Confirmem os dois e-mails para concluir o cadastro do casal. Depois, tente novamente."
-        : "Não foi possível concluir o pareamento. Confira se os dois cadastros foram concluídos; contas existentes não são vinculadas automaticamente." };
+  if (result.error) return { pending: true, connected: false, error: result.error.message };
+
+  const row = Array.isArray(result.data) ? result.data[0] : result.data;
+  const status = row && typeof row === "object" && "result_status" in row
+    ? (row as { result_status?: unknown }).result_status
+    : null;
+
+  if (status === "connected" || status === "already_connected") {
+    await supabase.auth.refreshSession();
+    return { pending: false, connected: true, error: null };
   }
-  // Refresh temporary metadata in the local session after the transaction clears it.
-  await supabase.auth.refreshSession();
-  return { pending: false, error: null };
+  if (status === "waiting_for_partner" || status === "waiting_for_self_verification") {
+    return { pending: true, connected: false, error: null };
+  }
+  return { pending: false, connected: false, error: null };
 }
 
 export async function submitCoupleSignups(
