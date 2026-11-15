@@ -30319,3 +30319,342 @@ html[data-morados-game-open="true"] .app-main,html[data-morados-game-open="true"
   .survival-book-navigation { align-items: stretch; flex-direction: column-reverse; }
   .survival-book-back { width: 100%; }
 }
+
+
+/* Morados: bloqueio de zoom em todo o app, mantendo a rolagem de um dedo. */
+html, body, #root {
+  touch-action: pan-x pan-y;
+}
+body {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Livro da Ilha do Último Sinal: tela integral, sem cartão e sem rolagem interna. */
+.game-world-main.stage-play:has(.survival-story-screen) {
+  height: calc(100dvh - 54px);
+  min-height: 0;
+  overflow: hidden;
+}
+.game-world-main.stage-play:has(.survival-story-screen) .game-session-context {
+  display: none !important;
+}
+.game-world-main.stage-play:has(.survival-story-screen) .game-session-stage,
+.game-world-main.stage-play:has(.survival-story-screen) .game-play-surface {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+}
+.game-world .game-play-surface:has(.survival-story-screen) {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: #203c3d !important;
+}
+.game-world .game-play-surface .immersive-survival-game:has(.survival-story-screen) {
+  display: flex !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: #203c3d !important;
+  padding: clamp(7px, 1.6vh, 14px) clamp(9px, 2.2vw, 20px) !important;
+  color: #f4efdc !important;
+}
+.game-play-surface .survival-story-screen {
+  position: relative;
+  display: flex;
+  width: min(100%, 1100px);
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0;
+  overflow: hidden;
+  margin: 0 auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #f5efdc;
+  box-shadow: none;
+}
+.survival-book-masthead {
+  display: flex;
+  min-height: 25px;
+  flex: 0 0 25px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #557a6c;
+  color: #e7c477;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .16em;
+}
+.survival-book-masthead span:last-child {
+  color: #a9c4b3;
+  font-size: 7px;
+  text-align: right;
+}
+.survival-vector-scene {
+  display: block;
+  width: 100%;
+  height: clamp(110px, 22vh, 190px);
+  min-height: 110px;
+  flex: 0 1 auto;
+  overflow: hidden;
+  border: 1px solid #5b877a;
+  border-radius: 14px;
+  background: #9bcfc5;
+}
+.survival-vector-scene.scene-storm { border-color: #4e6570; }
+.survival-book-progress {
+  display: flex;
+  min-height: 27px;
+  flex: 0 0 27px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #557a6c;
+  color: #c4d3c1;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: .12em;
+}
+.survival-book-progress strong {
+  color: #f0c86f;
+  font-size: 8px;
+}
+.survival-book-page {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(7px, 1.35vh, 13px);
+  overflow: hidden;
+  padding: clamp(9px, 1.8vh, 18px) 0 clamp(3px, .7vh, 8px);
+}
+.survival-book-prose {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: clamp(5px, .95vh, 10px);
+  overflow: hidden;
+}
+.survival-book-kicker {
+  color: #edbd69;
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: .16em;
+}
+.survival-book-prose h2 {
+  margin: 0;
+  color: #fff1d0;
+  font-family: "Libre Baskerville", Georgia, serif;
+  font-size: clamp(17px, 2.6vh, 26px);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: 1.2;
+}
+.survival-book-prose p {
+  max-width: 78ch;
+  margin: 0;
+  color: #dce7d9;
+  font-family: "Libre Baskerville", Georgia, serif;
+  font-size: clamp(10px, 1.48vh, 13px);
+  line-height: 1.48;
+}
+.survival-book-prose em { color: #f0cd88; }
+.survival-book-emphasis {
+  border-left: 3px solid #d9a84e;
+  padding-left: 10px;
+  color: #f0d49a !important;
+  font-style: italic;
+}
+.survival-book-choices {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+.survival-book-choice {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  align-content: start;
+  gap: 5px;
+  border: 1px solid #638477;
+  border-radius: 12px;
+  background: #2b514a;
+  padding: clamp(8px, 1.25vh, 12px);
+  color: #f6efd9;
+  text-align: left;
+  cursor: pointer;
+}
+.survival-book-choice:nth-child(2) {
+  border-color: #7b7961;
+  background: #3a4d43;
+}
+.survival-book-choice:active { transform: translateY(1px); }
+.survival-book-choice-symbol {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border-radius: 8px;
+  background: #d89b4e;
+  color: #243e3d;
+}
+.survival-book-choice:nth-child(2) .survival-book-choice-symbol {
+  background: #9eb5a0;
+}
+.survival-book-choice-symbol svg { width: 15px; height: 15px; }
+.survival-book-choice strong {
+  color: #fff1d0;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(10px, 1.55vh, 13px);
+  line-height: 1.25;
+}
+.survival-book-choice small {
+  color: #cadbcf;
+  font-size: clamp(8px, 1.15vh, 10px);
+  line-height: 1.35;
+}
+.survival-book-choice em {
+  margin-top: 2px;
+  color: #edc77d;
+  font-size: clamp(7px, 1vh, 9px);
+  font-style: normal;
+  font-weight: 900;
+}
+.survival-book-inventory {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 6px;
+  border-top: 1px solid #557a6c;
+  border-bottom: 1px solid #557a6c;
+  background: transparent;
+  padding: 8px 0;
+}
+.survival-book-inventory > strong {
+  color: #efc776;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.survival-book-inventory > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+}
+.survival-book-inventory span {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid #557569;
+  border-radius: 8px;
+  background: #294944;
+  padding: 5px 6px;
+  color: #d8e5d8;
+}
+.survival-book-inventory svg { width: 12px; height: 12px; color: #edc478; }
+.survival-book-inventory small { color: #c2d4c7; font-size: 7px; }
+.survival-book-inventory b { color: #fff0cb; font-size: 10px; }
+.survival-book-mission {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  border-left: 3px solid #e4b85f;
+  background: #294944;
+  padding: 7px 9px;
+}
+.survival-book-mission > svg { width: 22px; height: 22px; flex: 0 0 22px; color: #edc476; }
+.survival-book-mission p { display: grid; gap: 2px; margin: 0; }
+.survival-book-mission strong { color: #f1cf88; font-size: 8px; }
+.survival-book-mission span { color: #d4e1d5; font-size: 8px; line-height: 1.35; }
+.survival-book-controls {
+  display: flex;
+  min-height: 43px;
+  flex: 0 0 43px;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid #557a6c;
+  padding-top: 6px;
+}
+.survival-book-next {
+  display: inline-flex;
+  min-height: 37px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 11px;
+  background: #e7a35b;
+  padding: 0 16px;
+  color: #243f3d;
+  font-size: 10px;
+  font-weight: 950;
+  box-shadow: 0 3px 0 #9c633f;
+}
+.survival-book-next svg { width: 15px; height: 15px; }
+.game-play-surface .survival-tutorial-screen {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #203c3d;
+  box-shadow: none;
+}
+.game-play-surface .survival-tutorial-scene {
+  min-height: 0;
+  padding: 0;
+  background: transparent;
+}
+.game-play-surface .survival-tutorial-scene .survival-vector-scene {
+  height: clamp(110px, 23vh, 185px);
+}
+
+/* Em telas curtas, a arte e a prosa cedem espaço sem criar rolagem. */
+@media (max-height: 720px) {
+  .survival-vector-scene { height: 17vh; min-height: 88px; }
+  .survival-book-prose { gap: 4px; }
+  .survival-book-prose p { font-size: clamp(9px, 1.35vh, 11px); line-height: 1.38; }
+  .survival-book-prose h2 { font-size: clamp(16px, 2.25vh, 21px); }
+  .survival-book-choices { gap: 6px; }
+  .survival-book-choice { padding: 7px; }
+  .survival-book-choice small { font-size: 8px; }
+}
+@media (max-width: 560px) {
+  .survival-book-masthead { font-size: 7px; }
+  .survival-book-masthead span:last-child { font-size: 6px; }
+  .survival-vector-scene { height: clamp(100px, 19vh, 152px); min-height: 100px; border-radius: 11px; }
+  .survival-book-prose { gap: clamp(5px, .85vh, 8px); }
+  .survival-book-prose p { font-size: clamp(10px, 1.5vh, 12px); line-height: 1.46; }
+  .survival-book-prose h2 { font-size: clamp(17px, 2.65vh, 23px); }
+  .survival-book-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .survival-book-choice { border-radius: 10px; }
+}
+@media (max-width: 380px) {
+  .survival-book-choices { gap: 5px; }
+  .survival-book-choice strong { font-size: 9px; }
+  .survival-book-choice small { font-size: 7px; }
+  .survival-book-choice em { font-size: 7px; }
+  .survival-book-inventory > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
