@@ -33,6 +33,7 @@ import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { MoradosMark } from "@/components/MoradosMark";
 import { InlineMenu } from "@/components/InlineMenu";
 import { ProductTour } from "@/components/ProductTour";
+import { PairingStatusBanner } from "@/components/PairingStatusBanner";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile" | "create-post";
 
@@ -233,7 +234,7 @@ function Index() {
 
   return (
     <AuthGate>
-      {(session) => (
+      {(session, pairingPending) => (
         <div
           className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : activeSection === "create-post" ? "is-post-composer-mode" : ""}`}
         >
@@ -294,6 +295,10 @@ function Index() {
                 <MoradosWordmark />
               </button>
             </>
+          )}
+
+          {pairingPending && activeSection !== "messages" && activeSection !== "create-post" && (
+            <PairingStatusBanner userId={session.user.id} />
           )}
 
           <main data-tour-target={"screen-" + activeSection} className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
