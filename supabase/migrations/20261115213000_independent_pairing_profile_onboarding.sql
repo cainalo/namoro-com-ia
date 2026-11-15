@@ -235,6 +235,16 @@ BEGIN
   END IF;
 
   IF v_status = 'active' THEN
+    IF v_partner.id IS NULL OR v_partner_couple_id IS DISTINCT FROM v_couple_id THEN
+      RAISE EXCEPTION 'pair_accounts_already_linked_differently'
+        USING ERRCODE = 'unique_violation';
+    END IF;
+
+    UPDATE auth.users AS u
+    SET raw_user_meta_data = COALESCE(u.raw_user_meta_data, '{}'::jsonb)
+      - 'morados_pair_token' - 'morados_pair_email'
+    WHERE u.id IN (v_uid, v_partner.id);
+
     RETURN pg_catalog.jsonb_build_object(
       'status', 'active',
       'reason', 'already_paired',
