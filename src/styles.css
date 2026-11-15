@@ -31291,7 +31291,7 @@ body {
   margin: 12px auto 0;
   border: 1px solid color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
   border-radius: 14px;
-  background: color-mix(in srgb, var(--color-primary-soft) 64%, var(--color-card));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-card));
   padding: 11px 14px;
   color: var(--color-foreground);
 }
