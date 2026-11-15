@@ -16,6 +16,8 @@ type PendingPairingScreenProps = {
 export function PendingPairingScreen({ userId, notice, onPaired }: PendingPairingScreenProps) {
   const [checking, setChecking] = useState(false);
   const checkingRef = useRef(false);
+  const onPairedRef = useRef(onPaired);
+  onPairedRef.current = onPaired;
   const [profileOpen, setProfileOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export function PendingPairingScreen({ userId, notice, onPaired }: PendingPairin
       if (coupleError) throw coupleError;
 
       if (couple?.status === "active") {
-        onPaired();
+        onPairedRef.current();
         return;
       }
       setStatusMessage("Sua conta já foi confirmada. Falta a outra pessoa confirmar o e-mail dela para ativar o espaço compartilhado.");
@@ -71,7 +73,7 @@ export function PendingPairingScreen({ userId, notice, onPaired }: PendingPairin
       checkingRef.current = false;
       setChecking(false);
     }
-  }, [onPaired, userId]);
+  }, [userId]);
 
   useEffect(() => {
     void refreshStatus(true);
