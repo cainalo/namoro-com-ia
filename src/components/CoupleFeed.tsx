@@ -86,6 +86,7 @@ type FeedState =
   | { status: "loading" }
   | { status: "error" }
   | { status: "no-couple" }
+  | { status: "pairing-pending" }
   | { status: "ready"; coupleId: string; posts: FeedPostView[] };
 
 type FeedFilter = "all" | "photos" | "videos" | "text" | "audio";
@@ -391,8 +392,12 @@ export function CoupleFeed({
         .maybeSingle();
 
       if (coupleError) throw coupleError;
-      if (!couple || couple.status !== "active") {
+      if (!couple) {
         setState({ status: "no-couple" });
+        return;
+      }
+      if (couple.status !== "active") {
+        setState({ status: "pairing-pending" });
         return;
       }
 
@@ -1282,6 +1287,19 @@ export function CoupleFeed({
           <button type="button" className="primary-action" onClick={() => setRefreshKey((value) => value + 1)}>
             Tentar novamente
           </button>
+        </div>
+      </section>
+    );
+  }
+
+  if (state.status === "pairing-pending") {
+    return (
+      <section className="social-feed">
+        <div className="feed-empty-state">
+          <div className="feed-empty-illustration"><Heart aria-hidden="true" /></div>
+          <h2>O espaço compartilhado está quase pronto.</h2>
+          <p>Seu perfil e suas áreas pessoais já estão liberados. O Feed do casal será ativado automaticamente quando a outra conta confirmar o e-mail.</p>
+          <button type="button" className="primary-action" onClick={() => onNavigate("profile")}>Personalizar meu perfil</button>
         </div>
       </section>
     );
