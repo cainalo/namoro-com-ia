@@ -17,10 +17,6 @@ export function PairingStatusBanner({ userId }: { userId: string }) {
 
     try {
       const pairing = await completeCouplePairing();
-      if (pairing.error) {
-        setError("Não foi possível sincronizar o pareamento agora. Você continua usando seu espaço pessoal normalmente.");
-        return;
-      }
 
       const { data: membership, error: membershipError } = await supabase
         .from("couple_members")
@@ -49,6 +45,9 @@ export function PairingStatusBanner({ userId }: { userId: string }) {
         return;
       }
 
+      if (pairing.error) {
+        setError("Não foi possível sincronizar o pareamento agora. Você continua usando seu espaço pessoal normalmente.");
+      }
       setMessage("Seu espaço pessoal está liberado. Quando a outra pessoa confirmar o e-mail dela, o espaço compartilhado será ativado automaticamente.");
     } catch {
       setError("Não foi possível verificar agora. Seu acesso pessoal continua funcionando.");
