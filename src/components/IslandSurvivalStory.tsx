@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Anchor, ArrowRight, BookOpen, Check, Droplets, FileText, HeartPulse, Package, Radio, Sparkles, Trees, Wrench, X } from "lucide-react";
+import { Anchor, ArrowRight, BookOpen, Check, Compass, Droplets, FileText, HeartPulse, Package, Radio, Sparkles, Trees, Wrench, X } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import "./StoryGames.css";
 
@@ -260,6 +260,60 @@ const scene: Record<string, StoryNode> = {
   },
 };
 
+const narrativeExpansions: Record<string, string[]> = {
+  "day1-beach": [
+    "Lia tentou reconstruir a sequência do acidente, mas as lembranças vinham em fragmentos: o convés inclinado, o grito de Noah, uma luz branca atrás da chuva. Havia um intervalo inteiro que sua memória não conseguia atravessar. O relógio, parado em 16h42, parecia marcar justamente esse vazio.",
+  ],
+  "day1-cove": [
+    "A nascente não aparecia no mapa de bordo nem em qualquer carta náutica que Noah consultara. Lia encheu os recipientes devagar, observando a água desaparecer sob a pedra. O som continuava mesmo depois que fecharam as tampas, como se a correnteza corresse dentro da própria rocha.",
+  ],
+  "day1-wreck": [
+    "A cada movimento, o casco se inclinava alguns centímetros. Noah conhecia o barco o bastante para saber que não haveria uma segunda entrada segura. Antes de sair, tocou a placa com o polegar e recolheu a mão depressa, como quem reconhece uma lembrança que jurou esquecer.",
+  ],
+  "day1-night": [
+    "A fogueira iluminava apenas um círculo pequeno. Além dele, a mata parecia recuar e avançar com a maré, embora as árvores não se movessem. Lia percebeu que Noah segurava a chave de latão durante o sono; quando tentou tirá-la de sua mão, ele despertou chamando por alguém que não estava ali.",
+  ],
+  "day2-dawn": [
+    "A luz da manhã não dissolveu a sensação de estar sendo observado. Os pássaros cantavam apenas perto da praia; no interior, o silêncio era tão completo que os passos pareciam pertencer a outra pessoa caminhando alguns metros atrás deles. Lia decidiu não comentar o que ouvira durante a madrugada.",
+  ],
+  "day2-stones": [
+    "A madeira da ponte estava úmida, mas não apodrecida. Alguém substituíra recentemente duas tábuas e deixara as ferramentas alinhadas junto ao corrimão. A manutenção era recente demais para uma instalação abandonada e cuidadosa demais para um abrigo improvisado.",
+  ],
+  "day2-signal": [
+    "Noah rebobinou a fita duas vezes. Entre as palavras, havia um segundo som: uma respiração interrompida sempre no mesmo ponto. Lia anotou os horários no verso do mapa, mas percebeu que eles coincidiam com as horas em que o relógio de Noah parecia atrasar.",
+  ],
+  "day3-storm": [
+    "A chuva apagava rastros antes que pudessem examiná-los. Lia prendeu o casaco encontrado ao próprio corpo para não perdê-lo no vento; o tecido estava gelado, mas o bolso interno conservava calor. Havia alguém por perto havia pouco tempo — e essa pessoa sabia exatamente onde eles estariam.",
+  ],
+  "day3-photo": [
+    "Lia comparou a linha do horizonte da fotografia com a praia diante deles. A imagem fora feita de um ponto impossível: uma encosta que não existia no relevo atual. Se a foto fosse recente, a ilha havia mudado; se fosse antiga, alguém havia preparado o encontro muito antes do naufrágio.",
+  ],
+  "day3-medicine": [
+    "O tratamento reduziu a febre, mas não o tremor nas mãos de Noah. Ele finalmente admitiu que já ouvira o nome Aurora antes daquela viagem. Não sabia dizer de onde vinha a lembrança, apenas que sempre a associava a uma promessa feita no escuro e quebrada ao amanhecer.",
+  ],
+  "day4-station": [
+    "A sala conservava marcas de ocupação: uma cadeira afastada da mesa, uma caneca com um círculo recente no pó e um mapa aberto na página das correntes. A estação não parecia guardar apenas registros meteorológicos. Parecia acompanhar as chegadas e escolher quais lembranças cada visitante levaria consigo.",
+  ],
+  "day5-radio": [
+    "O transmissor aquecia sob os dedos de Noah. A voz não vinha de uma frequência distante; surgia limpa demais, sem ruído de mar ou interferência atmosférica. Lia anotou cada palavra enquanto observava o rosto dele. O medo não era de quem ouvira uma desconhecida: era de quem reconhecera alguém.",
+  ],
+  "day5-lower-room": [
+    "As etiquetas não seguiam ordem alfabética nem cronológica. Algumas caixas traziam nomes riscados e reescritos; outras tinham duas datas separadas por décadas. Lia encontrou uma fita sem identificação e a deixou onde estava. Pela primeira vez, teve receio de descobrir uma lembrança que ainda não vivera.",
+  ],
+  "day6-revelation": [
+    "O caderno não descrevia um único naufrágio, mas uma sucessão de decisões parecidas. Em cada registro, alguém ouvira um pedido de ajuda, hesitara e seguira adiante. A ilha guardava os vestígios dessas escolhas como se esperasse que uma delas fosse finalmente interrompida.",
+  ],
+  "day7-maia": [
+    "Maia não pediu desculpas por ter esperado. Disse que, durante anos, ouviu barcos passarem sem responder e aprendeu a reconhecer o som de quem escolhe não voltar. Quando Noah se aproximou, ela não o abraçou. Apenas perguntou se ele ainda se lembrava da primeira chamada.",
+  ],
+  "day7-rescue": [
+    "O sinal de retorno deveria ser motivo de alívio, mas Lia percebeu que a mensagem repetia uma frase que só aparecia nos registros da estação. O continente respondera — ou alguém aprendera a imitar perfeitamente a resposta. Noah manteve a mão no botão de transmissão, sem saber se devia desligar.",
+  ],
+  "ending": [
+    "No último amanhecer, Lia entendeu que sobreviver não significava sair da ilha com todas as respostas. Significava reconhecer a voz do outro lado e decidir não repetir o silêncio. O mar voltou a parecer apenas mar, mas nenhum dos dois conseguiu olhar para o horizonte sem procurar uma luz.",
+  ],
+};
+
 function loadProgress(): SurvivalBookState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -458,7 +512,7 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
   const [openedArtifact, setOpenedArtifact] = useState<Artifact | null>(null);
   const [journalOpen, setJournalOpen] = useState(false);
   const current = scene[game.node] ?? scene["day1-beach"];
-  const body = useMemo(() => current.body(game), [current, game]);
+  const body = useMemo(() => [...current.body(game), ...(narrativeExpansions[current.id] ?? [])], [current, game]);
   const availableResources = resources.filter(item => game.resources[item.id] > 0);
   const puzzleAnswer = current.puzzle ? game.puzzleAnswers[current.puzzle.id] : undefined;
 
@@ -488,7 +542,6 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
     }
     if (current.next) {
       setGame(transitionToNode(game, current.next));
-      setNotice("");
     }
   }
 
@@ -497,7 +550,6 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
     setGame(initial);
     setOpenedArtifact(null);
     setJournalOpen(false);
-    setNotice("");
   }
 
   return (
@@ -508,12 +560,12 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
       </header>
       {!game.finished ? (
         <div className="island-storybook-page">
-          <div className="island-storybook-art-wrap"><SceneArt name={current.scene}/><span className="island-storybook-art-caption">DIA {current.day} · {current.chapter.toUpperCase()}</span></div>
+          <div className="island-storybook-art-wrap"><SceneArt name={current.scene}/></div>
           <div className="island-storybook-reading">
             <div className="island-storybook-mobile-inventory" aria-label="Recursos restantes">
               {resources.map(item => <span key={item.id} title={item.label}><item.Icon/><b>{game.resources[item.id]}</b></span>)}
             </div>
-            <div className="island-storybook-page-meta"><span>CAPÍTULO {current.day} · PÁGINA {Object.keys(game.decisions).length + Object.keys(game.puzzleAnswers).length + 1}</span><strong>7 DIAS ATÉ A MARÉ ABRIR</strong></div>
+            <div className="island-storybook-page-meta"><span>{current.chapter}</span><strong>DIA {current.day} · PÁGINA {Object.keys(game.decisions).length + Object.keys(game.puzzleAnswers).length + 1} / 7</strong></div>
             <h1>{current.title}</h1>
             <div className="island-storybook-prose">{body.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div>
 
