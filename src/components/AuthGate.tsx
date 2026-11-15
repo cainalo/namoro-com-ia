@@ -10,7 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
 import { MoradosMark } from "@/components/MoradosMark";
 import { supabase } from "@/integrations/supabase/client";
-import { registerCouple } from "@/lib/couple-registration";
+import { completeCouplePairing, registerCouple } from "@/lib/couple-registration";
 import { Button } from "@/components/ui/button";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 
@@ -60,6 +60,19 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
       subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    let active = true;
+    void completeCouplePairing().then((result) => {
+      if (active && result.error) {
+        console.warn("O vínculo compartilhado continua pendente; o acesso individual permanece liberado.", result.error);
+      }
+    }).catch((error: unknown) => {
+      if (active) console.warn("Não foi possível atualizar o vínculo do casal em segundo plano.", error);
+    });
+    return () => { active = false; };
+  }, [session?.user.id]);
 
   return <>{children(session)}</>;
 }
