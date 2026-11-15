@@ -72,12 +72,29 @@ async function removeCoupleFiles(
   }
 }
 
+async function retryMediaCleanup(
+  admin: ReturnType<typeof createClient>,
+  coupleIds: string[],
+): Promise<boolean> {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await removeCoupleFiles(admin, coupleIds);
+      return true;
+    } catch (error) {
+      console.error("[delete-couple] Storage cleanup attempt failed:", {
+        attempt: attempt + 1,
+        message: error instanceof Error ? error.message : "unknown error",
+      });
+      if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+  }
+  return false;
+}
+
 async function getDeletionScope(
   admin: ReturnType<typeof createClient>,
   actorId: string,
-): Promise<{ targetUserIds: string[]; coupleIds: string[] }> {
-  const targetUsers = new Set<string>([actorId]);
-
+): Promise<string[]> {
   const { data: ownCurrentMemberships, error: ownMembershipError } = await admin
     .from("couple_members")
     .select("couple_id")
@@ -91,20 +108,20 @@ async function getDeletionScope(
     throw new Error("A conta possui mais de um vínculo atual; a exclusão foi interrompida por segurança.");
   }
 
-  if (activeCoupleIds.length === 1) {
-    const { data: currentMembers, error: membersError } = await admin
-      .from("couple_members")
-      .select("user_id")
-      .eq("couple_id", activeCoupleIds[0])
-      .is("ended_at", null);
+  const { data: currentMembers, error: membersError } = activeCoupleIds.length
+    ? await admin.from("couple_members")
+        .select("user_id")
+        .eq("couple_id", activeCoupleIds[0])
+        .is("ended_at", null)
+    : { data: [], error: null };
 
-    if (membersError) throw new Error("Não foi possível consultar os integrantes do casal.");
-    for (const member of currentMembers ?? []) {
-      if (typeof member.user_id === "string") targetUsers.add(member.user_id);
-    }
-  }
+  if (membersError) throw new Error("Não foi possível consultar os integrantes do casal.");
 
-  const targetUserIds = [...targetUsers];
+  const targetUserIds = [...new Set([
+    actorId,
+    ...(currentMembers ?? []).map((row) => row.user_id as string),
+  ])];
+
   const { data: memberships, error: historyError } = await admin
     .from("couple_members")
     .select("couple_id")
@@ -127,7 +144,7 @@ async function getDeletionScope(
     if (typeof row.id === "string") coupleIds.add(row.id);
   }
 
-  return { targetUserIds, coupleIds: [...coupleIds] };
+  return [...coupleIds];
 }
 
 Deno.serve(async (request: Request) => {
@@ -138,6 +155,7 @@ Deno.serve(async (request: Request) => {
     return jsonResponse(405, { ok: false, error: "Método não permitido." });
   }
 
+  let mediaCleanupSucceeded = false;
   try {
     const authorization = request.headers.get("Authorization") ?? "";
     const accessToken = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
@@ -172,11 +190,19 @@ Deno.serve(async (request: Request) => {
       return jsonResponse(401, { ok: false, error: "Sua sessão expirou. Entre novamente e tente excluir a conta." });
     }
 
-    const { coupleIds } = await getDeletionScope(admin, authData.user.id);
+    const coupleIds = await getDeletionScope(admin, authData.user.id);
+    const hadCoupleScope = coupleIds.length > 0;
 
-    // Storage objects must be removed through the Storage API before deleting
-    // auth.users; Supabase rejects deletion while a user still owns files.
-    await removeCoupleFiles(admin, coupleIds);
+    // Supabase prevents deleting an Auth user who still owns Storage objects.
+    // Remove the private couple files first, then perform the relational erasure.
+    const mediaCleanupComplete = await retryMediaCleanup(admin, coupleIds);
+    if (!mediaCleanupComplete) {
+      return jsonResponse(500, {
+        ok: false,
+        error: "A remoção dos anexos não foi concluída. Alguns arquivos podem já ter sido removidos, mas as contas e os demais dados continuam preservados. Tente novamente.",
+      });
+    }
+    mediaCleanupSucceeded = true;
 
     const { data: deletion, error: deletionError } = await admin.rpc(
       "delete_couple_account_bundle",
@@ -184,16 +210,26 @@ Deno.serve(async (request: Request) => {
     );
 
     if (deletionError || deletion?.ok !== true) {
-      console.error("[delete-couple] Database erasure failed:", deletionError?.message ?? "unexpected RPC result");
+      console.error("[delete-couple] Database erasure failed after Storage cleanup:", deletionError?.message ?? "unexpected RPC result");
       return jsonResponse(500, {
         ok: false,
-        error: "Não foi possível concluir a exclusão. As contas continuam ativas; tente novamente.",
+        mediaCleanupAttempted: hadCoupleScope,
+        error: hadCoupleScope
+          ? "A limpeza dos arquivos dos vínculos identificados foi concluída, mas a exclusão das contas e dos demais dados não foi confirmada. As contas e os dados continuam preservados; tente novamente. Um convite aceito durante o processo pode exigir uma nova tentativa."
+          : "A exclusão das contas não foi concluída. Como não havia arquivos de vínculo para limpar, as contas, os dados e as mídias permanecem preservados. Tente novamente.",
       });
     }
 
     return jsonResponse(200, { ok: true });
   } catch (error) {
     console.error("[delete-couple] Request failed:", error);
+    if (mediaCleanupSucceeded) {
+      return jsonResponse(500, {
+        ok: false,
+        mediaAlreadyRemoved: true,
+        error: "A limpeza dos arquivos dos vínculos identificados foi concluída, mas a exclusão das contas e dos demais dados não foi confirmada. As contas e os dados continuam preservados. Tente novamente.",
+      });
+    }
     return jsonResponse(500, {
       ok: false,
       error: error instanceof Error
