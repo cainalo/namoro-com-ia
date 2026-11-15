@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Check,
@@ -10,6 +10,7 @@ import {
   Play,
   Search,
   LockKeyhole,
+  LoaderCircle,
   MoreVertical,
   Shield,
   Sparkles,
