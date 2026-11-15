@@ -30,6 +30,7 @@ import {
   LoaderCircle,
   MessageCircle,
   MoreHorizontal,
+  Trash2,
   MoveDown,
   MoveUp,
   Music2,
@@ -214,6 +215,7 @@ export function CoupleFeed({
   const [refreshKey, setRefreshKey] = useState(0);
   const [draftBlocks, setDraftBlocks] = useState<PostDraftBlock[]>([]);
   const [publishing, setPublishing] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [postFilter, setPostFilter] = useState<FeedFilter>("all");
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
@@ -605,6 +607,37 @@ export function CoupleFeed({
     };
   }, [activeMusicPostId, activeMusicBlock?.media_url]);
 
+  async function deletePost(post: FeedPostView) {
+    if (post.author_id !== userId || deletingPostId) return;
+    const confirmed = window.confirm("Excluir esta publicação permanentemente? Essa ação não pode ser desfeita.");
+    if (!confirmed) return;
+    setDeletingPostId(post.id);
+    try {
+      const { error } = await supabase
+        .from("couple_posts")
+        .delete()
+        .eq("id", post.id)
+        .eq("author_id", userId);
+      if (error) throw error;
+      // O post já foi removido do feed; apague também os arquivos privados
+      // que pertencem a esta publicação. A limpeza não deve restaurar o post.
+      const paths = [...new Set([
+        ...post.blocks.map((block) => block.media_path).filter((path): path is string => Boolean(path)),
+        post.media_path,
+      ].filter((path): path is string => Boolean(path)))];
+      await Promise.all(paths.map(async (path) => {
+        const result = await removeCoupleMedia(path);
+        if (result.error) console.warn("Não foi possível limpar uma mídia da publicação excluída.", result.error);
+      }));
+      setRefreshKey((current) => current + 1);
+    } catch (error) {
+      console.error("Não foi possível excluir a publicação.", error);
+      window.alert(error instanceof Error ? error.message : "Não foi possível excluir a publicação. Tente novamente.");
+    } finally {
+      setDeletingPostId(null);
+    }
+  }
+
   async function publishPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (state.status !== "ready" || publishing || !canPublishDraft) return;
@@ -819,6 +852,20 @@ export function CoupleFeed({
                               >
                                 <MessageCircle aria-hidden="true" /> Abrir conversa
                               </button>
+                              {post.author_id === userId && (
+                                <>
+                                  <div className="nc-menu-sep" role="separator" />
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    className="nc-menu-item text-destructive"
+                                    disabled={deletingPostId === post.id}
+                                    onClick={() => { close(); void deletePost(post); }}
+                                  >
+                                    <Trash2 aria-hidden="true" /> {deletingPostId === post.id ? "Excluindo…" : "Excluir publicação"}
+                                  </button>
+                                </>
+                              )}
                             </>
                           )}
                         </InlineMenu>
