@@ -78,6 +78,7 @@ const steps: TourStep[] = [
 
 type ProductTourProps = {
   userId: string;
+  pairingPending: boolean;
   activeSection: string;
   onNavigate: (section: string) => void;
   open: boolean;
@@ -86,12 +87,21 @@ type ProductTourProps = {
 
 type Spotlight = { top: number; left: number; width: number; height: number };
 
-export function ProductTour({ userId, activeSection, onNavigate, open, onOpenChange }: ProductTourProps) {
+export function ProductTour({ userId, pairingPending, activeSection, onNavigate, open, onOpenChange }: ProductTourProps) {
   const [stepIndex, setStepIndex] = useState(0);
   const [spotlight, setSpotlight] = useState<Spotlight | null>(null);
   const [finished, setFinished] = useState(false);
   const [initialCheckDone, setInitialCheckDone] = useState(false);
   const current = steps[stepIndex];
+  const pendingDescriptions: Record<string, string> = {
+    "Feed de vocês": "O Feed compartilhado será ativado quando a outra conta confirmar o e-mail. Por enquanto, esta tela informa o estado do vínculo; seu perfil e as áreas privadas já estão disponíveis.",
+    "Criar publicação": "A barra reúne foto, título, texto, música, áudio e vídeo. A publicação no Feed ficará habilitada assim que a segunda conta confirmar o e-mail e o espaço compartilhado for ativado.",
+    "Mensagens": "A conversa e seus controles ficam nesta tela. O envio de mensagens será liberado quando a outra conta confirmar o e-mail; depois, use o campo inferior e o botão de anexo para conversar.",
+    "Jogos e desafios": "Os jogos aparecem neste catálogo. Alguns modos locais podem ser explorados individualmente; partidas online e desafios do casal dependem da confirmação da outra conta.",
+    "Memórias": "Você já pode guardar lembranças privadas neste formulário. A opção de compartilhar com a outra pessoa será liberada automaticamente quando o casal estiver ativo.",
+    "Planos e organização": "Você já pode criar compromissos privados no formulário e navegar pelo calendário. A opção de compartilhar eventos será liberada quando a outra conta confirmar o e-mail."
+  };
+  const currentDescription = pairingPending ? pendingDescriptions[current.title] ?? current.description : current.description;
   const progress = useMemo(() => finished ? 100 : Math.round(((stepIndex + 1) / steps.length) * 100), [finished, stepIndex]);
 
   useEffect(() => {
@@ -220,7 +230,7 @@ export function ProductTour({ userId, activeSection, onNavigate, open, onOpenCha
             </div>
             <div className="product-tour-progress"><span style={{ width: progress + "%" }} /></div>
             <h2 id="product-tour-title">{current.title}</h2>
-            <p>{current.description}</p>
+            <p>{currentDescription}</p>
             <div className="product-tour-actions">
               <button type="button" className="product-tour-skip" onClick={closeTour}>Encerrar passeio</button>
               <div>
