@@ -148,6 +148,9 @@
   padding: 10px 15px 9px;
   overflow: hidden;
 }
+.island-storybook-mobile-inventory {
+  display: none;
+}
 .island-storybook-page-meta,
 .casebook-kicker {
   display: flex;
@@ -845,6 +848,34 @@
   .island-storybook-side,
   .casebook-side {
     display: none;
+  }
+  .island-storybook-mobile-inventory {
+    display: grid;
+    flex: 0 0 21px;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px;
+    background: rgba(7, 24, 31, .36);
+    border: 1px solid rgba(226, 207, 172, .15);
+    border-radius: 5px;
+  }
+  .island-storybook-mobile-inventory > span {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #d9dfd3;
+    font-size: 8px;
+  }
+  .island-storybook-mobile-inventory svg {
+    width: 10px;
+    height: 10px;
+    color: #e7bd78;
+  }
+  .island-storybook-mobile-inventory b {
+    font-size: 8px;
   }
   .island-storybook-reading,
   .casebook-reading {
