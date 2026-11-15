@@ -373,7 +373,7 @@ function Index() {
           )}
 
           {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
-          <ProductTour userId={session.user.id} activeSection={activeSection} onNavigate={goToSection} open={tourOpen} onOpenChange={setProductTourOpen} />
+          <ProductTour userId={session.user.id} pairingPending={pairingPending} activeSection={activeSection} onNavigate={goToSection} open={tourOpen} onOpenChange={setProductTourOpen} />
         </div>
       )}
     </AuthGate>
