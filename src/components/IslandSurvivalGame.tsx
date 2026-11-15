@@ -6,12 +6,13 @@ import {
 } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import { GameVictoryScreen, useGameAudio } from "@/components/GameExperience";
-import { advanceIslandTutorial, islandTutorialProgress, type IslandTutorialStep } from "@/lib/island-survival-tutorial";
+import { advanceIslandTutorial, islandTutorialProgress, ISLAND_TUTORIAL_ORDER, type IslandTutorialStep } from "@/lib/island-survival-tutorial";
 
 type Weather = "clear" | "rain" | "storm" | "heat" | "cold";
 type ZoneId = "beach" | "forest" | "stream" | "wreck" | "cave" | "ridge";
 type EventId = "downpour" | "injury" | "distantSignal";
 type Resources = { food: number; water: number; wood: number; cloth: number; metal: number; medicine: number; rope: number };
+type IslandStoryChoice = "provisions" | "tools" | "tide" | "ridge";
 type SurvivalState = {
   day: number;
   phase: "action" | "event" | "night" | "won" | "lost";
@@ -33,6 +34,10 @@ type SurvivalState = {
   ending: string;
   /** Guided chapter is stored in the match state so both devices stay in step. */
   tutorialStep?: IslandTutorialStep;
+  /** Current page in the interactive opening story. */
+  storyPage?: number;
+  /** Choices are saved with the shared match so both players follow the same path. */
+  storyChoices?: IslandStoryChoice[];
 };
 const MAX_HEALTH = 5;
 const RESOURCE_LIMIT = 18;
@@ -40,6 +45,8 @@ const initial: SurvivalState = {
   day: 1,
   phase: "action",
   tutorialStep: "story",
+  storyPage: 0,
+  storyChoices: [],
   weather: "clear",
   resources: { food: 6, water: 6, wood: 3, cloth: 1, metal: 0, medicine: 1, rope: 0 },
   health: [5, 5],
@@ -107,6 +114,7 @@ const copyState = (state: SurvivalState): SurvivalState => ({
   fatigue: [...state.fatigue] as [number, number],
   discovered: [...state.discovered],
   log: [...state.log],
+  storyChoices: [...(state.storyChoices ?? [])],
 });
 
 export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
@@ -119,6 +127,8 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
   // Existing saves created before the guided campaign remain in free-play mode.
   const tutorialStep: IslandTutorialStep = game.tutorialStep ?? "free";
   const guided = tutorialStep !== "free";
+  const storyPage = Math.max(0, Math.min(4, Math.floor(game.storyPage ?? 0)));
+  const storyChoices = game.storyChoices ?? [];
   const weather = weatherInfo[game.weather];
   const WeatherIcon = weather.icon;
   const selectedZone = zones.find((zone) => zone.id === game.selectedZone) ?? zones[0];
@@ -374,6 +384,68 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
     play(next.phase === "won" ? "success" : next.phase === "lost" ? "warning" : "move");
   }
 
+  function advanceStoryPage() {
+    if (tutorialStep !== "story" || storyPage > 1) return;
+    const next = copyState(game);
+    next.storyPage = storyPage + 1;
+    setGame(next);
+    play("tap");
+  }
+
+  function chooseStoryDecision(choice: IslandStoryChoice) {
+    if (tutorialStep !== "story" || (storyPage !== 2 && storyPage !== 3)) return;
+    const next = copyState(game);
+    const choices = [...(next.storyChoices ?? [])];
+
+    if (storyPage === 2) {
+      if (choice !== "provisions" && choice !== "tools") return;
+      if (choices[0]) return;
+      choices[0] = choice;
+      if (choice === "provisions") {
+        next.resources.food = clamp(next.resources.food + 2);
+        next.resources.water = clamp(next.resources.water + 1);
+        next.morale = Math.min(10, next.morale + 1);
+        next.log = ["Prólogo · Vocês recuperaram a caixa de provisões antes que a maré subisse.", ...next.log];
+      } else {
+        next.resources.metal = clamp(next.resources.metal + 1);
+        next.resources.wood = clamp(next.resources.wood + 1);
+        next.resources.cloth = clamp(next.resources.cloth + 1);
+        next.log = ["Prólogo · A maleta de ferramentas foi salva dos destroços.", ...next.log];
+      }
+    } else {
+      if (choice !== "tide" && choice !== "ridge") return;
+      if (choices[1]) return;
+      choices[1] = choice;
+      if (choice === "tide") {
+        next.resources.water = clamp(next.resources.water + 2);
+        next.resources.food = clamp(next.resources.food + 1);
+        next.resources.medicine = clamp(next.resources.medicine + 1);
+        next.log = ["Prólogo · Seguindo a maré, vocês encontraram água e plantas úteis.", ...next.log];
+      } else {
+        next.resources.rope = clamp(next.resources.rope + 1);
+        next.resources.medicine = clamp(next.resources.medicine + 1);
+        next.beacon = Math.min(4, next.beacon + 1);
+        next.log = ["Prólogo · Do alto das pedras, vocês localizaram uma peça útil para o sinal.", ...next.log];
+      }
+    }
+
+    next.storyChoices = choices;
+    next.storyPage = storyPage + 1;
+    next.log = next.log.slice(0, 7);
+    setGame(next);
+    setNotice("A escolha foi registrada. A história seguirá por esse caminho.");
+    play("discovery");
+  }
+
+  function beginIslandAdventure() {
+    if (tutorialStep !== "story" || storyPage !== 4) return;
+    const next = copyState(game);
+    next.tutorialStep = advanceIslandTutorial("story", "begin");
+    setGame(next);
+    setNotice("A história chegou à praia. Agora começa a sobrevivência.");
+    play("discovery");
+  }
+
   function restart() {
     setGame(initial);
     setNotice("A expedição recomeçou. A história e o tutorial serão apresentados novamente.");
@@ -397,38 +469,139 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
       {game.phase !== "won" && game.phase !== "lost" && (
         <>
           {tutorialStep === "story" ? (
-            <section className="survival-story-screen" aria-labelledby="survival-story-title">
-              <div className="survival-story-art" aria-hidden="true">
+            <article className="survival-story-screen" aria-labelledby="survival-story-title">
+              <header className="survival-book-header">
+                <span>ILHA DO ÚLTIMO SINAL</span>
+                <span>LIVRO I · A SOBREVIVÊNCIA</span>
+              </header>
+              <div className={"survival-story-art survival-story-art-page-" + storyPage} aria-hidden="true">
                 <span className="survival-story-sun">☀</span>
                 <span className="survival-story-cloud">☁</span>
-                <span className="survival-story-boat">⛵</span>
+                <span className="survival-story-boat">{storyPage <= 1 ? "⛵" : storyPage === 2 ? "🧰" : storyPage === 3 ? "🪨" : "🌴"}</span>
                 <span className="survival-story-island">🌴</span>
                 <span className="survival-story-waves">🌊　🌊　🌊</span>
+                <span className="survival-book-scene-caption">
+                  {storyPage === 0 ? "ANTES DE TUDO, HAVIA UMA VIAGEM" :
+                    storyPage === 1 ? "A TEMPESTADE" :
+                    storyPage === 2 ? "O QUE SALVAR?" :
+                    storyPage === 3 ? "QUAL CAMINHO SEGUIR?" : "UM NOVO COMEÇO"}
+                </span>
               </div>
-              <div className="survival-story-copy">
-                <span className="survival-kicker">PRÓLOGO · DEPOIS DA TEMPESTADE</span>
-                <h2 id="survival-story-title">Ilha do Último Sinal</h2>
-                <p className="survival-story-lead">A viagem era para ser tranquila. Mas uma tempestade mudou tudo.</p>
-                <p>Durante a travessia, o barco de Lia e Noah foi atingido por ondas enormes. O rádio parou, o motor apagou e a embarcação foi arrastada até uma ilha que não aparece nas cartas náuticas.</p>
-                <p>Quando o céu clareou, os dois estavam vivos — mas sozinhos, sem comunicação e com poucos suprimentos. O casco ficou preso nos recifes. A próxima equipe de busca só poderá passar pela região dentro de sete dias.</p>
-                <div className="survival-story-dialogue">
-                  <p><strong>Lia · Navegadora</strong><span>“A praia parece segura. Precisamos descobrir o que a maré deixou antes que escureça.”</span></p>
-                  <p><strong>Noah · Mecânico</strong><span>“O rádio talvez tenha conserto. Mas primeiro precisamos de água, comida e um abrigo.”</span></p>
-                </div>
-                <div className="survival-story-goal">
-                  <Radio aria-hidden="true" />
-                  <div><strong>Missão de vocês</strong><span>Sobreviver, explorar a ilha e conseguir enviar um sinal de resgate antes do sétimo dia.</span></div>
-                </div>
-                <button type="button" className="survival-tutorial-primary" onClick={() => {
-                  setGame((current) => ({ ...copyState(current), tutorialStep: advanceIslandTutorial("story", "begin") }));
-                  setNotice("Lia e Noah acordaram na praia. Vamos começar pelo mais importante: encontrar suprimentos.");
-                  play("discovery");
-                }}>
-                  Começar a história <ChevronRight aria-hidden="true" />
-                </button>
-                <p className="survival-story-footnote">Vocês vão aprender jogando. Cada nova ferramenta aparece somente quando chegar a hora de usá-la.</p>
+              <div className="survival-book-progress">
+                <span>CAPÍTULO 1 · O NAUFRÁGIO</span>
+                <strong>PÁGINA {storyPage + 1} DE 5</strong>
               </div>
-            </section>
+              <div className="survival-story-copy survival-book-copy">
+                {storyPage === 0 && (
+                  <>
+                    <span className="survival-kicker">PRÓLOGO</span>
+                    <h2 id="survival-story-title">O Último Sinal</h2>
+                    <p className="survival-story-lead">Há viagens que começam com um destino. Esta começará com uma luta para voltar para casa.</p>
+                    <p>Lia conhecia o mar como quem conhece as próprias mãos. Noah, por sua vez, conseguia fazer qualquer motor voltar a funcionar. Juntos, atravessavam uma rota pouco movimentada quando o céu escureceu antes do previsto.</p>
+                    <p>Naquela tarde, nenhum dos dois imaginava que o nome da ilha onde acabariam presos não aparecia em mapa algum.</p>
+                    <div className="survival-book-quote">“O mar estava calmo há poucos minutos. Então, tudo mudou.”</div>
+                  </>
+                )}
+                {storyPage === 1 && (
+                  <>
+                    <span className="survival-kicker">PÁGINA 2 · O IMPACTO</span>
+                    <h2>Quando o oceano se levantou</h2>
+                    <p>Uma parede de água atingiu a embarcação. O rádio estalou e apagou. O motor perdeu força. Lia tentou manter a proa contra as ondas, enquanto Noah descia para verificar a casa de máquinas.</p>
+                    <p>O casco bateu nos recifes durante a madrugada. Quando a tempestade passou, os dois acordaram na areia, feridos e exaustos. O barco estava partido ao longe, preso entre pedras.</p>
+                    <p>O céu clareava. A equipe de busca só deveria cruzar aquela região dali a sete dias. Até lá, ninguém viria procurá-los.</p>
+                    <div className="survival-story-dialogue">
+                      <p><strong>Lia · Navegadora</strong><span>“Precisamos manter a calma. A maré deixou algumas caixas na praia.”</span></p>
+                      <p><strong>Noah · Mecânico</strong><span>“E talvez ainda exista algo útil no barco. Não podemos perder tudo.”</span></p>
+                    </div>
+                  </>
+                )}
+                {storyPage === 2 && (
+                  <>
+                    <span className="survival-kicker">PÁGINA 3 · PRIMEIRA DECISÃO</span>
+                    <h2>O que salvar primeiro?</h2>
+                    <p>Entre as pedras, duas coisas chamaram a atenção. Uma caixa de provisões boiava perto da areia. Mais adiante, a maleta de ferramentas de Noah estava presa a uma parte do casco.</p>
+                    <p>A maré começava a subir. Não havia tempo para buscar os dois objetos. O que vocês decidem recuperar?</p>
+                    <div className="survival-book-choice-grid">
+                      <button type="button" className="survival-book-choice" onClick={() => chooseStoryDecision("provisions")}>
+                        <span className="survival-book-choice-icon">🥫</span>
+                        <strong>Salvar as provisões</strong>
+                        <small>Recuperar comida, água e ânimo para os primeiros dias.</small>
+                        <em>+2 comida · +1 água · +1 ânimo</em>
+                      </button>
+                      <button type="button" className="survival-book-choice" onClick={() => chooseStoryDecision("tools")}>
+                        <span className="survival-book-choice-icon">🧰</span>
+                        <strong>Salvar as ferramentas</strong>
+                        <small>Resgatar peças e materiais que podem ser aproveitados depois.</small>
+                        <em>+1 metal · +1 madeira · +1 tecido</em>
+                      </button>
+                    </div>
+                  </>
+                )}
+                {storyPage === 3 && (
+                  <>
+                    <span className="survival-kicker">PÁGINA 4 · SEGUNDA DECISÃO</span>
+                    <h2>Para onde ir antes do anoitecer?</h2>
+                    <p>Com o que conseguiram salvar, Lia e Noah deixam a faixa de areia. O interior da ilha é coberto por vegetação. À esquerda, a maré revela uma passagem entre as pedras. À direita, uma subida leva a um terreno mais alto.</p>
+                    <p>O caminho da água parece seguro, mas o alto pode revelar o formato da ilha. Qual rota vocês escolhem?</p>
+                    <div className="survival-book-choice-grid">
+                      <button type="button" className="survival-book-choice" onClick={() => chooseStoryDecision("tide")}>
+                        <span className="survival-book-choice-icon">💧</span>
+                        <strong>Seguir a maré</strong>
+                        <small>Procurar água e plantas úteis entre as pedras.</small>
+                        <em>+2 água · +1 comida · +1 remédio</em>
+                      </button>
+                      <button type="button" className="survival-book-choice" onClick={() => chooseStoryDecision("ridge")}>
+                        <span className="survival-book-choice-icon">🧭</span>
+                        <strong>Subir até o terreno alto</strong>
+                        <small>Observar a ilha e procurar materiais de sinalização.</small>
+                        <em>+1 corda · +1 remédio · +1 peça de sinal</em>
+                      </button>
+                    </div>
+                  </>
+                )}
+                {storyPage === 4 && (
+                  <>
+                    <span className="survival-kicker">PÁGINA 5 · O PRIMEIRO ACAMPAMENTO</span>
+                    <h2>A ilha não está vazia</h2>
+                    <p>{storyChoices[0] === "provisions"
+                      ? "A caixa de provisões está protegida perto das árvores. Lia separa os alimentos enquanto Noah guarda os recipientes de água."
+                      : "A maleta de ferramentas está aberta sobre uma pedra. Noah separa o metal e o tecido que ainda podem ser usados, enquanto Lia recolhe a madeira."}</p>
+                    <p>{storyChoices[1] === "tide"
+                      ? "A passagem entre as pedras levou os dois a um pequeno veio de água. Há sinais de vegetação medicinal por perto."
+                      : "Do alto, os dois avistaram a praia, a mata e uma ponta metálica do casco. A ilha é maior do que parecia, e um ponto elevado poderá ajudar a sinalizar o resgate."}</p>
+                    <p>Agora precisam montar um acampamento, descobrir onde encontrar comida e água, e decidir como pedir socorro. O rádio pode ser consertado; se isso falhar, talvez consigam construir uma balsa.</p>
+                    <div className="survival-book-inventory">
+                      <strong>O que vocês têm para começar</strong>
+                      <div>
+                        <span>🥫 Comida <b>{game.resources.food}</b></span>
+                        <span>💧 Água <b>{game.resources.water}</b></span>
+                        <span>🪵 Madeira <b>{game.resources.wood}</b></span>
+                        <span>🧵 Tecido <b>{game.resources.cloth}</b></span>
+                        <span>🔩 Metal <b>{game.resources.metal}</b></span>
+                        <span>🩹 Remédios <b>{game.resources.medicine}</b></span>
+                        <span>🪢 Corda <b>{game.resources.rope}</b></span>
+                      </div>
+                    </div>
+                    <div className="survival-story-goal">
+                      <Radio aria-hidden="true" />
+                      <div><strong>O objetivo continua o mesmo</strong><span>Sobreviver aos sete dias e conseguir enviar um sinal de resgate — ou encontrar outra maneira de deixar a ilha.</span></div>
+                    </div>
+                    <button type="button" className="survival-tutorial-primary" onClick={beginIslandAdventure}>
+                      Desembarcar e começar <ChevronRight aria-hidden="true" />
+                    </button>
+                  </>
+                )}
+                {storyPage <= 1 && (
+                  <div className="survival-book-navigation">
+                    {storyPage === 1 && <button type="button" className="survival-book-back" onClick={() => setGame({ ...copyState(game), storyPage: 0 })}>Página anterior</button>}
+                    <button type="button" className="survival-tutorial-primary" onClick={advanceStoryPage}>
+                      Virar a página <ChevronRight aria-hidden="true" />
+                    </button>
+                  </div>
+                )}
+                <p className="survival-story-footnote">As decisões ficam salvas na campanha e podem mudar os recursos disponíveis no começo da jornada.</p>
+              </div>
+            </article>
           ) : tutorialStep !== "free" ? (
             <section className="survival-tutorial-screen" aria-labelledby="survival-tutorial-title">
               <div className="survival-tutorial-head">
