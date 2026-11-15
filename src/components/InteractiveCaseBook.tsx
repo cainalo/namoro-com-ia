@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { AudioLines, BookOpen, Camera, Check, ChevronLeft, ChevronRight, Clock3, FileText, Fingerprint, KeyRound, Map, Newspaper, ScrollText, ShieldAlert, X } from "lucide-react";
+import "./StoryGames.css";
 import { useGameState } from "@/components/OnlineGameHost";
 
 type Artifact = { id: string; title: string; type: string; teaser: string; content: string[]; visual?: "room" | "platform" | "none" };
@@ -276,25 +277,23 @@ function ArtifactPopup({ artifact, onClose, tone }: { artifact: Artifact; onClos
 export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: CaseBookData; solo?: boolean }) {
   const storageKey = "morados-casebook-" + caseBook.id + "-v1";
   const initial: CaseBookState = { chapter: 0, opened: [], decisions: {}, finished: false };
-  const [book, setBook] = useGameState<CaseBookState>(initial, { onlineInitial: initial });
+  const [book, setBook, sync] = useGameState<CaseBookState>(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const saved = JSON.parse(raw) as Partial<CaseBookState>;
+        return { ...initial, ...saved, opened: Array.isArray(saved.opened) ? saved.opened : [], decisions: saved.decisions ?? {} };
+      }
+    } catch { /* progresso novo será mantido em memória */ }
+    return initial;
+  }, { onlineInitial: initial });
   const [artifact, setArtifact] = useState<Artifact | null>(null);
   const chapterIndex = Math.min(book.chapter, caseBook.chapters.length - 1);
   const current = caseBook.chapters[chapterIndex];
 
   useEffect(() => {
-    if (book.finished) return;
-    try {
-      const raw = localStorage.getItem(storageKey);
-      if (raw && book.chapter === 0 && book.opened.length === 0 && Object.keys(book.decisions).length === 0) {
-        const saved = JSON.parse(raw) as Partial<CaseBookState>;
-        if (saved.chapter || saved.opened?.length || saved.decisions) setBook({ ...initial, ...saved });
-      }
-    } catch { /* progresso novo será mantido em memória */ }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(book));
-  }, [book, storageKey]);
+    if (!sync.online) localStorage.setItem(storageKey, JSON.stringify(book));
+  }, [book, storageKey, sync.online]);
 
   function choose(option: BookChoice) {
     setBook({ ...book, decisions: { ...book.decisions, [chapterIndex === 0 ? "opening" : "interview"]: option.id } });
