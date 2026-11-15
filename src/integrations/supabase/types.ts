@@ -627,6 +627,7 @@ export type Database = {
       abandon_game_match: { Args: { p_match_id: string }; Returns: boolean }
       accept_couple_invitation: { Args: { p_token: string }; Returns: string }
       can_view_couple: { Args: { p_couple_id: string }; Returns: boolean }
+      complete_couple_pairing: { Args: { p_token: string }; Returns: Json }
       create_connect_four_match: {
         Args: { p_couple_id: string }
         Returns: string
