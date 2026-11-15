@@ -149,6 +149,7 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
 
           if (incoming.status === "declined") {
             setPending(null);
+            window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: incoming.game_key, invitationId: incoming.id, status: incoming.status } }));
             setNotice(incoming.from_user_id === userId
               ? "Sua namorada recusou o convite desta partida."
               : "Você recusou o convite da partida.");
@@ -192,11 +193,13 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
     const remaining = new Date(row.expires_at).getTime() - Date.now();
     if (remaining <= 0) {
       setPending(null);
+      window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: row.game_key, invitationId: row.id, status: "expired" } }));
       setNotice("O convite de partida expirou.");
       return;
     }
     const timer = window.setTimeout(() => {
       setPending(null);
+      window.dispatchEvent(new CustomEvent("morados:game-invitation-closed", { detail: { gameKey: row.game_key, invitationId: row.id, status: "expired" } }));
       setNotice("O convite de partida expirou.");
       void refresh();
     }, remaining);
