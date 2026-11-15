@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { callCoupleRpc } from "./couple-rpc";
+import { callCoupleRpc, isRecord } from "./couple-rpc";
 
 export function validateCoupleCredentials(email: string, partnerEmail: string, password: string) {
   const emails = [email, partnerEmail].map((value) => value.trim().toLowerCase());
