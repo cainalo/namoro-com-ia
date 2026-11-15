@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Anchor, ArrowLeft, ArrowRight, BookOpen, Check, Compass, Droplets, FileText, Flame, Footprints, HeartPulse, Map, Package, Radio, Shield, Sparkles, Trees, Waves, Wind, Wrench, X } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Compass, Droplets, FileText, HeartPulse, Package, Radio, Sparkles, Trees, Wrench, X } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
+import "./StoryGames.css";
 
 type ResourceId = "food" | "water" | "wood" | "cloth" | "metal" | "medicine" | "rope" | "battery";
 type ResourceBag = Record<ResourceId, number>;
