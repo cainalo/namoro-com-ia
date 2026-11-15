@@ -32,6 +32,7 @@ import { listCouplePlanEvents, type CouplePlanEvent } from "@/lib/couple-plan-ev
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { MoradosMark } from "@/components/MoradosMark";
 import { InlineMenu } from "@/components/InlineMenu";
+import { ProductTour } from "@/components/ProductTour";
 
 type SectionId = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile" | "create-post";
 
@@ -120,6 +121,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
+  const [tourOpen, setTourOpen] = useState(false);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
   const chromeHidden = useHideOnScroll(activeSection);
@@ -239,7 +241,7 @@ function Index() {
               <header className="app-chrome" data-hidden={chromeHidden}>
                 <div className="app-topbar">
                   <div className="topbar-inner">
-                    <div className="topbar-side topbar-side-leading">
+                    <div className="topbar-side topbar-side-leading" data-tour-target="menu-button">
                       <InlineMenu
                         label="Abrir menu de navegação"
                         trigger={<Menu aria-hidden="true" />}
@@ -253,6 +255,7 @@ function Index() {
                             <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("memories"); }}><Images aria-hidden="true" /> Memórias</button>
                             <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("organize"); }}><CalendarDays aria-hidden="true" /> Planos</button>
                             <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); goToSection("universe"); }}><Compass aria-hidden="true" /> Casa</button>
+                            <button type="button" role="menuitem" className="nc-menu-item" onClick={() => { close(); setTourOpen(true); }}><Compass aria-hidden="true" /> Ver tutorial do Morados</button>
                             <div className="nc-menu-sep" role="separator" />
                             <Link to="/download" role="menuitem" className="nc-menu-item" onClick={close}><Download aria-hidden="true" /> Baixar aplicativo</Link>
                             <button type="button" role="menuitem" className="nc-menu-item" onClick={() => {
@@ -291,7 +294,7 @@ function Index() {
             </>
           )}
 
-          <main className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
+          <main data-tour-target={"screen-" + activeSection} className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
             {activeSection === "messages" ? (
               <ConversationGuard onBack={goBack}><CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} /></ConversationGuard>
             ) : (
@@ -343,6 +346,7 @@ function Index() {
                 onClick={() => goToSection("create-post")}
                 aria-label="Criar publicação"
                 title="Criar publicação"
+                data-tour-target="create-post-button"
               >
                 <Plus aria-hidden="true" />
               </button>
@@ -362,6 +366,7 @@ function Index() {
           )}
 
           {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
+          <ProductTour userId={session.user.id} activeSection={activeSection} onNavigate={goToSection} open={tourOpen} onOpenChange={setTourOpen} />
         </div>
       )}
     </AuthGate>
@@ -408,6 +413,7 @@ function NavigationButton({
       type="button"
       onClick={onClick}
       aria-current={active ? "page" : undefined}
+      data-tour-target={"nav-" + item.id}
       className={[
         "nav-button",
         active ? "is-active" : "",
