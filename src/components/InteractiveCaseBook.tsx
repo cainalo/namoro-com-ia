@@ -277,7 +277,7 @@ function ArtifactPopup({ artifact, onClose, tone }: { artifact: Artifact; onClos
 export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: CaseBookData; solo?: boolean }) {
   const storageKey = "morados-casebook-" + caseBook.id + "-v1";
   const initial: CaseBookState = { chapter: 0, readerPage: 0, opened: [], decisions: {}, finished: false };
-  const [book, setBook, sync] = useGameState<CaseBookState>(() => {
+  const [storedBook, setBook, sync] = useGameState<CaseBookState>(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
@@ -287,6 +287,9 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
     } catch { /* progresso novo será mantido em memória */ }
     return initial;
   }, { onlineInitial: initial });
+  const book: CaseBookState = typeof storedBook?.chapter === "number" && Array.isArray(storedBook.opened)
+    ? { ...initial, ...storedBook, readerPage: storedBook.readerPage ?? 0, decisions: storedBook.decisions ?? {} }
+    : initial;
   const [artifact, setArtifact] = useState<Artifact | null>(null);
   const chapterIndex = Math.min(book.chapter, caseBook.chapters.length - 1);
   const current = caseBook.chapters[chapterIndex];
@@ -301,8 +304,12 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
   const showingChoice = hasChoicePage && safeReaderPage === textPageCount + Number(hasInsertPage);
 
   useEffect(() => {
+    if (sync.online && (typeof storedBook?.chapter !== "number" || !Array.isArray(storedBook.opened))) {
+      setBook(initial);
+      return;
+    }
     if (!sync.online) localStorage.setItem(storageKey, JSON.stringify(book));
-  }, [book, storageKey, sync.online]);
+  }, [book, setBook, storageKey, storedBook, sync.online]);
 
   function choose(option: BookChoice) {
     setBook({ ...book, decisions: { ...book.decisions, [chapterIndex === 0 ? "opening" : "interview"]: option.id } });
