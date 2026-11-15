@@ -120,7 +120,7 @@ export function AuthGate({ children }: AuthGateProps) {
       if (membershipError || !membership?.couple_id) {
         setAccess({
           userId,
-          stage: "pending",
+          stage: typeof pairToken === "string" ? "pending" : "ready",
           notice: notice ?? "Seu perfil individual está pronto. O espaço compartilhado será ativado quando o pareamento for concluído.",
         });
         return;
@@ -136,7 +136,7 @@ export function AuthGate({ children }: AuthGateProps) {
       if (coupleError || couple?.status !== "active") {
         setAccess({
           userId,
-          stage: "pending",
+          stage: couple?.status === "pending" || typeof pairToken === "string" ? "pending" : "ready",
           notice: notice ?? "Sua conta está liberada. O espaço compartilhado será ativado quando a outra pessoa confirmar o e-mail dela.",
         });
         return;
