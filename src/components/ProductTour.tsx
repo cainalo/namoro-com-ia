@@ -133,6 +133,7 @@ export function ProductTour({ userId, activeSection, onNavigate, open, onOpenCha
     if (!open || finished || !current || activeSection !== current.section) return;
     let timer = 0;
     let frame = 0;
+    let initialScrollDone = false;
     const locate = () => {
       const element = document.querySelector<HTMLElement>('[data-tour-target="' + current.target + '"]');
       if (!element) {
@@ -143,6 +144,10 @@ export function ProductTour({ userId, activeSection, onNavigate, open, onOpenCha
           height: Math.min(240, window.innerHeight * 0.34),
         });
         return;
+      }
+      if (!initialScrollDone) {
+        initialScrollDone = true;
+        element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
       }
       const rect = element.getBoundingClientRect();
       setSpotlight({
@@ -195,7 +200,7 @@ export function ProductTour({ userId, activeSection, onNavigate, open, onOpenCha
           aria-hidden="true"
         />
       )}
-      <section className="product-tour-card">
+      <section className="product-tour-card" data-placement={spotlight && spotlight.top + spotlight.height / 2 > window.innerHeight * 0.58 ? "top" : "bottom"}>
         <div className="product-tour-card-top">
           <span className="product-tour-brand"><Compass size={15} /> GUIA DO MORADOS</span>
           <button type="button" className="product-tour-close" onClick={closeTour} aria-label="Encerrar tutorial"><X size={18} /></button>
