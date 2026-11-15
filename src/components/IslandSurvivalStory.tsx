@@ -549,7 +549,7 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
       {journalOpen && <SurvivalJournalModal
         node={current}
         puzzleAnswer={puzzleAnswer}
-        onArtifact={setOpenedArtifact}
+        onArtifact={item => { setJournalOpen(false); setOpenedArtifact(item); }}
         onChoice={takeChoice}
         onPuzzle={answerPuzzle}
         onClose={() => setJournalOpen(false)}
