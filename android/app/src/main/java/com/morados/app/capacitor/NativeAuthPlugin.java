@@ -27,6 +27,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Locale;
 
 /**
  * Formulário de credenciais em controles EditText nativos do Android.
@@ -61,7 +62,7 @@ public class NativeAuthPlugin extends Plugin {
 
         TextView description = new TextView(getActivity());
         description.setText(isSignup
-            ? "Informe o e-mail e escolha uma senha para criar sua conta."
+            ? "Informe dois e-mails distintos e uma senha compartilhada."
             : "Digite o e-mail e a senha da sua conta para continuar.");
         description.setTextColor(Color.rgb(91, 103, 94));
         description.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
@@ -90,6 +91,14 @@ public class NativeAuthPlugin extends Plugin {
             dp(54)
         ));
 
+        EditText partnerEmail = new EditText(getActivity());
+        partnerEmail.setId(View.generateViewId());
+        partnerEmail.setSingleLine(true);
+        partnerEmail.setHint("E-mail da sua namorada");
+        partnerEmail.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        partnerEmail.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+        if (isSignup) content.addView(partnerEmail, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dp(54)));
+
         EditText password = new EditText(getActivity());
         password.setId(View.generateViewId());
         password.setSingleLine(true);
@@ -110,7 +119,8 @@ public class NativeAuthPlugin extends Plugin {
         );
         passwordParams.topMargin = dp(12);
         content.addView(password, passwordParams);
-        email.setNextFocusDownId(password.getId());
+        email.setNextFocusDownId(isSignup ? partnerEmail.getId() : password.getId());
+        partnerEmail.setNextFocusDownId(password.getId());
 
         AlertDialog dialog = new AlertDialog.Builder(getActivity())
             .setTitle(isSignup ? "Criar conta no Morados" : "Entrar no Morados")
@@ -133,7 +143,7 @@ public class NativeAuthPlugin extends Plugin {
         dialog.setOnShowListener(ignored -> {
             Button submit = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
             submit.setOnClickListener(view -> {
-                String emailValue = email.getText() == null ? "" : email.getText().toString().trim();
+                String emailValue = email.getText() == null ? "" : email.getText().toString().trim().toLowerCase(Locale.ROOT);
                 String passwordValue = password.getText() == null ? "" : password.getText().toString();
 
                 if (emailValue.isEmpty()) {
@@ -144,6 +154,12 @@ public class NativeAuthPlugin extends Plugin {
                 if (!Patterns.EMAIL_ADDRESS.matcher(emailValue).matches()) {
                     email.setError("Confira o formato do e-mail.");
                     email.requestFocus();
+                    return;
+                }
+                String partnerValue = partnerEmail.getText() == null ? "" : partnerEmail.getText().toString().trim().toLowerCase(Locale.ROOT);
+                if (isSignup && (!Patterns.EMAIL_ADDRESS.matcher(partnerValue).matches() || partnerValue.equals(emailValue))) {
+                    partnerEmail.setError("Informe outro e-mail válido e diferente do seu.");
+                    partnerEmail.requestFocus();
                     return;
                 }
                 if (passwordValue.isEmpty()) {
@@ -162,6 +178,7 @@ public class NativeAuthPlugin extends Plugin {
                     JSObject result = new JSObject();
                     result.put("cancelled", false);
                     result.put("email", emailValue);
+                    if (isSignup) result.put("partnerEmail", partnerValue);
                     result.put("password", passwordValue);
                     call.resolve(result);
                 }

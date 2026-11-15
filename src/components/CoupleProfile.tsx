@@ -3,6 +3,8 @@ import { Camera, Check, Circle, ImagePlus, LoaderCircle, Save, UserRound } from 
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
 
+import { AppGeneralSettings } from "@/components/AppGeneralSettings";
+
 type ProfileRecord = { id: string; display_name: string | null; avatar_path: string | null; banner_path: string | null; bio: string | null };
 async function signedMedia(path: string | null) {
   if (!path) return null;
@@ -123,6 +125,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
   }
 
   return <section className="profile-page" aria-busy={loading}>
+    <div className="mb-4"><AppGeneralSettings /></div>
     {loading ? (
       <div className="flex min-h-48 items-center justify-center gap-3 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> Carregando perfil…</div>
     ) : (

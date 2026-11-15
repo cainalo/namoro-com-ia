@@ -10,6 +10,9 @@ import { Link } from "@tanstack/react-router";
 import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
 import { MoradosMark } from "@/components/MoradosMark";
 import { supabase } from "@/integrations/supabase/client";
+import { completeCouplePairing, registerCouple } from "@/lib/couple-registration";
+import { Button } from "@/components/ui/button";
+import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 
 type AuthGateProps = {
   children: (session: Session) => ReactNode;
@@ -58,6 +61,18 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
     };
   }, []);
 
+  const [pairing, setPairing] = useState<string | null>(null);
+  const [pairChecking, setPairChecking] = useState(false);
+  const [pairRetry, setPairRetry] = useState(0);
+  const pairToken = session?.user.user_metadata?.["morados_pair_token"];
+  useEffect(() => {
+    let active = true;
+    if (!session || !pairToken) { setPairing(null); return; }
+    setPairChecking(true);
+    void completeCouplePairing().then((result) => { if (active) setPairing(result.error); }).catch(() => { if (active) setPairing("Não foi possível verificar o pareamento. Tente novamente."); }).finally(() => { if (active) setPairChecking(false); });
+    return () => { active = false; };
+  }, [session?.user.id, pairToken, pairRetry]);
+
   if (checking) {
     return <MoradosLoadingScreen message="Preparando o espaço de vocês" />;
   }
@@ -67,6 +82,8 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
       ? <NativeAuthForm emailRedirectTo={emailRedirectTo} />
       : <AuthForm emailRedirectTo={emailRedirectTo} />;
   }
+  if (pairChecking) return <MoradosLoadingScreen message="Confirmando o cadastro do casal" />;
+  if (pairing) return <main className="auth-v2"><section className="auth-v2-card grid gap-4"><h1>Cadastro do casal</h1><p role="alert">{pairing}</p><Button onClick={() => setPairRetry((value) => value + 1)}>Verificar novamente</Button><AppGeneralSettings /><SignOutButton /></section></main>;
   return <>{children(session)}</>;
 }
 
@@ -74,6 +91,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [partnerEmail, setPartnerEmail] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -108,17 +126,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
         });
         if (signInError) throw signInError;
       } else {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            emailRedirectTo: emailRedirectTo?.() ?? window.location.origin,
-          },
-        });
-        if (signUpError) throw signUpError;
-        if (!data.session) {
-          setNotice("Conta criada. Confira seu e-mail para confirmar o endereço antes de entrar.");
-        }
+        setNotice(await registerCouple(normalizedEmail, partnerEmail, password, emailRedirectTo?.() ?? window.location.origin));
       }
     } catch (cause) {
       const message = cause instanceof Error ? cause.message.toLowerCase() : "";
@@ -133,7 +141,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
       } else if (message.includes("network") || message.includes("fetch")) {
         setError("Não foi possível conectar. Verifique sua internet e tente novamente.");
       } else {
-        setError("Não foi possível concluir o acesso agora. Tente novamente.");
+        setError(cause instanceof Error && /cadastro|e-mails|senha compartilhada|pareamento|solicitações/i.test(cause.message) ? cause.message : "Não foi possível concluir o acesso agora. Tente novamente.");
       }
     } finally {
       setBusy(false);
@@ -186,7 +194,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
         <div className="auth-v2-heading">
           <span className="auth-v2-step">{mode === "signin" ? "BOM TER VOCÊ AQUI" : "VAMOS COMEÇAR"}</span>
           <h1 id="auth-v2-title">{mode === "signin" ? "Entre no seu espaço." : "Criem o espaço de vocês."}</h1>
-          <p>{mode === "signin" ? "Use sua conta para continuar de onde vocês pararam." : "Cadastre seu e-mail e escolha uma senha para abrir o espaço."}</p>
+          <p>{mode === "signin" ? "Use sua conta para continuar de onde vocês pararam." : "Informem dois e-mails distintos e uma senha compartilhada para os dois acessos."}</p>
         </div>
 
         <form className="auth-v2-form" onSubmit={submit}>
@@ -210,6 +218,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
             </div>
           </div>
 
+          {mode === "signup" && <div className="auth-v2-field"><label className="auth-v2-label" htmlFor="auth-partner-email"><Mail size={14} /> E-MAIL DA SUA NAMORADA</label><div className="auth-v2-input-wrap"><input id="auth-partner-email" type="email" value={partnerEmail} onChange={(event) => setPartnerEmail(event.target.value)} required maxLength={254} autoCapitalize="none" autoComplete="email" /></div></div>}
           <div className="auth-v2-field">
             <label className="auth-v2-label" htmlFor="auth-v2-password"><KeyRound size={14} /> SENHA</label>
             <div className="auth-v2-input-wrap">
@@ -241,7 +250,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
           {notice && <p className="auth-v2-feedback is-notice" role="status">{notice}</p>}
 
           <button type="submit" className="auth-v2-submit" disabled={busy}>
-            <span>{busy ? "Conectando…" : mode === "signin" ? "Entrar no Morados" : "Criar meu acesso"}</span>
+            <span>{busy ? "Conectando…" : mode === "signin" ? "Entrar no Morados" : "Criar nossos acessos"}</span>
             {busy ? <span className="auth-v2-spinner" /> : <ArrowUpRight size={19} />}
           </button>
         </form>
@@ -303,17 +312,7 @@ function NativeAuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string })
         });
         if (signInError) throw signInError;
       } else {
-        const { data, error: signUpError } = await supabase.auth.signUp({
-          email: normalizedEmail,
-          password,
-          options: {
-            emailRedirectTo: emailRedirectTo?.() ?? window.location.origin,
-          },
-        });
-        if (signUpError) throw signUpError;
-        if (!data.session) {
-          setNotice("Conta criada. Confira seu e-mail para confirmar o endereço antes de entrar.");
-        }
+        setNotice(await registerCouple(normalizedEmail, credentials.partnerEmail ?? "", password, emailRedirectTo?.() ?? window.location.origin));
       }
     } catch (cause) {
       const message = cause instanceof Error ? cause.message.toLowerCase() : "";
@@ -329,7 +328,7 @@ function NativeAuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string })
         setError("Não foi possível conectar. Verifique sua internet e tente novamente.");
       } else {
         console.error("Falha na autenticação nativa do Morados", cause);
-        setError("Não foi possível concluir o acesso agora. Tente novamente.");
+        setError(cause instanceof Error && /cadastro|e-mails|senha compartilhada|pareamento|solicitações/i.test(cause.message) ? cause.message : "Não foi possível concluir o acesso agora. Tente novamente.");
       }
     } finally {
       setBusy(false);
@@ -382,7 +381,7 @@ function NativeAuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string })
         <div className="auth-v2-heading">
           <span className="auth-v2-step">{mode === "signin" ? "BOM TER VOCÊ AQUI" : "VAMOS COMEÇAR"}</span>
           <h1 id="auth-v2-title">{mode === "signin" ? "Entre no seu espaço." : "Criem o espaço de vocês."}</h1>
-          <p>{mode === "signin" ? "Use sua conta para continuar de onde vocês pararam." : "Cadastre seu e-mail e escolha uma senha para abrir o espaço."}</p>
+          <p>{mode === "signin" ? "Use sua conta para continuar de onde vocês pararam." : "Informem dois e-mails distintos e uma senha compartilhada para os dois acessos."}</p>
         </div>
 
         <div className="auth-v2-native-entry">
@@ -394,7 +393,7 @@ function NativeAuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string })
         {notice && <p className="auth-v2-feedback is-notice" role="status">{notice}</p>}
 
         <button type="button" className="auth-v2-submit" onClick={openNativeCredentials} disabled={busy}>
-          <span>{busy ? "Aguardando…" : mode === "signin" ? "Entrar no Morados" : "Criar meu acesso"}</span>
+          <span>{busy ? "Aguardando…" : mode === "signin" ? "Entrar no Morados" : "Criar nossos acessos"}</span>
           {busy ? <span className="auth-v2-spinner" /> : <ArrowUpRight size={19} />}
         </button>
 

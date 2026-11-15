@@ -1,4 +1,8 @@
 # Roadmap
+- [ ] Cadastro conjunto web/Android e pareamento confirmado por RPC
+- [ ] Configurações gerais e exclusão segura de contas/mídia
+- [ ] Exclusão de publicação com confirmação e atualização do feed
+- [ ] Testes locais e validação da migration de cadastro/exclusão
 - [x] Conversa: rolagem, balões, cor só no balão de texto
 - [x] Tela de chamada (sem conexão real)
 - [x] Jogar online nos 13 jogos (código)

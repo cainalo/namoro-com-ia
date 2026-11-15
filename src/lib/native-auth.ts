@@ -5,6 +5,7 @@ export type NativeAuthMode = "signin" | "signup";
 export interface NativeAuthCredentials {
   cancelled: boolean;
   email?: string;
+  partnerEmail?: string;
   password?: string;
 }
 
