@@ -19,6 +19,13 @@ public class MainActivity extends BridgeActivity {
 
         super.onCreate(savedInstanceState);
 
+        // O Morados é um aplicativo, não uma página ampliável de navegador.
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().getSettings().setSupportZoom(false);
+            getBridge().getWebView().getSettings().setBuiltInZoomControls(false);
+            getBridge().getWebView().getSettings().setDisplayZoomControls(false);
+        }
+
         // Mantém o modo de tela cheia usado pela versão estável anterior.
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
 
