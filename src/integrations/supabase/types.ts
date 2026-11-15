@@ -146,15 +146,18 @@ export type Database = {
           game_key: string
           id: string
           is_draw: boolean
+          mode: string
           player_one_id: string
           player_two_id: string
+          state: Json
           status: string
           turn_number: number
           updated_at: string
+          version: number
           winner_id: string | null
         }
         Insert: {
-          board: Json
+          board?: Json
           couple_id: string
           created_at?: string
           current_turn: string
@@ -162,11 +165,14 @@ export type Database = {
           game_key: string
           id?: string
           is_draw?: boolean
+          mode?: string
           player_one_id: string
           player_two_id: string
+          state?: Json
           status?: string
           turn_number?: number
           updated_at?: string
+          version?: number
           winner_id?: string | null
         }
         Update: {
@@ -178,11 +184,14 @@ export type Database = {
           game_key?: string
           id?: string
           is_draw?: boolean
+          mode?: string
           player_one_id?: string
           player_two_id?: string
+          state?: Json
           status?: string
           turn_number?: number
           updated_at?: string
+          version?: number
           winner_id?: string | null
         }
         Relationships: [
@@ -191,6 +200,61 @@ export type Database = {
             columns: ["couple_id"]
             isOneToOne: false
             referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_game_piles: {
+        Row: {
+          items: Json
+          match_id: string
+          updated_at: string
+        }
+        Insert: {
+          items?: Json
+          match_id: string
+          updated_at?: string
+        }
+        Update: {
+          items?: Json
+          match_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_game_piles_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: true
+            referencedRelation: "couple_game_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      couple_game_private_state: {
+        Row: {
+          data: Json
+          match_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          data?: Json
+          match_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          data?: Json
+          match_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "couple_game_private_state_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "couple_game_matches"
             referencedColumns: ["id"]
           },
         ]
@@ -539,6 +603,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      abandon_game_match: { Args: { p_match_id: string }; Returns: boolean }
       accept_couple_invitation: { Args: { p_token: string }; Returns: string }
       can_view_couple: { Args: { p_couple_id: string }; Returns: boolean }
       create_connect_four_match: {
@@ -556,6 +621,43 @@ export type Database = {
           invitation_id: string
           token: string
         }[]
+      }
+      draw_game_pile: {
+        Args: {
+          p_count: number
+          p_deal_id: string
+          p_match_id: string
+          p_to_hand: boolean
+        }
+        Returns: Json
+      }
+      game_lock_match_for_member: {
+        Args: { p_match_id: string }
+        Returns: {
+          board: Json
+          couple_id: string
+          created_at: string
+          current_turn: string
+          finished_at: string | null
+          game_key: string
+          id: string
+          is_draw: boolean
+          mode: string
+          player_one_id: string
+          player_two_id: string
+          state: Json
+          status: string
+          turn_number: number
+          updated_at: string
+          version: number
+          winner_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "couple_game_matches"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       play_connect_four_move: {
         Args: { p_column: number; p_expected_turn: number; p_match_id: string }
@@ -576,9 +678,32 @@ export type Database = {
           winner_id: string
         }[]
       }
+      reset_game_pile: {
+        Args: { p_items: Json; p_match_id: string }
+        Returns: number
+      }
       revoke_couple_invitation: {
         Args: { p_couple_id: string }
         Returns: boolean
+      }
+      set_game_private_state: {
+        Args: { p_data: Json; p_match_id: string }
+        Returns: Json
+      }
+      start_game_match: {
+        Args: { p_couple_id: string; p_game_key: string; p_mode: string }
+        Returns: string
+      }
+      submit_game_state: {
+        Args: {
+          p_expected_version: number
+          p_match_id: string
+          p_next_turn_seat?: number
+          p_outcome?: string
+          p_state: Json
+          p_winner_seat?: number
+        }
+        Returns: number
       }
     }
     Enums: {
