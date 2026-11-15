@@ -122,6 +122,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
   const [tourOpen, setTourOpen] = useState(false);
+  const setProductTourOpen = useCallback((open: boolean) => setTourOpen(open), []);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
   const chromeHidden = useHideOnScroll(activeSection);
@@ -367,7 +368,7 @@ function Index() {
           )}
 
           {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
-          <ProductTour userId={session.user.id} activeSection={activeSection} onNavigate={goToSection} open={tourOpen} onOpenChange={setTourOpen} />
+          <ProductTour userId={session.user.id} activeSection={activeSection} onNavigate={goToSection} open={tourOpen} onOpenChange={setProductTourOpen} />
         </div>
       )}
     </AuthGate>
