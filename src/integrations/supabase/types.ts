@@ -575,7 +575,14 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
+          favorite_place: string | null
+          favorite_song: string | null
+          headline: string | null
           id: string
+          interests: string[]
+          onboarding_completed_at: string | null
+          personal_phrase: string | null
+          tutorial_completed_at: string | null
           updated_at: string
         }
         Insert: {
@@ -584,7 +591,14 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_place?: string | null
+          favorite_song?: string | null
+          headline?: string | null
           id: string
+          interests?: string[]
+          onboarding_completed_at?: string | null
+          personal_phrase?: string | null
+          tutorial_completed_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -593,7 +607,14 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_place?: string | null
+          favorite_song?: string | null
+          headline?: string | null
           id?: string
+          interests?: string[]
+          onboarding_completed_at?: string | null
+          personal_phrase?: string | null
+          tutorial_completed_at?: string | null
           updated_at?: string
         }
         Relationships: []
