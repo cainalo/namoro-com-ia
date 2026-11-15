@@ -3,6 +3,7 @@ import { Camera, Check, Circle, ImagePlus, LoaderCircle, Save, UserRound, Heart,
 import { supabase } from "@/integrations/supabase/client";
 import { createProfileImageUrl, createUserProfileMediaUrl, removeProfileImage, removeUserProfileMedia, uploadUserProfileMedia } from "@/lib/profile-media";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
+import "./ProfileExtras.css";
 
 type ProfileRecord = {
   id: string;
