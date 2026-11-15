@@ -696,7 +696,7 @@ export function CouplePlans({ userId }: { userId: string }) {
       </section>
 
       {eventLoadStatus === "ready" && (
-        <form className="plans-event-composer" onSubmit={handleSaveEvent}>
+        <form className="plans-event-composer" data-tour-target="plans-event-composer" onSubmit={handleSaveEvent}>
           <div className="plans-event-composer-heading">
             <CalendarPlus aria-hidden="true" />
             <h2>{editingEventId ? "Editar compromisso" : "Novo compromisso"}</h2>
