@@ -1,4 +1,4 @@
--- Correct the deletion scope lock order and return storage prefixes for post-commit cleanup.
+-- Correct the deletion scope lock order so invitation acceptance cannot race account erasure.
 -- The actor's current couple row is locked before its current partners are read again.
 -- This serializes against accept_couple_invitation(), which locks the same couple row.
 
@@ -178,8 +178,7 @@ BEGIN
   RETURN pg_catalog.jsonb_build_object(
     'ok', true,
     'deleted_accounts', pg_catalog.cardinality(v_user_ids),
-    'deleted_couples', pg_catalog.cardinality(v_couple_ids),
-    'deleted_couple_ids', pg_catalog.to_jsonb(v_couple_ids)
+    'deleted_couples', pg_catalog.cardinality(v_couple_ids)
   );
 END;
 $$;
