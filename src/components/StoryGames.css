@@ -1,0 +1,1031 @@
+/* Shared story-driven game layouts */
+.game-session-stage:has(.island-storybook-game),
+.game-session-stage:has(.casebook-experience),
+.game-play-surface:has(.island-storybook-game),
+.game-play-surface:has(.casebook-experience) {
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.game-session-stage:has(.island-storybook-game),
+.game-session-stage:has(.casebook-experience) {
+  display: flex !important;
+  flex-direction: column !important;
+}
+.game-play-surface:has(.island-storybook-game),
+.game-play-surface:has(.casebook-experience) {
+  display: flex !important;
+  flex: 1 1 auto !important;
+}
+.island-storybook-game,
+.casebook-experience {
+  --story-ink: #f4ead7;
+  --story-muted: #b9c2b8;
+  --story-line: rgba(226, 207, 172, .2);
+  --story-gold: #e7bd78;
+  --story-panel: #183943;
+  --story-panel-deep: #102a33;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  color: var(--story-ink);
+  background:
+    radial-gradient(ellipse at 78% 4%, rgba(87, 122, 111, .22), transparent 36%),
+    linear-gradient(145deg, #183943 0%, #102d37 58%, #10242e 100%);
+  border-radius: 0;
+  isolation: isolate;
+}
+.island-storybook-header,
+.casebook-header {
+  z-index: 2;
+  display: flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 13px;
+  color: #dfd2b9;
+  background: rgba(9, 26, 33, .5);
+  border-bottom: 1px solid var(--story-line);
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.island-storybook-brand,
+.casebook-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-weight: 800;
+}
+.island-storybook-brand svg,
+.casebook-brand svg {
+  width: 15px;
+  height: 15px;
+  color: var(--story-gold);
+  flex: 0 0 auto;
+}
+.island-storybook-mode,
+.casebook-header > span:last-child {
+  overflow: hidden;
+  color: #aebbb4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 8px;
+  letter-spacing: .1em;
+}
+.island-storybook-page,
+.casebook-page {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) 228px;
+  grid-template-rows: clamp(108px, 22dvh, 170px) minmax(0, 1fr);
+  gap: 0;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.island-storybook-art-wrap,
+.casebook-page-art {
+  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #284d52;
+  border-bottom: 1px solid var(--story-line);
+}
+.island-story-art,
+.casebook-scene-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  object-fit: cover;
+}
+.island-storybook-art-caption,
+.casebook-page-art-caption,
+.casebook-page-count {
+  position: absolute;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 4px 8px;
+  color: #f4e8d1;
+  background: rgba(8, 27, 34, .76);
+  border: 1px solid rgba(239, 218, 174, .22);
+  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+.island-storybook-art-caption,
+.casebook-page-art-caption {
+  bottom: 8px;
+  left: 10px;
+}
+.casebook-page-count {
+  right: 10px;
+  bottom: 8px;
+  color: #e7bd78;
+}
+.island-storybook-reading,
+.casebook-reading {
+  display: flex;
+  grid-column: 1;
+  grid-row: 2;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  min-height: 0;
+  padding: 10px 15px 9px;
+  overflow: hidden;
+}
+.island-storybook-mobile-inventory {
+  display: none;
+}
+.island-storybook-page-meta,
+.casebook-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  color: #d8b77e;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.island-storybook-page-meta strong {
+  color: #9eb3aa;
+  font-size: 7px;
+  letter-spacing: .1em;
+}
+.island-storybook-reading h1,
+.casebook-reading h1 {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #f8edda;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(19px, 2.2vw, 27px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -.025em;
+}
+.island-storybook-prose,
+.casebook-prose {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  color: #e5e1d5;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(11px, 1.2vw, 14px);
+  line-height: 1.48;
+  text-wrap: pretty;
+}
+.island-storybook-prose p,
+.casebook-prose p {
+  margin: 0 0 8px;
+}
+.island-storybook-prose p:last-child,
+.casebook-prose p:last-child {
+  margin-bottom: 0;
+}
+.island-storybook-section-label,
+.casebook-inserts-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #d8b77e;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+.island-storybook-artifacts,
+.island-storybook-choices,
+.island-storybook-puzzle,
+.casebook-inserts,
+.casebook-reader-choice {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.island-storybook-artifacts > div,
+.island-storybook-choices > div,
+.island-storybook-puzzle-options,
+.casebook-insert-list,
+.casebook-reader-choice > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+.island-storybook-artifact,
+.island-storybook-choices button,
+.island-storybook-puzzle-options button,
+.casebook-insert-list button,
+.casebook-reader-choice button {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 7px 8px;
+  color: #f2ead9;
+  text-align: left;
+  background: rgba(234, 218, 185, .08);
+  border: 1px solid rgba(226, 207, 172, .2);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, transform .18s ease;
+}
+.island-storybook-artifact:active,
+.island-storybook-choices button:active,
+.island-storybook-puzzle-options button:active,
+.casebook-insert-list button:active,
+.casebook-reader-choice button:active {
+  transform: scale(.985);
+  background: rgba(234, 218, 185, .15);
+}
+.island-storybook-artifact {
+  flex-direction: column;
+}
+.island-storybook-artifact > span:first-child,
+.casebook-insert-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  color: #f0c87e;
+  background: rgba(231, 189, 120, .13);
+  border-radius: 6px;
+}
+.island-storybook-artifact > span:first-child svg,
+.casebook-insert-icon svg {
+  width: 13px;
+  height: 13px;
+}
+.island-storybook-artifact strong,
+.island-storybook-choices strong,
+.island-storybook-puzzle-options strong,
+.casebook-insert-copy strong,
+.casebook-reader-choice strong {
+  display: block;
+  color: #f4ead7;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.island-storybook-artifact small,
+.island-storybook-choices small,
+.island-storybook-puzzle-options small,
+.casebook-insert-copy small,
+.casebook-reader-choice small {
+  display: block;
+  margin-top: 3px;
+  color: #c0c8bd;
+  font-size: 9px;
+  line-height: 1.3;
+}
+.island-storybook-artifact em {
+  color: #e6bd7e;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 800;
+}
+.island-storybook-choices button,
+.casebook-reader-choice button {
+  min-height: 55px;
+  flex-direction: column;
+  justify-content: center;
+}
+.island-storybook-choices button > svg,
+.casebook-reader-choice button > svg {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 13px;
+  height: 13px;
+  color: #e8c27e;
+}
+.casebook-inserts-heading small {
+  color: #aebbb4;
+  font-size: 8px;
+  letter-spacing: .05em;
+}
+.casebook-insert-list {
+  grid-template-columns: 1fr;
+  gap: 5px;
+  margin-top: 8px;
+}
+.casebook-insert-list button {
+  min-height: 58px;
+  align-items: center;
+  padding: 7px 9px;
+}
+.casebook-insert-list button.is-opened {
+  border-color: rgba(130, 174, 147, .5);
+  background: rgba(96, 138, 112, .13);
+}
+.casebook-insert-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.casebook-insert-open {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 3px;
+  color: #e7bd78;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.casebook-insert-open svg {
+  width: 12px;
+  height: 12px;
+}
+.casebook-reader-choice > span {
+  display: block;
+  color: #e7bd78;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.casebook-reader-choice > div {
+  margin-top: 9px;
+}
+.casebook-reader-choice button {
+  min-height: 76px;
+}
+.casebook-reader-choice button.is-selected {
+  border-color: rgba(235, 194, 124, .72);
+  background: rgba(231, 189, 120, .16);
+}
+.island-storybook-puzzle {
+  padding: 8px;
+  background: rgba(7, 24, 31, .38);
+  border: 1px solid var(--story-line);
+  border-radius: 8px;
+}
+.island-storybook-puzzle .island-storybook-section-label {
+  justify-content: flex-start;
+}
+.island-storybook-puzzle h2 {
+  margin: 5px 0;
+  color: #f4e7d0;
+  font-family: Georgia, serif;
+  font-size: 14px;
+}
+.island-storybook-puzzle > p {
+  margin: 0;
+  color: #c8d0c6;
+  font-size: 9px;
+  line-height: 1.35;
+}
+.island-storybook-puzzle-options {
+  grid-template-columns: 1fr;
+  gap: 4px;
+}
+.island-storybook-puzzle-options button {
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 7px;
+}
+.island-storybook-puzzle-options button.is-correct {
+  border-color: #84b695;
+  background: rgba(75, 138, 93, .2);
+}
+.island-storybook-puzzle-options button.is-selected {
+  border-color: #c68b72;
+}
+.island-storybook-puzzle-options button > svg {
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+}
+.island-storybook-puzzle-result,
+.island-storybook-notice {
+  margin: 5px 0 0;
+  color: #e7c78e;
+  font-size: 9px;
+  line-height: 1.35;
+}
+.island-storybook-footer,
+.casebook-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--story-line);
+}
+.island-storybook-footer > span,
+.casebook-controls > span {
+  overflow: hidden;
+  color: #aebbb4;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.island-storybook-footer button,
+.casebook-controls button,
+.island-storybook-ending button,
+.casebook-closing button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 7px 11px;
+  color: #1d3030;
+  background: linear-gradient(135deg, #e9c989, #d5a765);
+  border: 0;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+.island-storybook-footer button svg,
+.casebook-controls button svg,
+.island-storybook-ending button svg,
+.casebook-closing button svg {
+  width: 14px;
+  height: 14px;
+}
+.casebook-controls .casebook-back {
+  color: #e6d6b9;
+  background: rgba(235, 220, 190, .08);
+  border: 1px solid var(--story-line);
+}
+.casebook-controls button:disabled {
+  opacity: .3;
+  cursor: default;
+}
+.island-storybook-side,
+.casebook-side {
+  display: flex;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  flex-direction: column;
+  gap: 13px;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 14px;
+  overflow: hidden;
+  background: rgba(7, 24, 31, .42);
+  border-left: 1px solid var(--story-line);
+}
+.island-storybook-day,
+.casebook-side-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 70px;
+  color: #e8c27e;
+  border-bottom: 1px solid var(--story-line);
+}
+.island-storybook-day span,
+.island-storybook-day small {
+  color: #9fb0a7;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+.island-storybook-day strong {
+  color: #f6e9d1;
+  font-family: Georgia, serif;
+  font-size: 40px;
+  font-weight: 500;
+}
+.island-storybook-inventory,
+.island-storybook-keepsakes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.island-storybook-inventory > span,
+.island-storybook-keepsakes > span,
+.casebook-side > span {
+  color: #d7b87f;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .13em;
+}
+.island-storybook-inventory > div {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  color: #c6d0c4;
+  font-size: 10px;
+}
+.island-storybook-inventory > div svg {
+  width: 14px;
+  height: 14px;
+  color: #e7bd78;
+}
+.island-storybook-inventory b {
+  color: #f4e8d2;
+  font-size: 11px;
+}
+.island-storybook-keepsakes small {
+  padding: 6px 8px;
+  color: #d4d6ca;
+  background: rgba(236, 221, 193, .07);
+  border: 1px solid var(--story-line);
+  border-radius: 5px;
+  font-size: 9px;
+}
+.island-storybook-health {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  padding-top: 11px;
+  color: #c8d0c5;
+  border-top: 1px solid var(--story-line);
+  font-size: 10px;
+}
+.island-storybook-health svg {
+  width: 15px;
+  color: #d98d83;
+}
+.island-storybook-health b {
+  margin-left: auto;
+  color: #f4dfc8;
+}
+.casebook-side-mark {
+  min-height: 75px;
+  border-bottom: 0;
+}
+.casebook-side-mark svg {
+  width: 42px;
+  height: 42px;
+  padding: 9px;
+  color: #e7bd78;
+  border: 1px solid rgba(231, 189, 120, .35);
+  border-radius: 50%;
+}
+.casebook-side > strong {
+  color: #f4e8d3;
+  font-family: Georgia, serif;
+  font-size: 20px;
+  line-height: 1.08;
+}
+.casebook-side > p {
+  margin: 0;
+  color: #c1c9bd;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  line-height: 1.55;
+}
+.casebook-side-progress {
+  margin-top: auto;
+}
+.casebook-side-progress > div {
+  display: flex;
+  justify-content: space-between;
+  color: #bec8be;
+  font-size: 10px;
+}
+.casebook-side-progress b {
+  color: #e7bd78;
+}
+.casebook-side-progress i,
+.casebook-side-progress i span {
+  display: block;
+  height: 4px;
+  border-radius: 9px;
+}
+.casebook-side-progress i {
+  margin-top: 7px;
+  background: rgba(236, 221, 193, .13);
+}
+.casebook-side-progress i span {
+  background: #d7aa69;
+}
+.casebook-side-counts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--story-line);
+}
+.casebook-side-counts > span {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 3px 6px;
+  color: #c2cabc;
+}
+.casebook-side-counts svg {
+  width: 15px;
+  color: #e2b977;
+}
+.casebook-side-counts b {
+  color: #f6e8d2;
+  font-size: 16px;
+}
+.casebook-side-counts small {
+  grid-column: 1 / -1;
+  color: #aebbb4;
+  font-size: 8px;
+}
+.casebook-tone-hotel {
+  --story-gold: #c89c82;
+  --story-panel: #3b3032;
+  --story-panel-deep: #241f24;
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(145, 91, 76, .24), transparent 36%),
+    linear-gradient(145deg, #3b3032, #261f25 62%, #191c22);
+}
+.casebook-tone-rail {
+  --story-gold: #d9b47a;
+  background:
+    radial-gradient(ellipse at 85% 0%, rgba(86, 117, 127, .24), transparent 36%),
+    linear-gradient(145deg, #263941, #1d2d35 62%, #171f27);
+}
+.casebook-tone-hotel .casebook-page-art,
+.casebook-tone-hotel .casebook-side {
+  background: rgba(22, 19, 22, .52);
+}
+.casebook-closing,
+.island-storybook-ending {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  min-height: 0;
+  padding: 16px 18px;
+  overflow: hidden;
+}
+.casebook-closing-art,
+.island-storybook-ending > svg {
+  width: 100%;
+  height: min(23dvh, 165px);
+  overflow: hidden;
+  border: 1px solid var(--story-line);
+  border-radius: 8px;
+}
+.casebook-closing > span,
+.island-storybook-ending > span {
+  color: #e4bc7b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .14em;
+}
+.casebook-closing h1,
+.island-storybook-ending h1 {
+  margin: 0;
+  color: #f6e9d3;
+  font-family: Georgia, serif;
+  font-size: clamp(24px, 4vw, 34px);
+}
+.casebook-closing p,
+.island-storybook-ending p {
+  margin: 0;
+  color: #e0ddd2;
+  font-family: Georgia, serif;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.casebook-closing-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 9px 10px;
+  color: #d9c8a8;
+  background: rgba(229, 190, 125, .08);
+  border: 1px solid rgba(229, 190, 125, .22);
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.35;
+}
+.casebook-closing-note svg {
+  flex: 0 0 auto;
+  width: 16px;
+  color: #e2b976;
+}
+.casebook-closing button,
+.island-storybook-ending button {
+  margin-top: 4px;
+}
+.island-artifact-backdrop,
+.casebook-popup-backdrop {
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  padding: 16px;
+  background: rgba(4, 11, 15, .82);
+  backdrop-filter: blur(8px);
+}
+.island-artifact-sheet,
+.casebook-popup-sheet {
+  position: relative;
+  width: min(100%, 590px);
+  max-height: min(88dvh, 760px);
+  padding: 22px 21px 17px;
+  overflow: auto;
+  color: #302a27;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(180, 145, 95, .12), transparent 34%),
+    linear-gradient(135deg, #f1e7d2, #e6d9bd);
+  border: 1px solid rgba(255, 246, 221, .62);
+  border-radius: 10px;
+  box-shadow: 0 22px 80px rgba(0, 0, 0, .48);
+  overscroll-behavior: contain;
+}
+.island-artifact-close,
+.casebook-popup-close {
+  position: sticky;
+  top: 0;
+  float: right;
+  display: grid;
+  width: 31px;
+  height: 31px;
+  place-items: center;
+  color: #4d4138;
+  background: rgba(73, 55, 42, .08);
+  border: 1px solid rgba(73, 55, 42, .2);
+  border-radius: 50%;
+  cursor: pointer;
+}
+.island-artifact-close svg,
+.casebook-popup-close svg {
+  width: 16px;
+  height: 16px;
+}
+.island-artifact-type,
+.casebook-popup-type {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #8c6844;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.island-artifact-type svg,
+.casebook-popup-type svg {
+  width: 15px;
+}
+.island-artifact-sheet h2,
+.casebook-popup-sheet h2 {
+  clear: both;
+  margin: 13px 0 15px;
+  color: #302824;
+  font-family: Georgia, serif;
+  font-size: clamp(23px, 5vw, 32px);
+  line-height: 1.1;
+}
+.island-artifact-sheet p,
+.casebook-popup-copy p {
+  color: #51483d;
+  font-family: Georgia, serif;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.casebook-popup-sheet .casebook-scene-art {
+  height: auto;
+  max-height: 260px;
+  margin: 5px 0 14px;
+  border: 1px solid rgba(91, 68, 48, .25);
+  border-radius: 5px;
+}
+.island-artifact-footnote,
+.casebook-popup-foot {
+  display: block;
+  margin-top: 18px;
+  padding-top: 10px;
+  color: #987952;
+  border-top: 1px solid rgba(111, 85, 55, .2);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.island-storybook-ending {
+  align-items: stretch;
+  justify-content: center;
+}
+.island-storybook-ending > svg {
+  flex: 0 0 auto;
+  display: block;
+  width: 100%;
+  height: 180px;
+  border-radius: 8px;
+}
+@media (max-width: 700px) {
+  .island-storybook-page,
+  .casebook-page {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: clamp(76px, 14dvh, 112px) minmax(0, 1fr);
+  }
+  .island-storybook-side,
+  .casebook-side {
+    display: none;
+  }
+  .island-storybook-mobile-inventory {
+    display: grid;
+    flex: 0 0 21px;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px;
+    background: rgba(7, 24, 31, .36);
+    border: 1px solid rgba(226, 207, 172, .15);
+    border-radius: 5px;
+  }
+  .island-storybook-mobile-inventory > span {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: #d9dfd3;
+    font-size: 8px;
+  }
+  .island-storybook-mobile-inventory svg {
+    width: 10px;
+    height: 10px;
+    color: #e7bd78;
+  }
+  .island-storybook-mobile-inventory b {
+    font-size: 8px;
+  }
+  .island-storybook-reading,
+  .casebook-reading {
+    grid-column: 1;
+    grid-row: 2;
+    gap: 5px;
+    padding: 8px 10px 7px;
+  }
+  .island-storybook-reading h1,
+  .casebook-reading h1 {
+    font-size: clamp(18px, 5.2vw, 23px);
+  }
+  .island-storybook-prose,
+  .casebook-prose {
+    font-size: 11px;
+    line-height: 1.42;
+  }
+  .island-storybook-prose p,
+  .casebook-prose p {
+    margin-bottom: 6px;
+  }
+  .island-storybook-artifacts > div,
+  .island-storybook-choices > div,
+  .casebook-reader-choice > div {
+    gap: 5px;
+  }
+  .island-storybook-artifact,
+  .island-storybook-choices button,
+  .casebook-reader-choice button {
+    padding: 6px 7px;
+  }
+  .island-storybook-artifact strong,
+  .island-storybook-choices strong,
+  .casebook-reader-choice strong,
+  .casebook-insert-copy strong {
+    font-size: 9px;
+  }
+  .island-storybook-artifact small,
+  .island-storybook-choices small,
+  .casebook-reader-choice small,
+  .casebook-insert-copy small {
+    font-size: 8px;
+  }
+  .casebook-insert-list {
+    gap: 4px;
+  }
+  .casebook-insert-list button {
+    min-height: 53px;
+    padding: 6px 7px;
+  }
+  .casebook-insert-icon {
+    width: 21px;
+    height: 21px;
+  }
+  .casebook-controls {
+    gap: 5px;
+  }
+  .casebook-controls button,
+  .island-storybook-footer button {
+    min-height: 30px;
+    padding: 6px 8px;
+    font-size: 9px;
+  }
+  .casebook-controls > span,
+  .island-storybook-footer > span {
+    font-size: 7px;
+  }
+  .casebook-closing,
+  .island-storybook-ending {
+    padding: 12px;
+  }
+}
+@media (max-height: 720px) {
+  .island-storybook-header,
+  .casebook-header {
+    flex-basis: 30px;
+  }
+  .island-storybook-page,
+  .casebook-page {
+    grid-template-rows: 82px minmax(0, 1fr);
+  }
+  .island-storybook-reading,
+  .casebook-reading {
+    gap: 4px;
+    padding-top: 6px;
+    padding-bottom: 5px;
+  }
+  .island-storybook-prose,
+  .casebook-prose {
+    font-size: 10px;
+    line-height: 1.35;
+  }
+  .island-storybook-prose p,
+  .casebook-prose p {
+    margin-bottom: 5px;
+  }
+  .island-storybook-artifact,
+  .island-storybook-choices button,
+  .casebook-reader-choice button {
+    min-height: 46px;
+  }
+  .casebook-insert-list button {
+    min-height: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .island-storybook-game *,
+  .casebook-experience * {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+
+/* Os livros substituem a barra de contexto e ocupam a área inteira de jogo. */
+.game-world-main.stage-play:has(.island-storybook-game),
+.game-world-main.stage-play:has(.casebook-experience) {
+  height: calc(100dvh - 54px) !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.game-world-main.stage-play:has(.island-storybook-game) .game-session-context,
+.game-world-main.stage-play:has(.casebook-experience) .game-session-context {
+  display: none !important;
+}
+.game-world-main.stage-play:has(.island-storybook-game) .game-session-stage,
+.game-world-main.stage-play:has(.casebook-experience) .game-session-stage {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+.game-world-main.stage-play:has(.island-storybook-game) .game-play-surface,
+.game-world-main.stage-play:has(.casebook-experience) .game-play-surface {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+.game-world .game-play-surface:has(.island-storybook-game),
+.game-world .game-play-surface:has(.casebook-experience) {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
