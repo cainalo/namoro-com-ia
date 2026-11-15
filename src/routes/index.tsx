@@ -18,6 +18,8 @@ import { Component, Fragment, useCallback, useEffect, useRef, useState, type Err
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
+import { GameInvitationCenter } from "@/components/GameInvitationCenter";
+import type { OnlineGameLaunch } from "@/lib/game-invitations";
 import { FirstAccessGate } from "@/components/FirstAccessFlow";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
@@ -121,6 +123,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeSection, setActiveSection] = useState<SectionId>("home");
+  const [onlineGameLaunch, setOnlineGameLaunch] = useState<OnlineGameLaunch | null>(null);
   const sectionHistory = useRef<SectionId[]>([]);
   const activeSectionRef = useRef<SectionId>("home");
   const chromeHidden = useHideOnScroll(activeSection);
@@ -145,6 +148,13 @@ function Index() {
   }, []);
 
   const openConversation = useCallback(() => goToSection("messages"), [goToSection]);
+
+  const openInvitedOnlineGame = useCallback((launch: OnlineGameLaunch) => {
+    setOnlineGameLaunch(launch);
+    goToSection("games");
+  }, [goToSection]);
+
+  const clearOnlineGameLaunch = useCallback(() => setOnlineGameLaunch(null), []);
 
   useEffect(() => {
     let start: { x: number; y: number } | null = null;
@@ -313,7 +323,7 @@ function Index() {
                   onCloseComposerPage={goBack}
                 />
               ) : activeSection === "games" ? (
-                <div data-tour-target="tour-games" className="tour-anchor"><CoupleGames userId={session.user.id} onNavigate={goToSection} /></div>
+                <div data-tour-target="tour-games" className="tour-anchor"><CoupleGames userId={session.user.id} onNavigate={goToSection} onlineLaunch={onlineGameLaunch} onOnlineLaunchConsumed={clearOnlineGameLaunch} /></div>
               ) : activeSection === "profile" ? (
                 <div className="tour-anchor"><CoupleProfile userId={session.user.id} /></div>
               ) : activeSection === "universe" ? (
@@ -371,6 +381,7 @@ function Index() {
           )}
 
           {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
+          <GameInvitationCenter userId={session.user.id} onOpenGame={openInvitedOnlineGame} />
         </div>
         </FirstAccessGate>
       )}
