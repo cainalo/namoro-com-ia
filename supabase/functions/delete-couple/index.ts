@@ -140,12 +140,13 @@ Deno.serve(async (request: Request) => {
 
     // First commit the account and relational-data deletion. A transient database
     // failure must never destroy stored media while leaving the accounts active.
-    const { data: deletion, error: deletionError } = await admin.rpc<DeletionResult>(
+    const { data: deletion, error: deletionError } = await admin.rpc(
       "delete_couple_account_bundle",
       { p_actor_id: authData.user.id },
     );
+    const deletionResult = deletion as DeletionResult | null;
 
-    if (deletionError || deletion?.ok !== true) {
+    if (deletionError || deletionResult?.ok !== true) {
       console.error("[delete-couple] Database erasure failed:", deletionError?.message ?? "unexpected RPC result");
       return jsonResponse(500, {
         ok: false,
@@ -153,8 +154,8 @@ Deno.serve(async (request: Request) => {
       });
     }
 
-    const coupleIds = Array.isArray(deletion.deleted_couple_ids)
-      ? deletion.deleted_couple_ids.filter((id): id is string => typeof id === "string")
+    const coupleIds = Array.isArray(deletionResult.deleted_couple_ids)
+      ? deletionResult.deleted_couple_ids.filter((id): id is string => typeof id === "string")
       : [];
 
     // Media removal happens only after the database confirms the account erasure.
