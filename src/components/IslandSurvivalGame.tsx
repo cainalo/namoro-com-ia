@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import { GameVictoryScreen, useGameAudio } from "@/components/GameExperience";
+import { advanceIslandTutorial, islandTutorialProgress, type IslandTutorialStep } from "@/lib/island-survival-tutorial";
 
 type Weather = "clear" | "rain" | "storm" | "heat" | "cold";
 type ZoneId = "beach" | "forest" | "stream" | "wreck" | "cave" | "ridge";
@@ -30,12 +31,15 @@ type SurvivalState = {
   eventResolved: boolean;
   log: string[];
   ending: string;
+  /** Guided chapter is stored in the match state so both devices stay in step. */
+  tutorialStep?: IslandTutorialStep;
 };
 const MAX_HEALTH = 5;
 const RESOURCE_LIMIT = 18;
 const initial: SurvivalState = {
   day: 1,
   phase: "action",
+  tutorialStep: "story",
   weather: "clear",
   resources: { food: 6, water: 6, wood: 3, cloth: 1, metal: 0, medicine: 1, rope: 0 },
   health: [5, 5],
@@ -112,6 +116,9 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
   });
   const [notice, setNotice] = useState("");
   const { play } = useGameAudio();
+  // Existing saves created before the guided campaign remain in free-play mode.
+  const tutorialStep: IslandTutorialStep = game.tutorialStep ?? "free";
+  const guided = tutorialStep !== "free";
   const weather = weatherInfo[game.weather];
   const WeatherIcon = weather.icon;
   const selectedZone = zones.find((zone) => zone.id === game.selectedZone) ?? zones[0];
@@ -149,6 +156,7 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
 
   function explore() {
     if (game.phase !== "action" || game.actionsLeft <= 0) return;
+    if (guided && tutorialStep !== "forage") return;
     const next = copyState(game);
     const zone = selectedZone.id;
     const alreadyFound = next.discovered.includes(zone);
@@ -157,6 +165,7 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
       case "beach":
         next.resources.food = clamp(next.resources.food + 2);
         next.resources.wood = clamp(next.resources.wood + 1);
+        if (tutorialStep === "forage") next.tutorialStep = advanceIslandTutorial(tutorialStep, "forage");
         spendAction(next, "A maré baixa revelou mariscos e tábuas que ainda podem ser aproveitadas.");
         break;
       case "forest":
@@ -191,12 +200,16 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
 
   function discoverZone(zone: ZoneId) {
     if (game.phase !== "action" || game.actionsLeft <= 0 || game.discovered.includes(zone)) return;
+    if (tutorialStep === "water" && zone !== "stream") return;
+    if (tutorialStep === "forest" && zone !== "forest") return;
+    if (tutorialStep === "wreck" && zone !== "wreck") return;
+    if (guided && !["water", "forest", "wreck"].includes(tutorialStep)) return;
     const next = copyState(game);
     next.discovered.push(zone);
     next.selectedZone = zone;
     const reward: Record<ZoneId, Partial<Resources>> = {
       beach: { food: 2, wood: 1 },
-      forest: { food: 2, rope: 1 },
+      forest: { food: 2, wood: 1, rope: 1 },
       stream: { water: 3, medicine: 1 },
       wreck: { metal: 2, cloth: 1 },
       cave: { medicine: 1, wood: 1 },
@@ -205,11 +218,15 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
     Object.entries(reward[zone]).forEach(([key, value]) => {
       next.resources[key as keyof Resources] = clamp(next.resources[key as keyof Resources] + (value ?? 0));
     });
+    if (tutorialStep === "water" && zone === "stream") next.tutorialStep = advanceIslandTutorial(tutorialStep, "water");
+    if (tutorialStep === "forest" && zone === "forest") next.tutorialStep = advanceIslandTutorial(tutorialStep, "forest");
+    if (tutorialStep === "wreck" && zone === "wreck") next.tutorialStep = advanceIslandTutorial(tutorialStep, "wreck");
     spendAction(next, "Nova região descoberta: " + zones.find((item) => item.id === zone)?.name + ". Suprimentos foram recolhidos.", "discovery");
   }
 
   function perform(action: "water" | "craft" | "fire" | "signal" | "raft" | "rest" | "treat") {
     if (game.phase !== "action" || game.actionsLeft <= 0) return;
+    if (guided && !((tutorialStep === "shelter" && action === "craft") || (tutorialStep === "signal" && action === "signal"))) return;
     const next = copyState(game);
     const r = next.resources;
     let message = "";
@@ -240,6 +257,14 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
       if (r.medicine < 1) { setNotice("Não há remédios no inventário."); return; }
       r.medicine -= 1; next.health = [Math.min(MAX_HEALTH, next.health[0] + 2), Math.min(MAX_HEALTH, next.health[1] + 2)];
       message = "O kit médico foi usado. Os dois sobreviventes recuperaram saúde.";
+    }
+    if (tutorialStep === "shelter" && action === "craft") {
+      next.tutorialStep = advanceIslandTutorial(tutorialStep, "shelter");
+      // The tutorial deliberately ends the first day after this first craft.
+      next.actionsLeft = 1;
+    }
+    if (tutorialStep === "signal" && action === "signal") {
+      next.tutorialStep = advanceIslandTutorial(tutorialStep, "signal");
     }
     spendAction(next, message, action === "rest" || action === "treat" ? "success" : "move");
   }
@@ -319,6 +344,16 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
     if (next.health.every((hp) => hp <= 0) || next.morale <= 0) {
       next.phase = "lost";
       next.ending = "A equipe perdeu as forças antes de concluir o plano de resgate.";
+    } else if (tutorialStep === "night") {
+      // First night is a safe, narrated transition into the next lesson.
+      next.tutorialStep = advanceIslandTutorial(tutorialStep, "night");
+      next.day = 2;
+      next.weather = weatherByDay[next.day - 1] ?? "clear";
+      next.actionsLeft = 4;
+      next.phase = "action";
+      next.event = null;
+      next.eventResolved = true;
+      next.log = ["Dia 2 · A primeira noite passou. Agora vocês precisam ampliar a área explorada.", ...next.log];
     } else if (next.day >= 7) {
       next.phase = next.beacon >= 4 || next.raft >= 3 ? "won" : "lost";
       next.ending = next.phase === "won"
@@ -341,7 +376,7 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
 
   function restart() {
     setGame(initial);
-    setNotice("A expedição recomeçou. Planejem bem os quatro movimentos de cada dia.");
+    setNotice("A expedição recomeçou. A história e o tutorial serão apresentados novamente.");
     play("tap");
   }
 
@@ -361,7 +396,143 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
 
       {game.phase !== "won" && game.phase !== "lost" && (
         <>
-          <header className="survival-expedition-hero">
+          {tutorialStep === "story" ? (
+            <section className="survival-story-screen" aria-labelledby="survival-story-title">
+              <div className="survival-story-art" aria-hidden="true">
+                <span className="survival-story-sun">☀</span>
+                <span className="survival-story-cloud">☁</span>
+                <span className="survival-story-boat">⛵</span>
+                <span className="survival-story-island">🌴</span>
+                <span className="survival-story-waves">🌊　🌊　🌊</span>
+              </div>
+              <div className="survival-story-copy">
+                <span className="survival-kicker">PRÓLOGO · DEPOIS DA TEMPESTADE</span>
+                <h2 id="survival-story-title">Ilha do Último Sinal</h2>
+                <p className="survival-story-lead">A viagem era para ser tranquila. Mas uma tempestade mudou tudo.</p>
+                <p>Durante a travessia, o barco de Lia e Noah foi atingido por ondas enormes. O rádio parou, o motor apagou e a embarcação foi arrastada até uma ilha que não aparece nas cartas náuticas.</p>
+                <p>Quando o céu clareou, os dois estavam vivos — mas sozinhos, sem comunicação e com poucos suprimentos. O casco ficou preso nos recifes. A próxima equipe de busca só poderá passar pela região dentro de sete dias.</p>
+                <div className="survival-story-dialogue">
+                  <p><strong>Lia · Navegadora</strong><span>“A praia parece segura. Precisamos descobrir o que a maré deixou antes que escureça.”</span></p>
+                  <p><strong>Noah · Mecânico</strong><span>“O rádio talvez tenha conserto. Mas primeiro precisamos de água, comida e um abrigo.”</span></p>
+                </div>
+                <div className="survival-story-goal">
+                  <Radio aria-hidden="true" />
+                  <div><strong>Missão de vocês</strong><span>Sobreviver, explorar a ilha e conseguir enviar um sinal de resgate antes do sétimo dia.</span></div>
+                </div>
+                <button type="button" className="survival-tutorial-primary" onClick={() => {
+                  setGame((current) => ({ ...copyState(current), tutorialStep: advanceIslandTutorial("story", "begin") }));
+                  setNotice("Lia e Noah acordaram na praia. Vamos começar pelo mais importante: encontrar suprimentos.");
+                  play("discovery");
+                }}>
+                  Começar a história <ChevronRight aria-hidden="true" />
+                </button>
+                <p className="survival-story-footnote">Vocês vão aprender jogando. Cada nova ferramenta aparece somente quando chegar a hora de usá-la.</p>
+              </div>
+            </section>
+          ) : tutorialStep !== "free" ? (
+            <section className="survival-tutorial-screen" aria-labelledby="survival-tutorial-title">
+              <div className="survival-tutorial-head">
+                <div><span className="survival-kicker">TUTORIAL GUIADO · DIA {game.day}</span><span className="survival-tutorial-count">ETAPA {ISLAND_TUTORIAL_ORDER.indexOf(tutorialStep) + 1} DE 7</span></div>
+                <div className="survival-tutorial-track"><span style={{ width: islandTutorialProgress(tutorialStep) + "%" }} /></div>
+              </div>
+              <div className="survival-tutorial-scene" aria-hidden="true">
+                <span className="survival-tutorial-scene-symbol">
+                  {tutorialStep === "forage" ? "🪵" :
+                    tutorialStep === "water" ? "💧" :
+                    tutorialStep === "shelter" ? "⛺" :
+                    tutorialStep === "night" ? "🌙" :
+                    tutorialStep === "forest" ? "🌳" :
+                    tutorialStep === "wreck" ? "⚓" : "📻"}
+                </span>
+                <span className="survival-tutorial-scene-caption">
+                  {tutorialStep === "forage" ? "PRAIA DO NAUFRÁGIO" :
+                    tutorialStep === "water" ? "BUSCA POR ÁGUA POTÁVEL" :
+                    tutorialStep === "shelter" ? "PRIMEIRO ACAMPAMENTO" :
+                    tutorialStep === "night" ? "A PRIMEIRA NOITE" :
+                    tutorialStep === "forest" ? "MATA FECHADA" :
+                    tutorialStep === "wreck" ? "CASCO PARTIDO" : "RÁDIO DE EMERGÊNCIA"}
+                </span>
+              </div>
+              <div className="survival-tutorial-copy">
+                <span className="survival-kicker">APRENDA UMA COISA DE CADA VEZ</span>
+                <h2 id="survival-tutorial-title">
+                  {tutorialStep === "forage" ? "Primeiro: procure suprimentos" :
+                    tutorialStep === "water" ? "Água vem antes de tudo" :
+                    tutorialStep === "shelter" ? "Agora, protejam o acampamento" :
+                    tutorialStep === "night" ? "É hora de atravessar a noite" :
+                    tutorialStep === "forest" ? "A ilha é maior do que parece" :
+                    tutorialStep === "wreck" ? "Talvez o barco ainda ajude" : "Vamos tentar pedir socorro"}
+                </h2>
+                <p>
+                  {tutorialStep === "forage" ? "A maré baixou e deixou tábuas, caixas e mariscos na areia. Toquem no botão abaixo para vasculhar a praia. Essa ação consome um movimento do dia e mostra como uma exploração funciona." :
+                    tutorialStep === "water" ? "Comida ajuda, mas sem água vocês não resistem. A nascente fica escondida atrás das pedras. Nesta etapa, o mapa ainda mostra apenas esse destino: descubram a região para recolher água e plantas medicinais." :
+                    tutorialStep === "shelter" ? "Vocês já têm madeira e tecido suficientes para reforçar o abrigo. Construir consome materiais e um movimento. Um abrigo melhor protege os sobreviventes quando o tempo piorar." :
+                    tutorialStep === "night" ? "Cada noite consome comida e água. Se faltar qualquer um dos dois, a saúde e o ânimo diminuem. Vocês já prepararam um abrigo; agora avancem para ver como o dia termina." :
+                    tutorialStep === "forest" ? "Com o primeiro dia concluído, novas áreas podem ser exploradas. A mata fornece comida, madeira e cipós para fazer cordas. Por enquanto, vamos descobrir somente essa região." :
+                    tutorialStep === "wreck" ? "O casco partido guarda peças de metal e tecido. Elas serão importantes para consertar o rádio ou construir uma balsa. Investiguem o navio para aprender a obter materiais especiais." :
+                    "O rádio está danificado, mas vocês encontraram metal e madeira. Usem os materiais para fazer o primeiro reparo. Depois disso, o tutorial termina e o mapa e as ações estarão todos disponíveis."}
+                </p>
+                <div className="survival-tutorial-hint">
+                  <Sparkles aria-hidden="true" />
+                  <span>
+                    {tutorialStep === "forage" ? "Dica: vocês não precisam escolher entre várias ações ainda. Façam apenas esta primeira busca." :
+                      tutorialStep === "water" ? "Dica: regiões desconhecidas só serão reveladas quando vocês explorarem o local." :
+                      tutorialStep === "shelter" ? "Dica: observem os materiais pedidos antes de confirmar uma construção." :
+                      tutorialStep === "night" ? "Dica: comida e água são consumidas automaticamente ao passar a noite." :
+                      tutorialStep === "forest" ? "Dica: cada região descoberta passa a fazer parte do mapa permanente da expedição." :
+                      tutorialStep === "wreck" ? "Dica: recursos diferentes aparecem em lugares diferentes. Explorar é essencial." :
+                      "Dica: o rádio precisa de metal e madeira. Mais tarde, vocês poderão completar os quatro reparos."}
+                  </span>
+                </div>
+                {tutorialStep !== "night" && (
+                  <div className="survival-tutorial-resources" aria-label="Materiais disponíveis">
+                    {(tutorialStep === "forage" ? [["Comida", game.resources.food], ["Madeira", game.resources.wood]] :
+                      tutorialStep === "water" ? [["Água", game.resources.water], ["Remédios", game.resources.medicine]] :
+                      tutorialStep === "shelter" ? [["Madeira", game.resources.wood], ["Tecido", game.resources.cloth]] :
+                      tutorialStep === "forest" ? [["Comida", game.resources.food], ["Madeira", game.resources.wood], ["Corda", game.resources.rope]] :
+                      tutorialStep === "wreck" ? [["Metal", game.resources.metal], ["Tecido", game.resources.cloth]] :
+                      [["Metal", game.resources.metal], ["Madeira", game.resources.wood], ["Sinal", game.beacon + "/4"]]
+                    ).map(([label, value]) => <span key={label}><small>{label}</small><strong>{value}</strong></span>)}
+                  </div>
+                )}
+                {tutorialStep === "night" && (
+                  <div className="survival-tutorial-night-summary">
+                    <span><Utensils aria-hidden="true"/> Comida disponível: <strong>{game.resources.food}</strong></span>
+                    <span><Droplets aria-hidden="true"/> Água disponível: <strong>{game.resources.water}</strong></span>
+                    <span><Tent aria-hidden="true"/> Proteção do abrigo: <strong>{game.shelter}/3</strong></span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="survival-tutorial-primary"
+                  disabled={
+                    (tutorialStep === "shelter" && (game.resources.wood < 3 || game.resources.cloth < 1)) ||
+                    (tutorialStep === "signal" && (game.resources.metal < 1 || game.resources.wood < 1))
+                  }
+                  onClick={() => {
+                    if (tutorialStep === "forage") explore();
+                    else if (tutorialStep === "water") discoverZone("stream");
+                    else if (tutorialStep === "shelter") perform("craft");
+                    else if (tutorialStep === "night") resolveNight();
+                    else if (tutorialStep === "forest") discoverZone("forest");
+                    else if (tutorialStep === "wreck") discoverZone("wreck");
+                    else if (tutorialStep === "signal") perform("signal");
+                  }}
+                >
+                  {tutorialStep === "forage" ? "Vasculhar a praia" :
+                    tutorialStep === "water" ? "Encontrar a nascente" :
+                    tutorialStep === "shelter" ? "Reforçar o abrigo" :
+                    tutorialStep === "night" ? "Atravessar a primeira noite" :
+                    tutorialStep === "forest" ? "Explorar a mata" :
+                    tutorialStep === "wreck" ? "Investigar o casco" : "Reparar o rádio"}
+                  <ChevronRight aria-hidden="true" />
+                </button>
+                {notice && <p className="survival-tutorial-notice" role="status">{notice}</p>}
+              </div>
+            </section>
+          ) : (
+            <>
+              <header className="survival-expedition-hero">
             <div className="survival-expedition-top">
               <div><span className="survival-kicker">SOBREVIVÊNCIA · DIA {game.day}/7</span><h2>Ilha do Último Sinal</h2><p>Um plano de resgate, dois sobreviventes e recursos que não podem ser desperdiçados.</p></div>
               <div className="survival-weather"><WeatherIcon/><strong>{weather.title}</strong><small>{weather.detail}</small></div>
@@ -459,6 +630,8 @@ export function IslandSurvivalGame({ solo = false }: { solo?: boolean }) {
           <div className="survival-chronicle"><div className="survival-section-heading"><div><span className="survival-kicker">DIÁRIO DE BORDO</span><h3>O que já aconteceu</h3></div></div>{game.log.map((entry, index) => <p key={index}><span>{String(game.log.length - index).padStart(2, "0")}</span>{entry}</p>)}</div>
           {notice && <p className="survival-notice" role="status">{notice}</p>}
           <footer className="survival-footer"><span>{sync.online ? "Campanha compartilhada entre os dois aparelhos." : solo ? "Você comanda os dois sobreviventes." : "Duas pessoas · mesmo aparelho."}</span><button type="button" onClick={restart}><RotateCcw/> Reiniciar campanha</button></footer>
+            </>
+          )}
         </>
       )}
     </section>

@@ -29830,3 +29830,320 @@ html[data-morados-game-open="true"] .app-main,html[data-morados-game-open="true"
 .game-world .game-play-surface .escape-room-scene::after{
   background:none!important;
 }
+
+
+/* Campanha guiada da Ilha do Último Sinal: uma decisão clara por etapa. */
+.game-play-surface .survival-story-screen,
+.game-play-surface .survival-tutorial-screen {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  overflow: hidden;
+  border: 2px solid #e3bd68;
+  border-radius: 24px;
+  background: #f8f1df;
+  color: #173e43;
+  box-shadow: 0 18px 48px rgb(5 25 28 / 22%);
+}
+.game-play-surface .survival-story-art {
+  position: relative;
+  display: flex;
+  min-height: 205px;
+  align-items: flex-end;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 18px 22px;
+  background: #78c7c8;
+}
+.survival-story-sun {
+  position: absolute;
+  top: 17px;
+  right: 42px;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffd15b;
+  color: #8e5b24;
+  font-size: 30px;
+}
+.survival-story-cloud {
+  position: absolute;
+  top: 17px;
+  left: 36px;
+  color: #fff8e7;
+  font-size: 40px;
+}
+.survival-story-boat {
+  position: absolute;
+  right: 28%;
+  bottom: 48px;
+  z-index: 2;
+  font-size: 61px;
+  transform: rotate(-7deg);
+}
+.survival-story-island {
+  position: absolute;
+  bottom: 42px;
+  left: 16%;
+  z-index: 2;
+  display: grid;
+  width: 116px;
+  height: 62px;
+  place-items: center;
+  border-radius: 60% 60% 18% 18%;
+  background: #67915d;
+  font-size: 54px;
+}
+.survival-story-waves {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: block;
+  padding: 7px 0 4px;
+  background: #227e93;
+  color: #c2eff0;
+  font-size: 31px;
+  letter-spacing: 3px;
+  text-align: center;
+  white-space: nowrap;
+}
+.survival-story-copy,
+.survival-tutorial-copy {
+  display: grid;
+  gap: 13px;
+  padding: clamp(18px, 4vw, 30px);
+}
+.survival-story-copy h2,
+.survival-tutorial-copy h2 {
+  margin: 0;
+  color: #174b50;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(25px, 5vw, 37px);
+  line-height: 1.08;
+  letter-spacing: -.04em;
+}
+.survival-story-copy > p,
+.survival-tutorial-copy > p {
+  max-width: 62ch;
+  margin: 0;
+  color: #476368;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.survival-story-copy .survival-story-lead {
+  color: #1d6064;
+  font-size: 16px;
+  font-weight: 850;
+  line-height: 1.45;
+}
+.survival-story-dialogue {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 3px;
+}
+.survival-story-dialogue p {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  border: 2px solid #d9c18c;
+  border-radius: 15px;
+  background: #fff9e9;
+  padding: 12px;
+}
+.survival-story-dialogue p:nth-child(2) {
+  border-color: #a7c8c1;
+  background: #e5f3ec;
+}
+.survival-story-dialogue strong {
+  color: #a25a35;
+  font-size: 11px;
+  font-weight: 900;
+}
+.survival-story-dialogue p:nth-child(2) strong { color: #246d69; }
+.survival-story-dialogue span {
+  color: #3f5d5e;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.survival-story-goal {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid #81b7b1;
+  border-radius: 15px;
+  background: #dcefea;
+  padding: 13px;
+}
+.survival-story-goal > svg {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  color: #17666a;
+}
+.survival-story-goal div { display: grid; gap: 3px; }
+.survival-story-goal strong { color: #185a5d; font-size: 12px; }
+.survival-story-goal span { color: #426466; font-size: 11px; line-height: 1.5; }
+.game-play-surface .survival-tutorial-screen { border-color: #6fb7a5; }
+.survival-tutorial-head {
+  display: grid;
+  gap: 10px;
+  background: #175f62;
+  padding: 15px 19px;
+  color: #fff;
+}
+.survival-tutorial-head > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.survival-tutorial-count {
+  border-radius: 999px;
+  background: #f2cd68;
+  padding: 5px 9px;
+  color: #4c432a;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .08em;
+}
+.survival-tutorial-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #0d474c;
+}
+.survival-tutorial-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffd15b;
+  transition: width 300ms ease;
+}
+.survival-tutorial-scene {
+  display: flex;
+  min-height: 116px;
+  align-items: center;
+  justify-content: center;
+  gap: 19px;
+  background: #c4e3da;
+  padding: 15px;
+}
+.survival-tutorial-scene-symbol {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  border: 3px solid #fff9e9;
+  border-radius: 22px;
+  background: #f4d27d;
+  box-shadow: 0 5px 0 #c89e4d;
+  font-size: 44px;
+}
+.survival-tutorial-scene-caption {
+  max-width: 150px;
+  color: #24575a;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: .12em;
+  line-height: 1.5;
+}
+.survival-tutorial-copy { gap: 12px; }
+.survival-tutorial-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  border: 2px solid #e7c36f;
+  border-radius: 13px;
+  background: #fff2c9;
+  padding: 11px 12px;
+  color: #73542c;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.survival-tutorial-hint svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  margin-top: 1px;
+  color: #a76a2f;
+}
+.survival-tutorial-resources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.survival-tutorial-resources span {
+  display: grid;
+  min-width: 72px;
+  gap: 2px;
+  border: 1px solid #b9d2c8;
+  border-radius: 11px;
+  background: #e5f1e9;
+  padding: 7px 11px;
+}
+.survival-tutorial-resources small {
+  color: #53706a;
+  font-size: 9px;
+  font-weight: 800;
+}
+.survival-tutorial-resources strong {
+  color: #1b635b;
+  font-family: "Fraunces", Georgia, serif;
+  font-size: 19px;
+}
+.survival-tutorial-night-summary {
+  display: grid;
+  gap: 8px;
+  border-radius: 13px;
+  background: #e2eee7;
+  padding: 12px;
+}
+.survival-tutorial-night-summary span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #42645d;
+  font-size: 11px;
+}
+.survival-tutorial-night-summary svg { width: 15px; height: 15px; color: #287b76; }
+.survival-tutorial-night-summary strong { margin-left: auto; color: #175f62; }
+.survival-tutorial-primary {
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: #e96f45;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 950;
+  box-shadow: 0 4px 0 #b94c31;
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+.survival-tutorial-primary:active { transform: translateY(2px); box-shadow: 0 2px 0 #b94c31; }
+.survival-tutorial-primary:disabled { opacity: .45; cursor: not-allowed; }
+.survival-story-footnote,
+.survival-tutorial-notice {
+  margin: 0;
+  color: #70837d;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: center;
+}
+@media (max-width: 560px) {
+  .game-play-surface .survival-story-screen,
+  .game-play-surface .survival-tutorial-screen { border-radius: 17px; }
+  .game-play-surface .survival-story-art { min-height: 165px; }
+  .survival-story-boat { right: 22%; bottom: 44px; font-size: 50px; }
+  .survival-story-island { left: 8%; width: 95px; height: 53px; font-size: 46px; }
+  .survival-story-dialogue { grid-template-columns: 1fr; }
+  .survival-tutorial-scene { min-height: 95px; }
+  .survival-tutorial-scene-symbol { width: 63px; height: 63px; font-size: 36px; }
+}
