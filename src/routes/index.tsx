@@ -18,6 +18,7 @@ import { Component, Fragment, useCallback, useEffect, useRef, useState, type Err
 import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
+import { FirstAccessGate } from "@/components/FirstAccessFlow";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
 import { CoupleFeed } from "@/components/CoupleFeed";
@@ -231,6 +232,11 @@ function Index() {
   return (
     <AuthGate>
       {(session) => (
+        <FirstAccessGate
+          userId={session.user.id}
+          initialName={typeof session.user.user_metadata?.full_name === "string" ? session.user.user_metadata.full_name : ""}
+          onNavigate={goToSection}
+        >
         <div
           className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : activeSection === "create-post" ? "is-post-composer-mode" : ""}`}
         >
@@ -240,6 +246,7 @@ function Index() {
                 <div className="app-topbar">
                   <div className="topbar-inner">
                     <div className="topbar-side topbar-side-leading">
+                      <div data-tour-target="tour-menu" className="tour-anchor">
                       <InlineMenu
                         label="Abrir menu de navegação"
                         trigger={<Menu aria-hidden="true" />}
@@ -264,6 +271,7 @@ function Index() {
                           </>
                         )}
                       </InlineMenu>
+                      </div>
                     </div>
 
                     <button type="button" className="topbar-wordmark" onClick={goHome} aria-label="Morados — voltar ao Feed" title="Feed">
@@ -293,7 +301,7 @@ function Index() {
 
           <main className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
             {activeSection === "messages" ? (
-              <ConversationGuard onBack={goBack}><CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} /></ConversationGuard>
+              <div data-tour-target="tour-messages" className="tour-anchor"><ConversationGuard onBack={goBack}><CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} /></ConversationGuard></div>
             ) : (
               <div className="page-frame">
               {activeSection === "home" || activeSection === "create-post" ? (
@@ -305,15 +313,15 @@ function Index() {
                   onCloseComposerPage={goBack}
                 />
               ) : activeSection === "games" ? (
-                <CoupleGames userId={session.user.id} onNavigate={goToSection} />
+                <div data-tour-target="tour-games" className="tour-anchor"><CoupleGames userId={session.user.id} onNavigate={goToSection} /></div>
               ) : activeSection === "profile" ? (
-                <CoupleProfile userId={session.user.id} />
+                <div data-tour-target="tour-profile" className="tour-anchor"><CoupleProfile userId={session.user.id} /></div>
               ) : activeSection === "universe" ? (
-                <CoupleHouse />
+                <div data-tour-target="tour-house" className="tour-anchor"><CoupleHouse /></div>
               ) : activeSection === "organize" ? (
-                <CouplePlans userId={session.user.id} />
+                <div data-tour-target="tour-plans" className="tour-anchor"><CouplePlans userId={session.user.id} /></div>
               ) : activeSection === "memories" ? (
-                <CoupleMemories userId={session.user.id} />
+                <div data-tour-target="tour-memories" className="tour-anchor"><CoupleMemories userId={session.user.id} /></div>
               ) : null}
               </div>
             )}
@@ -340,6 +348,7 @@ function Index() {
               <button
                 type="button"
                 className="mobile-nav-create"
+                data-tour-target="tour-create-post"
                 onClick={() => goToSection("create-post")}
                 aria-label="Criar publicação"
                 title="Criar publicação"
@@ -363,6 +372,7 @@ function Index() {
 
           {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
         </div>
+        </FirstAccessGate>
       )}
     </AuthGate>
   );
@@ -441,7 +451,7 @@ function HomeScreen({
   onCloseComposerPage: () => void;
 }) {
   return (
-    <div className="home-screen">
+    <div className="home-screen tour-anchor" data-tour-target="tour-feed">
       <CoupleFeed
         userId={userId}
         onNavigate={onNavigate}
