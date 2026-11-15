@@ -241,13 +241,14 @@ function Index() {
               <header className="app-chrome" data-hidden={chromeHidden}>
                 <div className="app-topbar">
                   <div className="topbar-inner">
-                    <div className="topbar-side topbar-side-leading" data-tour-target="menu-button">
+                    <div className="topbar-side topbar-side-leading">
                       <InlineMenu
                         label="Abrir menu de navegação"
                         trigger={<Menu aria-hidden="true" />}
                         triggerClassName="topbar-icon-button"
                         menuClassName="nc-menu morados-nav-menu"
                         align="start"
+                        triggerDataTourTarget="menu-button"
                       >
                         {(close) => (
                           <>
