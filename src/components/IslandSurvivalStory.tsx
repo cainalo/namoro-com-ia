@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Anchor, ArrowRight, BookOpen, Check, Compass, Droplets, FileText, HeartPulse, Package, Radio, Sparkles, Trees, Wrench, X } from "lucide-react";
+import { Anchor, ArrowRight, BookOpen, Check, Droplets, FileText, HeartPulse, Package, Radio, Sparkles, Trees, Wrench, X } from "lucide-react";
 import { useGameState } from "@/components/OnlineGameHost";
 import "./StoryGames.css";
 
