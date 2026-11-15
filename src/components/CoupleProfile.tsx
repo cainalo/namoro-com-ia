@@ -191,7 +191,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
         <div className="flex min-h-48 items-center justify-center gap-3 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> Carregando perfil…</div>
       ) : profile ? (
         <>
-          <div className="profile-cover">
+          <div className="profile-cover" data-tour-target="profile-cover">
             {bannerUrl && <img src={bannerUrl} alt="" />}
             <label className="profile-upload-button profile-edit-cover"><ImagePlus className="h-4 w-4" aria-hidden="true" /> Alterar banner
               <input className="sr-only" type="file" accept="image/*" disabled={uploading !== null} onChange={(event) => void uploadImage("banner", event)} />
