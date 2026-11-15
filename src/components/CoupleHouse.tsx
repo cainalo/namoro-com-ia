@@ -260,7 +260,7 @@ export function CoupleHouse() {
           aria-hidden="true"
         />
 
-        <div className="house-map-hotspots" role="group" aria-label="Locais do terreno">
+        <div className="house-map-hotspots" data-tour-target="house-map-hotspots" role="group" aria-label="Locais do terreno">
           {houseLocations.map((location) => (
             <button
               key={location.id}
