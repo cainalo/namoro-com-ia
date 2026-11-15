@@ -264,9 +264,9 @@ function renderInlineReferences(
   artifacts: Map<string, Artifact>,
   onOpen: (artifact: Artifact) => void,
 ) {
-  const parts = paragraph.split(/(\\[\\[[a-z0-9-]+\\|[^\\]]+\\]\\])/g);
+  const parts = paragraph.split(/(\[\[[a-z0-9-]+\|[^\]]+\]\])/g);
   return parts.map((part, index) => {
-    const match = part.match(/^\\[\\[([^|]+)\\|([^\\]]+)\\]\\]$/);
+    const match = part.match(/^\[\[([^|]+)\|([^\]]+)\]\]$/);
     if (!match) return part;
     const artifact = artifacts.get(match[1]);
     if (!artifact) return match[2];
