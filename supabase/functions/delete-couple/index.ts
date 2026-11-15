@@ -155,6 +155,7 @@ Deno.serve(async (request: Request) => {
     return jsonResponse(405, { ok: false, error: "Método não permitido." });
   }
 
+  let mediaCleanupSucceeded = false;
   try {
     const authorization = request.headers.get("Authorization") ?? "";
     const accessToken = authorization.match(/^Bearer\s+(.+)$/i)?.[1];
@@ -200,6 +201,7 @@ Deno.serve(async (request: Request) => {
         error: "A remoção dos anexos não foi concluída. Alguns arquivos podem já ter sido removidos, mas as contas e os demais dados continuam preservados. Tente novamente.",
       });
     }
+    mediaCleanupSucceeded = true;
 
     const { data: deletion, error: deletionError } = await admin.rpc(
       "delete_couple_account_bundle",
@@ -218,6 +220,13 @@ Deno.serve(async (request: Request) => {
     return jsonResponse(200, { ok: true });
   } catch (error) {
     console.error("[delete-couple] Request failed:", error);
+    if (mediaCleanupSucceeded) {
+      return jsonResponse(500, {
+        ok: false,
+        mediaAlreadyRemoved: true,
+        error: "Os anexos privados já foram removidos, mas a exclusão das contas e dos demais dados não foi confirmada. Tente novamente.",
+      });
+    }
     return jsonResponse(500, {
       ok: false,
       error: error instanceof Error
