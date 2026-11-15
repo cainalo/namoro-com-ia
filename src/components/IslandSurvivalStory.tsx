@@ -349,7 +349,18 @@ function ArtifactReader({ artifact, onClose }: { artifact: Artifact; onClose: ()
 }
 
 export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
-  const [game, setGame, sync] = useGameState<SurvivalBookState>(loadProgress, { onlineInitial: initial });
+  const [storedGame, setGame, sync] = useGameState<SurvivalBookState>(loadProgress, { onlineInitial: initial });
+  const game: SurvivalBookState = storedGame?.node && storedGame.resources && Array.isArray(storedGame.inventory)
+    ? {
+        ...initial,
+        ...storedGame,
+        resources: { ...initial.resources, ...storedGame.resources },
+        decisions: storedGame.decisions ?? {},
+        flags: storedGame.flags ?? [],
+        inventory: storedGame.inventory ?? [],
+        puzzleAnswers: storedGame.puzzleAnswers ?? {},
+      }
+    : initial;
   const [openedArtifact, setOpenedArtifact] = useState<Artifact | null>(null);
   const [notice, setNotice] = useState("");
   const current = scene[game.node] ?? scene["day1-beach"];
@@ -358,8 +369,12 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
   const puzzleAnswer = current.puzzle ? game.puzzleAnswers[current.puzzle.id] : undefined;
 
   useEffect(() => {
+    if (sync.online && (!storedGame?.node || !storedGame.resources || !Array.isArray(storedGame.inventory))) {
+      setGame(initial);
+      return;
+    }
     if (!sync.online) localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
-  }, [game, sync.online]);
+  }, [game, setGame, storedGame, sync.online]);
 
   function takeChoice(choice: Choice) {
     const next = choose(game, choice);
