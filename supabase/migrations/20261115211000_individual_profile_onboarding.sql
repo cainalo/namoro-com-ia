@@ -47,7 +47,19 @@ CREATE POLICY profiles_media_select_own
   ON storage.objects FOR SELECT TO authenticated
   USING (
     bucket_id = 'profiles-media'
-    AND (storage.foldername(name))[1] = (SELECT auth.uid())::text
+    AND (
+      (storage.foldername(name))[1] = (SELECT auth.uid())::text
+      OR EXISTS (
+        SELECT 1
+        FROM public.couple_members AS viewer
+        JOIN public.couple_members AS owner
+          ON owner.couple_id = viewer.couple_id
+         AND owner.ended_at IS NULL
+        WHERE viewer.user_id = (SELECT auth.uid())
+          AND viewer.ended_at IS NULL
+          AND owner.user_id::text = (storage.foldername(name))[1]
+      )
+    )
   );
 
 DROP POLICY IF EXISTS profiles_media_insert_own ON storage.objects;
