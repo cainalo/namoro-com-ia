@@ -75,7 +75,7 @@ export function FirstAccessGate({ userId, initialName = "", onNavigate, children
   return (
     <>
       {children}
-      {mode === "tour" && <AppTour userId={userId} onNavigate={onNavigate} onFinish={() => void finishTour()} />}
+      {mode === "tour" && <AppTour onNavigate={onNavigate} onFinish={() => void finishTour()} />}
     </>
   );
 }
