@@ -184,9 +184,10 @@ BEGIN
   RETURNING id INTO v_new_couple_id;
 
   INSERT INTO public.couple_members (couple_id, user_id, role)
-  VALUES
-    (v_new_couple_id, v_uid, 'admin'),
-    (v_new_couple_id, v_partner_id, 'admin');
+  VALUES (v_new_couple_id, v_uid, 'admin');
+
+  INSERT INTO public.couple_members (couple_id, user_id, role)
+  VALUES (v_new_couple_id, v_partner_id, 'admin');
 
   UPDATE public.couples
   SET status = 'active'
