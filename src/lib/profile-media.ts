@@ -2,9 +2,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const PROFILE_MEDIA_BUCKET = "morados-profile-media";
 export const MAX_PROFILE_IMAGE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_PROFILE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
 
 export async function uploadProfileMedia(userId: string, file: File, kind: "avatar" | "banner") {
-  if (!file.type.startsWith("image/")) {
+  if (!ALLOWED_PROFILE_IMAGE_TYPES.has(file.type)) {
     return { path: null, error: new Error("Escolha um arquivo de imagem.") };
   }
   if (file.size > MAX_PROFILE_IMAGE_BYTES) {
