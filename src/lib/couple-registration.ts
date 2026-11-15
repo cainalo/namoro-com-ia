@@ -14,6 +14,7 @@ export function validateCoupleCredentials(email: string, partnerEmail: string, p
 
 export const PAIRING_NOTICE = "Solicitações de cadastro enviadas. Confirmem os dois endereços de e-mail e entrem com a senha compartilhada. O casal só será conectado após a confirmação dos dois acessos.";
 
+// Pairing status is handled independently from individual account access.
 export async function completeCouplePairing() {
   const { data: verified, error } = await supabase.auth.getUser();
   if (error || !verified.user) return { pending: false, error: null };
