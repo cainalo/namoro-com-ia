@@ -316,7 +316,7 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
   const safeReaderPage = Math.min(book.readerPage ?? 0, contentPageCount - 1);
   const showingText = safeReaderPage < textPageCount;
   const showingChoice = hasChoicePage && safeReaderPage === textPageCount;
-  const artifactIndex = new Map(caseBook.chapters.flatMap(chapter => chapter.artifacts ?? []).map(item => [item.id, item]));
+  const artifactIndex = new Map<string, Artifact>(caseBook.chapters.flatMap(chapter => chapter.artifacts ?? []).map(item => [item.id, item] as const));
 
   useEffect(() => {
     if (sync.online && (typeof storedBook?.chapter !== "number" || !Array.isArray(storedBook.opened))) {
