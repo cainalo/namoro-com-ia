@@ -13,16 +13,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { completeCouplePairing, registerCouple } from "@/lib/couple-registration";
 import { Button } from "@/components/ui/button";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
+import { ProfileOnboarding } from "@/components/ProfileOnboarding";
+import { PendingPairingScreen } from "@/components/PendingPairingScreen";
 
 type AuthGateProps = {
   children: (session: Session) => ReactNode;
   emailRedirectTo?: () => string;
 };
+
+type AuthStage = "checking" | "profile" | "pending" | "ready";
+type AuthAccess = {
+  userId: string;
+  stage: AuthStage;
+  notice: string | null;
+};
+
 type AuthMode = "signin" | "signup";
 
-export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
+export function AuthGate({ children }: AuthGateProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
+  const [access, setAccess] = useState<AuthAccess | null>(null);
+  const [accessRetry, setAccessRetry] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -61,17 +73,84 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
     };
   }, []);
 
-  const [pairing, setPairing] = useState<string | null>(null);
-  const [pairChecking, setPairChecking] = useState(false);
-  const [pairRetry, setPairRetry] = useState(0);
+  const userId = session?.user.id ?? null;
   const pairToken = session?.user.user_metadata?.["morados_pair_token"];
+
   useEffect(() => {
     let active = true;
-    if (!session || !pairToken) { setPairing(null); return; }
-    setPairChecking(true);
-    void completeCouplePairing().then((result) => { if (active) setPairing(result.error); }).catch(() => { if (active) setPairing("Não foi possível verificar o pareamento. Tente novamente."); }).finally(() => { if (active) setPairChecking(false); });
+    if (!userId) {
+      setAccess(null);
+      return;
+    }
+
+    async function resolveAccess() {
+      setAccess({ userId, stage: "checking", notice: null });
+      let notice: string | null = null;
+
+      if (typeof pairToken === "string") {
+        try {
+          const pairing = await completeCouplePairing();
+          notice = pairing.error;
+        } catch {
+          notice = "Não foi possível sincronizar o vínculo agora. Seu perfil individual continua acessível.";
+        }
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("onboarding_completed_at")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (!active) return;
+      if (profileError) {
+        setAccess({ userId, stage: "profile", notice: "Não foi possível consultar seu perfil. Tente novamente." });
+        return;
+      }
+      if (!profile?.onboarding_completed_at) {
+        setAccess({ userId, stage: "profile", notice });
+        return;
+      }
+
+      const { data: membership, error: membershipError } = await supabase
+        .from("couple_members")
+        .select("couple_id")
+        .eq("user_id", userId)
+        .is("ended_at", null)
+        .maybeSingle();
+
+      if (!active) return;
+      if (membershipError || !membership?.couple_id) {
+        setAccess({
+          userId,
+          stage: "pending",
+          notice: notice ?? "Seu perfil individual está pronto. O espaço compartilhado será ativado quando o pareamento for concluído.",
+        });
+        return;
+      }
+
+      const { data: couple, error: coupleError } = await supabase
+        .from("couples")
+        .select("id,status")
+        .eq("id", membership.couple_id)
+        .maybeSingle();
+
+      if (!active) return;
+      if (coupleError || couple?.status !== "active") {
+        setAccess({
+          userId,
+          stage: "pending",
+          notice: notice ?? "Sua conta está liberada. O espaço compartilhado será ativado quando a outra pessoa confirmar o e-mail dela.",
+        });
+        return;
+      }
+
+      setAccess({ userId, stage: "ready", notice: null });
+    }
+
+    void resolveAccess();
     return () => { active = false; };
-  }, [session?.user.id, pairToken, pairRetry]);
+  }, [userId, pairToken, accessRetry]);
 
   if (checking) {
     return <MoradosLoadingScreen message="Preparando o espaço de vocês" />;
@@ -79,14 +158,35 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
 
   if (!session) {
     return Capacitor.isNativePlatform()
-      ? <NativeAuthForm emailRedirectTo={emailRedirectTo} />
-      : <AuthForm emailRedirectTo={emailRedirectTo} />;
+      ? <NativeAuthForm />
+      : <AuthForm />;
   }
-  if (pairChecking) return <MoradosLoadingScreen message="Confirmando o cadastro do casal" />;
-  if (pairing) return <main className="auth-v2"><section className="auth-v2-card grid gap-4"><h1>Cadastro do casal</h1><p role="alert">{pairing}</p><Button onClick={() => setPairRetry((value) => value + 1)}>Verificar novamente</Button><AppGeneralSettings /><SignOutButton /></section></main>;
+
+  if (!access || access.userId !== session.user.id || access.stage === "checking") {
+    return <MoradosLoadingScreen message="Preparando seu espaço pessoal" />;
+  }
+
+  if (access.stage === "profile") {
+    return (
+      <ProfileOnboarding
+        userId={session.user.id}
+        onComplete={() => setAccessRetry((value) => value + 1)}
+      />
+    );
+  }
+
+  if (access.stage === "pending") {
+    return (
+      <PendingPairingScreen
+        userId={session.user.id}
+        notice={access.notice}
+        onPaired={() => setAccess({ userId: session.user.id, stage: "ready", notice: null })}
+      />
+    );
+  }
+
   return <>{children(session)}</>;
 }
-
 function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
