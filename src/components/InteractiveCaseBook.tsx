@@ -15,7 +15,7 @@ type CaseBookData = {
   id: string; caseNumber: string; title: string; subtitle: string; location: string; tone: "hotel" | "rail";
   introduction: string; chapters: Chapter[]; closing: (state: CaseBookState) => string[];
 };
-type CaseBookState = { chapter: number; opened: string[]; decisions: Record<string,string>; finished: boolean };
+type CaseBookState = { chapter: number; readerPage: number; opened: string[]; decisions: Record<string,string>; finished: boolean };
 
 const CASE_001: CaseBookData = {
   id: "orfeo",
@@ -276,13 +276,13 @@ function ArtifactPopup({ artifact, onClose, tone }: { artifact: Artifact; onClos
 
 export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: CaseBookData; solo?: boolean }) {
   const storageKey = "morados-casebook-" + caseBook.id + "-v1";
-  const initial: CaseBookState = { chapter: 0, opened: [], decisions: {}, finished: false };
+  const initial: CaseBookState = { chapter: 0, readerPage: 0, opened: [], decisions: {}, finished: false };
   const [book, setBook, sync] = useGameState<CaseBookState>(() => {
     try {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const saved = JSON.parse(raw) as Partial<CaseBookState>;
-        return { ...initial, ...saved, opened: Array.isArray(saved.opened) ? saved.opened : [], decisions: saved.decisions ?? {} };
+        return { ...initial, ...saved, readerPage: Math.max(0, saved.readerPage ?? 0), opened: Array.isArray(saved.opened) ? saved.opened : [], decisions: saved.decisions ?? {} };
       }
     } catch { /* progresso novo será mantido em memória */ }
     return initial;
@@ -290,6 +290,15 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
   const [artifact, setArtifact] = useState<Artifact | null>(null);
   const chapterIndex = Math.min(book.chapter, caseBook.chapters.length - 1);
   const current = caseBook.chapters[chapterIndex];
+  const paragraphs = current.paragraphs(book);
+  const textPageCount = Math.max(1, Math.ceil(paragraphs.length / 2));
+  const hasInsertPage = Boolean(current.artifacts?.length);
+  const hasChoicePage = Boolean(current.choice);
+  const contentPageCount = textPageCount + Number(hasInsertPage) + Number(hasChoicePage);
+  const safeReaderPage = Math.min(book.readerPage ?? 0, contentPageCount - 1);
+  const showingText = safeReaderPage < textPageCount;
+  const showingArtifacts = hasInsertPage && safeReaderPage === textPageCount;
+  const showingChoice = hasChoicePage && safeReaderPage === textPageCount + Number(hasInsertPage);
 
   useEffect(() => {
     if (!sync.online) localStorage.setItem(storageKey, JSON.stringify(book));
@@ -305,15 +314,27 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
   }
 
   function nextPage() {
-    if (chapterIndex >= caseBook.chapters.length - 1) {
-      setBook({ ...book, finished: true, chapter: caseBook.chapters.length });
+    if (safeReaderPage < contentPageCount - 1) {
+      setBook({ ...book, readerPage: safeReaderPage + 1 });
       return;
     }
-    setBook({ ...book, chapter: chapterIndex + 1 });
+    if (chapterIndex >= caseBook.chapters.length - 1) {
+      setBook({ ...book, finished: true, chapter: caseBook.chapters.length, readerPage: 0 });
+      return;
+    }
+    setBook({ ...book, chapter: chapterIndex + 1, readerPage: 0 });
   }
 
   function previousPage() {
-    setBook({ ...book, chapter: Math.max(0, chapterIndex - 1), finished: false });
+    if (safeReaderPage > 0) {
+      setBook({ ...book, readerPage: safeReaderPage - 1, finished: false });
+      return;
+    }
+    if (chapterIndex === 0) return;
+    const previousChapter = caseBook.chapters[chapterIndex - 1];
+    const previousTextPages = Math.max(1, Math.ceil(previousChapter.paragraphs(book).length / 2));
+    const previousContentPages = previousTextPages + Number(Boolean(previousChapter.artifacts?.length)) + Number(Boolean(previousChapter.choice));
+    setBook({ ...book, chapter: chapterIndex - 1, readerPage: previousContentPages - 1, finished: false });
   }
 
   function restart() {
@@ -333,15 +354,15 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
           <div className="casebook-page-art">
             <CaseSceneArt kind={caseBook.tone}/>
             <span className="casebook-page-art-caption">{caseBook.location.toUpperCase()}</span>
-            <span className="casebook-page-count">PÁGINA {chapterIndex + 1} / {caseBook.chapters.length}</span>
+            <span className="casebook-page-count">PÁGINA {chapterIndex + 1}.{safeReaderPage + 1} · {contentPageCount}</span>
           </div>
           <main className="casebook-reading">
             <div className="casebook-kicker">{current.eyebrow}</div>
             <h1>{current.title}</h1>
-            <div className="casebook-prose">{current.paragraphs(book).map((paragraph,index)=><p key={index}>{paragraph}</p>)}</div>
-            {current.artifacts && current.artifacts.length > 0 && (
+            {showingText && <div className="casebook-prose">{paragraphs.slice(safeReaderPage * 2, safeReaderPage * 2 + 2).map((paragraph,index)=><p key={safeReaderPage * 2 + index}>{paragraph}</p>)}</div>}
+            {showingArtifacts && current.artifacts && (
               <section className="casebook-inserts">
-                <div className="casebook-inserts-heading"><span>MATERIAIS INSERIDOS NESTA PÁGINA</span><small>{current.artifacts.filter(item=>book.opened.includes(item.id)).length}/{current.artifacts.length} abertos</small></div>
+                <div className="casebook-inserts-heading"><span>MATERIAIS ENCONTRADOS NO CASO</span><small>{current.artifacts.filter(item=>book.opened.includes(item.id)).length}/{current.artifacts.length} abertos</small></div>
                 <div className="casebook-insert-list">{current.artifacts.map(item=>{
                   const Icon=artifactIcon(item.type);
                   return <button type="button" className={book.opened.includes(item.id)?"is-opened":""} key={item.id} onClick={()=>openArtifact(item)}>
@@ -350,7 +371,7 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
                 })}</div>
               </section>
             )}
-            {current.choice && (
+            {showingChoice && current.choice && (
               <section className="casebook-reader-choice">
                 <span>{current.choice.prompt}</span>
                 <div>{current.choice.options.map(option=><button type="button" key={option.id} className={Object.values(book.decisions).includes(option.id)?"is-selected":""} onClick={()=>choose(option)}>
@@ -359,9 +380,9 @@ export function InteractiveCaseBook({ caseBook, solo = false }: { caseBook: Case
               </section>
             )}
             <footer className="casebook-controls">
-              <button type="button" className="casebook-back" onClick={previousPage} disabled={chapterIndex===0}><ChevronLeft/> Anterior</button>
-              <span>{caseBook.caseNumber} · {Object.keys(book.decisions).length} escolhas registradas</span>
-              <button type="button" className="casebook-next" onClick={nextPage}>{chapterIndex===caseBook.chapters.length-1?"Ler relatório final":"Continuar história"} <ChevronRight/></button>
+              <button type="button" className="casebook-back" onClick={previousPage} disabled={chapterIndex===0&&safeReaderPage===0}><ChevronLeft/> Anterior</button>
+              <span>{caseBook.caseNumber} · {book.opened.length} materiais · {Object.keys(book.decisions).length} escolhas</span>
+              <button type="button" className="casebook-next" onClick={nextPage}>{safeReaderPage < contentPageCount - 1 ? "Virar página" : chapterIndex === caseBook.chapters.length-1 ? "Ler relatório final" : "Próximo capítulo"} <ChevronRight/></button>
             </footer>
           </main>
           <aside className="casebook-side">
