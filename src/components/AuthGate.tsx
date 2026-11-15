@@ -23,6 +23,15 @@ type AuthMode = "signin" | "signup";
 export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
+  const [accountDeletionNotice] = useState<string | null>(() => {
+    try {
+      const message = window.sessionStorage.getItem("morados:account-deletion-notice");
+      if (message) window.sessionStorage.removeItem("morados:account-deletion-notice");
+      return message;
+    } catch {
+      return null;
+    }
+  });
 
   useEffect(() => {
     let active = true;
@@ -79,15 +88,15 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
 
   if (!session) {
     return Capacitor.isNativePlatform()
-      ? <NativeAuthForm emailRedirectTo={emailRedirectTo} />
-      : <AuthForm emailRedirectTo={emailRedirectTo} />;
+      ? <NativeAuthForm emailRedirectTo={emailRedirectTo} accountDeletionNotice={accountDeletionNotice} />
+      : <AuthForm emailRedirectTo={emailRedirectTo} accountDeletionNotice={accountDeletionNotice} />;
   }
   if (pairChecking) return <MoradosLoadingScreen message="Confirmando o cadastro do casal" />;
   if (pairing) return <main className="auth-v2"><section className="auth-v2-card grid gap-4"><h1>Cadastro do casal</h1><p role="alert">{pairing}</p><Button onClick={() => setPairRetry((value) => value + 1)}>Verificar novamente</Button><AppGeneralSettings /><SignOutButton /></section></main>;
   return <>{children(session)}</>;
 }
 
-function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
+function AuthForm({ emailRedirectTo, accountDeletionNotice }: { emailRedirectTo?: () => string; accountDeletionNotice?: string | null }) {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -95,7 +104,7 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(accountDeletionNotice ?? null);
 
   function clearMessages() {
     setError(null);
@@ -274,11 +283,11 @@ function AuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
 }
 
 
-function NativeAuthForm({ emailRedirectTo }: { emailRedirectTo?: () => string }) {
+function NativeAuthForm({ emailRedirectTo, accountDeletionNotice }: { emailRedirectTo?: () => string; accountDeletionNotice?: string | null }) {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(accountDeletionNotice ?? null);
 
   function clearMessages() {
     setError(null);
