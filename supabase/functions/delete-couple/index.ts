@@ -191,6 +191,7 @@ Deno.serve(async (request: Request) => {
     }
 
     const coupleIds = await getDeletionScope(admin, authData.user.id);
+    const hadCoupleScope = coupleIds.length > 0;
 
     // Supabase prevents deleting an Auth user who still owns Storage objects.
     // Remove the private couple files first, then perform the relational erasure.
@@ -212,8 +213,10 @@ Deno.serve(async (request: Request) => {
       console.error("[delete-couple] Database erasure failed after Storage cleanup:", deletionError?.message ?? "unexpected RPC result");
       return jsonResponse(500, {
         ok: false,
-        mediaAlreadyRemoved: true,
-        error: "A exclusão das contas não foi concluída. Os anexos privados já foram removidos, mas as contas e os demais dados continuam preservados. Corrija a conexão e tente novamente.",
+        mediaCleanupAttempted: hadCoupleScope,
+        error: hadCoupleScope
+          ? "A limpeza dos arquivos dos vínculos identificados foi concluída, mas a exclusão das contas e dos demais dados não foi confirmada. As contas e os dados continuam preservados; tente novamente. Um convite aceito durante o processo pode exigir uma nova tentativa."
+          : "A exclusão das contas não foi concluída. Como não havia arquivos de vínculo para limpar, as contas, os dados e as mídias permanecem preservados. Tente novamente.",
       });
     }
 
@@ -224,7 +227,7 @@ Deno.serve(async (request: Request) => {
       return jsonResponse(500, {
         ok: false,
         mediaAlreadyRemoved: true,
-        error: "Os anexos privados já foram removidos, mas a exclusão das contas e dos demais dados não foi confirmada. Tente novamente.",
+        error: "A limpeza dos arquivos dos vínculos identificados foi concluída, mas a exclusão das contas e dos demais dados não foi confirmada. As contas e os dados continuam preservados. Tente novamente.",
       });
     }
     return jsonResponse(500, {
