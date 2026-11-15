@@ -11,8 +11,6 @@ import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
 import { MoradosMark } from "@/components/MoradosMark";
 import { supabase } from "@/integrations/supabase/client";
 import { completeCouplePairing, registerCouple } from "@/lib/couple-registration";
-import { Button } from "@/components/ui/button";
-import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 import { ProfileOnboarding } from "@/components/ProfileOnboarding";
 import { PendingPairingScreen } from "@/components/PendingPairingScreen";
 
