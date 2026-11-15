@@ -17,20 +17,44 @@ export const PAIRING_NOTICE = "Solicitações de cadastro enviadas. Confirmem os
 // Pairing status is handled independently from individual account access.
 export async function completeCouplePairing() {
   const { data: verified, error } = await supabase.auth.getUser();
-  if (error || !verified.user) return { pending: false, error: null };
+  if (error || !verified.user) return { pending: false, active: false, error: null, reason: "no-session" as const };
   const token = verified.user.user_metadata?.["morados_pair_token"];
-  if (typeof token !== "string") return { pending: false, error: null };
+  if (typeof token !== "string") return { pending: false, active: false, error: null, reason: "no-pair-token" as const };
+
   const result = await callCoupleRpc("complete_couple_pairing", { p_token: token });
   if (result.error) {
-    return { pending: true, error: result.error.code === "PGRST202"
-      ? "O pareamento ainda depende da atualização do Supabase. Nenhum casal foi confirmado."
-      : result.error.message.includes("pair_waiting")
-        ? "Confirmem os dois e-mails para concluir o cadastro do casal. Depois, tente novamente."
-        : "Não foi possível concluir o pareamento. Confira se os dois cadastros foram concluídos; contas existentes não são vinculadas automaticamente." };
+    return {
+      pending: true,
+      active: false,
+      error: result.error.code === "PGRST202"
+        ? "O serviço de pareamento ainda está sendo publicado. Seu acesso individual continua liberado."
+        : "Não foi possível sincronizar o vínculo agora. Seu perfil individual continua acessível.",
+      reason: "retry",
+    };
   }
-  // Refresh temporary metadata in the local session after the transaction clears it.
-  await supabase.auth.refreshSession();
-  return { pending: false, error: null };
+
+  const payload = result.data;
+  const status = isRecord(payload) && typeof payload.status === "string" ? payload.status : null;
+  if (status === "pending") {
+    return {
+      pending: true,
+      active: false,
+      error: null,
+      reason: isRecord(payload) && typeof payload.reason === "string" ? payload.reason : "awaiting-partner",
+    };
+  }
+
+  if (status === "active") {
+    await supabase.auth.refreshSession();
+    return { pending: false, active: true, error: null, reason: "both-emails-verified" as const };
+  }
+
+  return {
+    pending: true,
+    active: false,
+    error: "O serviço não confirmou o estado do casal. Seu perfil individual continua acessível.",
+    reason: "unexpected-response",
+  };
 }
 
 export async function submitCoupleSignups(
