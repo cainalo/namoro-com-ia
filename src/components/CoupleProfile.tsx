@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
-import { Camera, Check, Circle, ImagePlus, LoaderCircle, Save, UserRound, GraduationCap, Heart, Music2, Utensils, Film, Sparkles, RotateCcw } from "lucide-react";
+import { Camera, Check, Circle, ImagePlus, LoaderCircle, Save, UserRound, Heart, Music2, Utensils, Film, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { createProfileImageUrl, removeProfileImage, uploadUserProfileMedia } from "@/lib/profile-media";
+import { createProfileImageUrl, createUserProfileMediaUrl, removeProfileImage, removeUserProfileMedia, uploadUserProfileMedia } from "@/lib/profile-media";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 
 type ProfileRecord = {
@@ -166,7 +166,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
       setUploading(null);
       return;
     }
-    const { url } = await import("@/lib/profile-media").then((module) => module.createUserProfileMediaUrl(uploaded.path!));
+    const { url } = await createUserProfileMediaUrl(uploaded.path);
     setProfile((current) => current ? { ...current, ...(kind === "avatar" ? { avatar_path: uploaded.path } : { banner_path: uploaded.path }) } : current);
     if (kind === "avatar") setAvatarUrl(url); else setBannerUrl(url);
     if (previousPath && previousPath !== uploaded.path) await removeProfileImage(previousPath, userId);
@@ -175,7 +175,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
     setUploading(null);
   }
 
-  return <section className="profile-page" data-tour-profile-page aria-busy={loading}>
+  return <section className="profile-page" data-tour-target="tour-profile" aria-busy={loading}>
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <AppGeneralSettings />
       <button type="button" className="profile-upload-button" onClick={() => window.dispatchEvent(new Event("morados:show-tour"))}><RotateCcw className="h-4 w-4" /> Ver tutorial novamente</button>
