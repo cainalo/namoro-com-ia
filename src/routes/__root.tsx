@@ -72,7 +72,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" },
       { title: "Morados" },
       { name: "description", content: "Morados — um espaço privado para duas pessoas." },
       { property: "og:title", content: "Morados" },
@@ -121,6 +121,39 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Bloqueia pinça, duplo-toque de zoom e zoom via roda/atalhos de navegador.
+    // Gestos de toque simples e a rolagem normal continuam funcionando.
+    const preventMultiTouch = (event: TouchEvent) => {
+      if (event.touches.length > 1) event.preventDefault();
+    };
+    const preventGesture = (event: Event) => event.preventDefault();
+    const preventWheelZoom = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) event.preventDefault();
+    };
+    const preventKeyboardZoom = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && ["+", "-", "=", "0"].includes(event.key)) {
+        event.preventDefault();
+      }
+    };
+    document.addEventListener("touchstart", preventMultiTouch, { capture: true, passive: false });
+    document.addEventListener("touchmove", preventMultiTouch, { capture: true, passive: false });
+    document.addEventListener("gesturestart", preventGesture, { capture: true, passive: false });
+    document.addEventListener("gesturechange", preventGesture, { capture: true, passive: false });
+    document.addEventListener("gestureend", preventGesture, { capture: true, passive: false });
+    document.addEventListener("wheel", preventWheelZoom, { capture: true, passive: false });
+    document.addEventListener("keydown", preventKeyboardZoom, true);
+    return () => {
+      document.removeEventListener("touchstart", preventMultiTouch, true);
+      document.removeEventListener("touchmove", preventMultiTouch, true);
+      document.removeEventListener("gesturestart", preventGesture, true);
+      document.removeEventListener("gesturechange", preventGesture, true);
+      document.removeEventListener("gestureend", preventGesture, true);
+      document.removeEventListener("wheel", preventWheelZoom, true);
+      document.removeEventListener("keydown", preventKeyboardZoom, true);
+    };
+  }, []);
 
   useEffect(() => {
     if (Capacitor.isNativePlatform() || !("serviceWorker" in navigator)) return;
