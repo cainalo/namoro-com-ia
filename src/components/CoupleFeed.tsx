@@ -50,6 +50,7 @@ import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/Sec
 import { mapWithConcurrency } from "@/lib/async-pool";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
+import { getProfileMediaUrl } from "@/lib/profile-media";
 import {
   createCouplePost,
   listCouplePosts,
@@ -415,6 +416,7 @@ export function CoupleFeed({
       // Deduplica caminhos de mídia e limita quatro assinaturas simultâneas.
       const sourceBlocksByPost = new Map<string, CouplePostBlock[]>();
       const mediaPaths = new Set<string>();
+      const avatarPaths = new Set<string>();
       for (const post of rows) {
         const savedBlocks = Array.isArray(post.content_blocks) ? post.content_blocks : [];
         const sourceBlocks: CouplePostBlock[] = savedBlocks.length > 0
@@ -436,7 +438,7 @@ export function CoupleFeed({
         for (const block of sourceBlocks) if (block.media_path) mediaPaths.add(block.media_path);
         if (post.media_path) mediaPaths.add(post.media_path);
         const avatarPath = profileMap.get(post.author_id)?.avatarPath;
-        if (avatarPath) mediaPaths.add(avatarPath);
+        if (avatarPath) avatarPaths.add(avatarPath);
       }
 
       const signedEntries = await mapWithConcurrency([...mediaPaths], 4, async (path) => {
@@ -449,6 +451,15 @@ export function CoupleFeed({
         }
       });
       const signedUrlByPath = new Map(signedEntries);
+      const signedAvatarEntries = await mapWithConcurrency([...avatarPaths], 4, async (path) => {
+        try {
+          return [path, await getProfileMediaUrl(path)] as const;
+        } catch (cause) {
+          console.warn("Não foi possível preparar a foto de perfil do Feed.", cause);
+          return [path, null] as const;
+        }
+      });
+      const signedAvatarUrlByPath = new Map(signedAvatarEntries);
 
       const posts: FeedPostView[] = rows.map((post) => {
         const sourceBlocks = sourceBlocksByPost.get(post.id) ?? [];
@@ -462,7 +473,7 @@ export function CoupleFeed({
         return {
           ...post,
           author_name: authorProfile?.name || (post.author_id === userId ? "Você" : "Sua pessoa"),
-          author_avatar_url: authorProfile?.avatarPath ? signedUrlByPath.get(authorProfile.avatarPath) ?? null : null,
+          author_avatar_url: authorProfile?.avatarPath ? signedAvatarUrlByPath.get(authorProfile.avatarPath) ?? null : null,
           blocks,
           media_url: primaryImage?.media_url ?? primaryMedia?.media_url ??
             (post.media_path ? signedUrlByPath.get(post.media_path) ?? null : null),
