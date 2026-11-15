@@ -61,7 +61,7 @@ describe("AppGeneralSettings", () => {
       maxLength: 7,
       singleLine: true,
     }));
-    expect(screen.getByRole("button", { name: "EXCLUIR" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Palavra digitada: EXCLUIR; toque para alterar" })).toBeInTheDocument();
   });
 
   it("requires the explicit confirmation word before enabling account deletion", () => {
