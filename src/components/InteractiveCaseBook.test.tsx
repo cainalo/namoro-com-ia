@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { CoupleInvestigationGame, CoupleInvestigationTrainGame } from "./CoupleInvestigationGame";
-import { CoupleTrainInvestigationBook } from "./CoupleInvestigationTrainGame";
+import { CoupleInvestigationGame } from "./CoupleInvestigationGame";
+import { CoupleInvestigationTrainGame } from "./CoupleInvestigationTrainGame";
 
 describe("Interactive investigation casebooks", () => {
   beforeEach(() => {
@@ -17,6 +17,6 @@ describe("Interactive investigation casebooks", () => {
 
   it("renders the train casebook through its public game entry point", () => {
     render(<CoupleInvestigationTrainGame solo />);
-    expect(screen.getByRole("heading", { name: /Santa Íria|plataforma/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "O painel anunciou um trem vazio" })).toBeInTheDocument();
   });
 });
