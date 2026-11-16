@@ -14,6 +14,6 @@ describe("MoradosFeedHeader", () => {
   it("keeps the decorative vector artwork out of the accessibility tree", () => {
     render(<MoradosFeedHeader />);
 
-    expect(screen.getByRole("banner").querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByRole("banner").querySelector(".morados-feed-art")).toHaveAttribute("aria-hidden", "true");
   });
 });
