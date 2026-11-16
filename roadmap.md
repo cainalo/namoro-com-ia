@@ -10,7 +10,7 @@ Atualizado em 16 de novembro de 2026. A auditoria e a direção inicial da trans
 - [ ] Construir tokens e documentação do design system.
 - [ ] Mapear e organizar a cascata CSS sem alterar o resultado visual por acidente.
 - [ ] Adicionar testes de interface e regressão para Feed, Conversa, Memórias, Planos e Casa.
-- [ ] Transformar os módulos gradualmente, preservando suas funções e dando a cada um uma linguagem própria.
+- [x] Implementar pilotos visuais próprios para Feed e Memórias, preservando seus fluxos; validação visual no navegador e Android pendente.\n- [ ] Transformar os demais módulos gradualmente, preservando suas funções e dando a cada um uma linguagem própria.
 - [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.
 
 ## Confiabilidade e funcionalidades
