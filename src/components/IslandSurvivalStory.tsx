@@ -521,7 +521,13 @@ export function IslandSurvivalStory({ solo = false }: { solo?: boolean }) {
       setGame(initial);
       return;
     }
-    if (!sync.online) localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
+    if (!sync.online) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
+      } catch (cause) {
+        console.warn("Não foi possível salvar o progresso local da sobrevivência.", cause);
+      }
+    }
   }, [game, setGame, storedGame, sync.online]);
 
   function takeChoice(choice: Choice) {

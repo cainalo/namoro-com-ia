@@ -98,6 +98,38 @@ class ConversationGuard extends Component<ConversationGuardProps, ConversationGu
 }
 
 
+type AppSectionGuardProps = { children: ReactNode; onBack: () => void };
+type AppSectionGuardState = { error: Error | null; retryKey: number };
+
+class AppSectionGuard extends Component<AppSectionGuardProps, AppSectionGuardState> {
+  state: AppSectionGuardState = { error: null, retryKey: 0 };
+  static getDerivedStateFromError(error: unknown): Partial<AppSectionGuardState> {
+    return { error: error instanceof Error ? error : new Error(String(error)) };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error("Falha isolada em uma página do Morados.", error, info.componentStack);
+  }
+  retry = () => this.setState((current) => ({ error: null, retryKey: current.retryKey + 1 }));
+  render() {
+    if (this.state.error) return (
+      <section className="conversation-state" role="alert" aria-live="assertive">
+        <h2>Esta página encontrou um erro.</h2>
+        <p>A navegação principal continua disponível. Tente novamente ou volte ao Feed.</p>
+        <details><summary>Detalhes técnicos</summary>
+          <pre style={{ maxWidth: "min(88vw, 520px)", maxHeight: 180, overflow: "auto", whiteSpace: "pre-wrap", textAlign: "left", fontSize: 11 }}>
+            {this.state.error.stack || this.state.error.message}
+          </pre>
+        </details>
+        <div className="conversation-state-actions">
+          <button type="button" className="inline-action" onClick={this.retry}>Tentar novamente</button>
+          <button type="button" className="inline-action" onClick={this.props.onBack}>Voltar ao Feed</button>
+        </div>
+      </section>
+    );
+    return <Fragment key={this.state.retryKey}>{this.props.children}</Fragment>;
+  }
+}
+
 const navigation: NavigationItem[] = [
   { id: "home", label: "Feed", icon: Home },
   { id: "games", label: "Jogos", icon: Gamepad2 },
@@ -315,6 +347,7 @@ function Index() {
               <div data-tour-target="tour-messages" className="tour-anchor"><ConversationGuard onBack={goBack}><CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} /></ConversationGuard></div>
             ) : (
               <div className="page-frame">
+              <AppSectionGuard onBack={goHome}>
               {activeSection === "home" || activeSection === "create-post" ? (
                 <HomeScreen
                   userId={session.user.id}
@@ -334,6 +367,7 @@ function Index() {
               ) : activeSection === "memories" ? (
                 <div data-tour-target="tour-memories" className="tour-anchor"><CoupleMemories userId={session.user.id} /></div>
               ) : null}
+              </AppSectionGuard>
               </div>
             )}
           </main>
