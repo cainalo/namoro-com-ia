@@ -78,3 +78,16 @@ A implementação está isolada em `src/styles/morados-memories.css`, aplicada s
 - Conferir textos longos, fotos retrato/paisagem, vídeo e áudio.
 - Conferir tema claro e escuro.
 - Confirmar que as cores auxiliares não prejudicam leitura ou privacidade.
+
+
+## Piloto de Conversa — correspondência cotidiana
+
+Conversa adota uma linguagem própria de correspondência, sem copiar a composição do mural ou do caderno de Memórias. O cabeçalho permanece deliberadamente minimalista, com controles somente em ícones; a área de mensagens dá prioridade à leitura e ao ritmo entre as falas.
+
+- Os balões recebem acabamento mais refinado e uma hierarquia temporal discreta, sem substituir as cores, o raio ou as preferências escolhidas pelo casal.
+- O campo de escrita e os controles de anexos usam as superfícies de papel, contornos e acentos da marca; o comportamento de gravação, envio e foco permanece intacto.
+- O estado vazio apresenta uma ilustração vetorial original de duas mensagens e explica que o espaço aceita mensagens, fotos e áudios.
+- As opções de papel de parede, cores, fontes, privacidade, notificações, busca, favoritos, edição, exclusão, arquivos e sincronização são preservadas.
+- A composição continua imersiva e mobile-first. Os botões superiores permanecem apenas ícones, conforme a decisão anterior de manter a barra superior limpa.
+
+A implementação visual está isolada em `src/styles/morados-conversation.css`, aplicada apenas quando a conversa está em modo imersivo. O estado vazio foi extraído para `MoradosConversationWelcome.tsx` e tem testes próprios. Não foram alteradas tabelas, migrations, políticas, chamadas, RPCs ou fluxos de mensagens.
