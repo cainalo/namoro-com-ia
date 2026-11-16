@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { Capacitor } from "@capacitor/core";
+import { NativeAuth } from "@/lib/native-auth";
 import { Camera, Check, Circle, ImagePlus, LoaderCircle, Save, UserRound, Heart, Music2, Utensils, Film, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { createProfileImageUrl, createUserProfileMediaUrl, removeProfileImage, removeUserProfileMedia, uploadUserProfileMedia } from "@/lib/profile-media";
@@ -33,6 +35,41 @@ function withProfileTimeout<T>(request: PromiseLike<T>, message: string): Promis
   return Promise.race([Promise.resolve(request), timeout]).finally(() => {
     if (timeoutId !== undefined) window.clearTimeout(timeoutId);
   });
+}
+
+type ProfileTextField = "name" | "bio" | "interests" | "hobbies" | "favoriteFood" | "favoriteMusic" | "favoriteFilm" | "profileQuote";
+
+function NativeProfileField({
+  label,
+  value,
+  placeholder,
+  multiline = false,
+  disabled = false,
+  onEdit,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  multiline?: boolean;
+  disabled?: boolean;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="first-access-native-field">
+      <span className="first-access-native-label">{label}</span>
+      <button
+        type="button"
+        className={multiline ? "first-access-native-input is-multiline" : "first-access-native-input"}
+        data-empty={!value ? "true" : "false"}
+        disabled={disabled}
+        onClick={onEdit}
+        aria-label={label}
+      >
+        <span>{value || placeholder}</span>
+        <span className="first-access-native-edit-hint">Toque para editar</span>
+      </button>
+    </div>
+  );
 }
 
 export function ProfileAvatarButton({ userId, onClick }: { userId: string; onClick: () => void }) {
@@ -84,6 +121,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"avatar" | "banner" | null>(null);
+  const [editingField, setEditingField] = useState<ProfileTextField | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -157,6 +195,52 @@ export function CoupleProfile({ userId }: { userId: string }) {
     void load(() => active);
     return () => { active = false; };
   }, [load]);
+
+  async function editNativeField(field: ProfileTextField) {
+    if (!Capacitor.isNativePlatform() || saving || uploading !== null || editingField !== null) return;
+
+    const config = {
+      name: { title: "Nome exibido", hint: "Como a outra pessoa verá seu nome", value: name, maxLength: 60, singleLine: true },
+      bio: { title: "Sobre mim", hint: "Conte um pouco sobre você…", value: bio, maxLength: 500, singleLine: false },
+      interests: { title: "Interesses", hint: "Música, cinema, viagens, leitura…", value: interests, maxLength: 240, singleLine: false },
+      hobbies: { title: "Hobbies", hint: "O que você gosta de fazer no tempo livre?", value: hobbies, maxLength: 300, singleLine: false },
+      favoriteFood: { title: "Comida favorita", hint: "Um prato ou sabor", value: favoriteFood, maxLength: 80, singleLine: true },
+      favoriteMusic: { title: "Música ou artista favorito", hint: "Uma música ou artista", value: favoriteMusic, maxLength: 100, singleLine: true },
+      favoriteFilm: { title: "Filme ou série favorito", hint: "Um filme ou série", value: favoriteFilm, maxLength: 100, singleLine: true },
+      profileQuote: { title: "Uma frase sua", hint: "Uma frase que combina com você", value: profileQuote, maxLength: 180, singleLine: false },
+    }[field];
+
+    setEditingField(field);
+    setError(null);
+    try {
+      const result = await NativeAuth.showTextInputDialog({
+        title: config.title,
+        description: "O texto será salvo no seu perfil pessoal. Você poderá alterá-lo depois.",
+        hint: config.hint,
+        initialValue: config.value,
+        confirmText: "Confirmar",
+        maxLength: config.maxLength,
+        singleLine: config.singleLine,
+        allowEmpty: true,
+      });
+      if (result.cancelled) return;
+      const value = (result.text ?? "").slice(0, config.maxLength);
+      switch (field) {
+        case "name": setName(value); break;
+        case "bio": setBio(value); break;
+        case "interests": setInterests(value); break;
+        case "hobbies": setHobbies(value); break;
+        case "favoriteFood": setFavoriteFood(value); break;
+        case "favoriteMusic": setFavoriteMusic(value); break;
+        case "favoriteFilm": setFavoriteFilm(value); break;
+        case "profileQuote": setProfileQuote(value); break;
+      }
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível abrir o campo de edição.");
+    } finally {
+      setEditingField(null);
+    }
+  }
 
   const profileChecklist = [
     Boolean(name.trim()),
@@ -328,21 +412,38 @@ export function CoupleProfile({ userId }: { userId: string }) {
           </div>
 
           <div className="profile-editor-grid">
-            <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
-            <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={4} placeholder="Conte um pouco sobre você…" /></label>
-            <label>Interesses<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
-            <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={3} placeholder="O que você gosta de fazer no tempo livre?" /></label>
-            <div className="profile-favorites-grid">
-              <label><Utensils /> Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Um prato ou sabor" /></label>
-              <label><Music2 /> Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
-              <label><Film /> Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
-              <label><Heart /> Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
-            </div>
+            {Capacitor.isNativePlatform() ? (
+              <>
+                <NativeProfileField label="Nome exibido" value={name} placeholder="Como a outra pessoa verá seu nome" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("name")} />
+                <NativeProfileField label="Sobre mim" value={bio} placeholder="Conte um pouco sobre você…" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("bio")} />
+                <NativeProfileField label="Interesses" value={interests} placeholder="Música, cinema, viagens, leitura…" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("interests")} />
+                <NativeProfileField label="Hobbies" value={hobbies} placeholder="O que você gosta de fazer no tempo livre?" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("hobbies")} />
+                <div className="profile-favorites-grid">
+                  <NativeProfileField label="Comida favorita" value={favoriteFood} placeholder="Um prato ou sabor" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFood")} />
+                  <NativeProfileField label="Música ou artista favorito" value={favoriteMusic} placeholder="Uma música ou artista" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteMusic")} />
+                  <NativeProfileField label="Filme ou série favorito" value={favoriteFilm} placeholder="Um filme ou série" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFilm")} />
+                  <NativeProfileField label="Uma frase sua" value={profileQuote} placeholder="Uma frase que combina com você" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("profileQuote")} />
+                </div>
+              </>
+            ) : (
+              <>
+                <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
+                <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={4} placeholder="Conte um pouco sobre você…" /></label>
+                <label>Interesses<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
+                <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={3} placeholder="O que você gosta de fazer no tempo livre?" /></label>
+                <div className="profile-favorites-grid">
+                  <label><Utensils /> Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Um prato ou sabor" /></label>
+                  <label><Music2 /> Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
+                  <label><Film /> Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
+                  <label><Heart /> Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
+                </div>
+              </>
+            )}
             {uploading && <p className="profile-note">Enviando {uploading === "avatar" ? "foto de perfil" : "banner"}…</p>}
             {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
             {mediaError && <p className="profile-note" role="status">{mediaError}</p>}
             {message && <p className="text-sm text-primary" role="status">{message}</p>}
-            <div className="flex justify-end"><button type="button" className="profile-save-button" disabled={saving || loading || uploading !== null} onClick={() => void saveProfile()}>
+            <div className="flex justify-end"><button type="button" className="profile-save-button" disabled={saving || loading || uploading !== null || editingField !== null} onClick={() => void saveProfile()}>
               {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Salvar perfil
             </button></div>
           </div>
