@@ -78,10 +78,9 @@ test("convites globais: só cria partida após aceite, com simetria e controle d
   expect(match.rows[0]).toMatchObject({
     couple_id: C,
     game_key: "quiz",
-    player_one_id: A,
-    player_two_id: B,
     status: "active",
   });
+  expect(new Set([match.rows[0]?.player_one_id, match.rows[0]?.player_two_id])).toEqual(new Set([A, B]));
 
   // Convite recusado: não cria partida.
   const declineInvite = await as<{ create_couple_game_invitation: string }>(
