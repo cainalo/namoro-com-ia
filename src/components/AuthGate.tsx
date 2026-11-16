@@ -81,7 +81,21 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
     return () => { active = false; };
   }, [session?.user.id]);
 
-  if (session && pairingResolvedFor !== session.user.id) {
+  // Nunca execute a rota autenticada enquanto a sessão ainda está sendo restaurada.
+  // A rota recebe Session (não Session | null) e acessa session.user imediatamente.
+  if (checking) {
+    return <MoradosLoadingScreen message="Verificando seu acesso" />;
+  }
+
+  // Sem sessão válida, mostre o fluxo de entrada apropriado à plataforma.
+  // A tela autenticada só é montada depois que a sessão foi confirmada.
+  if (!session) {
+    return Capacitor.isNativePlatform()
+      ? <NativeAuthForm emailRedirectTo={emailRedirectTo} />
+      : <AuthForm emailRedirectTo={emailRedirectTo} />;
+  }
+
+  if (pairingResolvedFor !== session.user.id) {
     return <MoradosLoadingScreen message="Preparando seu espaço pessoal" />;
   }
 
