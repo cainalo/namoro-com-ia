@@ -44,17 +44,7 @@ ALTER TABLE public.couple_game_invitations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY couple_game_invitations_select_current_members
   ON public.couple_game_invitations
   FOR SELECT TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.couples AS c
-      JOIN public.couple_members AS m ON m.couple_id = c.id
-      WHERE c.id = couple_game_invitations.couple_id
-        AND c.status = 'active'
-        AND m.user_id = (SELECT auth.uid())
-        AND m.ended_at IS NULL
-    )
-  );
+  USING (public.is_current_game_member(couple_id));
 
 CREATE FUNCTION public.create_couple_game_invitation(p_game_key text, p_game_mode text)
 RETURNS uuid
