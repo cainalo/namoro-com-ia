@@ -1,8 +1,10 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   from: vi.fn(),
+  nativePlatform: false,
+  showTextInputDialog: vi.fn(),
   mediaResolvers: [] as Array<(value: string | null) => void>,
   row: {
     id: "user-1",
@@ -18,6 +20,10 @@ const mocks = vi.hoisted(() => ({
     profile_quote: null,
   },
 }));
+
+vi.mock("@capacitor/core", () => ({ Capacitor: { isNativePlatform: () => mocks.nativePlatform } }));
+
+vi.mock("@/lib/native-auth", () => ({ NativeAuth: { showTextInputDialog: mocks.showTextInputDialog } }));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { from: mocks.from },
@@ -42,6 +48,8 @@ import { CoupleProfile } from "./CoupleProfile";
 describe("CoupleProfile", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.nativePlatform = false;
+    mocks.showTextInputDialog.mockReset();
     mocks.mediaResolvers.length = 0;
     mocks.from.mockImplementation(() => {
       const builder: any = {
@@ -65,4 +73,29 @@ describe("CoupleProfile", () => {
       mocks.mediaResolvers.forEach((resolve) => resolve(null));
     });
   });
+  it("uses the native Android text editor for profile fields", async () => {
+    mocks.nativePlatform = true;
+    mocks.showTextInputDialog.mockResolvedValue({ cancelled: false, text: "Novo nome" });
+
+    render(<CoupleProfile userId="user-1" />);
+
+    const nameField = await screen.findByRole("button", { name: "Nome exibido" });
+    expect(nameField).toHaveTextContent("Cainã");
+
+    await act(async () => {
+      fireEvent.click(nameField);
+    });
+
+    expect(mocks.showTextInputDialog).toHaveBeenCalledWith(expect.objectContaining({
+      title: "Nome exibido",
+      initialValue: "Cainã",
+      singleLine: true,
+    }));
+    expect(screen.getByRole("button", { name: "Nome exibido" })).toHaveTextContent("Novo nome");
+
+    await act(async () => {
+      mocks.mediaResolvers.forEach((resolve) => resolve(null));
+    });
+  });
+
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AudioLines, BookOpen, Camera, Check, ChevronLeft, ChevronRight, Clock3, FileText, Fingerprint, KeyRound, Map, Newspaper, ScrollText, ShieldAlert, X } from "lucide-react";
+import { AudioLines, BookOpen, Camera, Check, ChevronLeft, ChevronRight, Clock3, FileText, Fingerprint, KeyRound, Map as MapIcon, Newspaper, ScrollText, ShieldAlert, X } from "lucide-react";
 import "./StoryGames.css";
 import { useGameState } from "@/components/OnlineGameHost";
 
@@ -253,7 +253,7 @@ function artifactIcon(type: string) {
   if (type.toLowerCase().includes("foto") || type.toLowerCase().includes("imagem")) return Camera;
   if (type.toLowerCase().includes("áudio") || type.toLowerCase().includes("entrevista")) return AudioLines;
   if (type.toLowerCase().includes("objeto")) return KeyRound;
-  if (type.toLowerCase().includes("mapa") || type.toLowerCase().includes("planta")) return Map;
+  if (type.toLowerCase().includes("mapa") || type.toLowerCase().includes("planta")) return MapIcon;
   if (type.toLowerCase().includes("depoimento")) return ScrollText;
   return FileText;
 }
