@@ -186,7 +186,7 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
  const settings=<InlineMenu label="Configurações do jogo" trigger={<MoreVertical/>} triggerClassName="game-world-float-button" menuClassName="game-world-menu-panel" className="game-world-menu">{close=><><div className="game-world-menu-heading">CONFIGURAÇÕES</div><GameAudioToggle/><button type="button" role="menuitem" onClick={()=>{setStage("mode");setConfirmExit(false);close();play("tap");}}><Users/> Trocar modo</button><button type="button" role="menuitem" onClick={()=>{setConfirmExit(true);close();play("warning");}}><ArrowLeft/> Sair da partida</button></>}</InlineMenu>;
  const choices=[{id:"solo" as const,title:"Jogar sozinho",Icon:Crown},{id:"local" as const,title:"Jogar neste aparelho",Icon:Users},{id:"online" as const,title:"Jogar online",Icon:Shield}];
  return <div className={"games-fullscreen-page game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
-  <header className="game-world-topbar"><button type="button" className="game-world-float-button" onClick={back} aria-label={stage==="cover"?"Voltar aos jogos":"Voltar uma etapa"}><ArrowLeft/></button><div className="game-world-top-title"><small>MORADOS ORIGINALS</small><strong>{game.name}</strong></div>{settings}</header>
+  <header className="game-world-topbar"><button type="button" className="game-world-float-button" onClick={back} aria-label={stage==="cover"?"Voltar aos jogos":"Voltar uma etapa"}><ArrowLeft/></button><div className="game-world-top-title"><small>MORADOS ORIGINALS</small>{stage!=="cover"&&<strong>{game.name}</strong>}</div>{settings}</header>
   <main className={"game-world-main stage-"+stage}>
    {stage==="cover"&&<section className="game-launch-cover">
       <div className={"game-cover-art art-"+gameId} aria-hidden="true">
@@ -205,7 +205,7 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
     </section>}
    {stage==="mode"&&<section className="game-mode-stage">
       <div className="game-stage-heading"><h1>Como você quer jogar?</h1></div>
-      <div className="game-world-mode-grid">{choices.map(({id,title,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setMode(id);play("discovery");if(id==="online"){void sendOnlineInvitation();}else{setStage("play");}}}>
+      <div className="game-world-mode-grid">{choices.map(({id,title,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setInviteError(null);setMode(id);play("discovery");if(id==="online"){void sendOnlineInvitation();}else{setStage("play");}}} disabled={inviteBusy}>
         <span className="game-world-mode-icon"><Icon/></span>
         <strong>{title}</strong>
         <span className="game-world-mode-enter">{id==="online"&&inviteBusy?<LoaderCircle/>:<Play/>}</span>
