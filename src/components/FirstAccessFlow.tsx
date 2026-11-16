@@ -1,4 +1,6 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { Capacitor } from "@capacitor/core";
+import { NativeAuth } from "@/lib/native-auth";
 import { ArrowLeft, ArrowRight, Camera, Check, ImagePlus, LoaderCircle, Sparkles, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadUserProfileMedia, removeUserProfileMedia } from "@/lib/profile-media";
@@ -17,6 +19,52 @@ type FirstRunMode = "loading" | "profile" | "tour" | "ready" | "error";
 
 function profileTable() {
   return (supabase as unknown as { from: (table: string) => any }).from("profiles");
+}
+
+const FIRST_ACCESS_REQUEST_TIMEOUT_MS = 20_000;
+
+function withFirstAccessTimeout<T>(request: PromiseLike<T>, message: string): Promise<T> {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), FIRST_ACCESS_REQUEST_TIMEOUT_MS);
+  });
+
+  return Promise.race([Promise.resolve(request), timeout]).finally(() => {
+    if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+  });
+}
+
+function NativeProfileField({
+  label,
+  value,
+  placeholder,
+  multiline = false,
+  disabled = false,
+  onEdit,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  multiline?: boolean;
+  disabled?: boolean;
+  onEdit: () => void;
+}) {
+  return (
+    <div className="first-access-native-field">
+      <span className="first-access-native-label">{label}</span>
+      <button
+        type="button"
+        className={multiline ? "first-access-native-input is-multiline" : "first-access-native-input"}
+        data-empty={!value ? "true" : "false"}
+        disabled={disabled}
+        onClick={onEdit}
+        aria-label={label}
+      >
+        <span>{value || placeholder}</span>
+        <span className="first-access-native-edit-hint">Toque para editar</span>
+      </button>
+    </div>
+  );
 }
 
 export function FirstAccessGate({ userId, initialName = "", onNavigate, children }: FirstAccessGateProps) {
@@ -128,6 +176,57 @@ function FirstAccessProfile({
     setError("");
   }
 
+  async function editNativeField(
+    field: "name" | "bio" | "interests" | "hobbies" | "favoriteFood" | "favoriteMusic" | "favoriteFilm" | "profileQuote",
+  ) {
+    if (!Capacitor.isNativePlatform() || busy) return;
+
+    const config = {
+      name: { title: "Como devemos chamar você?", hint: "Seu nome", value: name, maxLength: 60, singleLine: true, allowEmpty: false },
+      bio: { title: "Sobre mim", hint: "Conte um pouco sobre você…", value: bio, maxLength: 500, singleLine: false, allowEmpty: true },
+      interests: { title: "Seus interesses", hint: "Música, cinema, viagens, leitura…", value: interests, maxLength: 240, singleLine: false, allowEmpty: true },
+      hobbies: { title: "Seus hobbies", hint: "O que você gosta de fazer no tempo livre?", value: hobbies, maxLength: 300, singleLine: false, allowEmpty: true },
+      favoriteFood: { title: "Comida favorita", hint: "Sua comida favorita", value: favoriteFood, maxLength: 80, singleLine: true, allowEmpty: true },
+      favoriteMusic: { title: "Música ou artista favorito", hint: "Uma música ou artista", value: favoriteMusic, maxLength: 100, singleLine: true, allowEmpty: true },
+      favoriteFilm: { title: "Filme ou série favorito", hint: "Um filme ou série", value: favoriteFilm, maxLength: 100, singleLine: true, allowEmpty: true },
+      profileQuote: { title: "Uma frase sua", hint: "Uma frase que combina com você", value: profileQuote, maxLength: 180, singleLine: false, allowEmpty: true },
+    }[field];
+
+    try {
+      const result = await NativeAuth.showTextInputDialog({
+        title: config.title,
+        description: "O texto será salvo no seu perfil pessoal. Você poderá alterá-lo depois.",
+        hint: config.hint,
+        initialValue: config.value,
+        confirmText: "Confirmar",
+        maxLength: config.maxLength,
+        singleLine: config.singleLine,
+        allowEmpty: config.allowEmpty,
+      });
+
+      if (result.cancelled) return;
+      const value = result.text ?? "";
+      if (field === "name" && !value.trim()) {
+        setError("Informe como você quer aparecer no seu perfil.");
+        return;
+      }
+
+      switch (field) {
+        case "name": setName(value); break;
+        case "bio": setBio(value); break;
+        case "interests": setInterests(value); break;
+        case "hobbies": setHobbies(value); break;
+        case "favoriteFood": setFavoriteFood(value); break;
+        case "favoriteMusic": setFavoriteMusic(value); break;
+        case "favoriteFilm": setFavoriteFilm(value); break;
+        case "profileQuote": setProfileQuote(value); break;
+      }
+      setError("");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível abrir o campo de edição.");
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy) return;
@@ -141,36 +240,46 @@ function FirstAccessProfile({
     let bannerPath: string | null = null;
     try {
       if (avatar) {
-        const uploaded = await uploadUserProfileMedia(userId, avatar);
+        const uploaded = await withFirstAccessTimeout(
+          uploadUserProfileMedia(userId, avatar),
+          "O envio da foto está demorando. Verifique sua conexão e tente novamente.",
+        );
         if (uploaded.error || !uploaded.path) throw uploaded.error ?? new Error("Não foi possível enviar a foto de perfil.");
         avatarPath = uploaded.path;
       }
       if (banner) {
-        const uploaded = await uploadUserProfileMedia(userId, banner);
+        const uploaded = await withFirstAccessTimeout(
+          uploadUserProfileMedia(userId, banner),
+          "O envio do banner está demorando. Verifique sua conexão e tente novamente.",
+        );
         if (uploaded.error || !uploaded.path) throw uploaded.error ?? new Error("Não foi possível enviar a capa.");
         bannerPath = uploaded.path;
       }
 
-      const { error: updateError } = await profileTable().update({
-        display_name: name.trim(),
-        bio: bio.trim() || null,
-        hobbies: hobbies.trim() || null,
-        interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
-        favorite_food: favoriteFood.trim() || null,
-        favorite_music: favoriteMusic.trim() || null,
-        favorite_film: favoriteFilm.trim() || null,
-        profile_quote: profileQuote.trim() || null,
-        ...(avatarPath ? { avatar_path: avatarPath } : {}),
-        ...(bannerPath ? { banner_path: bannerPath } : {}),
-        app_onboarding_completed_at: new Date().toISOString(),
-      }).eq("id", userId);
+      const { data: updatedProfile, error: updateError } = await withFirstAccessTimeout(
+        profileTable().update({
+          display_name: name.trim(),
+          bio: bio.trim() || null,
+          hobbies: hobbies.trim() || null,
+          interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
+          favorite_food: favoriteFood.trim() || null,
+          favorite_music: favoriteMusic.trim() || null,
+          favorite_film: favoriteFilm.trim() || null,
+          profile_quote: profileQuote.trim() || null,
+          ...(avatarPath ? { avatar_path: avatarPath } : {}),
+          ...(bannerPath ? { banner_path: bannerPath } : {}),
+          app_onboarding_completed_at: new Date().toISOString(),
+        }).eq("id", userId).select("id").maybeSingle(),
+        "O salvamento do perfil está demorando. Verifique sua conexão e tente novamente.",
+      );
 
       if (updateError) throw updateError;
+      if (!updatedProfile) throw new Error("Não foi possível confirmar a atualização do seu perfil. Tente novamente.");
       window.dispatchEvent(new Event("morados:profile-updated"));
       onComplete();
     } catch (cause) {
-      if (avatarPath) await removeUserProfileMedia(avatarPath);
-      if (bannerPath) await removeUserProfileMedia(bannerPath);
+      if (avatarPath) void removeUserProfileMedia(avatarPath).catch(() => undefined);
+      if (bannerPath) void removeUserProfileMedia(bannerPath).catch(() => undefined);
       setError(cause instanceof Error ? cause.message : "Não foi possível salvar seu perfil.");
     } finally {
       setBusy(false);
@@ -202,16 +311,33 @@ function FirstAccessProfile({
           </div>
 
           <div className="first-access-fields">
-            <label>Como devemos chamar você?<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} autoComplete="nickname" placeholder="Seu nome" required /></label>
-            <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} placeholder="Conte um pouco sobre você…" rows={3} /></label>
-            <label>Interesses, separados por vírgula<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
-            <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={2} placeholder="O que você gosta de fazer no tempo livre?" /></label>
-            <div className="first-access-field-grid">
-              <label>Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Sua comida favorita" /></label>
-              <label>Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
-              <label>Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
-              <label>Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
-            </div>
+            {Capacitor.isNativePlatform() ? (
+              <>
+                <NativeProfileField label="Como devemos chamar você?" value={name} placeholder="Seu nome" disabled={busy} onEdit={() => void editNativeField("name")} />
+                <NativeProfileField label="Sobre mim" value={bio} placeholder="Conte um pouco sobre você…" multiline disabled={busy} onEdit={() => void editNativeField("bio")} />
+                <NativeProfileField label="Interesses, separados por vírgula" value={interests} placeholder="Música, cinema, viagens, leitura…" disabled={busy} onEdit={() => void editNativeField("interests")} />
+                <NativeProfileField label="Hobbies" value={hobbies} placeholder="O que você gosta de fazer no tempo livre?" multiline disabled={busy} onEdit={() => void editNativeField("hobbies")} />
+                <div className="first-access-field-grid">
+                  <NativeProfileField label="Comida favorita" value={favoriteFood} placeholder="Sua comida favorita" disabled={busy} onEdit={() => void editNativeField("favoriteFood")} />
+                  <NativeProfileField label="Música ou artista favorito" value={favoriteMusic} placeholder="Uma música ou artista" disabled={busy} onEdit={() => void editNativeField("favoriteMusic")} />
+                  <NativeProfileField label="Filme ou série favorito" value={favoriteFilm} placeholder="Um filme ou série" disabled={busy} onEdit={() => void editNativeField("favoriteFilm")} />
+                  <NativeProfileField label="Uma frase sua" value={profileQuote} placeholder="Uma frase que combina com você" multiline disabled={busy} onEdit={() => void editNativeField("profileQuote")} />
+                </div>
+              </>
+            ) : (
+              <>
+                <label>Como devemos chamar você?<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} autoComplete="nickname" placeholder="Seu nome" required /></label>
+                <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} placeholder="Conte um pouco sobre você…" rows={3} /></label>
+                <label>Interesses, separados por vírgula<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
+                <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={2} placeholder="O que você gosta de fazer no tempo livre?" /></label>
+                <div className="first-access-field-grid">
+                  <label>Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Sua comida favorita" /></label>
+                  <label>Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
+                  <label>Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
+                  <label>Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
+                </div>
+              </>
+            )}
           </div>
 
           {error && <p className="first-access-error-text" role="alert">{error}</p>}
