@@ -1,6 +1,6 @@
-# Identidade visual do Morados — piloto do Feed
+# Identidade visual do Morados — pilotos do Feed e de Memórias
 
-**Status:** piloto implementado em branch e submetido para validação  
+**Status:** pilotos visuais do Feed e de Memórias implementados; revisão visual em navegador e Android ainda pendente  
 **Módulo piloto:** Feed / mural do casal  
 **Escopo:** camada visual escopada; nenhuma regra de negócio, tabela, permissão ou fluxo de publicação foi alterado.
 
@@ -58,9 +58,22 @@ A paleta fica namespaced em `--morados-feed-*` para não alterar acidentalmente 
 5. A arte vetorial deve permanecer decorativa para tecnologia assistiva; seu significado não pode ser indispensável para compreender as ações.
 6. Não remover ou substituir conteúdo real, mídia, recursos de privacidade, áudio ou operações de publicação para alcançar uma mudança visual.
 
+## Piloto de Memórias — caderno cronológico
+
+Memórias não é uma galeria de mídia no estado atual do produto: o módulo guarda registros escritos com data e visibilidade privada ou compartilhada. A interface não deve prometer anexos, álbuns ou organização de fotos que ainda não existem.
+
+A composição usa a metáfora de um **caderno cronológico**:
+- A abertura apresenta o arquivo e sua quantidade de registros, com uma ilustração vetorial original de um livro aberto.
+- O formulário se comporta visualmente como uma página de escrita, sem alterar os campos, limites ou regras de privacidade.
+- A coleção passa a ser lida como uma linha do tempo, com datas como âncoras e uma linha contínua discreta, em vez de cartões repetidos.
+- Busca, filtros de privacidade, exportação, atualização, edição, exclusão e sincronização em tempo real continuam disponíveis.
+- O módulo reutiliza a paleta semântica do Morados, mas tem hierarquia e composição próprias; não replica o cabeçalho nem o layout do Feed.
+
+A implementação está isolada em `src/styles/morados-memories.css`, aplicada somente dentro de `.memories-screen`. A ilustração e o cabeçalho estão em `MoradosMemoriesHeader.tsx`, com teste dedicado. Nenhuma tabela, migration, permissão, operação Supabase ou regra de negócio foi alterada.
+
 ## Validação pendente
 
-- Revisão visual humana no navegador e no Android.
+- Revisão visual humana no navegador e no Android para os dois pilotos.
 - Conferir filtros em uma largura real de telefone.
 - Conferir textos longos, fotos retrato/paisagem, vídeo e áudio.
 - Conferir tema claro e escuro.
