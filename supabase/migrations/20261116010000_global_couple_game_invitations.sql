@@ -47,17 +47,17 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS '
   SELECT EXISTS (
     SELECT 1
     FROM public.couples AS c
     JOIN public.couple_members AS m ON m.couple_id = c.id
     WHERE c.id = p_couple_id
-      AND c.status = 'active'
+      AND c.status = ''active''
       AND m.user_id = (SELECT auth.uid())
       AND m.ended_at IS NULL
   );
-$;
+';
 
 REVOKE ALL ON FUNCTION public.can_view_couple_game_invitation(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.can_view_couple_game_invitation(uuid) TO authenticated;
