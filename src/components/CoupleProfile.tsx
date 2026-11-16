@@ -37,15 +37,32 @@ function withProfileTimeout<T>(request: PromiseLike<T>, message: string): Promis
 
 export function ProfileAvatarButton({ userId, onClick }: { userId: string; onClick: () => void }) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const loadAvatar = useCallback(async () => {
-    const { data } = await profileTable().select("avatar_path").eq("id", userId).maybeSingle();
-    setAvatarUrl(await createProfileImageUrl(data?.avatar_path ?? null, userId));
+  const loadAvatar = useCallback(async (isActive: () => boolean = () => true) => {
+    try {
+      const { data, error } = await withProfileTimeout(
+        profileTable().select("avatar_path").eq("id", userId).maybeSingle(),
+        "A foto do perfil está demorando para responder.",
+      );
+      if (error) throw error;
+      const url = await withProfileTimeout(
+        createProfileImageUrl(data?.avatar_path ?? null, userId),
+        "A foto do perfil está demorando para carregar.",
+      );
+      if (isActive()) setAvatarUrl(url);
+    } catch (cause) {
+      console.warn("Não foi possível atualizar a foto do cabeçalho.", cause);
+      if (isActive()) setAvatarUrl(null);
+    }
   }, [userId]);
   useEffect(() => {
-    void loadAvatar();
-    const refresh = () => void loadAvatar();
+    let active = true;
+    void loadAvatar(() => active);
+    const refresh = () => void loadAvatar(() => active);
     window.addEventListener("morados:profile-updated", refresh);
-    return () => window.removeEventListener("morados:profile-updated", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("morados:profile-updated", refresh);
+    };
   }, [loadAvatar]);
   return <button type="button" data-tour-target="tour-profile-button" className="topbar-icon-button profile-avatar-trigger" onClick={onClick} aria-label="Abrir meu perfil" title="Meu perfil">
     {avatarUrl ? <img src={avatarUrl} alt="" /> : <UserRound aria-hidden="true" />}
