@@ -1,24 +1,71 @@
-# Namoro com IA
+# Morados
 
-Crie um site/app com a palavra NAMORO no meio da tela branca e uma IA integrada. Tenho um projeto próprio do Supabase e quero conectar, então não use o Lovable Cloud
+Morados é um aplicativo privado para duas pessoas construírem uma vida compartilhada: conversar, publicar momentos, guardar memórias, organizar planos, explorar uma casa ilustrada e jogar juntas.
 
-This project was built with [Lovable](https://lovable.dev).
+O produto é pensado para funcionar como uma experiência de aplicativo em Android e navegador, com dados e sincronização no projeto Supabase próprio.
 
-## Build with Lovable
+## Módulos
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b4d0cd87-ea1b-4dd5-bd67-64c6f2bceb18).
+- **Feed:** publicações, fotos, áudio e conteúdo do casal.
+- **Conversa:** mensagens, anexos, áudio, preferências e interface de chamada.
+- **Memórias:** registros privados e compartilhados.
+- **Planos:** calendário e compromissos.
+- **Casa:** ambiente ilustrado e explorável.
+- **Jogos:** catálogo de jogos individuais, locais e com suporte online.
+- **Perfil e pareamento:** dados pessoais, mídia e vínculo entre as duas contas.
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+## Stack
 
-## Development
+- React 19 e TypeScript
+- Vite 8 e Tailwind CSS 4
+- TanStack Router e TanStack Query
+- Supabase para autenticação, dados, mídia e recursos em tempo real
+- Capacitor 8 para Android
+- Vitest e Testing Library para testes automatizados
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Desenvolvimento
+
+O projeto usa Bun e mantém o lockfile `bun.lock`.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+bun install
+bun run dev
 ```
+
+Comandos de qualidade e compilação:
+
+```sh
+bun run test
+bun run lint
+bun run build
+bun run build:android-web
+```
+
+Para sincronizar os assets web e plugins nativos do Capacitor:
+
+```sh
+bun run cap:sync
+```
+
+A configuração de ambiente deve apontar para o projeto Supabase próprio. Não colocar chaves privadas ou segredos no código do cliente ou no repositório.
+
+## Android
+
+O APK é gerado pelo workflow [Build Morados Capacitor Android APK](.github/workflows/build-android.yml), acionado por alterações relevantes na branch principal. O workflow constrói os assets web locais, sincroniza o Capacitor, compila e verifica a assinatura do APK antes de publicar a release.
+
+As releases Android ficam em [GitHub Releases](https://github.com/cainalo/namoro-com-ia/releases).
+
+## Arquitetura
+
+- `src/routes/`: rotas do aplicativo.
+- `src/components/`: telas e componentes dos módulos.
+- `src/lib/`: regras de negócio, integração e operações de domínio.
+- `src/integrations/supabase/`: clientes e tipos do Supabase.
+- `src/test/` e arquivos `*.test.*`: testes automatizados.
+- `supabase/migrations/`: mudanças versionadas do banco, quando aplicável.
+
+## Transformação do produto
+
+A auditoria inicial e os princípios de transformação estão documentados em [docs/TRANSFORMACAO_MORADOS.md](docs/TRANSFORMACAO_MORADOS.md). A prioridade é construir uma identidade autoral coerente sem uniformizar os módulos nem comprometer os fluxos existentes.
+
+O desenvolvimento é controlado pelo repositório e pelos workflows do GitHub. Não é necessário depender de geração automática de código por um editor visual.
