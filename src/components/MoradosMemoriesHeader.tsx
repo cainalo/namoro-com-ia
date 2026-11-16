@@ -1,7 +1,7 @@
 import { memo } from "react";
 
 type MoradosMemoriesHeaderProps = {
-  count: number;
+  count: number | null;
 };
 
 /**
@@ -11,7 +11,7 @@ type MoradosMemoriesHeaderProps = {
 export const MoradosMemoriesHeader = memo(function MoradosMemoriesHeader({
   count,
 }: MoradosMemoriesHeaderProps) {
-  const label = count === 1 ? "lembrança guardada" : "lembranças guardadas";
+  const label = count === null\n    ? "arquivo sendo carregado"\n    : count === 1\n      ? "lembrança guardada"\n      : "lembranças guardadas";
 
   return (
     <header className="morados-memories-heading" aria-labelledby="morados-memories-title">
