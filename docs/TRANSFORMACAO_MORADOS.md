@@ -115,7 +115,11 @@ Evitar:
 
 Estas são direções de investigação, não layouts finais.
 
-## 6. Sequência de trabalho
+## 6. Piloto visual do Feed
+
+O primeiro experimento visual está documentado em [docs/IDENTIDADE_VISUAL_MORADOS.md](IDENTIDADE_VISUAL_MORADOS.md). Ele estabelece uma abertura editorial própria, filtros em abas e superfícies de publicação mais legíveis. A camada está isolada no Feed para evitar mudar outros módulos por acidente. Está em revisão e ainda precisa de validação visual no navegador e em Android.
+
+## 7. Sequência de trabalho
 
 ### Etapa 0 — Auditoria e fundação
 - [x] Mapear estrutura, módulos e stack.
@@ -161,7 +165,7 @@ Estas são direções de investigação, não layouts finais.
 - [ ] Testar em navegador e Android real, incluindo o Samsung Galaxy A14/SM-A146M usado na validação anterior.
 - [ ] Acompanhar desempenho, acessibilidade e falhas após cada versão.
 
-## 7. Critérios para aceitar uma entrega
+## 8. Critérios para aceitar uma entrega
 
 Uma entrega só será considerada concluída quando:
 - o objetivo e o escopo estiverem explícitos;
