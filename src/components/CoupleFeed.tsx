@@ -60,6 +60,7 @@ import {
 import { getMoradosMusicTrack, MORADOS_MUSIC_TRACKS, renderMoradosMusic } from "@/lib/morados-music-library";
 import { openMoradosAppSettings } from "@/lib/device-settings";
 import { MoradosCameraLauncher as InAppMediaCapture } from "@/components/MoradosCamera";
+import { MoradosFeedHeader } from "@/components/MoradosFeedHeader";
 
 type FeedBlockView = CouplePostBlock & { media_url: string | null };
 
@@ -1292,6 +1293,7 @@ export function CoupleFeed({
   return (
     <section className="social-feed">
       <audio ref={feedMusicRef} className="feed-ambient-audio" aria-hidden="true" preload="none" loop />
+      <MoradosFeedHeader />
       <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
         {([
           ["all", "Tudo"],
@@ -1374,14 +1376,14 @@ function FeedPostPhoto({
 }
 
 const POST_TYPE_COLORS = {
-  red: "#C6283B",
-  blue: "#155ADB",
-  green: "#237A43",
-  orange: "#C54B1C",
-  teal: "#087985",
-  plum: "#663A92",
-  rose: "#A72F69",
-  amber: "#865A00",
+  red: "#A76C5D",
+  blue: "#63818B",
+  green: "#718260",
+  orange: "#B47B50",
+  teal: "#5D827C",
+  plum: "#88718A",
+  rose: "#AA7778",
+  amber: "#98794B",
 } as const;
 
 type PostTone = keyof typeof POST_TYPE_COLORS;
@@ -1400,15 +1402,11 @@ function getPostToneForId(postId: string): PostTone {
 function useMoradosPostTypeStyle(tone: PostTone) {
   const color = POST_TYPE_COLORS[tone];
   return {
+    // A cor estável da publicação agora identifica detalhes, sem dominar a superfície de leitura.
     ["--pt" as string]: color,
-    ["--post-fade" as string]: color,
-    ["--morados-post-bg" as string]: color,
-    ["--morados-post-ink" as string]: "#fffaf1",
-    borderColor: color,
-    borderWidth: 1,
-    backgroundColor: color,
-    color: "#fffaf1",
-    boxShadow: `0 9px 28px -17px color-mix(in srgb, ${color} 70%, transparent)`,
+    ["--post-fade" as string]: "var(--morados-feed-surface)",
+    ["--morados-post-bg" as string]: "var(--morados-feed-surface)",
+    ["--morados-post-ink" as string]: "var(--morados-feed-ink)",
   } as CSSProperties;
 }
 
