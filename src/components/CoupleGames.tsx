@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Check,
@@ -10,6 +10,7 @@ import {
   Play,
   Search,
   LockKeyhole,
+  LoaderCircle,
   MoreVertical,
   Shield,
   Sparkles,
@@ -38,6 +39,7 @@ import { OnlineGameHost } from "@/components/OnlineGameHost";
 import { OnlineBattleshipGame } from "@/components/OnlineBattleshipGame";
 import { OnlineDominoGame } from "@/components/OnlineDominoGame";
 import { OnlineTrucoGame } from "@/components/OnlineTrucoGame";
+import { createGameInvitation, onlineGameInvitationError, type OnlineGameLaunch, type OnlineInviteMode } from "@/lib/game-invitations";
 import type { SecondaryPageSection } from "@/components/SecondaryPageChrome";
 import {
   LocalConnectFourGame,
@@ -141,10 +143,12 @@ const launchInfo:Record<GameId,{eyebrow:string;tagline:string;story:string;goal:
 "cave-expedition":{eyebrow:"RPG 2D · AS RUÍNAS DE MORADOS",tagline:"Desça às ruínas. Enfrente o que desperta.",story:"Uma expedição encontra a entrada de um complexo subterrâneo esquecido. Câmaras, passagens ocultas, criaturas e relíquias aguardam. A equipe precisa explorar e sobreviver aos guardiões.",goal:"Explorar os andares, encontrar tesouros, vencer monstros e concluir a expedição.",steps:["Explore o mapa e revele áreas ocultas.","Gerencie vida, energia e poções.","Em batalha, ataque, use habilidades, defenda ou recupere vida."],chips:["Exploração 2D","Combate e chefes","Cooperação"]}
 };
 
-function GamePage({gameId,userId,onBack}:{gameId:GameId;userId:string;onBack:()=>void}) {
- const [stage,setStage]=useState<"cover"|"mode"|"briefing"|"play">("cover");
- const [mode,setMode]=useState<GameMode>(null);
+function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:string;onBack:()=>void;onlineLaunch?:OnlineGameLaunch|null}) {
+ const [stage,setStage]=useState<"cover"|"mode"|"briefing"|"play"|"waiting">(()=>onlineLaunch?"play":"cover");
+ const [mode,setMode]=useState<GameMode>(()=>onlineLaunch?"online":null);
  const [confirmExit,setConfirmExit]=useState(false);
+ const [inviteBusy,setInviteBusy]=useState(false);
+ const [inviteError,setInviteError]=useState<string|null>(null);
  const game=catalogue.find(item=>item.id===gameId)!;
  const info=launchInfo[gameId],GameIcon=game.icon,{play}=useGameAudio();
  useEffect(()=>{
@@ -156,6 +160,35 @@ function GamePage({gameId,userId,onBack}:{gameId:GameId;userId:string;onBack:()=
   window.addEventListener("keydown",escape);window.addEventListener("morados:game-back",goBack);window.addEventListener("morados:game-exit",onGameExit);
   return()=>{delete document.documentElement.dataset.moradosGameOpen;document.body.style.overflow=prior;window.removeEventListener("keydown",escape);window.removeEventListener("morados:game-back",goBack);window.removeEventListener("morados:game-exit",onGameExit);};
  },[onBack,confirmExit,stage]);
+
+ useEffect(()=>{
+  const onInvitationClosed=(event:Event)=>{
+   const detail=(event as CustomEvent<{gameKey?:string}>).detail;
+   if(detail?.gameKey===gameId && mode==="online" && stage==="waiting"){
+    setStage("briefing");
+    setInviteError("O convite foi encerrado. Você pode enviar outro quando quiser.");
+   }
+  };
+  window.addEventListener("morados:game-invitation-closed",onInvitationClosed);
+  return()=>window.removeEventListener("morados:game-invitation-closed",onInvitationClosed);
+ },[gameId,mode,stage]);
+
+ async function sendOnlineInvitation(){
+  if(mode!=="online"||inviteBusy)return;
+  setInviteBusy(true);
+  setInviteError(null);
+  const inviteMode:OnlineInviteMode = ["this-or-that","daily-challenge","investigation","investigation-train","escape-room","island-survival","cave-expedition"].includes(gameId)?"cooperative":"competitive";
+  try{
+   const result=await createGameInvitation(gameId,inviteMode);
+   if(result.error)throw result.error;
+   if(typeof result.data!=="string")throw new Error("invitation_creation_failed");
+   setStage("waiting");
+  }catch(cause){
+   const failure=cause as {code?:string;message?:string};
+   setInviteError(onlineGameInvitationError(failure.message??"",failure.code));
+  }finally{setInviteBusy(false);}
+ }
+
  const back=()=>{play("tap");if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="briefing")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
  const settings=<InlineMenu label="Configurações do jogo" trigger={<MoreVertical/>} triggerClassName="game-world-float-button" menuClassName="game-world-menu-panel" className="game-world-menu">{close=><><div className="game-world-menu-heading">CONFIGURAÇÕES</div><GameAudioToggle/><button type="button" role="menuitem" onClick={()=>{setStage("briefing");setConfirmExit(false);close();play("tap");}}><Sparkles/> Regras e objetivo</button><button type="button" role="menuitem" onClick={()=>{setStage("mode");setConfirmExit(false);close();play("tap");}}><Users/> Trocar modo</button><button type="button" role="menuitem" onClick={()=>{setConfirmExit(true);close();play("warning");}}><ArrowLeft/> Sair da partida</button></>}</InlineMenu>;
  const choices=[{id:"solo" as const,title:"Jogar sozinho",detail:"Uma experiência individual, no seu ritmo. Nos duelos, enfrente o Morados.",meta:"1 JOGADOR",Icon:Crown},{id:"local" as const,title:"Jogar neste aparelho",detail:"Duas pessoas compartilham a tela e alternam os controles.",meta:"2 JOGADORES · LOCAL",Icon:Users},{id:"online" as const,title:"Jogar online",detail:"Cada pessoa usa seu aparelho, com a partida sincronizada.",meta:"2 JOGADORES · ONLINE",Icon:Shield}];
@@ -164,7 +197,8 @@ function GamePage({gameId,userId,onBack}:{gameId:GameId;userId:string;onBack:()=
   <main className={"game-world-main stage-"+stage}>
    {stage==="cover"&&<section className="game-launch-cover"><div className="game-cover-copy"><span className="game-world-eyebrow"><Sparkles/> {info.eyebrow}</span><h1>{game.name}</h1><p className="game-cover-tagline">{info.tagline}</p><p className="game-cover-description">{game.description}</p><div className="game-cover-highlights">{info.chips.map(x=><span key={x}>{x}</span>)}</div><button type="button" className="game-world-primary" onClick={()=>{setStage("mode");play("discovery");}}><Play/> Entrar no jogo</button><span className="game-cover-brand"><Gamepad2/> MORADOS ORIGINALS</span></div><div className={"game-cover-art art-"+gameId} aria-hidden="true"><span className="game-cover-orbit orbit-one"/><span className="game-cover-orbit orbit-two"/><span className="game-cover-beam beam-one"/><span className="game-cover-beam beam-two"/><span className="game-cover-spark spark-one"/><span className="game-cover-spark spark-two"/><span className="game-cover-spark spark-three"/><span className="game-cover-token token-one"/><span className="game-cover-token token-two"/><span className="game-cover-token token-three"/><div className="game-cover-emblem"><GameIcon/></div><span className="game-cover-art-label">{game.category.toUpperCase()}</span><span className="game-cover-art-number">0{catalogue.findIndex(x=>x.id===gameId)+1}</span></div><div className="game-cover-premise"><span>O UNIVERSO</span><p>{info.story}</p></div></section>}
    {stage==="mode"&&<section className="game-mode-stage"><div className="game-stage-heading"><span className="game-world-eyebrow">ESCOLHA SUA EXPERIÊNCIA</span><h1>Como você quer jogar?</h1><p>Escolha como entrar neste jogo.</p></div><div className="game-world-mode-grid">{choices.map(({id,title,detail,meta,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setMode(id);setStage("briefing");play("discovery");}}><span className="game-world-mode-icon"><Icon/></span><span className="game-world-mode-meta">{meta}</span><strong>{title}</strong><small>{detail}</small><span className="game-world-mode-enter">Continuar <ArrowLeft/></span></button>)}</div><button type="button" className="game-world-text-button" onClick={()=>setStage("cover")}>Voltar à capa</button></section>}
-   {stage==="briefing"&&<section className="game-briefing-stage"><div className="game-stage-heading"><span className="game-world-eyebrow">ANTES DE COMEÇAR · {mode==="solo"?"MODO INDIVIDUAL":mode==="local"?"DOIS JOGADORES · LOCAL":"DOIS JOGADORES · ONLINE"}</span><h1>{info.tagline}</h1><p>{info.story}</p></div><div className="game-briefing-grid"><article className="game-briefing-objective"><span className="game-briefing-number">01</span><div><small>OBJETIVO PRINCIPAL</small><h2>{info.goal}</h2></div></article><article className="game-briefing-guide"><span className="game-briefing-number">02</span><div><small>COMO JOGAR</small><ol>{info.steps.map(s=><li key={s}>{s}</li>)}</ol></div></article></div><div className="game-briefing-footer"><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Trocar modo</button><button type="button" className="game-world-primary" onClick={()=>{setStage("play");play("success");}}><Play/> Começar partida</button></div></section>}
+   {stage==="briefing"&&<section className="game-briefing-stage"><div className="game-stage-heading"><span className="game-world-eyebrow">ANTES DE COMEÇAR · {mode==="solo"?"MODO INDIVIDUAL":mode==="local"?"DOIS JOGADORES · LOCAL":"DOIS JOGADORES · ONLINE"}</span><h1>{info.tagline}</h1><p>{info.story}</p></div><div className="game-briefing-grid"><article className="game-briefing-objective"><span className="game-briefing-number">01</span><div><small>OBJETIVO PRINCIPAL</small><h2>{info.goal}</h2></div></article><article className="game-briefing-guide"><span className="game-briefing-number">02</span><div><small>COMO JOGAR</small><ol>{info.steps.map(s=><li key={s}>{s}</li>)}</ol></div></article></div><div className="game-briefing-footer"><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Trocar modo</button><button type="button" className="game-world-primary" disabled={inviteBusy} onClick={()=>{if(mode==="online"){void sendOnlineInvitation();}else{setStage("play");play("success");}}}>{inviteBusy?<LoaderCircle/>:mode==="online"?<Users/>:<Play/>} {inviteBusy?"Enviando convite…":mode==="online"?"Convidar e aguardar":"Começar partida"}</button></div>{inviteError&&<p className="couple-game-error" role="alert">{inviteError}</p>}</section>}
+   {stage==="waiting"&&mode==="online"&&<section className="game-briefing-stage game-invite-waiting"><div className="game-stage-heading"><span className="game-world-eyebrow">CONVITE ENVIADO</span><h1>Aguardando sua namorada.</h1><p>A partida ainda não foi iniciada. Assim que ela aceitar o convite que aparece sobre qualquer tela do Morados, vocês entrarão juntos no jogo. O convite pode ser cancelado no aviso global.</p></div><div className="game-briefing-footer"><button type="button" className="game-world-text-button" onClick={()=>setStage("briefing")}>Voltar às regras</button></div></section>}
    {stage==="play"&&mode&&<section className="game-session-stage"><div className="game-session-context"><span>{game.category.toUpperCase()}</span><strong>{game.name}</strong><small>{mode==="solo"?"MODO INDIVIDUAL":mode==="local"?"DOIS JOGADORES · LOCAL":"PARTIDA ONLINE"}</small></div><div key={mode+"-"+gameId} className="game-play-surface">{mode==="solo"&&renderSoloGame(gameId)}{mode==="local"&&renderLocalGame(gameId)}{mode==="online"&&renderOnlineGame(gameId,userId)}</div></section>}
   </main>
   {confirmExit&&<div className="game-world-exit-backdrop" role="presentation"><section className="game-world-exit-dialog" role="dialog" aria-modal="true" aria-labelledby="game-exit-title"><span className="game-world-exit-icon"><Shield/></span><small>PAUSAR EXPERIÊNCIA</small><h2 id="game-exit-title">Sair desta partida?</h2><p>Você pode voltar ao jogo depois. O progresso salvo continua disponível quando o modo permitir.</p><button type="button" className="game-world-primary" onClick={()=>{setConfirmExit(false);setStage("cover");setMode(null);}}>Voltar à capa do jogo</button><button type="button" className="game-world-text-button" onClick={()=>{setConfirmExit(false);onBack();}}>Voltar ao catálogo</button><button type="button" className="game-world-exit-cancel" onClick={()=>setConfirmExit(false)}>Continuar jogando</button></section></div>}
@@ -228,9 +262,20 @@ function renderOnlineGame(gameId: GameId, userId: string) {
   );
 }
 
-export function CoupleGames({ userId }: { userId: string; onNavigate: (section: SecondaryPageSection) => void }) {
+export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { userId: string; onNavigate: (section: SecondaryPageSection) => void; onlineLaunch?: OnlineGameLaunch | null; onOnlineLaunchConsumed?: () => void }) {
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
+  const [launch, setLaunch] = useState<OnlineGameLaunch | null>(null);
+  const lastLaunchId = useRef<string | null>(null);
   const [filter, setFilter] = useState<"all" | "strategy" | "cooperation" | "investigation">("all");
+
+  useEffect(() => {
+    if (!onlineLaunch || lastLaunchId.current === onlineLaunch.invitationId) return;
+    if (!catalogue.some((game) => game.id === onlineLaunch.gameKey)) return;
+    lastLaunchId.current = onlineLaunch.invitationId;
+    setLaunch(onlineLaunch);
+    setActiveGame(onlineLaunch.gameKey as GameId);
+    onOnlineLaunchConsumed?.();
+  }, [onlineLaunch, onOnlineLaunchConsumed]);
 
   const visibleGames = catalogue.filter((game) => {
     if (filter === "strategy") return game.category === "Estratégia";
@@ -241,7 +286,7 @@ export function CoupleGames({ userId }: { userId: string; onNavigate: (section: 
 
   if (activeGame) {
     return (
-      <GameAudioProvider><GamePage gameId={activeGame} userId={userId} onBack={() => setActiveGame(null)} /></GameAudioProvider>
+      <GameAudioProvider><GamePage key={launch?.invitationId ?? activeGame} gameId={activeGame} userId={userId} onlineLaunch={launch} onBack={() => { setActiveGame(null); setLaunch(null); }} /></GameAudioProvider>
     );
   }
 
