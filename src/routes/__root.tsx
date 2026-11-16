@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import moradosFeedCss from "../styles/morados-feed.css?url";
 import moradosMemoriesCss from "../styles/morados-memories.css?url";
+import moradosConversationCss from "../styles/morados-conversation.css?url";
 import { Capacitor } from "@capacitor/core";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -103,6 +104,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: appCss },
       { rel: "stylesheet", href: moradosFeedCss },
       { rel: "stylesheet", href: moradosMemoriesCss },
+      { rel: "stylesheet", href: moradosConversationCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/morados-icon.svg", type: "image/svg+xml" },
