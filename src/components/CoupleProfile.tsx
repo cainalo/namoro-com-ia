@@ -23,17 +23,46 @@ function profileTable() {
   return (supabase as unknown as { from: (table: string) => any }).from("profiles");
 }
 
+const PROFILE_REQUEST_TIMEOUT_MS = 10_000;
+
+function withProfileTimeout<T>(request: PromiseLike<T>, message: string): Promise<T> {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), PROFILE_REQUEST_TIMEOUT_MS);
+  });
+  return Promise.race([Promise.resolve(request), timeout]).finally(() => {
+    if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+  });
+}
+
 export function ProfileAvatarButton({ userId, onClick }: { userId: string; onClick: () => void }) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const loadAvatar = useCallback(async () => {
-    const { data } = await profileTable().select("avatar_path").eq("id", userId).maybeSingle();
-    setAvatarUrl(await createProfileImageUrl(data?.avatar_path ?? null, userId));
+  const loadAvatar = useCallback(async (isActive: () => boolean = () => true) => {
+    try {
+      const { data, error } = await withProfileTimeout(
+        profileTable().select("avatar_path").eq("id", userId).maybeSingle(),
+        "A foto do perfil está demorando para responder.",
+      );
+      if (error) throw error;
+      const url = await withProfileTimeout(
+        createProfileImageUrl(data?.avatar_path ?? null, userId),
+        "A foto do perfil está demorando para carregar.",
+      );
+      if (isActive()) setAvatarUrl(url);
+    } catch (cause) {
+      console.warn("Não foi possível atualizar a foto do cabeçalho.", cause);
+      if (isActive()) setAvatarUrl(null);
+    }
   }, [userId]);
   useEffect(() => {
-    void loadAvatar();
-    const refresh = () => void loadAvatar();
+    let active = true;
+    void loadAvatar(() => active);
+    const refresh = () => void loadAvatar(() => active);
     window.addEventListener("morados:profile-updated", refresh);
-    return () => window.removeEventListener("morados:profile-updated", refresh);
+    return () => {
+      active = false;
+      window.removeEventListener("morados:profile-updated", refresh);
+    };
   }, [loadAvatar]);
   return <button type="button" data-tour-target="tour-profile-button" className="topbar-icon-button profile-avatar-trigger" onClick={onClick} aria-label="Abrir meu perfil" title="Meu perfil">
     {avatarUrl ? <img src={avatarUrl} alt="" /> : <UserRound aria-hidden="true" />}
@@ -56,18 +85,25 @@ export function CoupleProfile({ userId }: { userId: string }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState<"avatar" | "banner" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isActive: () => boolean = () => true) => {
     setLoading(true);
     setError(null);
+    setMediaError(null);
     try {
-      const { data: row, error: profileError } = await profileTable()
-        .select("id,display_name,avatar_path,banner_path,bio,interests,hobbies,favorite_food,favorite_music,favorite_film,profile_quote")
-        .eq("id", userId)
-        .maybeSingle();
+      const { data: row, error: profileError } = await withProfileTimeout(
+        profileTable()
+          .select("id,display_name,avatar_path,banner_path,bio,interests,hobbies,favorite_food,favorite_music,favorite_film,profile_quote")
+          .eq("id", userId)
+          .maybeSingle(),
+        "O perfil está demorando para responder. Verifique sua conexão e tente novamente.",
+      );
+      if (!isActive()) return;
       if (profileError) throw profileError;
       if (!row) throw new Error("O perfil desta conta ainda não foi criado. Tente sair e entrar novamente.");
+
       const next = row as ProfileRecord;
       setProfile(next);
       setName(next.display_name ?? "");
@@ -78,20 +114,49 @@ export function CoupleProfile({ userId }: { userId: string }) {
       setFavoriteMusic(next.favorite_music ?? "");
       setFavoriteFilm(next.favorite_film ?? "");
       setProfileQuote(next.profile_quote ?? "");
-      const [avatar, banner] = await Promise.all([
-        createProfileImageUrl(next.avatar_path, userId),
-        createProfileImageUrl(next.banner_path, userId),
+
+      // O formulário é liberado assim que os dados textuais chegam.
+      // A assinatura das imagens é independente e nunca bloqueia os campos.
+      setAvatarUrl(null);
+      setBannerUrl(null);
+      setLoading(false);
+
+      const [avatarResult, bannerResult] = await Promise.allSettled([
+        withProfileTimeout(
+          createProfileImageUrl(next.avatar_path, userId),
+          "A foto de perfil está demorando para carregar.",
+        ),
+        withProfileTimeout(
+          createProfileImageUrl(next.banner_path, userId),
+          "O banner está demorando para carregar.",
+        ),
       ]);
+      if (!isActive()) return;
+
+      const avatar = avatarResult.status === "fulfilled" ? avatarResult.value : null;
+      const banner = bannerResult.status === "fulfilled" ? bannerResult.value : null;
       setAvatarUrl(avatar);
       setBannerUrl(banner);
+      if (avatarResult.status === "rejected" || bannerResult.status === "rejected") {
+        console.warn("O texto do perfil foi carregado, mas uma mídia não pôde ser resolvida.", {
+          avatar: avatarResult.status === "rejected" ? avatarResult.reason : null,
+          banner: bannerResult.status === "rejected" ? bannerResult.reason : null,
+        });
+        setMediaError("Seu perfil está disponível. Não foi possível carregar uma das imagens; tente atualizar a tela mais tarde.");
+      }
     } catch (cause) {
+      if (!isActive()) return;
       setError(cause instanceof Error ? cause.message : "Não foi possível carregar o perfil.");
-    } finally {
+      setProfile(null);
       setLoading(false);
     }
   }, [userId]);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    let active = true;
+    void load(() => active);
+    return () => { active = false; };
+  }, [load]);
 
   const profileChecklist = [
     Boolean(name.trim()),
@@ -109,16 +174,19 @@ export function CoupleProfile({ userId }: { userId: string }) {
     setError(null);
     setMessage(null);
     try {
-      const { error: updateError } = await profileTable().update({
-        display_name: name.trim() || null,
-        bio: bio.trim() || null,
-        interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
-        hobbies: hobbies.trim() || null,
-        favorite_food: favoriteFood.trim() || null,
-        favorite_music: favoriteMusic.trim() || null,
-        favorite_film: favoriteFilm.trim() || null,
-        profile_quote: profileQuote.trim() || null,
-      }).eq("id", userId);
+      const { error: updateError } = await withProfileTimeout(
+        profileTable().update({
+          display_name: name.trim() || null,
+          bio: bio.trim() || null,
+          interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
+          hobbies: hobbies.trim() || null,
+          favorite_food: favoriteFood.trim() || null,
+          favorite_music: favoriteMusic.trim() || null,
+          favorite_film: favoriteFilm.trim() || null,
+          profile_quote: profileQuote.trim() || null,
+        }).eq("id", userId),
+        "O salvamento do perfil está demorando. Verifique sua conexão e tente novamente.",
+      );
       if (updateError) throw updateError;
       setProfile({
         ...profile,
@@ -148,32 +216,69 @@ export function CoupleProfile({ userId }: { userId: string }) {
       setError("Escolha um arquivo de imagem.");
       return;
     }
+
     setUploading(kind);
     setError(null);
+    setMediaError(null);
     setMessage(null);
-    const uploaded = await uploadUserProfileMedia(userId, file);
-    if (uploaded.error || !uploaded.path) {
-      setError(uploaded.error?.message ?? "Não foi possível enviar a imagem.");
+    let uploadedPath: string | null = null;
+    try {
+      const uploaded = await withProfileTimeout(
+        uploadUserProfileMedia(userId, file),
+        "O envio da imagem está demorando. Verifique sua conexão e tente novamente.",
+      );
+      if (uploaded.error || !uploaded.path) {
+        throw uploaded.error ?? new Error("Não foi possível enviar a imagem.");
+      }
+      uploadedPath = uploaded.path;
+
+      const previousPath = kind === "avatar" ? profile?.avatar_path : profile?.banner_path;
+      const update = kind === "avatar"
+        ? await withProfileTimeout(
+            profileTable().update({ avatar_path: uploaded.path }).eq("id", userId),
+            "A atualização da foto está demorando. Tente novamente.",
+          )
+        : await withProfileTimeout(
+            profileTable().update({ banner_path: uploaded.path }).eq("id", userId),
+            "A atualização do banner está demorando. Tente novamente.",
+          );
+      if (update.error) throw update.error;
+
+      setProfile((current) => current
+        ? { ...current, ...(kind === "avatar" ? { avatar_path: uploaded.path } : { banner_path: uploaded.path }) }
+        : current);
+
+      try {
+        const { url, error: urlError } = await withProfileTimeout(
+          createUserProfileMediaUrl(uploaded.path),
+          "A imagem foi salva, mas sua prévia está demorando para carregar.",
+        );
+        if (urlError) throw urlError;
+        if (kind === "avatar") setAvatarUrl(url); else setBannerUrl(url);
+      } catch (cause) {
+        setMediaError("A imagem foi salva, mas a prévia não carregou. Atualize o perfil para tentar novamente.");
+        console.warn("A imagem do perfil foi salva, mas não foi possível obter sua URL temporária.", cause);
+      }
+
+      if (previousPath && previousPath !== uploaded.path) {
+        void withProfileTimeout(
+          removeProfileImage(previousPath, userId),
+          "A limpeza da imagem anterior está demorando.",
+        ).catch((cause: unknown) => console.warn("Não foi possível remover a imagem anterior do perfil.", cause));
+      }
+      setMessage(kind === "avatar" ? "Foto de perfil atualizada." : "Banner atualizado.");
+      window.dispatchEvent(new Event("morados:profile-updated"));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível enviar a imagem.");
+      if (uploadedPath) {
+        void withProfileTimeout(
+          removeUserProfileMedia(uploadedPath),
+          "A limpeza da imagem não utilizada está demorando.",
+        ).catch((cleanupError: unknown) => console.warn("Não foi possível limpar a imagem não utilizada.", cleanupError));
+      }
+    } finally {
       setUploading(null);
-      return;
     }
-    const previousPath = kind === "avatar" ? profile?.avatar_path : profile?.banner_path;
-    const update = kind === "avatar"
-      ? await profileTable().update({ avatar_path: uploaded.path }).eq("id", userId)
-      : await profileTable().update({ banner_path: uploaded.path }).eq("id", userId);
-    if (update.error) {
-      await removeUserProfileMedia(uploaded.path);
-      setError(update.error.message);
-      setUploading(null);
-      return;
-    }
-    const { url } = await createUserProfileMediaUrl(uploaded.path);
-    setProfile((current) => current ? { ...current, ...(kind === "avatar" ? { avatar_path: uploaded.path } : { banner_path: uploaded.path }) } : current);
-    if (kind === "avatar") setAvatarUrl(url); else setBannerUrl(url);
-    if (previousPath && previousPath !== uploaded.path) await removeProfileImage(previousPath, userId);
-    setMessage(kind === "avatar" ? "Foto de perfil atualizada." : "Banner atualizado.");
-    window.dispatchEvent(new Event("morados:profile-updated"));
-    setUploading(null);
   }
 
   return <section className="profile-page" data-tour-target="tour-profile" aria-busy={loading}>
@@ -235,6 +340,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
             </div>
             {uploading && <p className="profile-note">Enviando {uploading === "avatar" ? "foto de perfil" : "banner"}…</p>}
             {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
+            {mediaError && <p className="profile-note" role="status">{mediaError}</p>}
             {message && <p className="text-sm text-primary" role="status">{message}</p>}
             <div className="flex justify-end"><button type="button" className="profile-save-button" disabled={saving || loading || uploading !== null} onClick={() => void saveProfile()}>
               {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Salvar perfil
@@ -243,6 +349,11 @@ export function CoupleProfile({ userId }: { userId: string }) {
         </div>
       </>
     )}
-    {error && !profile && !loading && <p className="profile-note mt-4" role="alert">{error}</p>}
+    {error && !profile && !loading && (
+      <div className="profile-note mt-4" role="alert">
+        <p>{error}</p>
+        <button type="button" className="inline-action mt-3" onClick={() => void load()}>Tentar carregar novamente</button>
+      </div>
+    )}
   </section>;
 }
