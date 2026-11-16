@@ -92,20 +92,38 @@ export function FirstAccessGate({ userId, initialName = "", onNavigate, children
   useEffect(() => { void loadStatus(); }, [userId]);
 
   useEffect(() => {
-    const replay = () => setMode("tour");
+    const replay = () => {
+      onNavigate("home");
+      setMode("tour");
+    };
     window.addEventListener("morados:show-tour", replay);
     return () => window.removeEventListener("morados:show-tour", replay);
-  }, []);
+  }, [onNavigate]);
 
-  async function finishTour() {
-    const { error: saveError } = await profileTable()
-      .update({ app_tour_completed_at: new Date().toISOString() })
-      .eq("id", userId);
-    if (saveError) {
-      console.error("Não foi possível registrar o fim do tutorial.", saveError);
-    }
+  function finishTour() {
+    // Libera o aplicativo imediatamente. A gravação do progresso não pode prender
+    // a navegação caso a conexão esteja lenta ou a API não responda.
     setMode("ready");
     onNavigate("home");
+
+    try {
+      const saveRequest = profileTable()
+        .update({ app_tour_completed_at: new Date().toISOString() })
+        .eq("id", userId);
+
+      void withFirstAccessTimeout(
+        saveRequest,
+        "O registro do tutorial está demorando.",
+      ).then(({ error: saveError }) => {
+        if (saveError) {
+          console.warn("Não foi possível registrar o fim do tutorial.", saveError);
+        }
+      }).catch((cause: unknown) => {
+        console.warn("O aplicativo continuou normalmente, mas o progresso do tutorial não foi salvo.", cause);
+      });
+    } catch (cause) {
+      console.warn("O aplicativo continuou normalmente, mas o progresso do tutorial não foi salvo.", cause);
+    }
   }
 
   if (mode === "loading") {
@@ -123,7 +141,7 @@ export function FirstAccessGate({ userId, initialName = "", onNavigate, children
   return (
     <>
       {children}
-      {mode === "tour" && <AppTour onNavigate={onNavigate} onFinish={() => void finishTour()} />}
+      {mode === "tour" && <AppTour onFinish={finishTour} />}
     </>
   );
 }
@@ -348,38 +366,24 @@ function FirstAccessProfile({
   );
 }
 
-const TOUR_STEPS: Array<{ section: AppSection; target: string; eyebrow: string; title: string; body: string }> = [
-  { section: "home", target: "tour-feed", eyebrow: "01 · FEED", title: "O ponto de encontro", body: "Aqui ficam as publicações, fotos e lembranças compartilhadas. Use o botão de criar publicação para registrar um momento ou escrever algo para vocês." },
-  { section: "home", target: "tour-create-post", eyebrow: "02 · PUBLICAR", title: "Registre um momento", body: "O botão com o símbolo de mais abre o editor de publicação. Você pode compartilhar um texto, uma foto ou uma lembrança no Feed." },
-  { section: "home", target: "tour-menu", eyebrow: "03 · MENU", title: "Atalhos e navegação", body: "Este botão abre o menu com acesso rápido a Jogos, Memórias, Planos e Casa, além das opções de instalação e saída da conta." },
-  { section: "messages", target: "tour-messages", eyebrow: "04 · MENSAGENS", title: "Um espaço só de vocês", body: "A conversa pode ser aberta pelo botão com o balão nas publicações. Aqui ficam as mensagens privadas; envie textos, áudios e anexos e use a barra superior para voltar ao restante do aplicativo." },
-  { section: "games", target: "tour-games", eyebrow: "05 · JOGOS", title: "Brinquem juntos", body: "A área de jogos reúne experiências para jogar em dupla. Abra um jogo para conhecer as regras e iniciar uma partida compartilhada." },
-  { section: "memories", target: "tour-memories", eyebrow: "06 · MEMÓRIAS", title: "Guardem o que importa", body: "Aqui vocês organizam fotos, vídeos, textos e momentos importantes em uma coleção particular." },
-  { section: "organize", target: "tour-plans", eyebrow: "07 · PLANOS", title: "Organizem a vida a dois", body: "Registrem compromissos, ideias, datas especiais e planos para acompanhar o que vem pela frente." },
-  { section: "universe", target: "tour-house", eyebrow: "08 · CASA", title: "O universo de vocês", body: "A Casa é o espaço visual do casal. Explorem os elementos disponíveis e acompanhem a construção desse ambiente compartilhado." },
-  { section: "profile", target: "tour-profile", eyebrow: "09 · PERFIL", title: "Sua identidade no Morados", body: "Edite sua foto, banner, descrição e preferências. Cada pessoa tem seu próprio perfil e pode personalizá-lo independentemente." },
+const TOUR_STEPS: Array<{ eyebrow: string; title: string; body: string }> = [
+  { eyebrow: "01 · FEED", title: "O ponto de encontro", body: "Aqui ficam as publicações, fotos e lembranças compartilhadas. Use o botão de criar publicação para registrar um momento ou escrever algo para vocês." },
+  { eyebrow: "02 · PUBLICAR", title: "Registre um momento", body: "O botão com o símbolo de mais abre o editor de publicação. Você pode compartilhar um texto, uma foto ou uma lembrança no Feed." },
+  { eyebrow: "03 · MENU", title: "Atalhos e navegação", body: "O menu reúne acesso rápido a Jogos, Memórias, Planos e Casa, além das opções de instalação e saída da conta." },
+  { eyebrow: "04 · MENSAGENS", title: "Um espaço só de vocês", body: "A conversa reúne as mensagens privadas. Envie textos, áudios e anexos e use a barra superior para voltar ao restante do aplicativo." },
+  { eyebrow: "05 · JOGOS", title: "Brinquem juntos", body: "A área de jogos reúne experiências para jogar em dupla. Abra um jogo para conhecer as regras e iniciar uma partida compartilhada." },
+  { eyebrow: "06 · MEMÓRIAS", title: "Guardem o que importa", body: "Aqui vocês organizam fotos, vídeos, textos e momentos importantes em uma coleção particular." },
+  { eyebrow: "07 · PLANOS", title: "Organizem a vida a dois", body: "Registrem compromissos, ideias, datas especiais e planos para acompanhar o que vem pela frente." },
+  { eyebrow: "08 · CASA", title: "O universo de vocês", body: "A Casa é o espaço visual do casal. Explorem os elementos disponíveis e acompanhem a construção desse ambiente compartilhado." },
+  { eyebrow: "09 · PERFIL", title: "Sua identidade no Morados", body: "Edite sua foto, banner, descrição e preferências. Cada pessoa tem seu próprio perfil e pode personalizá-lo independentemente." },
 ];
 
-function AppTour({ onNavigate, onFinish }: { onNavigate: (section: AppSection) => void; onFinish: () => void }) {
+function AppTour({ onFinish }: { onFinish: () => void }) {
   const [index, setIndex] = useState(0);
   const step = TOUR_STEPS[index];
 
-  useEffect(() => {
-    onNavigate(step.section);
-    const timer = window.setTimeout(() => {
-      document.querySelectorAll(".morados-tour-target").forEach((element) => element.classList.remove("morados-tour-target"));
-      const target = document.querySelector(`[data-tour-target="${step.target}"]`);
-      if (target instanceof HTMLElement) {
-        target.classList.add("morados-tour-target");
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 160);
-    return () => {
-      window.clearTimeout(timer);
-      document.querySelectorAll(".morados-tour-target").forEach((element) => element.classList.remove("morados-tour-target"));
-    };
-  }, [index, step.section, step.target, onNavigate]);
-
+  // O tutorial permanece isolado em um único painel leve: trocar a etapa não
+  // navega nem monta/desmonta telas pesadas por baixo do diálogo.
   return (
     <div className="morados-tour-layer" role="dialog" aria-modal="true" aria-labelledby="morados-tour-title">
       <div className="morados-tour-card">
@@ -388,12 +392,12 @@ function AppTour({ onNavigate, onFinish }: { onNavigate: (section: AppSection) =
         <h2 id="morados-tour-title">{step.title}</h2>
         <p>{step.body}</p>
         <div className="morados-tour-actions">
-          <button type="button" className="morados-tour-skip" onClick={onFinish}>Encerrar tutorial</button>
+          <button type="button" className="morados-tour-skip" onClick={onFinish}>Pular tutorial</button>
           <div>
             <button type="button" className="morados-tour-prev" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0}><ArrowLeft /> Anterior</button>
             {index === TOUR_STEPS.length - 1
               ? <button type="button" className="morados-tour-next" onClick={onFinish}>Concluir <Check /></button>
-              : <button type="button" className="morados-tour-next" onClick={() => setIndex((value) => Math.min(TOUR_STEPS.length - 1, value + 1))}>Próxima tela <ArrowRight /></button>}
+              : <button type="button" className="morados-tour-next" onClick={() => setIndex((value) => Math.min(TOUR_STEPS.length - 1, value + 1))}>Próxima etapa <ArrowRight /></button>}
           </div>
         </div>
       </div>
