@@ -499,7 +499,6 @@
   height: 19px;
   transform: none;
 }
-.game-world-mode-card.is-solo { --world-accent: var(--world-accent); }
 .game-world-mode-card.is-local { background-color: color-mix(in srgb, var(--world-panel) 80%, var(--world-accent-2)); }
 .game-world-mode-card.is-online { background-color: color-mix(in srgb, var(--world-panel) 82%, var(--world-accent)); }
 
@@ -609,4 +608,49 @@
 @media (prefers-reduced-motion: reduce) {
   .games-hub-card,
   .game-world-mode-card { transition: none !important; }
+}
+
+
+/* Filtros discretos: funcionam como navegação, não como mini cartões. */
+.games-hub-filters {
+  gap: clamp(14px, 2.3vw, 25px);
+  padding: 8px 0 17px;
+  border-bottom: 1px solid var(--color-border);
+}
+.games-hub-filters button {
+  min-height: 32px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 1px 7px;
+  color: var(--color-muted-foreground);
+  font-size: .76rem;
+  font-weight: 700;
+}
+.games-hub-filters button.is-active {
+  border-color: var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+}
+
+/* Pequenas variações geométricas: cada capa recebe uma silhueta reconhecível. */
+.game-cover-art.art-connect-four .game-cover-emblem { border-radius: 24px; transform: rotate(-5deg); }
+.game-cover-art.art-checkers .game-cover-emblem { border-radius: 50%; transform: rotate(0); }
+.game-cover-art.art-this-or-that .game-cover-emblem { border-radius: 48% 48% 42% 18%; transform: rotate(-8deg); }
+.game-cover-art.art-daily-challenge .game-cover-emblem { border-radius: 50% 50% 18px 50%; transform: rotate(7deg); }
+.game-cover-art.art-investigation .game-cover-emblem { border-radius: 18px 18px 34px 34px; transform: rotate(0); }
+.game-cover-art.art-investigation-train .game-cover-emblem { border-radius: 50% 50% 16px 16px; transform: rotate(0); }
+.game-cover-art.art-chess .game-cover-emblem { border-radius: 50%; transform: rotate(0); }
+.game-cover-art.art-battleship .game-cover-emblem { border-radius: 50% 50% 22px 22px; transform: rotate(-8deg); }
+.game-cover-art.art-domino .game-cover-emblem { border-radius: 15px; transform: rotate(8deg); }
+.game-cover-art.art-truco .game-cover-emblem { border-radius: 14px 14px 27px 27px; transform: rotate(8deg); }
+.game-cover-art.art-quiz .game-cover-emblem { border-radius: 50%; transform: rotate(0); }
+.game-cover-art.art-escape-room .game-cover-emblem { border-radius: 18px 18px 10px 10px; transform: rotate(0); }
+.game-cover-art.art-island-survival .game-cover-emblem { border-radius: 50% 50% 40% 40%; transform: rotate(-7deg); }
+.game-cover-art.art-cave-expedition .game-cover-emblem { border-radius: 50% 50% 16px 16px; transform: rotate(0); }
+
+@media (max-width: 680px) {
+  .games-hub-filters { gap: 13px; }
+  .games-hub-filters button { font-size: .7rem; }
 }
