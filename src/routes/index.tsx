@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AiChat } from "@/components/AiChat";
 import { AuthGate } from "@/components/AuthGate";
 import { GameInvitationCenter } from "@/components/GameInvitationCenter";
+import { GameInvitationBoundary } from "@/components/GameInvitationBoundary";
 import type { OnlineGameLaunch } from "@/lib/game-invitations";
 import { FirstAccessGate } from "@/components/FirstAccessFlow";
 import { CoupleSetup } from "@/components/CoupleSetup";
@@ -381,7 +382,7 @@ function Index() {
           )}
 
           {activeSection !== "messages" && activeSection !== "create-post" && <AiChat />}
-          <GameInvitationCenter userId={session.user.id} onOpenGame={openInvitedOnlineGame} />
+          <GameInvitationBoundary><GameInvitationCenter userId={session.user.id} onOpenGame={openInvitedOnlineGame} /></GameInvitationBoundary>
         </div>
         </FirstAccessGate>
       )}
