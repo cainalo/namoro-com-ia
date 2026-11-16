@@ -41,10 +41,31 @@ GRANT SELECT ON TABLE public.couple_game_invitations TO authenticated;
 GRANT ALL ON TABLE public.couple_game_invitations TO service_role;
 ALTER TABLE public.couple_game_invitations ENABLE ROW LEVEL SECURITY;
 
+CREATE FUNCTION public.can_view_couple_game_invitation(p_couple_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS '
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.couples AS c
+    JOIN public.couple_members AS m ON m.couple_id = c.id
+    WHERE c.id = p_couple_id
+      AND c.status = ''active''
+      AND m.user_id = (SELECT auth.uid())
+      AND m.ended_at IS NULL
+  );
+';
+
+REVOKE ALL ON FUNCTION public.can_view_couple_game_invitation(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.can_view_couple_game_invitation(uuid) TO authenticated;
+
 CREATE POLICY couple_game_invitations_select_current_members
   ON public.couple_game_invitations
   FOR SELECT TO authenticated
-  USING (public.is_current_game_member(couple_id));
+  USING (public.can_view_couple_game_invitation(couple_id));
 
 CREATE FUNCTION public.create_couple_game_invitation(p_game_key text, p_game_mode text)
 RETURNS uuid
