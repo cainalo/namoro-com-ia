@@ -222,6 +222,7 @@ public class NativeAuthPlugin extends Plugin {
         Integer requestedMaxLength = call.getInt("maxLength", 2000);
         int maxLength = Math.max(1, Math.min(requestedMaxLength == null ? 2000 : requestedMaxLength, 5000));
         boolean singleLine = call.getBoolean("singleLine", false);
+        boolean allowEmpty = call.getBoolean("allowEmpty", false);
 
         call.setKeepAlive(true);
         getActivity().runOnUiThread(() -> {
@@ -289,8 +290,8 @@ public class NativeAuthPlugin extends Plugin {
                 Button submit = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
                 submit.setOnClickListener(view -> {
                     String text = editor.getText() == null ? "" : editor.getText().toString();
-                    if (text.trim().isEmpty()) {
-                        editor.setError("Escreva sua mensagem.");
+                    if (!allowEmpty && text.trim().isEmpty()) {
+                        editor.setError("Preencha este campo.");
                         editor.requestFocus();
                         return;
                     }
