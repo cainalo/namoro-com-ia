@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Download, Images, LockKeyhole, RefreshCw, Users } from "lucide-react";
+import { Download, LockKeyhole, RefreshCw, Users } from "lucide-react";
+import { MoradosMemoriesHeader } from "./MoradosMemoriesHeader";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCoupleMemory,
@@ -359,18 +360,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
 
   return (
     <section className="memories-screen">
-      <div className="memories-page-intro">
-        <span className="section-intro-icon"><Images aria-hidden="true" /></span>
-        <div className="section-intro-copy">
-          <span className="section-intro-kicker">Arquivo de vocês</span>
-          <h1>Memórias</h1>
-          <p>Momentos, palavras e datas que merecem continuar por perto.</p>
-        </div>
-        <div className="section-intro-stat">
-          <strong>{state.status === "ready" ? state.memories.length : "—"}</strong>
-          <span>guardadas</span>
-        </div>
-      </div>
+      <MoradosMemoriesHeader count={state.status === "ready" ? state.memories.length : null} />
       <div className="memories-toolbar">
           <span className={activeCoupleId && realtimeStatus === "connected" ? "memories-live-status is-connected" : "memories-live-status"} role="status">
             {!activeCoupleId
@@ -437,7 +427,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
         <>
           <form className="memory-composer" onSubmit={handleSubmit}>
             <div className="memory-composer-topline">
-              <strong>Guardar lembrança</strong>
+              <strong>Escrever uma lembrança</strong>
               <div className="memory-visibility-switch" role="group" aria-label="Privacidade da lembrança">
                 <button
                   type="button"
@@ -518,7 +508,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
 
           <div className="memories-list">
             <div className="memories-list-heading">
-              <h2>Guardadas</h2>
+              <h2>Linha do tempo</h2>
               <span>{visibleMemories.length} de {state.memories.length}</span>
             </div>
 
@@ -529,7 +519,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
                   type="search"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  placeholder="Título ou conteúdo…"
+                  placeholder="Buscar neste caderno…"
                   aria-label="Buscar lembranças por título ou conteúdo"
                 />
               </label>

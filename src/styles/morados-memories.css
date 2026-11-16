@@ -1,0 +1,746 @@
+/* Morados — identidade visual piloto: Memórias / caderno cronológico.
+   Esta camada só afeta .memories-screen; dados e comportamentos permanecem no componente. */
+
+.memories-screen {
+  --morados-memory-ink: var(--morados-feed-ink, #2d382f);
+  --morados-memory-muted: var(--morados-feed-muted, #6e7467);
+  --morados-memory-paper: var(--morados-feed-paper, #f5f0e6);
+  --morados-memory-surface: var(--morados-feed-surface, #fcf9f2);
+  --morados-memory-raised: var(--morados-feed-surface-raised, #fffdf8);
+  --morados-memory-rule: var(--morados-feed-rule, #e1d8c9);
+  --morados-memory-forest: var(--morados-feed-forest, #4d624a);
+  --morados-memory-clay: var(--morados-feed-clay, #b96d50);
+  --morados-memory-ochre: var(--morados-feed-ochre, #c69a59);
+  display: flex;
+  width: min(100%, 920px);
+  min-height: calc(100dvh - 112px);
+  flex-direction: column;
+  gap: clamp(18px, 2.6vw, 27px);
+  margin-inline: auto;
+  color: var(--morados-memory-ink);
+}
+
+.morados-memories-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(120px, 22vw, 190px);
+  align-items: center;
+  gap: clamp(12px, 3vw, 32px);
+  padding: 8px 0 clamp(20px, 3vw, 29px);
+  border-bottom: 1px solid var(--morados-memory-rule);
+}
+
+.morados-memories-copy {
+  min-width: 0;
+}
+
+.morados-memories-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  color: var(--morados-memory-forest);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.morados-memories-kicker > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 1px 50% 50%;
+  background: var(--morados-memory-clay);
+  transform: rotate(45deg);
+}
+
+.morados-memories-heading h1 {
+  max-width: 650px;
+  margin: 0;
+  color: var(--morados-memory-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(2rem, 4.5vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -.055em;
+  line-height: .99;
+  text-wrap: balance;
+}
+
+.morados-memories-description {
+  max-width: 450px;
+  margin: 13px 0 0;
+  color: var(--morados-memory-muted);
+  font-size: clamp(.78rem, 1.4vw, .92rem);
+  line-height: 1.65;
+}
+
+.morados-memories-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 14px 0 0;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+}
+
+.morados-memories-count strong {
+  color: var(--morados-memory-clay);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.morados-memories-art {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+}
+
+.morados-memories-art svg {
+  display: block;
+  width: 100%;
+  max-width: 190px;
+  height: auto;
+  overflow: visible;
+}
+
+/* A barra de estado e as ações ficam discretas, sem formar uma segunda caixa. */
+.memories-screen .memories-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  width: min(100%, 800px);
+  margin: -10px auto -4px;
+  border: 0;
+  padding: 0;
+}
+
+.memories-screen .memories-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+}
+
+.memories-screen .memories-live-status::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--morados-memory-ochre);
+  content: "";
+}
+
+.memories-screen .memories-live-status.is-connected::before {
+  background: var(--morados-memory-forest);
+}
+
+.memories-screen .memories-heading-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+}
+
+.memories-screen .memories-heading-actions .inline-action {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 3px 0;
+  color: var(--morados-memory-forest);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.memories-screen .memories-heading-actions .inline-action svg {
+  width: 13px;
+  height: 13px;
+}
+
+.memories-screen .memories-heading-actions .inline-action:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+
+.memories-screen .memories-heading-actions .inline-action:focus-visible,
+.memories-screen .memory-entry-actions button:focus-visible,
+.memories-screen .memory-delete-confirm button:focus-visible,
+.memories-screen .memories-filter-options button:focus-visible {
+  outline: 2px solid var(--morados-memory-forest);
+  outline-offset: 3px;
+}
+
+.memories-screen .memories-state {
+  width: min(100%, 800px);
+  margin-inline: auto;
+  border-top: 1px solid var(--morados-memory-rule);
+  border-bottom: 1px solid var(--morados-memory-rule);
+  padding: 20px 4px;
+  color: var(--morados-memory-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+/* O formulário lembra uma folha de caderno aberta, mas continua sendo um formulário simples. */
+.memories-screen .memory-composer {
+  display: flex;
+  width: min(100%, 800px);
+  flex-direction: column;
+  gap: 13px;
+  align-self: center;
+  border: 1px solid var(--morados-memory-rule);
+  border-top: 3px solid var(--morados-memory-clay);
+  border-radius: 3px;
+  background: var(--morados-memory-surface);
+  padding: clamp(14px, 2.3vw, 22px);
+  box-shadow: none;
+}
+
+.memories-screen .memory-composer-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+}
+
+.memories-screen .memory-composer-topline > strong {
+  color: var(--morados-memory-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.memories-screen .memory-visibility-switch {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.memories-screen .memory-visibility-switch button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--morados-memory-rule);
+  border-radius: 2px;
+  background: transparent;
+  padding: 0 10px;
+  color: var(--morados-memory-muted);
+  cursor: pointer;
+  font-size: 10px;
+  transition: border-color .18s ease, color .18s ease, background .18s ease;
+}
+
+.memories-screen .memory-visibility-switch button.is-active {
+  border-color: var(--morados-memory-forest);
+  background: color-mix(in srgb, var(--morados-memory-forest) 9%, var(--morados-memory-surface));
+  color: var(--morados-memory-forest);
+  font-weight: 750;
+}
+
+.memories-screen .memory-visibility-switch button:disabled {
+  cursor: not-allowed;
+  opacity: .4;
+}
+
+.memories-screen .memory-visibility-switch svg {
+  width: 13px;
+  height: 13px;
+}
+
+.memories-screen .memory-title-input,
+.memories-screen .memory-body-input {
+  width: 100%;
+  border: 1px solid var(--morados-memory-rule);
+  border-radius: 2px;
+  background: var(--morados-memory-raised);
+  padding: 11px 12px;
+  color: var(--morados-memory-ink);
+  font-size: 13px;
+}
+
+.memories-screen .memory-title-input {
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 17px;
+}
+
+.memories-screen .memory-title-input::placeholder,
+.memories-screen .memory-body-input::placeholder {
+  color: var(--morados-memory-muted);
+  opacity: .82;
+}
+
+.memories-screen .memory-body-input {
+  min-height: 118px;
+  max-height: 280px;
+  resize: vertical;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.memories-screen .memory-title-input:focus-visible,
+.memories-screen .memory-body-input:focus-visible,
+.memories-screen .memory-date-field input:focus-visible {
+  outline: 2px solid var(--morados-memory-forest);
+  outline-offset: 2px;
+}
+
+.memories-screen .memory-composer-footer {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 13px;
+}
+
+.memories-screen .memory-date-field {
+  display: flex;
+  min-width: 150px;
+  flex-direction: column;
+  gap: 5px;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.memories-screen .memory-date-field input {
+  min-height: 36px;
+  border: 1px solid var(--morados-memory-rule);
+  border-radius: 2px;
+  background: var(--morados-memory-raised);
+  padding: 0 8px;
+  color: var(--morados-memory-ink);
+  font-size: 11px;
+}
+
+.memories-screen .memory-character-count {
+  margin: 0 auto 9px 0;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.memories-screen .memory-composer-footer .primary-action {
+  min-width: 106px;
+  min-height: 38px;
+  margin: 0;
+  border: 1px solid var(--morados-memory-forest);
+  border-radius: 2px;
+  background: var(--morados-memory-forest);
+  color: #fffdf7;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.memories-screen .memory-privacy-note {
+  margin: -3px 0 0;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.memories-screen .memory-feedback {
+  margin: 0;
+  color: var(--morados-memory-forest);
+  font-size: 11px;
+}
+
+.memories-screen .memory-feedback.is-error {
+  color: #a5483c;
+}
+
+/* Linha do tempo: a data ancora cada texto; as lembranças não viram cartões repetidos. */
+.memories-screen .memories-list {
+  display: flex;
+  width: min(100%, 800px);
+  flex-direction: column;
+  gap: 0;
+  align-self: center;
+}
+
+.memories-screen .memories-list-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  border-bottom: 1px solid var(--morados-memory-rule);
+  padding: 0 0 10px;
+}
+
+.memories-screen .memories-list-heading h2 {
+  margin: 0;
+  color: var(--morados-memory-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.memories-screen .memories-list-heading > span {
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.memories-screen .memories-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  padding: 12px 0 13px;
+  border-bottom: 1px solid var(--morados-memory-rule);
+}
+
+.memories-screen .memories-search {
+  display: flex;
+  min-width: min(100%, 220px);
+  flex: 1 1 220px;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.memories-screen .memories-search input {
+  width: 100%;
+  min-height: 36px;
+  border: 0;
+  border-bottom: 1px solid var(--morados-memory-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 2px;
+  color: var(--morados-memory-ink);
+  font-size: 12px;
+}
+
+.memories-screen .memories-search input:focus-visible {
+  outline: 2px solid var(--morados-memory-forest);
+  outline-offset: 2px;
+}
+
+.memories-screen .memories-search input::placeholder {
+  color: var(--morados-memory-muted);
+}
+
+.memories-screen .memories-filter-options {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 3px 12px;
+}
+
+.memories-screen .memories-filter-options button {
+  min-height: 36px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 3px;
+  color: var(--morados-memory-muted);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.memories-screen .memories-filter-options button.is-active {
+  border-bottom-color: var(--morados-memory-clay);
+  color: var(--morados-memory-ink);
+  font-weight: 800;
+}
+
+.memories-screen .memory-entry {
+  position: relative;
+  border: 0;
+  border-bottom: 1px solid var(--morados-memory-rule);
+  padding: 17px 4px 19px 25px;
+}
+
+.memories-screen .memory-entry::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  width: 1px;
+  background: var(--morados-memory-rule);
+  content: "";
+}
+
+.memories-screen .memory-entry::after {
+  position: absolute;
+  top: 25px;
+  left: 3px;
+  width: 9px;
+  height: 9px;
+  border: 2px solid var(--morados-memory-clay);
+  border-radius: 50%;
+  background: var(--morados-memory-paper);
+  content: "";
+}
+
+.memories-screen .memory-entry-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px 10px;
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+}
+
+.memories-screen .memory-entry-meta time {
+  color: var(--morados-memory-forest);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.memories-screen .memory-entry-meta > span {
+  border: 1px solid var(--morados-memory-rule);
+  border-radius: 2px;
+  padding: 3px 6px;
+  color: var(--morados-memory-muted);
+  font-size: 9px;
+}
+
+.memories-screen .memory-entry-meta > span.is-shared {
+  border-color: color-mix(in srgb, var(--morados-memory-forest) 45%, var(--morados-memory-rule));
+  color: var(--morados-memory-forest);
+}
+
+.memories-screen .memory-entry h3 {
+  margin: 8px 0 5px;
+  color: var(--morados-memory-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+.memories-screen .memory-entry > p {
+  margin: 0;
+  color: var(--morados-memory-muted);
+  font-size: 12px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.memories-screen .memory-entry-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.memories-screen .memory-entry-actions button {
+  border: 0;
+  background: transparent;
+  padding: 4px 3px;
+  color: var(--morados-memory-forest);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.memories-screen .memory-entry-actions .memory-delete-action {
+  color: #a5483c;
+}
+
+.memories-screen .memory-delete-confirm {
+  margin: 10px 0;
+  border: 1px solid color-mix(in srgb, #a5483c 35%, var(--morados-memory-rule));
+  border-radius: 2px;
+  background: color-mix(in srgb, #a5483c 6%, var(--morados-memory-surface));
+  padding: 11px 12px;
+}
+
+.memories-screen .memory-delete-confirm > p:first-child {
+  color: var(--morados-memory-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.memories-screen .memory-delete-confirm-action {
+  border: 1px solid #a5483c;
+  border-radius: 2px;
+  background: #a5483c;
+  color: white;
+}
+
+.memories-screen .memory-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  border: 1px solid var(--morados-memory-rule);
+  border-left: 3px solid var(--morados-memory-ochre);
+  border-radius: 2px;
+  background: var(--morados-memory-surface);
+  padding: 14px;
+}
+
+.memories-screen .memory-edit-heading strong {
+  color: var(--morados-memory-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 18px;
+}
+
+.memories-screen .memory-edit-heading span {
+  color: var(--morados-memory-muted);
+  font-size: 10px;
+}
+
+.memories-screen .memory-edit-footer {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.memories-screen .memory-edit-footer .memory-character-count {
+  margin-left: auto;
+}
+
+.memories-screen .memory-edit-footer .primary-action,
+.memories-screen .memory-edit-footer .secondary-action {
+  min-height: 36px;
+  margin: 0;
+  padding: 0 12px;
+  font-size: 11px;
+}
+
+.memories-screen .memory-state {
+  width: 100%;
+}
+
+@media (max-width: 680px) {
+  .memories-screen {
+    min-height: calc(100dvh - 165px);
+    gap: 17px;
+  }
+
+  .morados-memories-heading {
+    grid-template-columns: minmax(0, 1fr) 106px;
+    align-items: center;
+    gap: 5px;
+    padding-top: 2px;
+    padding-bottom: 18px;
+  }
+
+  .morados-memories-kicker {
+    margin-bottom: 9px;
+    font-size: 9px;
+  }
+
+  .morados-memories-heading h1 {
+    font-size: clamp(1.8rem, 8.1vw, 2.35rem);
+    line-height: 1.02;
+  }
+
+  .morados-memories-description {
+    max-width: 33ch;
+    margin-top: 9px;
+    font-size: 11px;
+  }
+
+  .morados-memories-count {
+    margin-top: 10px;
+    font-size: 9px;
+  }
+
+  .morados-memories-count strong {
+    font-size: 18px;
+  }
+
+  .morados-memories-art svg {
+    width: 112px;
+  }
+
+  .memories-screen .memories-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    margin-top: -5px;
+  }
+
+  .memories-screen .memories-heading-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .memories-screen .memory-composer {
+    gap: 11px;
+    padding: 13px 11px;
+  }
+
+  .memories-screen .memory-composer-topline {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .memories-screen .memory-visibility-switch {
+    width: 100%;
+  }
+
+  .memories-screen .memory-visibility-switch button {
+    flex: 1;
+  }
+
+  .memories-screen .memory-composer-footer {
+    align-items: flex-end;
+    gap: 9px;
+  }
+
+  .memories-screen .memory-date-field {
+    flex: 1 1 145px;
+  }
+
+  .memories-screen .memory-character-count {
+    margin-bottom: 10px;
+  }
+
+  .memories-screen .memory-composer-footer .primary-action {
+    min-width: 94px;
+  }
+
+  .memories-screen .memories-filter-bar {
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .memories-screen .memories-filter-options {
+    width: 100%;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  .memories-screen .memories-filter-options button {
+    flex: 1;
+    padding-inline: 2px;
+    font-size: 9px;
+  }
+
+  .memories-screen .memory-entry {
+    padding-left: 21px;
+  }
+
+  .memories-screen .memory-entry-actions {
+    gap: 5px;
+  }
+
+  .memories-screen .memory-edit-form {
+    padding: 11px 9px;
+  }
+
+  .memories-screen .memory-edit-footer .primary-action,
+  .memories-screen .memory-edit-footer .secondary-action {
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memories-screen .memory-visibility-switch button {
+    transition: none;
+  }
+}
