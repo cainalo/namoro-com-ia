@@ -19,7 +19,6 @@ import {
   File,
   Image,
   Camera,
-  HandHeart,
   Mic,
   Square,
   LoaderCircle,
@@ -42,6 +41,7 @@ import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
 import { MoradosCamera, type MoradosCameraMode } from "@/components/MoradosCamera";
 import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
 import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
+import { MoradosConversationWelcome } from "@/components/MoradosConversationWelcome";
 import { ConversationWallpaperArt } from "@/components/ConversationWallpaperArt";
 import { mapWithConcurrency } from "@/lib/async-pool";
 import {
@@ -1531,11 +1531,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           >
             {olderMessagesError && <p className="conversation-history-error" role="alert">{olderMessagesError}</p>}
             {state.messages.length === 0 ? (
-              <div className="conversation-first-message">
-                <span><HandHeart aria-hidden="true" /></span>
-                <strong>Um cantinho só de vocês.</strong>
-                <p>Mandem mensagens, fotos, áudios e pequenos presentes para deixar esta conversa com a cara de vocês.</p>
-              </div>
+              <MoradosConversationWelcome />
             ) : visibleMessages.length === 0 ? (
               <p className="conversation-state conversation-empty">Nenhuma mensagem corresponde à busca.</p>
             ) : (

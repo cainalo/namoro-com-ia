@@ -1,0 +1,288 @@
+/* Morados — Conversa: correspondência cotidiana, com as preferências individuais preservadas. */
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-leading > .conversation-floating-action,
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-trailing > .conversation-floating-action {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  border: 1px solid var(--morados-feed-rule) !important;
+  border-radius: 50% !important;
+  background: color-mix(in srgb, var(--morados-feed-surface) 88%, transparent) !important;
+  color: var(--morados-feed-forest) !important;
+  box-shadow: 0 5px 16px -12px rgb(35 43 34 / 55%) !important;
+  backdrop-filter: blur(12px) saturate(115%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(115%) !important;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-leading > .conversation-floating-action:hover,
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-trailing > .conversation-floating-action:hover,
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-leading > .conversation-floating-action:focus-visible,
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-trailing > .conversation-floating-action:focus-visible {
+  border-color: var(--morados-feed-clay) !important;
+  background: var(--morados-feed-surface) !important;
+  color: var(--morados-feed-clay) !important;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-leading > .conversation-floating-action:focus-visible,
+.app-shell.is-conversation-mode .conversation-screen .conversation-heading-trailing > .conversation-floating-action:focus-visible {
+  outline: 2px solid var(--morados-feed-forest);
+  outline-offset: 3px;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-thread {
+  scrollbar-color: color-mix(in srgb, var(--morados-feed-forest) 32%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-day-divider {
+  gap: 12px;
+  margin: 16px 0 7px;
+  color: var(--morados-feed-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .015em;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-day-divider::before,
+.app-shell.is-conversation-mode .conversation-screen .conversation-day-divider::after {
+  background: var(--morados-feed-rule);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-day-divider span {
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 999px;
+  background: var(--morados-feed-surface);
+  padding: 5px 11px;
+  color: var(--morados-feed-muted);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .01em;
+  box-shadow: 0 2px 6px -5px rgb(35 43 34 / 45%);
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message-content.is-text {
+  border: 1px solid color-mix(in srgb, var(--conversation-bubble-other, var(--morados-feed-surface)) 78%, var(--morados-feed-rule)) !important;
+  box-shadow: 0 7px 19px -15px rgb(36 45 35 / 48%), inset 0 1px 0 rgb(255 255 255 / 24%) !important;
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own .conversation-message-content.is-text {
+  border-color: color-mix(in srgb, var(--conversation-bubble-own, var(--morados-feed-forest)) 78%, transparent) !important;
+  box-shadow: 0 7px 19px -15px rgb(36 45 35 / 42%), inset 0 1px 0 rgb(255 255 255 / 15%) !important;
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-grouped .conversation-message-content.is-text {
+  border-top-left-radius: 10px !important;
+}
+
+.app-shell.is-conversation-mode section.conversation-screen .conversation-message.is-own.is-grouped .conversation-message-content.is-text {
+  border-top-left-radius: var(--conversation-message-radius, 18px) !important;
+  border-top-right-radius: 10px !important;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-message-time {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .01em;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-message-actions {
+  border-color: var(--morados-feed-rule);
+  border-radius: 14px;
+  background: var(--morados-feed-surface);
+  box-shadow: 0 14px 34px -18px rgb(35 43 34 / 42%);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-message-actions button {
+  border-radius: 9px;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-message-favorite {
+  border: 1px solid var(--morados-feed-rule);
+  background: var(--morados-feed-surface);
+  color: var(--morados-feed-ochre);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-input-shell {
+  border: 1px solid var(--morados-feed-rule) !important;
+  background: color-mix(in srgb, var(--morados-feed-surface) 95%, transparent) !important;
+  box-shadow: 0 12px 34px -22px rgb(35 43 34 / 46%), inset 0 1px 0 rgb(255 255 255 / 45%) !important;
+  backdrop-filter: blur(18px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-input-shell:focus-within {
+  border-color: color-mix(in srgb, var(--morados-feed-forest) 58%, var(--morados-feed-rule)) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--morados-feed-forest) 11%, transparent), 0 12px 34px -22px rgb(35 43 34 / 46%) !important;
+}
+
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-audio-button {
+  color: var(--morados-feed-muted) !important;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button:hover,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-audio-button:hover,
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-attachment-button.is-active {
+  background: var(--morados-feed-paper) !important;
+  color: var(--morados-feed-forest) !important;
+}
+
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-send-button {
+  background: var(--morados-feed-forest) !important;
+  color: #fffdf7 !important;
+  box-shadow: 0 4px 10px -6px rgb(35 43 34 / 65%);
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.app-shell.is-conversation-mode .conversation-input-shell .conversation-send-button:hover:not(:disabled) {
+  background: var(--morados-feed-clay) !important;
+  transform: translateY(-1px);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-tools-panel {
+  border: 1px solid var(--morados-feed-rule) !important;
+  border-radius: 18px !important;
+  background: color-mix(in srgb, var(--morados-feed-surface) 97%, transparent) !important;
+  box-shadow: 0 18px 42px -24px rgb(35 43 34 / 48%) !important;
+  backdrop-filter: blur(18px) saturate(125%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(125%) !important;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-attachment-grid button {
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 12px;
+  background: var(--morados-feed-paper);
+  color: var(--morados-feed-ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 650;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-attachment-grid button:hover,
+.app-shell.is-conversation-mode .conversation-screen .conversation-attachment-grid button:focus-visible {
+  border-color: var(--morados-feed-forest);
+  background: var(--morados-feed-surface);
+  color: var(--morados-feed-forest);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-search-panel {
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--morados-feed-surface) 96%, transparent);
+  color: var(--morados-feed-muted);
+  box-shadow: 0 8px 24px -18px rgb(35 43 34 / 42%);
+  backdrop-filter: blur(14px) saturate(120%);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-search-panel input {
+  color: var(--morados-feed-ink);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-search-panel input::placeholder {
+  color: var(--morados-feed-muted);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-search-panel > button {
+  border-radius: 50%;
+  color: var(--morados-feed-muted);
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-first-message {
+  width: min(100%, 410px);
+  align-self: center;
+  justify-items: center;
+  gap: 10px;
+  margin: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 20px 16px;
+  box-shadow: none;
+  text-align: center;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-first-message-art {
+  display: grid;
+  width: 154px;
+  min-height: 112px;
+  place-items: center;
+  margin-bottom: 2px;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-first-message-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-first-message-kicker {
+  color: var(--morados-feed-forest);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .13em;
+  line-height: 1.35;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-first-message strong {
+  color: var(--morados-feed-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(24px, 6.2vw, 31px);
+  font-weight: 600;
+  letter-spacing: -.035em;
+  line-height: 1.08;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-first-message p {
+  max-width: 35ch;
+  margin: 0;
+  color: var(--morados-feed-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.app-shell.is-conversation-mode .conversation-screen .conversation-state {
+  color: var(--morados-feed-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+@media (max-width: 420px) {
+  .app-shell.is-conversation-mode .conversation-screen .conversation-heading-leading > .conversation-floating-action,
+  .app-shell.is-conversation-mode .conversation-screen .conversation-heading-trailing > .conversation-floating-action {
+    width: 35px !important;
+    height: 35px !important;
+    min-width: 35px !important;
+    min-height: 35px !important;
+  }
+
+  .app-shell.is-conversation-mode .conversation-screen .conversation-first-message {
+    padding-inline: 10px;
+  }
+
+  .app-shell.is-conversation-mode .conversation-screen .conversation-first-message-art {
+    width: 136px;
+  }
+
+  .app-shell.is-conversation-mode .conversation-screen .conversation-message-content.is-text {
+    padding: 10px 13px 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.is-conversation-mode .conversation-screen .conversation-heading-leading > .conversation-floating-action,
+  .app-shell.is-conversation-mode .conversation-screen .conversation-heading-trailing > .conversation-floating-action,
+  .app-shell.is-conversation-mode .conversation-screen .conversation-message-content.is-text,
+  .app-shell.is-conversation-mode .conversation-screen .conversation-input-shell {
+    transition: none;
+  }
+}
