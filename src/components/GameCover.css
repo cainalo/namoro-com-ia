@@ -122,3 +122,491 @@
     grid-row: 3;
   }
 }
+
+
+/* MORADOS · capas autorais para o catálogo completo de jogos */
+.games-hub-intro {
+  align-items: end;
+  margin-bottom: 1.25rem;
+}
+.games-hub-intro h1 {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  letter-spacing: -.055em;
+  line-height: .98;
+}
+.games-hub-intro .date-kicker {
+  margin-bottom: .45rem;
+  color: var(--color-primary);
+  font-size: .62rem;
+  font-weight: 850;
+  letter-spacing: .16em;
+}
+.games-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 1.8vw, 22px);
+}
+.games-hub-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: .9;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid color-mix(in srgb, var(--game-card-ink) 18%, transparent);
+  border-radius: 24px;
+  background: var(--game-card-bg);
+  padding: 0;
+  color: var(--game-card-ink);
+  text-align: left;
+  box-shadow: 0 18px 42px -32px rgb(0 0 0 / 55%);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.games-hub-card::before,
+.games-hub-card::after {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--game-card-ink) 19%, transparent);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+.games-hub-card::before {
+  width: 78%;
+  aspect-ratio: 1;
+  top: 4%;
+  right: -28%;
+}
+.games-hub-card::after {
+  width: 58%;
+  aspect-ratio: 1;
+  bottom: 14%;
+  left: -24%;
+}
+.games-hub-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 24px 50px -30px color-mix(in srgb, var(--game-card-bg) 65%, #000);
+}
+.games-hub-card:active { transform: translateY(-1px) scale(.99); }
+.games-hub-card.tone-petrol { --game-card-bg: #104d58; --game-card-ink: #fff8e9; }
+.games-hub-card.tone-terracotta { --game-card-bg: #a94331; --game-card-ink: #fff3e6; }
+.games-hub-card.tone-olive { --game-card-bg: #52633d; --game-card-ink: #f8f1dc; }
+.games-hub-card.tone-plum { --game-card-bg: #613e65; --game-card-ink: #fbf1ed; }
+.games-hub-card.tone-noir { --game-card-bg: #252d35; --game-card-ink: #f7efdf; }
+.games-hub-card-art {
+  position: relative;
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+.games-hub-card-watermark {
+  position: absolute;
+  top: 49%;
+  left: 50%;
+  width: 150%;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--game-card-ink) 12%, transparent);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -.08em;
+  line-height: .8;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-17deg);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.games-hub-card-orbit {
+  position: absolute;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--game-card-ink) 26%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.games-hub-card-orbit.orbit-one {
+  width: 74%;
+  aspect-ratio: 1;
+  top: 10%;
+  left: 13%;
+}
+.games-hub-card-orbit.orbit-two {
+  width: 54%;
+  aspect-ratio: 1;
+  top: 20%;
+  left: 23%;
+  border-style: dashed;
+  transform: rotate(28deg);
+}
+.games-hub-card-number {
+  position: absolute;
+  top: 13px;
+  right: 15px;
+  color: color-mix(in srgb, var(--game-card-ink) 70%, transparent);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: .72rem;
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+.games-hub-card-symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  width: clamp(76px, 9vw, 112px);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--game-card-ink) 88%, transparent);
+  border-radius: 31px;
+  background: color-mix(in srgb, var(--game-card-ink) 13%, transparent);
+  color: var(--game-card-ink);
+  box-shadow: 0 15px 30px rgb(0 0 0 / 18%), inset 0 0 0 7px color-mix(in srgb, var(--game-card-ink) 7%, transparent);
+  transform: translate(-50%, -50%) rotate(-8deg);
+  backdrop-filter: blur(2px);
+}
+.games-hub-card-symbol svg {
+  width: 48%;
+  height: 48%;
+  stroke-width: 1.45;
+}
+.games-hub-card.art-chess .games-hub-card-symbol,
+.games-hub-card.art-this-or-that .games-hub-card-symbol,
+.games-hub-card.art-quiz .games-hub-card-symbol,
+.games-hub-card.art-investigation .games-hub-card-symbol {
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.games-hub-card.art-battleship .games-hub-card-symbol,
+.games-hub-card.art-investigation-train .games-hub-card-symbol {
+  border-radius: 50% 50% 14px 14px;
+}
+.games-hub-card.art-truco .games-hub-card-symbol,
+.games-hub-card.art-domino .games-hub-card-symbol {
+  border-radius: 19px;
+  transform: translate(-50%, -50%) rotate(8deg);
+}
+.games-hub-card-copy {
+  position: relative;
+  z-index: 2;
+  display: block;
+  min-width: 0;
+  padding: 13px 16px 16px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--game-card-bg) 90%, #000 10%));
+}
+.games-hub-card-copy strong {
+  display: block;
+  color: var(--game-card-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(.96rem, 1.55vw, 1.3rem);
+  font-weight: 760;
+  letter-spacing: -.035em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+/* A capa individual é deliberadamente editorial: símbolo, marca-d'água, título e Jogar. */
+.game-world-main.stage-cover {
+  align-items: center;
+}
+.game-launch-cover {
+  display: grid;
+  width: min(100%, 1220px);
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 70px);
+  grid-template-columns: minmax(0, 1.12fr) minmax(280px, .88fr);
+  align-items: center;
+  gap: clamp(22px, 5vw, 76px);
+  margin-inline: auto;
+  padding: clamp(20px, 4.5vw, 64px);
+}
+.game-cover-art {
+  position: relative;
+  display: grid;
+  width: min(100%, 500px);
+  aspect-ratio: 1;
+  place-items: center;
+  justify-self: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 62%, var(--world-ink));
+  border-radius: clamp(26px, 5vw, 54px);
+  background:
+    radial-gradient(circle at 50% 45%, color-mix(in srgb, var(--world-accent) 28%, transparent), transparent 56%),
+    linear-gradient(145deg, color-mix(in srgb, var(--world-panel) 94%, #fff 6%), var(--world-bg));
+  box-shadow: inset 0 0 0 10px color-mix(in srgb, var(--world-ink) 5%, transparent), 0 32px 80px rgb(0 0 0 / 25%);
+}
+.game-cover-art::before {
+  width: 82%;
+  border-color: color-mix(in srgb, var(--world-accent) 42%, transparent);
+}
+.game-cover-art::after {
+  width: 65%;
+  border-color: color-mix(in srgb, var(--world-ink) 23%, transparent);
+}
+.game-cover-art-watermark {
+  position: absolute;
+  z-index: 1;
+  top: 49%;
+  left: 50%;
+  width: 145%;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--world-ink) 10%, transparent);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(3rem, 9vw, 8.5rem);
+  font-weight: 950;
+  letter-spacing: -.09em;
+  line-height: .78;
+  text-align: center;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.game-cover-emblem {
+  z-index: 3;
+  width: clamp(126px, 22vw, 190px);
+  border: 2px solid var(--world-accent-2);
+  border-radius: 42px;
+  box-shadow: 0 18px 0 rgb(0 0 0 / 14%), 0 28px 55px rgb(0 0 0 / 22%);
+}
+.game-cover-emblem svg {
+  width: 48%;
+  height: 48%;
+  stroke-width: 1.55;
+}
+.game-cover-art-number {
+  top: 22px;
+  right: 24px;
+  color: color-mix(in srgb, var(--world-ink) 62%, transparent);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: .78rem;
+  letter-spacing: .16em;
+}
+.game-cover-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block: 20px;
+}
+.game-cover-copy h1 {
+  max-width: 660px;
+  margin: 0 0 26px;
+  color: var(--world-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(2.35rem, 5.7vw, 5.2rem);
+  font-weight: 850;
+  letter-spacing: -.075em;
+  line-height: .92;
+  text-wrap: balance;
+}
+.game-cover-copy .game-world-primary {
+  min-width: 190px;
+  min-height: 58px;
+  margin: 0;
+  border-radius: 16px;
+  padding-inline: 28px;
+  font-size: .9rem;
+  letter-spacing: .02em;
+}
+.game-cover-copy .game-world-primary svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* Seleção de modo: três decisões diretas, sem briefing ou tutorial intermediário. */
+.game-mode-stage {
+  width: min(100%, 1060px);
+  margin-inline: auto;
+  padding: clamp(22px, 5vw, 60px);
+}
+.game-mode-stage .game-stage-heading {
+  margin-bottom: clamp(25px, 5vh, 48px);
+}
+.game-mode-stage .game-stage-heading h1 {
+  margin: 0;
+  color: var(--world-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -.06em;
+}
+.game-world-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 22px);
+}
+.game-world-mode-card {
+  position: relative;
+  display: flex;
+  min-height: 218px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 48%, transparent);
+  border-radius: 23px;
+  background:
+    radial-gradient(circle at 90% 0%, color-mix(in srgb, var(--world-accent) 18%, transparent), transparent 50%),
+    var(--world-panel);
+  padding: clamp(17px, 2vw, 26px);
+  color: var(--world-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.game-world-mode-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--world-accent);
+  box-shadow: 0 18px 38px -26px color-mix(in srgb, var(--world-accent) 70%, #000);
+}
+.game-world-mode-card .game-world-mode-icon {
+  width: 60px;
+  height: 60px;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 62%, transparent);
+  border-radius: 19px;
+  background: color-mix(in srgb, var(--world-accent) 13%, var(--world-panel));
+  color: var(--world-accent);
+}
+.game-world-mode-card .game-world-mode-icon svg {
+  width: 28px;
+  height: 28px;
+}
+.game-world-mode-card strong {
+  color: var(--world-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-weight: 760;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+}
+.game-world-mode-enter {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  border: 0;
+  padding: 0;
+  color: var(--world-accent);
+}
+.game-world-mode-enter svg {
+  width: 19px;
+  height: 19px;
+  transform: none;
+}
+.game-world-mode-card.is-solo { --world-accent: var(--world-accent); }
+.game-world-mode-card.is-local { background-color: color-mix(in srgb, var(--world-panel) 80%, var(--world-accent-2)); }
+.game-world-mode-card.is-online { background-color: color-mix(in srgb, var(--world-panel) 82%, var(--world-accent)); }
+
+.game-invite-waiting {
+  display: flex;
+  width: min(100%, 600px);
+  min-height: 56vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-inline: auto;
+  padding: 28px;
+  text-align: center;
+}
+.game-invite-waiting-mark {
+  display: grid;
+  width: 78px;
+  height: 78px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 56%, transparent);
+  border-radius: 26px;
+  background: var(--world-panel);
+  color: var(--world-accent);
+}
+.game-invite-waiting-mark svg { width: 34px; height: 34px; }
+.game-invite-waiting h1 {
+  margin: 0;
+  color: var(--world-ink);
+  font-family: "Fraunces", Georgia, serif;
+  font-size: clamp(1.7rem, 5vw, 2.5rem);
+  letter-spacing: -.05em;
+}
+.game-invite-waiting .game-world-text-button { margin: 0; }
+
+@media (min-width: 1200px) {
+  .games-hub-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  .games-hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .game-launch-cover {
+    width: min(100%, 760px);
+    grid-template-columns: minmax(0, 1fr) minmax(230px, .9fr);
+    gap: 26px;
+    padding: 24px;
+  }
+  .game-cover-art { width: min(100%, 360px); }
+}
+@media (max-width: 680px) {
+  .games-hub-intro { margin-bottom: .85rem; }
+  .games-hub-grid { gap: 11px; }
+  .games-hub-card { border-radius: 17px; }
+  .games-hub-card-copy { padding: 10px 11px 12px; }
+  .games-hub-card-copy strong { font-size: clamp(.88rem, 3.5vw, 1.05rem); }
+  .games-hub-card-symbol { width: clamp(62px, 19vw, 82px); border-radius: 22px; }
+  .games-hub-card-number { top: 10px; right: 11px; font-size: .62rem; }
+  .game-launch-cover {
+    min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 66px);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 12px;
+    padding: 15px 18px 28px;
+  }
+  .game-cover-art {
+    grid-row: 1;
+    width: min(76vw, 340px);
+    align-self: end;
+  }
+  .game-cover-copy {
+    grid-row: 2;
+    align-items: center;
+    padding: 4px 0 10px;
+    text-align: center;
+  }
+  .game-cover-copy h1 {
+    margin-bottom: 18px;
+    font-size: clamp(2rem, 9vw, 3.1rem);
+  }
+  .game-cover-copy .game-world-primary { width: min(100%, 270px); }
+  .game-mode-stage { padding: 28px 18px; }
+  .game-mode-stage .game-stage-heading { margin-bottom: 24px; }
+  .game-world-mode-grid { grid-template-columns: 1fr; gap: 11px; }
+  .game-world-mode-card {
+    display: grid;
+    min-height: 86px;
+    grid-template-columns: 54px minmax(0, 1fr) 26px;
+    align-items: center;
+    gap: 13px;
+    padding: 12px 15px;
+    border-radius: 17px;
+  }
+  .game-world-mode-card .game-world-mode-icon {
+    width: 52px;
+    height: 52px;
+    grid-row: auto;
+    border-radius: 15px;
+  }
+  .game-world-mode-card strong { font-size: 1.12rem; }
+  .game-world-mode-enter { width: auto; }
+  .game-invite-waiting { min-height: 52vh; }
+}
+@media (max-height: 700px) and (min-width: 681px) {
+  .game-cover-art { width: min(38vw, 330px); }
+  .game-launch-cover { padding-block: 16px; }
+  .game-world-mode-card { min-height: 170px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .games-hub-card,
+  .game-world-mode-card { transition: none !important; }
+}
