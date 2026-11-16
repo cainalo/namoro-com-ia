@@ -360,7 +360,7 @@ export function CoupleMemories({ userId }: { userId: string }) {
 
   return (
     <section className="memories-screen">
-      <MoradosMemoriesHeader count={state.status === "ready" ? state.memories.length : 0} />
+      <MoradosMemoriesHeader count={state.status === "ready" ? state.memories.length : null} />
       <div className="memories-toolbar">
           <span className={activeCoupleId && realtimeStatus === "connected" ? "memories-live-status is-connected" : "memories-live-status"} role="status">
             {!activeCoupleId
