@@ -46,6 +46,12 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <h1 className="text-lg font-semibold tracking-tight text-foreground">
           Não foi possível abrir esta página.
         </h1>
+        <details className="mt-4 text-left text-xs text-muted-foreground">
+          <summary className="cursor-pointer">Detalhes técnicos</summary>
+          <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-muted p-3 text-left">
+            {error instanceof Error ? `${error.name}: ${error.message}\\n${error.stack ?? ""}` : String(error)}
+          </pre>
+        </details>
         <div className="mt-5 flex justify-center gap-2">
           <button
             onClick={() => {
