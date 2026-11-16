@@ -347,7 +347,7 @@ function Index() {
               <div data-tour-target="tour-messages" className="tour-anchor"><ConversationGuard onBack={goBack}><CoupleConversation userId={session.user.id} onBack={goBack} onNavigate={goToSection} /></ConversationGuard></div>
             ) : (
               <div className="page-frame">
-              <AppSectionGuard onBack={goHome}>
+              <AppSectionGuard key={activeSection} onBack={goHome}>
               {activeSection === "home" || activeSection === "create-post" ? (
                 <HomeScreen
                   userId={session.user.id}
