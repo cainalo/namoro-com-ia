@@ -6,6 +6,8 @@ const mocks = vi.hoisted(() => ({
   showTextInputDialog: vi.fn(),
   updates: [] as Record<string, unknown>[],
   pendingUpdate: false,
+  pendingTourUpdate: false,
+  navigate: vi.fn(),
   from: vi.fn(),
 }));
 
@@ -39,6 +41,12 @@ function setupProfileQuery() {
         return builder;
       }),
       eq: vi.fn(() => builder),
+      then: (resolve: (value: { error: null }) => unknown, reject: (reason: unknown) => unknown) => {
+        const request = updating && mocks.pendingTourUpdate
+          ? new Promise<{ error: null }>(() => {})
+          : Promise.resolve({ error: null });
+        return request.then(resolve, reject);
+      },
       maybeSingle: vi.fn(() => {
         if (updating) {
           return mocks.pendingUpdate
@@ -61,7 +69,7 @@ function setupProfileQuery() {
 
 function renderFirstAccess() {
   return render(
-    <FirstAccessGate userId="user-1" initialName="Nome inicial" onNavigate={vi.fn()}>
+    <FirstAccessGate userId="user-1" initialName="Nome inicial" onNavigate={mocks.navigate}>
       <p>Área principal</p>
     </FirstAccessGate>,
   );
@@ -73,6 +81,7 @@ describe("FirstAccessGate native profile form", () => {
     mocks.updates.length = 0;
     mocks.native = true;
     mocks.pendingUpdate = false;
+    mocks.pendingTourUpdate = false;
     setupProfileQuery();
   });
 
@@ -134,6 +143,29 @@ describe("FirstAccessGate native profile form", () => {
 
     await waitFor(() => expect(mocks.updates).toHaveLength(1));
     expect(mocks.updates[0]).toMatchObject({ bio: null });
+  });
+
+  it("keeps tutorial steps lightweight and opens the app immediately when the progress save hangs", async () => {
+    mocks.pendingTourUpdate = true;
+
+    renderFirstAccess();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Salvar perfil e continuar" }));
+
+    const tutorial = await screen.findByRole("dialog", { name: "O ponto de encontro" });
+    expect(tutorial).toBeInTheDocument();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Próxima etapa" }));
+    expect(screen.getByRole("dialog", { name: "Registre um momento" })).toBeInTheDocument();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Pular tutorial" }));
+
+    expect(await screen.findByText("Área principal")).toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
+    expect(mocks.navigate).toHaveBeenCalledWith("home");
   });
 
   it("shows the web text inputs outside the Android app", async () => {
