@@ -90,6 +90,7 @@ describe("FirstAccessGate native profile form", () => {
     const nameField = await screen.findByRole("button", { name: "Como devemos chamar você?" });
     fireEvent.click(nameField);
 
+    await waitFor(() => expect(nameField).toHaveTextContent("Cainã"));
     expect(mocks.showTextInputDialog).toHaveBeenCalledWith(expect.objectContaining({
       title: "Como devemos chamar você?",
       initialValue: "Nome inicial",
