@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import moradosFeedCss from "../styles/morados-feed.css?url";
 import { Capacitor } from "@capacitor/core";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
@@ -99,6 +100,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter+Tight:wght@400;500;600;700;800&family=Libre+Baskerville:wght@400;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
+      { rel: "stylesheet", href: moradosFeedCss },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/morados-icon.svg", type: "image/svg+xml" },
