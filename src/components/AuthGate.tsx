@@ -66,7 +66,16 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
   useEffect(() => {
     if (!session) return;
     let active = true;
-    void completeCouplePairing().then((result) => {
+    let timeoutId: number | undefined;
+    const timeout = new Promise<{ pending: boolean; connected: boolean; error: string }>((resolve) => {
+      timeoutId = window.setTimeout(() => resolve({
+        pending: true,
+        connected: false,
+        error: "pairing_timeout",
+      }), 6000);
+    });
+
+    void Promise.race([completeCouplePairing(), timeout]).then((result) => {
       if (active && result.error) {
         console.warn("O vínculo compartilhado continua pendente; o acesso individual permanece liberado.", result.error);
       }
@@ -76,6 +85,7 @@ export function AuthGate({ children, emailRedirectTo }: AuthGateProps) {
     }).catch((error: unknown) => {
       if (active) console.warn("Não foi possível atualizar o vínculo do casal; o acesso individual permanece liberado.", error);
     }).finally(() => {
+      if (timeoutId !== undefined) window.clearTimeout(timeoutId);
       if (active) setPairingResolvedFor(session.user.id);
     });
     return () => { active = false; };
