@@ -76,7 +76,7 @@ const catalogue: Array<{
     category: "Estratégia",
     description: "Conecte quatro peças antes da outra pessoa. Planeje, bloqueie e mude de estratégia.",
     players: "2 pessoas",
-    icon: Grid3X3,
+    icon: Target,
     tone: "petrol",
   },
   {
@@ -94,7 +94,7 @@ const catalogue: Array<{
     category: "Preferências",
     description: "Respondam separadamente e descubram quantas escolhas combinam.",
     players: "2 pessoas",
-    icon: Heart,
+    icon: Brain,
     tone: "plum",
   },
   {
@@ -122,19 +122,36 @@ const catalogue: Array<{
     category: "Investigação policial",
     description: "Uma linha cancelada volta a aparecer no painel. Sigam os capítulos e abram os materiais de um caso cheio de desaparecimentos.",
     players: "Cooperativo · 1–2",
-    icon: TrainFront,
+    icon: Search,
     tone: "noir",
     new: true,
   },
-  { id: "chess", name: "Xadrez", category: "Estratégia", description: "Partidas clássicas com movimentos legais, xeque, roque, en passant e histórico.", players: "2 pessoas", icon: Scale, tone: "plum" },
-  { id: "battleship", name: "Batalha Naval", category: "Estratégia", description: "Posicionem frotas secretas e encontrem os navios da outra pessoa.", players: "2 pessoas", icon: Ship, tone: "petrol" },
-  { id: "domino", name: "Dominó", category: "Estratégia", description: "Joguem, comprem peças, bloqueiem a mesa e somem os pontos.", players: "2 pessoas", icon: Grid2X2, tone: "olive" },
-  { id: "truco", name: "Truco Paulista", category: "Cartas", description: "Vira, manilhas e blefe. Aumentem a aposta até doze pontos.", players: "2 pessoas", icon: Spade, tone: "terracotta" },
+  { id: "chess", name: "Xadrez", category: "Estratégia", description: "Partidas clássicas com movimentos legais, xeque, roque, en passant e histórico.", players: "2 pessoas", icon: Crown, tone: "plum" },
+  { id: "battleship", name: "Batalha Naval", category: "Estratégia", description: "Posicionem frotas secretas e encontrem os navios da outra pessoa.", players: "2 pessoas", icon: Target, tone: "petrol" },
+  { id: "domino", name: "Dominó", category: "Estratégia", description: "Joguem, comprem peças, bloqueiem a mesa e somem os pontos.", players: "2 pessoas", icon: Gamepad2, tone: "olive" },
+  { id: "truco", name: "Truco Paulista", category: "Cartas", description: "Vira, manilhas e blefe. Aumentem a aposta até doze pontos.", players: "2 pessoas", icon: Swords, tone: "terracotta" },
   { id: "quiz", name: "Quiz dos dois", category: "Conhecimento", description: "Perguntas por categoria, tempo limitado e placar alternado.", players: "2 pessoas", icon: Brain, tone: "plum" },
-  { id: "escape-room", name: "A sala do relógio", category: "Escape room", description: "Investiguem uma sala, encontrem objetos e descubram o código para escapar.", players: "Cooperativo · 1–2", icon: DoorOpen, tone: "noir", new: true },
-  { id: "island-survival", name: "Depois da tempestade", category: "Sobrevivência", description: "Uma expedição naufraga numa ilha que parece conhecer os sobreviventes. Cada capítulo traz escolhas, recursos, desafios e segredos.", players: "Cooperativo · 1–2", icon: Waves, tone: "olive", new: true },
-  { id: "cave-expedition", name: "As Ruínas de Morados", category: "Aventura 2D", description: "Explore câmaras esquecidas, enfrente guardiões, encontre relíquias e escape em uma aventura cooperativa.", players: "Cooperativo · 1–2", icon: Mountain, tone: "noir", new: true },
+  { id: "escape-room", name: "A sala do relógio", category: "Escape room", description: "Investiguem uma sala, encontrem objetos e descubram o código para escapar.", players: "Cooperativo · 1–2", icon: LockKeyhole, tone: "noir", new: true },
+  { id: "island-survival", name: "Depois da tempestade", category: "Sobrevivência", description: "Uma expedição naufraga numa ilha que parece conhecer os sobreviventes. Cada capítulo traz escolhas, recursos, desafios e segredos.", players: "Cooperativo · 1–2", icon: Shield, tone: "olive", new: true },
+  { id: "cave-expedition", name: "As Ruínas de Morados", category: "Aventura 2D", description: "Explore câmaras esquecidas, enfrente guardiões, encontre relíquias e escape em uma aventura cooperativa.", players: "Cooperativo · 1–2", icon: Swords, tone: "noir", new: true },
 ];
+
+const launchInfo:Record<GameId,{eyebrow:string;tagline:string;story:string;goal:string;steps:string[];chips:string[]}> = {
+"connect-four":{eyebrow:"ARENA DE ESTRATÉGIA",tagline:"Quatro peças. Uma jogada decisiva.",story:"Uma arena de raciocínio rápido em que cada coluna muda o rumo da disputa. Ataque, antecipe bloqueios e monte sua sequência.",goal:"Conectar quatro peças da sua cor antes do adversário.",steps:["Escolha uma coluna para soltar sua peça.","Observe ameaças e bloqueie sequências.","No modo individual, enfrente o Morados."],chips:["Partidas rápidas","Estratégia","Duelo online"]},
+"checkers":{eyebrow:"CAMPO DE BATALHA",tagline:"Domine o tabuleiro. Controle o ritmo.",story:"Uma disputa tática em que cada peça importa. Prepare capturas em cadeia, proteja suas fileiras e transforme peões em damas.",goal:"Capturar ou bloquear todas as peças adversárias.",steps:["Capturas são obrigatórias quando disponíveis.","Planeje sequências e proteja suas peças.","Chegue à última fileira para virar dama."],chips:["Capturas em cadeia","Damas voadoras","Duelo"]},
+"this-or-that":{eyebrow:"JOGO DE CONEXÃO",tagline:"Descubra o quanto vocês combinam.",story:"Uma sequência de escolhas revela gostos, diferenças inesperadas e pequenas histórias. Não existe resposta certa: o desafio é descobrir como cada pessoa pensa.",goal:"Responder às escolhas e comparar preferências.",steps:["Leia as duas opções antes de escolher.","No modo local, cada pessoa responde na sua vez.","No online, as respostas são sincronizadas."],chips:["Perguntas variadas","Escolhas individuais","Compatibilidade"]},
+"daily-challenge":{eyebrow:"MISSÃO COMPARTILHADA",tagline:"Uma missão diferente para hoje.",story:"Um desafio cooperativo para sair da rotina, criar uma lembrança e concluir uma pequena missão em conjunto.",goal:"Concluir a proposta do dia e registrar a participação.",steps:["Leiam a missão completa.","Combinem como realizar o desafio.","Marquem a conclusão depois de participar."],chips:["Missões rotativas","Progresso conjunto","Conquistas"]},
+"investigation":{eyebrow:"ROMANCE POLICIAL · CASO 001",tagline:"Há quartos que continuam ocupados depois de fechados.",story:"O Hotel Orfeu encerrou as atividades há dezenove anos. Durante a demolição, uma parede revela um quarto mobiliado, um telefone ativo e um homem que não aparece nos registros oficiais. Jornais, fotografias, plantas e gravações reconstroem o caso.",goal:"Acompanhar a história até o relatório final, abrindo os materiais de arquivo e observando como cada revelação muda o que parecia ter acontecido.",steps:["Leiam os capítulos como uma história policial.","Abram as manchetes, fotografias, documentos e depoimentos que aparecem nas páginas.","Sigam até o relatório final: não é necessário acusar ninguém nem acertar um enigma."],chips:["Romance policial","Livro de materiais pop-up","Reviravoltas"]},
+"investigation-train":{eyebrow:"ROMANCE POLICIAL · CASO 002",tagline:"O trem chegou. Nenhum passageiro desceu.",story:"Uma linha ferroviária cancelada há vinte e três anos reaparece no painel da estação. Uma mala surge na plataforma, sete nomes voltam a circular e um funcionário desaparece. Notícias antigas, bilhetes, gravações e fotografias acompanham a narrativa.",goal:"Ler o caso como um romance interativo, consultando os materiais quando eles surgirem e acompanhando as reviravoltas até o encerramento.",steps:["Acompanhem a narrativa capítulo por capítulo.","Abram os recortes de jornal, os objetos, os áudios e os depoimentos.","Não existe prova para acertar nem acusação obrigatória: a própria história revela o que foi possível descobrir."],chips:["Suspense ferroviário","Materiais de arquivo","Mistério e reviravoltas"]},
+"chess":{eyebrow:"ARENA DE XADREZ",tagline:"Pense adiante. Cada movimento importa.",story:"Uma arena de madeira e peças em disputa. Planeje aberturas, proteja seu rei e construa combinações. O tabuleiro é o centro da experiência.",goal:"Dar xeque-mate ao rei adversário.",steps:["Toque em uma peça para ver movimentos possíveis.","Use roque e en passant quando permitido.","Acompanhe o histórico e fique atento ao xeque."],chips:["Movimentos legais","Roque e en passant","Histórico"]},
+"battleship":{eyebrow:"COMANDO NAVAL",tagline:"O oceano esconde a frota inimiga.",story:"Dois comandos navais disputam um mar desconhecido. Posicione a frota, leia os disparos e descubra os navios inimigos antes que encontrem os seus.",goal:"Localizar e afundar todas as embarcações adversárias.",steps:["Posicione navios sem sobreposição.","Escolha coordenadas para disparar.","Use resultados anteriores para reduzir a busca."],chips:["Frota secreta","Batalha por coordenadas","Duelo online"]},
+"domino":{eyebrow:"MESA DE DOMINÓ",tagline:"A próxima pedra pode fechar o jogo.",story:"Uma mesa de madeira, peças na mão e uma sequência que exige leitura do jogo. Controle as pontas, conte pontos e escolha quando travar a mesa.",goal:"Ficar sem peças ou terminar com a menor soma de pontos.",steps:["Jogue uma peça que combine com uma das pontas.","Compre quando não houver jogada possível.","Observe as peças baixadas para antecipar o fechamento."],chips:["Compra de peças","Bloqueio","Contagem de pontos"]},
+"truco":{eyebrow:"MESA DE TRUCO",tagline:"Coragem, leitura e blefe.",story:"Uma mesa de cartas em que a mão pode mudar com uma chamada. Leia intenções, use as manilhas e decida quando aumentar a aposta.",goal:"Vencer mãos e alcançar doze pontos.",steps:["Entenda a vira e a ordem das manilhas.","Escolha cartas para disputar as rodadas.","Peça truco quando aceitar o risco."],chips:["Vira e manilhas","Chamadas","Blefe"]},
+"quiz":{eyebrow:"MORADOS QUIZ SHOW",tagline:"Luzes acesas. Cronômetro valendo.",story:"O palco está aberto. Cada pergunta vale pontos, o tempo corre e a disputa pode virar com uma única resposta. Escolham uma categoria e entrem no programa.",goal:"Acumular mais pontos respondendo antes do cronômetro terminar.",steps:["Escolha uma categoria ou jogue com todas.","Cada pergunta tem tempo limitado.","Acompanhe o placar e a explicação."],chips:["Palco de programa","Cronômetro","Categorias"]},
+"escape-room":{eyebrow:"ESCAPE ROOM · A SALA DO RELÓGIO",tagline:"O tempo está correndo. Encontre a saída.",story:"Vocês acordaram em uma sala trancada. Objetos, mecanismos e mensagens escondidas compõem uma sequência de enigmas.",goal:"Investigar o ambiente, coletar itens e destrancar a porta.",steps:["Toque nos pontos de interesse.","Examine objetos e descubra como interagem.","Use pistas para abrir os mecanismos."],chips:["Cenário interativo","Mecanismos","Enigmas"]},
+"island-survival":{eyebrow:"ROMANCE DE SOBREVIVÊNCIA · DEPOIS DA TEMPESTADE",tagline:"Cada dia é um capítulo. Cada escolha muda o que vem depois.",story:"Lia e Noah naufragam numa ilha que não aparece nos mapas. A narrativa acompanha os sete dias da expedição: caminhos diferentes, recursos escassos, objetos encontrados, desafios de lógica e decisões que deixam marcas nos próximos capítulos.",goal:"Atravessar a história e construir uma rota de sobrevivência por meio das escolhas, dos materiais recuperados e dos desafios que surgem dentro das cenas.",steps:["Leiam cada dia como um capítulo do livro.","Decidam quais caminhos seguir e o que recuperar; os recursos e as lembranças mudam conforme as escolhas.","Abram os objetos, resolvam os desafios e acompanhem as consequências até o epílogo."],chips:["História ramificada","Recursos e escolhas","Desafios dentro da narrativa"]},
+"cave-expedition":{eyebrow:"RPG 2D · AS RUÍNAS DE MORADOS",tagline:"Desça às ruínas. Enfrente o que desperta.",story:"Uma expedição encontra a entrada de um complexo subterrâneo esquecido. Câmaras, passagens ocultas, criaturas e relíquias aguardam. A equipe precisa explorar e sobreviver aos guardiões.",goal:"Explorar os andares, encontrar tesouros, vencer monstros e concluir a expedição.",steps:["Explore o mapa e revele áreas ocultas.","Gerencie vida, energia e poções.","Em batalha, ataque, use habilidades, defenda ou recupere vida."],chips:["Exploração 2D","Combate e chefes","Cooperação"]}
+};
 
 function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:string;onBack:()=>void;onlineLaunch?:OnlineGameLaunch|null}) {
  const [stage,setStage]=useState<"cover"|"mode"|"play"|"waiting">(()=>onlineLaunch?"play":"cover");
@@ -310,8 +327,8 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
     <section className="games-hub">
       <div className="games-hub-intro">
         <div>
-          <p className="date-kicker">MORADOS ORIGINALS</p>
-          <h1>Jogos</h1>
+          <p className="date-kicker">Escolham uma experiência</p>
+          <p>Partidas rápidas, desafios em conjunto e histórias para investigar.</p>
         </div>
         <span className="games-hub-mark"><Gamepad2 aria-hidden="true" /></span>
       </div>
@@ -330,22 +347,50 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
       </nav>
 
       <div className="games-hub-grid">
-        {visibleGames.map((game, index) => {
+        {visibleGames.map((game) => {
           const Icon = game.icon;
           return (
-            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone + " art-" + game.id} onClick={() => setActiveGame(game.id)} aria-label={"Abrir capa de " + game.name}>
-              <span className="games-hub-card-art" aria-hidden="true">
-                <span className="games-hub-card-watermark">{game.name}</span>
-                <span className="games-hub-card-orbit orbit-one" />
-                <span className="games-hub-card-orbit orbit-two" />
-                <span className="games-hub-card-number">0{index + 1}</span>
-                <span className="games-hub-card-symbol"><Icon /></span>
-              </span>
-              <span className="games-hub-card-copy"><strong>{game.name}</strong></span>
+            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone} onClick={() => setActiveGame(game.id)}>
+              <div className="games-hub-card-art">
+                <Icon aria-hidden="true" />
+                {game.new && <span><Sparkles aria-hidden="true" /> Novo</span>}
+              </div>
+              <div className="games-hub-card-copy">
+                <span>{game.category}</span>
+                <h2>{game.name}</h2>
+                <p>{game.description}</p>
+                <div className="games-hub-card-footer">
+                  <small><Users aria-hidden="true" /> {game.players}</small>
+                  <strong>Jogar <ArrowLeft aria-hidden="true" /></strong>
+                </div>
+              </div>
             </button>
           );
         })}
       </div>
+
+      <section className="games-hub-next games-hub-next-classics">
+        <div className="games-hub-next-title">
+          <span><Crown aria-hidden="true" /></span>
+          <div><h2>Clássicos em desenvolvimento</h2><p>Os próximos jogos de mesa que já estavam previstos.</p></div>
+        </div>
+        <div className="games-hub-next-grid">
+          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos, exploração e decisões com consequências</small></div><span>Próximo</span></article>
+          <article><Sparkles aria-hidden="true"/><div><strong>Histórias interativas</strong><small>Mistérios com escolhas, personagens e caminhos diferentes</small></div><span>Próximo</span></article>
+        </div>
+      </section>
+
+      <section className="games-hub-next">
+        <div className="games-hub-next-title">
+          <span><Sparkles aria-hidden="true" /></span>
+          <div><h2>Novos gêneros</h2><p>Jogos que vão além dos tabuleiros.</p></div>
+        </div>
+        <div className="games-hub-next-grid">
+          <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios além do Caso 001</small></div><span>Em produção</span></article>
+          <article><AudioLines aria-hidden="true"/><div><strong>Novas salas de fuga</strong><small>Ambientes, enigmas e mecanismos em sequência</small></div><span>Próximo</span></article>
+          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos e decisões com consequências</small></div><span>Planejado</span></article>
+        </div>
+      </section>
     </section>
   );
 }
