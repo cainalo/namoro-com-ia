@@ -275,7 +275,7 @@ export function GameInvitationCenter({ userId, onOpenGame }: Props) {
   return (
     <>
       {pending && (
-        <div className="game-invitation-backdrop" role="presentation">
+        <div className="game-invitation-backdrop" data-outgoing={isIncoming ? "false" : "true"} role="presentation">
           <section className="game-invitation-dialog" role="dialog" aria-modal="true" aria-labelledby="game-invitation-title">
             <div className="game-invitation-icon"><Gamepad2 /></div>
             <span className="game-invitation-kicker">
