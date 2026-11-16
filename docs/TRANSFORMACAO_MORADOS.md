@@ -115,9 +115,11 @@ Evitar:
 
 Estas são direções de investigação, não layouts finais.
 
-## 6. Piloto visual do Feed
+## 6. Pilotos visuais do Feed e de Memórias
 
 O primeiro experimento visual está documentado em [docs/IDENTIDADE_VISUAL_MORADOS.md](IDENTIDADE_VISUAL_MORADOS.md). Ele estabelece uma abertura editorial própria, filtros em abas e superfícies de publicação mais legíveis. A camada está isolada no Feed para evitar mudar outros módulos por acidente. Está em revisão e ainda precisa de validação visual no navegador e em Android.
+
+O segundo experimento visual aplica uma linguagem própria a **Memórias**: um caderno cronológico, com abertura ilustrada, formulário de escrita e registros ancorados por data em uma linha do tempo. A composição reflete o que o módulo realmente oferece hoje — texto, data e privacidade — sem sugerir uma galeria de fotos ou anexos inexistentes. Busca, filtros, exportação, edição, exclusão e atualização em tempo real foram preservados. A implementação também está isolada e precisa de validação visual no navegador e em Android.
 
 ## 7. Sequência de trabalho
 
