@@ -70,6 +70,7 @@ function renderFirstAccess() {
 describe("FirstAccessGate native profile form", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.updates.length = 0;
     mocks.native = true;
     mocks.pendingUpdate = false;
     setupProfileQuery();
