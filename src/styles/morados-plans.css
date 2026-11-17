@@ -1,0 +1,879 @@
+/* Morados — Planos: agenda prática, com leitura editorial e composição própria. */
+
+.plans-screen {
+  width: min(100%, 1120px);
+  margin-inline: auto;
+  gap: clamp(16px, 2.2vw, 22px);
+  color: var(--morados-feed-ink);
+  animation: none;
+}
+
+.plans-screen {
+  --morados-plans-muted: #62695e;
+}
+
+.dark .plans-screen {
+  --morados-plans-muted: #c2beae;
+}
+
+/* Cabeçalho compacto: identifica a agenda sem transformá-la em banner promocional. */
+.morados-plans-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(118px, 19vw, 176px);
+  align-items: center;
+  gap: clamp(14px, 3vw, 30px);
+  border-bottom: 1px solid var(--morados-feed-rule);
+  padding: 3px 0 clamp(17px, 2.4vw, 24px);
+}
+
+.morados-plans-copy {
+  min-width: 0;
+}
+
+.morados-plans-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 9px;
+  color: var(--morados-feed-forest);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .13em;
+}
+
+.morados-plans-kicker span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50% 50% 50% 2px;
+  background: var(--morados-feed-clay);
+  transform: rotate(-45deg);
+}
+
+.morados-plans-heading h1 {
+  margin: 0;
+  color: var(--morados-feed-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(2.1rem, 4vw, 3.25rem);
+  font-weight: 600;
+  letter-spacing: -.055em;
+  line-height: 1;
+}
+
+.morados-plans-description {
+  max-width: 48ch;
+  margin: 9px 0 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.morados-plans-count {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.morados-plans-count strong {
+  color: var(--morados-feed-forest);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 21px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.morados-plans-art {
+  display: grid;
+  min-width: 0;
+  place-items: center;
+}
+
+.morados-plans-art svg {
+  display: block;
+  width: 100%;
+  max-width: 176px;
+  height: auto;
+  overflow: visible;
+}
+
+/* O espaço de trabalho aproxima o calendário da agenda do dia selecionado. */
+.morados-plans-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(285px, .88fr);
+  align-items: start;
+  gap: clamp(18px, 2.6vw, 30px);
+}
+
+.morados-plans-calendar-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.plans-screen .plans-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: -7px 0 0;
+  border-bottom: 1px solid var(--morados-feed-rule);
+  padding: 0 1px 10px;
+}
+
+.plans-screen .plans-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.plans-screen .plans-live-status::before {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: var(--morados-feed-ochre);
+  box-shadow: none;
+}
+
+.plans-screen .plans-live-status.is-connected::before {
+  background: var(--morados-feed-forest);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--morados-feed-forest) 14%, transparent);
+}
+
+.plans-screen .plans-toolbar .inline-action {
+  min-height: 34px;
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 3px;
+  background: var(--morados-feed-surface);
+  padding: 0 12px;
+  color: var(--morados-feed-forest);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plans-screen .plans-toolbar .inline-action:hover {
+  border-color: var(--morados-feed-forest);
+  background: var(--morados-feed-paper);
+}
+
+.plans-screen .plans-calendar {
+  width: 100%;
+  max-width: none;
+  border: 1px solid var(--morados-feed-rule);
+  border-top: 3px solid var(--morados-feed-forest);
+  border-radius: 4px;
+  background: var(--morados-feed-surface);
+  padding: clamp(12px, 2.1vw, 20px);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.plans-screen .plans-calendar-toolbar {
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.plans-screen .plans-calendar-toolbar h2 {
+  margin: 0;
+  color: var(--morados-feed-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(19px, 2.5vw, 25px);
+  font-weight: 600;
+  letter-spacing: -.025em;
+  text-transform: capitalize;
+}
+
+.plans-screen .plans-calendar-navigation {
+  gap: 5px;
+}
+
+.plans-screen .plans-calendar-navigation button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--morados-feed-forest);
+  box-shadow: none;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.plans-screen .plans-calendar-navigation button:hover {
+  transform: none;
+  border-color: var(--morados-feed-forest);
+  background: var(--morados-feed-paper);
+}
+
+.plans-screen .plans-calendar-navigation button:focus-visible,
+.plans-screen .plans-day:focus-visible,
+.plans-screen .plans-toolbar .inline-action:focus-visible,
+.plans-screen .plans-event-filters button:focus-visible,
+.plans-screen .plans-event-entry button:focus-visible {
+  outline: 2px solid var(--morados-feed-forest);
+  outline-offset: 3px;
+}
+
+.plans-screen .plans-calendar-grid {
+  gap: clamp(3px, .65vw, 6px);
+}
+
+.plans-screen .plans-weekday {
+  min-height: 27px;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .025em;
+}
+
+.plans-screen .plans-day-placeholder,
+.plans-screen .plans-day {
+  min-height: clamp(39px, 4.6vw, 55px);
+  aspect-ratio: 1;
+}
+
+.plans-screen .plans-day {
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--morados-feed-ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 130ms ease, border-color 130ms ease, color 130ms ease;
+}
+
+.plans-screen .plans-day:hover {
+  transform: none;
+  border-color: var(--morados-feed-rule);
+  background: var(--morados-feed-paper);
+  box-shadow: none;
+}
+
+.plans-screen .plans-day.is-today {
+  border-color: var(--morados-feed-clay);
+  background: color-mix(in srgb, var(--morados-feed-clay) 7%, var(--morados-feed-surface));
+  color: var(--morados-feed-clay);
+  box-shadow: none;
+}
+
+.plans-screen .plans-day.is-selected {
+  border-color: var(--morados-feed-forest);
+  background: var(--morados-feed-forest);
+  color: #fffdf7;
+  font-weight: 750;
+  box-shadow: none;
+}
+
+.plans-screen .plans-day-event-indicator {
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  background: var(--morados-feed-clay);
+}
+
+.plans-screen .plans-day.is-selected .plans-day-event-indicator {
+  background: #fffdf7;
+}
+
+/* A coluna do dia é uma lista, não uma pilha de cartões de eventos. */
+.plans-screen .plans-selected-day {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 13px;
+  border: 0;
+  border-left: 1px solid var(--morados-feed-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 3px 0 0 clamp(16px, 2vw, 24px);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.plans-screen .plans-selected-day-heading {
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.plans-screen .plans-selected-day-heading .date-kicker {
+  margin: 0 0 5px;
+  color: var(--morados-feed-forest);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.plans-screen .plans-selected-day-heading h2 {
+  margin: 0;
+  color: var(--morados-feed-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 600;
+  letter-spacing: -.025em;
+  line-height: 1.15;
+  text-transform: capitalize;
+}
+
+.plans-screen .plans-selected-day-heading > span {
+  padding: 4px 0 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.plans-screen .plans-event-filters {
+  display: flex;
+  align-self: stretch;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  border: 0;
+  border-bottom: 1px solid var(--morados-feed-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.plans-screen .plans-event-filters button {
+  position: relative;
+  min-height: 35px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 4px;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.plans-screen .plans-event-filters button:hover,
+.plans-screen .plans-event-filters button.is-active {
+  border-color: var(--morados-feed-clay);
+  background: transparent;
+  color: var(--morados-feed-ink);
+  font-weight: 750;
+}
+
+.plans-screen .plans-event-filters button:focus-visible {
+  outline-offset: 1px;
+}
+
+.plans-screen .plans-event-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: -4px;
+}
+
+.plans-screen .plans-event-entry {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 9px;
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--morados-feed-rule);
+  border-radius: 0;
+  background: transparent;
+  padding: 13px 0;
+  box-shadow: none;
+}
+
+.plans-screen .plans-event-entry > time {
+  padding-top: 2px;
+  color: var(--morados-feed-forest);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 750;
+}
+
+.plans-screen .plans-event-entry h3 {
+  margin: 0 0 5px;
+  color: var(--morados-feed-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  line-height: 1.2;
+}
+
+.plans-screen .plans-event-entry p,
+.plans-screen .plans-event-entry > div > span {
+  display: block;
+  margin: 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.plans-screen .plans-event-entry > div > span {
+  margin-top: 4px;
+}
+
+.plans-screen .plans-event-entry-actions {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.plans-screen .plans-event-entry-actions > span {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.plans-screen .plans-event-entry-actions > span.is-shared {
+  color: var(--morados-feed-forest);
+}
+
+.plans-screen .plans-event-owner-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.plans-screen .plans-event-edit-action,
+.plans-screen .plans-event-delete-action {
+  min-height: 28px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 2px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.plans-screen .plans-event-edit-action {
+  color: var(--morados-feed-forest);
+}
+
+.plans-screen .plans-event-delete-action {
+  color: var(--color-destructive);
+}
+
+.plans-screen .plans-event-delete-confirm {
+  border: 1px solid color-mix(in srgb, var(--color-destructive) 45%, var(--morados-feed-rule));
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--color-destructive) 6%, var(--morados-feed-surface));
+  padding: 10px;
+}
+
+.plans-screen .plans-event-delete-confirm > p:first-child {
+  color: var(--morados-feed-ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+}
+
+.plans-screen .plans-no-events {
+  margin: 0;
+  border-top: 1px solid var(--morados-feed-rule);
+  padding: 16px 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* O formulário é uma folha de edição, separado da leitura do calendário. */
+.plans-screen .plans-event-composer {
+  display: grid;
+  width: 100%;
+  max-width: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px 16px;
+  border: 1px solid var(--morados-feed-rule);
+  border-top: 3px solid var(--morados-feed-clay);
+  border-radius: 4px;
+  background: var(--morados-feed-surface);
+  padding: clamp(14px, 2.3vw, 22px);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.plans-screen .plans-event-composer-heading,
+.plans-screen .plans-event-options,
+.plans-screen .plans-event-footer,
+.plans-screen .plans-privacy-note {
+  grid-column: 1 / -1;
+}
+
+.plans-screen .plans-event-composer-heading {
+  gap: 9px;
+  border-bottom: 1px solid var(--morados-feed-rule);
+  padding-bottom: 10px;
+}
+
+.plans-screen .plans-event-composer-heading svg {
+  width: 17px;
+  height: 17px;
+  color: var(--morados-feed-clay);
+}
+
+.plans-screen .plans-event-composer-heading h2 {
+  color: var(--morados-feed-ink);
+  font-family: "Fraunces", "Libre Baskerville", Georgia, serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.plans-screen .plans-field {
+  gap: 6px;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.plans-screen .plans-field input,
+.plans-screen .plans-field textarea {
+  min-height: 40px;
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 3px;
+  background: var(--morados-feed-surface-raised);
+  padding: 9px 11px;
+  color: var(--morados-feed-ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: none;
+}
+
+.plans-screen .plans-field textarea {
+  min-height: 76px;
+}
+
+.plans-screen .plans-field input::placeholder,
+.plans-screen .plans-field textarea::placeholder {
+  color: var(--morados-plans-muted);
+  opacity: .86;
+}
+
+.plans-screen .plans-field input:focus-visible,
+.plans-screen .plans-field textarea:focus-visible {
+  outline: 2px solid var(--morados-feed-forest);
+  outline-offset: 2px;
+  border-color: var(--morados-feed-forest);
+}
+
+.plans-screen .plans-field input:disabled,
+.plans-screen .plans-field textarea:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.plans-screen .plans-event-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  border-top: 1px solid var(--morados-feed-rule);
+  padding-top: 12px;
+}
+
+.plans-screen .plans-all-day-toggle {
+  min-height: 36px;
+  color: var(--morados-feed-ink);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 12px;
+}
+
+.plans-screen .plans-all-day-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--morados-feed-forest);
+}
+
+.plans-screen .plans-time-fields {
+  gap: 12px;
+}
+
+.plans-screen .plans-event-footer {
+  align-items: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--morados-feed-rule);
+  padding-top: 13px;
+}
+
+.plans-screen .plans-event-date {
+  flex: 1 1 150px;
+}
+
+.plans-screen .plans-event-footer .memory-visibility-switch {
+  display: inline-flex;
+  flex: 1 1 220px;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.plans-screen .plans-event-footer .memory-visibility-switch button {
+  min-height: 38px;
+  flex: 1 1 auto;
+  justify-content: center;
+  border: 1px solid var(--morados-feed-rule);
+  border-radius: 3px;
+  background: transparent;
+  padding-inline: 10px;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.plans-screen .plans-event-footer .memory-visibility-switch button.is-active {
+  border-color: var(--morados-feed-forest);
+  background: color-mix(in srgb, var(--morados-feed-forest) 9%, var(--morados-feed-surface));
+  color: var(--morados-feed-forest);
+}
+
+.plans-screen .plans-event-footer .memory-visibility-switch button:disabled {
+  cursor: not-allowed;
+  opacity: .42;
+}
+
+.plans-screen .plans-event-footer .memory-visibility-switch svg {
+  width: 14px;
+  height: 14px;
+}
+
+.plans-screen .plans-event-footer > .primary-action,
+.plans-screen .plans-event-footer > .secondary-action {
+  min-height: 38px;
+  margin: 0;
+  border-radius: 3px;
+  padding: 0 14px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plans-screen .plans-event-footer > .primary-action {
+  border: 1px solid var(--morados-feed-forest);
+  background: var(--morados-feed-forest);
+  color: #fffdf7;
+}
+
+.plans-screen .plans-event-footer > .primary-action:hover:not(:disabled) {
+  border-color: var(--morados-feed-clay);
+  background: var(--morados-feed-clay);
+}
+
+.plans-screen .plans-event-footer > .secondary-action {
+  border: 1px solid var(--morados-feed-rule);
+  background: transparent;
+  color: var(--morados-feed-ink);
+}
+
+.plans-screen .plans-event-footer > button:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
+.plans-screen .plans-edit-privacy,
+.plans-screen .plans-privacy-note {
+  margin: 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.plans-screen .plans-feedback {
+  width: 100%;
+  margin: 0;
+  color: var(--morados-plans-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.plans-screen .plans-feedback.is-error {
+  color: var(--color-destructive);
+}
+
+.plans-screen .plans-feedback.is-success {
+  color: var(--morados-feed-forest);
+}
+
+.plans-screen .plans-feedback button {
+  min-height: 32px;
+  border: 0;
+  background: transparent;
+  padding: 0 3px;
+  color: var(--morados-feed-forest);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.plans-screen .plans-feedback button:focus-visible {
+  outline: 2px solid var(--morados-feed-forest);
+  outline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .morados-plans-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plans-screen .plans-selected-day {
+    border-top: 1px solid var(--morados-feed-rule);
+    border-left: 0;
+    padding: 17px 0 0;
+  }
+
+  .plans-screen .plans-calendar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .morados-plans-heading {
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 8px;
+    padding-bottom: 17px;
+  }
+
+  .morados-plans-kicker {
+    margin-bottom: 8px;
+    font-size: 9px;
+  }
+
+  .morados-plans-heading h1 {
+    font-size: clamp(1.9rem, 8vw, 2.45rem);
+  }
+
+  .morados-plans-description {
+    max-width: 32ch;
+    margin-top: 8px;
+    font-size: 11px;
+  }
+
+  .morados-plans-count {
+    margin-top: 9px;
+    font-size: 10px;
+  }
+
+  .morados-plans-count strong {
+    font-size: 19px;
+  }
+
+  .morados-plans-art svg {
+    max-width: 112px;
+  }
+
+  .plans-screen .plans-calendar {
+    padding: 12px 10px;
+  }
+
+  .plans-screen .plans-calendar-grid {
+    gap: 3px;
+  }
+
+  .plans-screen .plans-weekday {
+    min-height: 25px;
+    font-size: 9px;
+  }
+
+  .plans-screen .plans-day-placeholder,
+  .plans-screen .plans-day {
+    min-height: 39px;
+    aspect-ratio: 1;
+  }
+
+  .plans-screen .plans-day {
+    font-size: 11px;
+  }
+
+  .plans-screen .plans-event-entry {
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 7px 9px;
+  }
+
+  .plans-screen .plans-event-entry-actions {
+    grid-column: 2;
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .plans-screen .plans-event-composer {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 13px 11px;
+  }
+
+  .plans-screen .plans-event-composer-heading,
+  .plans-screen .plans-event-options,
+  .plans-screen .plans-event-footer,
+  .plans-screen .plans-privacy-note {
+    grid-column: 1;
+  }
+
+  .plans-screen .plans-event-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .plans-screen .plans-event-footer .memory-visibility-switch {
+    flex: 1 1 auto;
+  }
+
+  .plans-screen .plans-event-footer > .primary-action,
+  .plans-screen .plans-event-footer > .secondary-action {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plans-screen .plans-calendar-navigation button,
+  .plans-screen .plans-day {
+    transition: none;
+  }
+}
