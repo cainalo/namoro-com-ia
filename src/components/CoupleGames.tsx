@@ -202,7 +202,11 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
 
  const back=()=>{play("tap");if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="waiting")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
  const settings=<InlineMenu label="Configurações do jogo" trigger={<MoreVertical/>} triggerClassName="game-world-float-button" menuClassName="game-world-menu-panel" className="game-world-menu">{close=><><div className="game-world-menu-heading">CONFIGURAÇÕES</div><GameAudioToggle/><button type="button" role="menuitem" onClick={()=>{setStage("mode");setConfirmExit(false);close();play("tap");}}><Users/> Trocar modo</button><button type="button" role="menuitem" onClick={()=>{setConfirmExit(true);close();play("warning");}}><ArrowLeft/> Sair da partida</button></>}</InlineMenu>;
- const choices=[{id:"solo" as const,title:"Jogar sozinho",Icon:Crown},{id:"local" as const,title:"Jogar neste aparelho",Icon:Users},{id:"online" as const,title:"Jogar online",Icon:Shield}];
+ const choices=[
+   {id:"solo" as const,title:"Jogar sozinho",description:"Entre no jogo no seu ritmo e pratique sem depender de outra pessoa.",meta:"INDIVIDUAL",Icon:Crown},
+   {id:"local" as const,title:"Neste aparelho",description:"Duas pessoas compartilham a tela e alternam as jogadas no mesmo dispositivo.",meta:"PRESENCIAL",Icon:Users},
+   {id:"online" as const,title:"Jogar online",description:"Envie um convite privado para a outra pessoa e joguem em aparelhos separados.",meta:"A DISTÂNCIA",Icon:Shield}
+  ];
  return <div className={"games-fullscreen-page game-world morados-game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
   <header className="game-world-topbar"><button type="button" className="game-world-float-button" onClick={back} aria-label={stage==="cover"?"Voltar aos jogos":"Voltar uma etapa"}><ArrowLeft/></button><div className="game-world-top-title"><small>MORADOS ORIGINALS</small>{stage!=="cover"&&<strong>{game.name}</strong>}</div>{settings}</header>
   <main className={"game-world-main stage-"+stage}>
@@ -241,21 +245,23 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
         </section>
       </div>
     </section>}
-   {stage==="mode"&&<section className="game-mode-stage">
-      <div className="game-stage-heading"><h1>Como você quer jogar?</h1></div>
-      <div className="game-world-mode-grid">{choices.map(({id,title,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setInviteError(null);setMode(id);play("discovery");if(id==="online"){void sendOnlineInvitation();}else{setStage("play");}}} disabled={inviteBusy}>
-        <span className="game-world-mode-icon"><Icon/></span>
-        <strong>{title}</strong>
-        <span className="game-world-mode-enter">{id==="online"&&inviteBusy?<LoaderCircle/>:<Play/>}</span>
-      </button>)}</div>
+   {stage==="mode"&&<section className="game-mode-stage morados-game-mode-stage">
+      <div className="game-stage-heading"><span className="morados-game-cover-eyebrow">ESCOLHA DE PARTIDA</span><h1>Como você quer jogar?</h1><p>O tipo de partida define como a experiência acontece.</p></div>
+      <div className="game-world-mode-grid">{choices.map(({id,title,description,meta,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setInviteError(null);setMode(id);play("discovery");if(id==="online"){void sendOnlineInvitation();}else{setStage("play");}}} disabled={inviteBusy}>
+         <span className="game-world-mode-icon"><Icon/></span>
+         <span className="game-world-mode-meta">{meta}</span>
+         <strong>{title}</strong>
+         <small>{description}</small>
+         <span className="game-world-mode-enter">{id==="online"&&inviteBusy?<LoaderCircle/>:<Play/>}<span>{id==="online"&&inviteBusy?"Enviando convite":"Selecionar modo"}</span></span>
+       </button>)}</div>
       {inviteError&&<p className="couple-game-error" role="alert">{inviteError}</p>}
       <button type="button" className="game-world-text-button" onClick={()=>setStage("cover")}>Voltar à capa</button>
     </section>}
    
-   {stage==="waiting"&&mode==="online"&&<section className="game-invite-waiting"><span className="game-invite-waiting-mark"><Users/></span><h1>Aguardando a outra pessoa</h1><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Voltar aos modos</button></section>}
+   {stage==="waiting"&&mode==="online"&&<section className="game-invite-waiting morados-game-invite-waiting"><span className="game-invite-waiting-mark"><Users/></span><span className="morados-game-cover-eyebrow">CONVITE ENVIADO</span><h1>Aguardando a outra pessoa</h1><p>Assim que o convite for aceito, a partida será aberta neste espaço. Você pode continuar aguardando ou voltar à escolha de modos.</p><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Voltar aos modos</button></section>}
    {stage==="play"&&mode&&<section className="game-session-stage"><div key={mode+"-"+gameId} className="game-play-surface">{mode==="solo"&&renderSoloGame(gameId)}{mode==="local"&&renderLocalGame(gameId)}{mode==="online"&&renderOnlineGame(gameId,userId)}</div></section>}
   </main>
-  {confirmExit&&<div className="game-world-exit-backdrop" role="presentation"><section className="game-world-exit-dialog" role="dialog" aria-modal="true" aria-labelledby="game-exit-title"><span className="game-world-exit-icon"><Shield/></span><small>PAUSAR EXPERIÊNCIA</small><h2 id="game-exit-title">Sair desta partida?</h2><p>Você pode voltar ao jogo depois. O progresso salvo continua disponível quando o modo permitir.</p><button type="button" className="game-world-primary" onClick={()=>{setConfirmExit(false);setStage("cover");setMode(null);}}>Voltar à capa do jogo</button><button type="button" className="game-world-text-button" onClick={()=>{setConfirmExit(false);onBack();}}>Voltar ao catálogo</button><button type="button" className="game-world-exit-cancel" onClick={()=>setConfirmExit(false)}>Continuar jogando</button></section></div>}
+  {confirmExit&&<div className="game-world-exit-backdrop" role="presentation"><section className="game-world-exit-dialog morados-game-pause-dialog" role="dialog" aria-modal="true" aria-labelledby="game-exit-title"><span className="game-world-exit-icon"><Shield/></span><small>PAUSA</small><h2 id="game-exit-title">Partida pausada</h2><p>Escolha se deseja continuar agora ou sair desta experiência. O progresso só permanece disponível quando o próprio jogo oferece salvamento.</p><button type="button" className="game-world-primary" onClick={()=>{setConfirmExit(false);setStage("cover");setMode(null);}}>Voltar à capa do jogo</button><button type="button" className="game-world-text-button" onClick={()=>{setConfirmExit(false);onBack();}}>Voltar ao catálogo</button><button type="button" className="game-world-exit-cancel" onClick={()=>setConfirmExit(false)}>Continuar jogando</button></section></div>}
  </div>;
 }
 
