@@ -1,0 +1,563 @@
+/* Morados — Casa: exploração espacial com uma linguagem natural e funcional.
+   Esta folha é isolada em .house-screen para não alterar os outros módulos. */
+
+.house-screen {
+  --house-ink: #263b32;
+  --house-muted: #68776e;
+  --house-paper: #f4f0e6;
+  --house-surface: #fcfaf4;
+  --house-line: #d9d7c9;
+  --house-forest: #496b54;
+  --house-leaf: #78916d;
+  --house-clay: #b96d50;
+  --house-ochre: #c69a59;
+  width: min(100%, 1120px);
+  min-height: calc(100dvh - 112px);
+  margin-inline: auto;
+  gap: clamp(14px, 2vw, 22px);
+  color: var(--house-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+}
+
+.morados-house-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(14px, 4vw, 40px);
+  border-bottom: 1px solid var(--house-line);
+  padding: 2px 0 clamp(15px, 2.4vw, 24px);
+}
+
+.morados-house-heading-copy { min-width: 0; }
+
+.morados-house-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 9px;
+  color: var(--house-forest);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.morados-house-kicker span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--house-clay);
+}
+
+.morados-house-heading h1 {
+  margin: 0;
+  color: var(--house-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(2rem, 4.2vw, 2.8rem);
+  font-weight: 750;
+  letter-spacing: -.055em;
+  line-height: 1;
+}
+
+.morados-house-description {
+  max-width: 490px;
+  margin: 9px 0 0;
+  color: var(--house-muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.morados-house-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 12px 0 0;
+  color: var(--house-muted);
+  font-size: 10px;
+}
+
+.morados-house-count strong {
+  color: var(--house-forest);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.morados-house-heading-art {
+  display: grid;
+  width: clamp(124px, 20vw, 190px);
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.morados-house-heading-art svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.house-map-shell {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #bdc9b4;
+  border-radius: 18px;
+  background: #dce5d0;
+  box-shadow: 0 12px 28px -24px rgb(35 54 43 / 42%);
+}
+
+.house-map-viewport { border-radius: inherit; }
+.house-map-canvas { transform-origin: center center; }
+.house-isometric-map { display: block; width: 100%; height: auto; }
+
+.house-map-lighting-controls,
+.house-map-zoom-controls {
+  border: 1px solid rgb(72 96 74 / 17%);
+  border-radius: 11px;
+  background: rgb(250 248 239 / 96%);
+  padding: 4px;
+  color: var(--house-ink);
+  box-shadow: 0 5px 15px -12px rgb(24 39 30 / 55%);
+  backdrop-filter: none;
+}
+
+.house-map-lighting-controls button {
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding-inline: 9px;
+  color: var(--house-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.house-map-lighting-controls button:hover,
+.house-map-lighting-controls button.is-selected {
+  border-color: transparent;
+  background: var(--house-forest);
+  color: #fffdf5;
+}
+
+.house-map-zoom-controls button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  color: var(--house-ink);
+}
+
+.house-map-zoom-controls button:hover:not(:disabled) {
+  border-color: #d4ddcc;
+  background: #e8eee1;
+  color: var(--house-forest);
+}
+
+.house-map-zoom-controls button:disabled { opacity: .36; }
+
+.house-map-zoom-controls > span {
+  color: var(--house-muted);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.house-map-hotspot {
+  min-height: 35px;
+  gap: 7px;
+  border: 1px solid rgb(73 107 84 / 24%);
+  border-radius: 9px;
+  background: rgb(252 250 244 / 95%);
+  padding-inline: 10px;
+  color: var(--house-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 10px;
+  font-weight: 750;
+  box-shadow: 0 5px 14px -10px rgb(28 45 34 / 70%);
+  backdrop-filter: none;
+  transition: background-color 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.house-map-hotspot:hover,
+.house-map-hotspot.is-selected {
+  border-color: var(--house-forest);
+  background: var(--house-forest);
+  color: #fffdf5;
+}
+
+.house-map-hotspot .house-map-marker,
+.house-map-legend .house-map-marker {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  transform: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--house-clay);
+  box-shadow: 0 0 0 3px rgb(185 109 80 / 15%);
+}
+
+.house-map-hotspot.is-selected .house-map-marker {
+  background: #f3d49a;
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 17%);
+}
+
+.house-map-hotspot:focus-visible,
+.house-map-lighting-controls button:focus-visible,
+.house-map-zoom-controls button:focus-visible,
+.house-enter-action:focus-visible {
+  outline: 2px solid var(--house-forest);
+  outline-offset: 3px;
+}
+
+.house-map-legend {
+  right: clamp(10px, 2vw, 18px);
+  bottom: clamp(10px, 2vw, 18px);
+  max-width: min(340px, calc(100% - 20px));
+  gap: 10px;
+  border: 1px solid rgb(72 96 74 / 20%);
+  border-radius: 12px;
+  background: rgb(252 250 244 / 97%);
+  padding: 11px 13px;
+  color: var(--house-ink);
+  box-shadow: 0 8px 22px -17px rgb(24 39 30 / 58%);
+  backdrop-filter: none;
+}
+
+.house-map-legend strong {
+  color: var(--house-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.house-map-legend div span {
+  color: var(--house-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.house-enter-action {
+  min-height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--house-forest);
+  padding: 0 12px;
+  color: #fffdf5;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.house-enter-action:hover { background: #365640; }
+
+.house-map-note {
+  max-width: 720px;
+  margin: -3px 0 0;
+  color: var(--house-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.house-map-shell.is-dusk .house-map-atmosphere {
+  background: linear-gradient(115deg, rgb(207 128 77 / 7%), rgb(235 179 112 / 22%));
+  mix-blend-mode: multiply;
+}
+
+.house-map-shell.is-night .house-map-atmosphere {
+  background: linear-gradient(115deg, rgb(37 53 75 / 38%), rgb(62 78 92 / 16%));
+  mix-blend-mode: multiply;
+  animation: none;
+}
+
+.house-interior {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--house-line);
+  border-radius: 18px;
+  background: var(--house-surface);
+  box-shadow: 0 12px 28px -24px rgb(35 54 43 / 35%);
+}
+
+.house-interior-heading {
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid var(--house-line);
+  background: var(--house-surface);
+  padding: clamp(14px, 2.3vw, 22px);
+}
+
+.house-interior-heading .date-kicker {
+  margin: 0 0 7px;
+  color: var(--house-forest);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.house-interior-heading h2 {
+  color: var(--house-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(18px, 2.4vw, 24px);
+  font-weight: 750;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+
+.house-interior-heading > div > p:last-child {
+  margin: 6px 0 0;
+  color: var(--house-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.house-interior-heading .inline-action {
+  border: 1px solid var(--house-line);
+  border-radius: 8px;
+  background: var(--house-paper);
+  padding: 8px 11px;
+  color: var(--house-forest);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.house-interior-heading .inline-action:hover {
+  border-color: #b7c8b4;
+  background: #eaf0e5;
+}
+
+.house-interior-header-actions { gap: 8px; }
+
+.house-interior-lighting {
+  border: 1px solid var(--house-line);
+  border-radius: 9px;
+  background: var(--house-paper);
+  padding: 3px;
+  color: var(--house-muted);
+}
+
+.house-interior-lighting button {
+  min-height: 32px;
+  border-radius: 6px;
+  padding-inline: 9px;
+  color: inherit;
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.house-interior-lighting button:hover,
+.house-interior-lighting button.is-selected {
+  border-color: transparent;
+  background: var(--house-forest);
+  color: #fffdf5;
+}
+
+.house-interior-scene {
+  position: relative;
+  overflow: hidden;
+  background: #e1d6c2;
+}
+
+.house-interior-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.house-interior.is-dusk .house-interior-art {
+  filter: sepia(.13) saturate(1.06) brightness(.96);
+}
+
+.house-interior.is-night .house-interior-art {
+  filter: brightness(.72) saturate(.85) hue-rotate(4deg);
+}
+
+.house-interior-hotspots button {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fffdf5;
+  border-radius: 50%;
+  background: var(--house-forest);
+  box-shadow: 0 0 0 5px rgb(73 107 84 / 20%), 0 3px 10px rgb(30 42 32 / 22%);
+  cursor: pointer;
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+.house-interior-hotspots button:hover,
+.house-interior-hotspots button.is-selected {
+  transform: scale(1.12);
+  background: var(--house-clay);
+}
+
+.house-interior-hotspots button:focus-visible {
+  outline: 2px solid var(--house-ink);
+  outline-offset: 4px;
+}
+
+.house-interior-caption {
+  position: static;
+  min-height: 67px;
+  gap: 11px;
+  border: 0;
+  border-top: 1px solid var(--house-line);
+  border-radius: 0;
+  background: var(--house-surface);
+  padding: 13px clamp(14px, 2.3vw, 22px);
+  color: var(--house-ink);
+  backdrop-filter: none;
+}
+
+.house-interior-caption > span {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  border: 1px solid #c6d2be;
+  border-radius: 50%;
+  background: #eaf0e5;
+  color: var(--house-forest);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.house-interior-caption strong {
+  color: var(--house-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.house-interior-caption p {
+  margin: 3px 0 0;
+  color: var(--house-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.house-interior-explore-hint {
+  margin: 0;
+  border-top: 1px solid var(--house-line);
+  background: var(--house-paper);
+  padding: 9px clamp(14px, 2.3vw, 22px);
+  color: var(--house-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+@media (max-width: 680px) {
+  .morados-house-heading {
+    align-items: center;
+    gap: 10px;
+  }
+
+  .morados-house-heading-art { width: 112px; }
+
+  .morados-house-description {
+    max-width: 34ch;
+    font-size: 11px;
+  }
+
+  .morados-house-count { margin-top: 9px; }
+
+  .house-map-shell { border-radius: 13px; }
+
+  .house-map-lighting-controls {
+    top: 7px;
+    left: 7px;
+    max-width: calc(100% - 14px);
+  }
+
+  .house-map-lighting-controls button {
+    min-height: 31px;
+    padding-inline: 7px;
+    font-size: 9px;
+  }
+
+  .house-map-zoom-controls {
+    top: 7px;
+    right: 7px;
+  }
+
+  .house-map-zoom-controls button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .house-map-hotspot {
+    min-height: 28px;
+    gap: 5px;
+    padding-inline: 7px;
+    font-size: 8px;
+  }
+
+  .house-map-legend {
+    right: 7px;
+    bottom: 7px;
+    left: 7px;
+    max-width: none;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 8px 9px;
+  }
+
+  .house-map-legend div { min-width: 0; flex: 1 1 120px; }
+  .house-map-legend strong { font-size: 11px; }
+  .house-map-legend div span { font-size: 9px; }
+  .house-enter-action { min-height: 31px; padding-inline: 10px; }
+
+  .house-interior { border-radius: 13px; }
+
+  .house-interior-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding: 13px;
+  }
+
+  .house-interior-header-actions {
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .house-interior-lighting button {
+    min-height: 30px;
+    padding-inline: 7px;
+    font-size: 9px;
+  }
+
+  .house-interior-heading .inline-action {
+    min-height: 36px;
+    padding-inline: 9px;
+    white-space: nowrap;
+  }
+
+  .house-interior-art {
+    min-height: 0;
+    object-fit: contain;
+  }
+
+  .house-interior-caption {
+    min-height: 0;
+    padding: 11px 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .morados-house-heading-art { width: 88px; }
+  .morados-house-heading { gap: 6px; }
+  .house-interior-header-actions { align-items: flex-start; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .house-map-atmosphere,
+  .house-map-hotspot,
+  .house-interior-hotspots button,
+  .house-map-canvas {
+    animation: none !important;
+    transition: none !important;
+  }
+}
