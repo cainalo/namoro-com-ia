@@ -27522,6 +27522,41 @@ body {
 }
 .is-draw .game-victory-eyebrow { color: #c4d8ab; }
 .is-draw .game-victory-stats strong { color: #d5ebc7; }
+
+/* Damas brasileiras — encerramento em verde mineral e terracota. */
+.game-victory-screen.is-checkers { background: #26362d; }
+.is-checkers .victory-orbit { border-color: rgb(192 204 159 / 14%); }
+.is-checkers .victory-orbit.orbit-two { border-color: rgb(190 124 88 / 20%); }
+.is-checkers .victory-spark { background: #d5b77f; box-shadow: 0 0 0 8px rgb(213 183 127 / 10%); }
+.is-checkers .game-victory-icon {
+  border-color: #c5c999;
+  background: #405541;
+  color: #e5e7c8;
+  box-shadow: 0 0 0 13px rgb(197 201 153 / 9%);
+}
+.is-checkers .game-victory-eyebrow { color: #d8bd85; }
+.is-checkers .game-victory-content h2 { color: #f5f0e5; }
+.is-checkers .game-victory-subtitle { color: #d0d8c9; }
+.is-checkers .game-victory-stats > div { border-color: #53654f; background: #304234; }
+.is-checkers .game-victory-stats span { color: #c1cbbb; }
+.is-checkers .game-victory-stats strong { color: #e6d39f; }
+.is-checkers .game-victory-primary { background: #c47d58; color: #2e2119; }
+.is-checkers .game-victory-exit { color: #d8decf; }
+.is-checkers .game-victory-brand { color: #aebca7; }
+.game-victory-screen.is-checkers.is-defeat { background: #332b29; }
+.is-checkers.is-defeat .game-victory-icon {
+  border-color: #c0806d;
+  background: #563c35;
+  color: #f0c0a8;
+}
+.game-victory-screen.is-checkers.is-draw { background: #29382f; }
+.is-checkers.is-draw .game-victory-icon {
+  border-color: #b4c49b;
+  background: #3d503d;
+  color: #e0eccb;
+}
+.is-checkers.is-draw .game-victory-eyebrow { color: #cfddaF; }
+
 .game-victory-atmosphere {
   position: absolute;
   inset: 0;
