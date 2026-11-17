@@ -1,8 +1,9 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   from: vi.fn(),
+  update: vi.fn(),
   nativePlatform: false,
   showTextInputDialog: vi.fn(),
   mediaResolvers: [] as Array<(value: string | null) => void>,
@@ -51,10 +52,12 @@ describe("CoupleProfile", () => {
     mocks.nativePlatform = false;
     mocks.showTextInputDialog.mockReset();
     mocks.mediaResolvers.length = 0;
+    mocks.update.mockReset();
     mocks.from.mockImplementation(() => {
       const builder: any = {
         select: vi.fn(() => builder),
         eq: vi.fn(() => builder),
+        update: mocks.update.mockImplementation(() => builder),
         maybeSingle: vi.fn().mockResolvedValue({ data: mocks.row, error: null }),
       };
       return builder;
@@ -97,5 +100,41 @@ describe("CoupleProfile", () => {
       mocks.mediaResolvers.forEach((resolve) => resolve(null));
     });
   });
+  it("saves profile edits through the existing profile row and announces success", async () => {
+    render(<CoupleProfile userId="user-1" />);
+
+    const nameField = await screen.findByLabelText("Nome exibido");
+    fireEvent.change(nameField, { target: { value: "Nome atualizado" } });
+    fireEvent.click(screen.getByRole("button", { name: "Salvar perfil" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("status")).toHaveTextContent("Seu perfil foi atualizado.");
+    });
+
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
+      display_name: "Nome atualizado",
+      bio: "Sobre mim",
+      interests: ["Leitura"],
+      hobbies: "Música",
+    }));
+  });
+
+  it("keeps the personal editing controls visible in the new portrait layout", async () => {
+    const { container } = render(<CoupleProfile userId="user-1" />);
+
+    expect(await screen.findByRole("heading", { name: "Detalhes sobre você" })).toBeInTheDocument();
+    expect(container.querySelector(".morados-profile-cover")).toBeInTheDocument();
+    expect(container.querySelector(".morados-profile-progress")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nome exibido")).toHaveValue("Cainã");
+    expect(screen.getByLabelText("Sobre mim")).toHaveValue("Sobre mim");
+    expect(screen.getByLabelText("Interesses")).toHaveValue("Leitura");
+    expect(screen.getByLabelText("Hobbies")).toHaveValue("Música");
+    expect(screen.getByRole("button", { name: "Salvar perfil" })).toBeEnabled();
+
+    await act(async () => {
+      mocks.mediaResolvers.forEach((resolve) => resolve(null));
+    });
+  });
+
 
 });
