@@ -30831,3 +30831,6 @@ body {
   .call-screen-controls { gap: 12px; padding-inline: 10px; }
   .call-screen-controls button { width: 54px; height: 54px; }
 }
+
+.call-screen-remote-video { display: none; }
+.call-screen-stage.has-remote-video .call-screen-remote-video { display: block; }
