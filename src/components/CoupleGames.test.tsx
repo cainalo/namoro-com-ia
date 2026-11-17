@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -10,7 +11,6 @@ vi.mock("@/components/CheckersGame", () => ({
   CheckersGame: ({ solo }: { solo?: boolean }) => <div data-testid="checkers-game">{solo ? "individual" : "shared"}</div>,
 }));
 vi.mock("@/components/ConnectFourGame", () => ({
-  CheckersGame: () => null,
   ConnectFourGame: () => <div data-testid="connect-four-game">Lig 4</div>,
 }));
 vi.mock("@/components/CoupleDailyChallenge", () => ({
@@ -50,7 +50,7 @@ vi.mock("@/components/CaveExpeditionGame", () => ({
   CaveExpeditionGame: () => <div data-testid="cave-game">Ruínas</div>,
 }));
 vi.mock("@/components/InlineMenu", () => ({
-  InlineMenu: ({ trigger }: { trigger: React.ReactNode }) => <div>{trigger}</div>,
+  InlineMenu: ({ trigger }: { trigger: ReactNode }) => <div>{trigger}</div>,
 }));
 vi.mock("@/components/GameExperience", () => ({
   GameAudioProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
