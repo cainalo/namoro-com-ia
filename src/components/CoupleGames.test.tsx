@@ -96,7 +96,7 @@ describe("CoupleGames", () => {
 
     expect(screen.getByRole("heading", { name: "Jogos" })).toBeInTheDocument();
     expect(screen.getByLabelText("14 experiências disponíveis")).toBeInTheDocument();
-    expect(screen.getByText("14 experiências disponíveis")).toBeInTheDocument();
+    expect(document.querySelector(".games-hub-result-count")).toHaveTextContent("14 experiências disponíveis");
 
     fireEvent.click(screen.getByRole("button", { name: "Investigação" }));
 
@@ -104,7 +104,7 @@ describe("CoupleGames", () => {
     expect(screen.getByRole("button", { name: "Abrir O Último Trem de Santa Íria" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Abrir A sala do relógio" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Abrir Xadrez" })).not.toBeInTheDocument();
-    expect(screen.getByText("3 experiências disponíveis")).toBeInTheDocument();
+    expect(document.querySelector(".games-hub-result-count")).toHaveTextContent("3 experiências disponíveis");
   });
 
   it("opens an individual story briefing with premise, objective and expandable instructions", () => {
