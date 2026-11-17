@@ -43,10 +43,15 @@ export function PairingStatusBanner({ userId }: { userId: string }) {
         .maybeSingle();
 
       if (coupleError) throw coupleError;
-      if (couple?.status === "active" || pairing.active) {
+      if (pairing.active || (pending && couple?.status === "active")) {
         activatedRef.current = true;
         setPending(false);
         window.location.reload();
+        return;
+      }
+
+      if (couple?.status === "active") {
+        setPending(false);
         return;
       }
 
