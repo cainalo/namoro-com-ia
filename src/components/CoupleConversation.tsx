@@ -35,7 +35,13 @@ import {
   Play,
 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
-import { ConversationCallScreen, type CallKind } from "@/components/ConversationCallScreen";
+import { ConversationCallScreen, type CallDirection, type CallKind } from "@/components/ConversationCallScreen";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import {
+  createCoupleCallId,
+  parseCoupleCallSignal,
+  sendCoupleCallSignal,
+} from "@/lib/couple-call-signaling";
 import { readableInk } from "@/lib/readable-ink";
 import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
 import { MoradosCamera, type MoradosCameraMode } from "@/components/MoradosCamera";
@@ -85,7 +91,26 @@ type ConversationState =
       otherName: string;
       otherAvatarUrl: string | null;
       partnerJoined: boolean;
+      partnerUserId: string | null;
     };
+
+type IncomingCall = {
+  callId: string;
+  kind: CallKind;
+  fromUserId: string;
+  description: RTCSessionDescriptionInit;
+  callerName: string;
+  callerAvatarUrl: string | null;
+};
+
+type ActiveCall = {
+  callId: string;
+  kind: CallKind;
+  direction: CallDirection;
+  peerUserId: string;
+  remoteOffer?: RTCSessionDescriptionInit;
+  remoteAnswer?: RTCSessionDescriptionInit;
+};
 
 type ConversationProps = {
   userId: string;
@@ -296,7 +321,10 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   const recordingStartedAtRef = useRef<number | null>(null);
   const recordingAccumulatedMsRef = useRef(0);
   const threadRef = useRef<HTMLDivElement>(null);
-  const [callKind, setCallKind] = useState<CallKind | null>(null);
+  const [callChannel, setCallChannel] = useState<RealtimeChannel | null>(null);
+  const [callChannelReady, setCallChannelReady] = useState(false);
+  const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const composerRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wasAtBottomRef = useRef(true);
@@ -740,6 +768,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           otherName,
           otherAvatarUrl,
           partnerJoined,
+          partnerUserId: partner?.user_id ?? null,
         });
       } catch (cause) {
         console.error("Não foi possível carregar a conversa.", cause);
@@ -752,6 +781,119 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
       active = false;
     };
   }, [userId, refreshKey]);
+
+  const callCoupleId = state.status === "active" ? state.coupleId : null;
+  const callPartnerUserId = state.status === "active" ? state.partnerUserId : null;
+  const callPartnerName = state.status === "active" ? state.otherName : "Sua pessoa";
+  const callPartnerAvatarUrl = state.status === "active" ? state.otherAvatarUrl : null;
+
+  useEffect(() => {
+    if (!callCoupleId || !callPartnerUserId) {
+      setCallChannelReady(false);
+      setCallChannel(null);
+      setIncomingCall(null);
+      return;
+    }
+
+    let alive = true;
+    const channel = supabase
+      .channel("morados-call:" + callCoupleId, { config: { private: true } })
+      .on("broadcast", { event: "call-signal" }, ({ payload }) => {
+        if (!alive) return;
+        const signal = parseCoupleCallSignal(payload);
+        if (!signal || signal.toUserId !== userId || signal.fromUserId !== callPartnerUserId) return;
+
+        if (signal.action === "invite") {
+          setIncomingCall({
+            callId: signal.callId,
+            kind: signal.kind,
+            fromUserId: signal.fromUserId,
+            description: signal.description,
+            callerName: callPartnerName,
+            callerAvatarUrl: callPartnerAvatarUrl,
+          });
+          return;
+        }
+
+        if (signal.action === "answer") {
+          setActiveCall((current) =>
+            current && current.callId === signal.callId && current.direction === "outgoing"
+              ? { ...current, remoteAnswer: signal.description }
+              : current,
+          );
+          return;
+        }
+
+        setIncomingCall((current) => current?.callId === signal.callId ? null : current);
+        setActiveCall((current) => current?.callId === signal.callId ? null : current);
+      })
+      .subscribe((status) => {
+        if (alive) setCallChannelReady(status === "SUBSCRIBED");
+      });
+
+    setCallChannel(channel);
+
+    return () => {
+      alive = false;
+      setCallChannelReady(false);
+      setCallChannel((current) => current === channel ? null : current);
+      void supabase.removeChannel(channel);
+    };
+  }, [callCoupleId, callPartnerUserId, userId]);
+
+  function startCall(kind: CallKind) {
+    if (!callChannel || !callChannelReady || state.status !== "active" || !state.partnerUserId) return;
+    setIncomingCall(null);
+    setActiveCall({
+      callId: createCoupleCallId(),
+      kind,
+      direction: "outgoing",
+      peerUserId: state.partnerUserId,
+    });
+  }
+
+  function acceptIncomingCall() {
+    if (!incomingCall || !callChannel) return;
+    setActiveCall({
+      callId: incomingCall.callId,
+      kind: incomingCall.kind,
+      direction: "incoming",
+      peerUserId: incomingCall.fromUserId,
+      remoteOffer: incomingCall.description,
+    });
+    setIncomingCall(null);
+  }
+
+  function rejectIncomingCall() {
+    if (!incomingCall || !callChannel) {
+      setIncomingCall(null);
+      return;
+    }
+    const call = incomingCall;
+    setIncomingCall(null);
+    void sendCoupleCallSignal(callChannel, {
+      action: "end",
+      callId: call.callId,
+      fromUserId: userId,
+      toUserId: call.fromUserId,
+      reason: "declined",
+    }).catch((cause) => console.warn("Não foi possível enviar a recusa da chamada.", cause));
+  }
+
+  function endActiveCall() {
+    if (!activeCall) return;
+    const call = activeCall;
+    setActiveCall(null);
+    if (callChannel) {
+      void sendCoupleCallSignal(callChannel, {
+        action: "end",
+        callId: call.callId,
+        fromUserId: userId,
+        toUserId: call.peerUserId,
+        reason: "ended",
+      }).catch((cause) => console.warn("Não foi possível avisar o outro aparelho sobre o fim da chamada.", cause));
+    }
+  }
 
   useEffect(() => {
     if (!activeCoupleId) {
@@ -1355,13 +1497,20 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
     }
   }, [favoriteMessageIds, userId]);
 
-  if (callKind && state.status === "active") {
+  if (activeCall && state.status === "active" && callChannel) {
     return (
       <ConversationCallScreen
-        kind={callKind}
+        kind={activeCall.kind}
+        direction={activeCall.direction}
+        callId={activeCall.callId}
+        userId={userId}
+        peerUserId={activeCall.peerUserId}
+        remoteOffer={activeCall.remoteOffer}
+        remoteAnswer={activeCall.remoteAnswer}
+        channel={callChannel}
         name={state.otherName}
         avatarUrl={state.otherAvatarUrl}
-        onClose={() => setCallKind(null)}
+        onClose={endActiveCall}
       />
     );
   }
@@ -1454,8 +1603,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             className="conversation-call-button conversation-floating-action"
             aria-label="Chamada de voz"
             title="Chamada de voz"
-            disabled={state.status !== "active" || !state.partnerJoined}
-            onClick={() => setCallKind("audio")}
+            disabled={state.status !== "active" || !state.partnerJoined || !callChannelReady}
+            onClick={() => startCall("audio")}
           >
             <Phone aria-hidden="true" />
           </button>
@@ -1467,8 +1616,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             className="conversation-call-button conversation-floating-action"
             aria-label="Chamada de vídeo"
             title="Chamada de vídeo"
-            disabled={state.status !== "active" || !state.partnerJoined}
-            onClick={() => setCallKind("video")}
+            disabled={state.status !== "active" || !state.partnerJoined || !callChannelReady}
+            onClick={() => startCall("video")}
           >
             <Video aria-hidden="true" />
           </button>
@@ -1747,6 +1896,28 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             {recordingStatus === "idle" && <p className="conversation-composer-hint">{editingMessageId ? "Altere o texto e salve a edição" : "Enter envia · Shift + Enter quebra a linha"}</p>}
           </form>
         </>
+      )}
+      {incomingCall && !activeCall && (
+        <div className="call-incoming-backdrop">
+          <section className="call-incoming-card" role="dialog" aria-modal="true" aria-labelledby="call-incoming-title">
+            <span className="call-incoming-avatar">
+              {incomingCall.callerAvatarUrl
+                ? <img src={incomingCall.callerAvatarUrl} alt="" />
+                : <span aria-hidden="true">{incomingCall.callerName.trim().charAt(0).toUpperCase() || "♡"}</span>}
+            </span>
+            <p className="call-incoming-eyebrow">Chamada recebida</p>
+            <h2 id="call-incoming-title">{incomingCall.callerName}</h2>
+            <p>{incomingCall.kind === "video" ? "Está chamando você por vídeo." : "Está chamando você por voz."}</p>
+            <div className="call-incoming-actions">
+              <button type="button" className="call-incoming-reject" onClick={rejectIncomingCall}>
+                <Phone aria-hidden="true" /> Recusar
+              </button>
+              <button type="button" className="call-incoming-accept" onClick={acceptIncomingCall}>
+                <Video aria-hidden="true" /> Atender
+              </button>
+            </div>
+          </section>
+        </div>
       )}
       <MoradosCamera
         key={cameraMode ?? "closed"}
