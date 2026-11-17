@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { RotateCcw, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createConnectFourMatch,
@@ -70,6 +71,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
+  const [dismissedOutcomeMatchId, setDismissedOutcomeMatchId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -211,6 +213,7 @@ export function ConnectFourGame({ userId }: { userId: string }) {
     activeMatch?.status === "active" && activeMatch.current_turn === userId;
   const canPlay = Boolean(myTurn && !busy);
   const history = matches.filter((match) => match.status === "finished" && match.id !== activeMatch?.id);
+  const showOutcome = activeMatch?.status === "finished" && dismissedOutcomeMatchId !== activeMatch.id;
 
   async function startMatch() {
     if (state.status !== "ready" || busy || hasActiveMatch) return;
@@ -370,7 +373,92 @@ export function ConnectFourGame({ userId }: { userId: string }) {
 
       {state.status === "ready" && (
         <>
-          {activeMatch?.status === "finished" && ongoingMatch && (
+          {showOutcome && activeMatch && (
+            <div
+              className={[
+                "morados-connect-four-result",
+                activeMatch.is_draw
+                  ? "is-draw"
+                  : activeMatch.winner_id === userId
+                    ? "is-victory"
+                    : "is-defeat",
+              ].join(" ")}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="morados-connect-four-online-result-title"
+              data-outcome={
+                activeMatch.is_draw
+                  ? "draw"
+                  : activeMatch.winner_id === userId
+                    ? "victory"
+                    : "defeat"
+              }
+            >
+              <div className="morados-connect-four-result-inner">
+                <span className="morados-connect-four-result-mark" aria-hidden="true">
+                  <Trophy />
+                </span>
+                <span className="morados-connect-four-result-eyebrow">
+                  {activeMatch.is_draw
+                    ? "PARTIDA ENCERRADA"
+                    : activeMatch.winner_id === userId
+                      ? "VITÓRIA"
+                      : "FIM DE JOGO"}
+                </span>
+                <h2 id="morados-connect-four-online-result-title">
+                  {activeMatch.is_draw
+                    ? "Empate!"
+                    : activeMatch.winner_id === userId
+                      ? "Você venceu!"
+                      : "Adversário venceu"}
+                </h2>
+                <p className="morados-connect-four-result-message">
+                  {activeMatch.is_draw
+                    ? "As peças ocuparam todo o tabuleiro sem formar uma sequência de quatro. A partida foi encerrada e permanece no histórico."
+                    : activeMatch.winner_id === userId
+                      ? "Você conectou quatro peças antes do adversário. A vitória foi registrada e o tabuleiro final continua disponível para revisão."
+                      : "Desta vez, o adversário conectou quatro peças primeiro. A partida foi registrada; uma nova rodada começa com o tabuleiro vazio."}
+                </p>
+                <div
+                  className="morados-connect-four-result-stats"
+                  aria-label={`Partida encerrada em ${activeMatch.turn_number} jogadas`}
+                >
+                  <strong>{activeMatch.turn_number}</strong>
+                  <span>jogadas</span>
+                </div>
+                <div className="morados-connect-four-result-actions">
+                  {ongoingMatch ? (
+                    <button
+                      type="button"
+                      className="morados-connect-four-replay"
+                      onClick={() => setSelectedMatchId(ongoingMatch.id)}
+                    >
+                      Voltar à partida em andamento
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="morados-connect-four-replay"
+                      onClick={() => void startMatch()}
+                      disabled={busy}
+                    >
+                      <RotateCcw aria-hidden="true" />
+                      {busy ? "Preparando…" : "Jogar novamente"}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="morados-connect-four-exit"
+                    onClick={() => setDismissedOutcomeMatchId(activeMatch.id)}
+                  >
+                    Rever tabuleiro
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!showOutcome && activeMatch?.status === "finished" && ongoingMatch && (
             <div className="connect-four-resume">
               <span>Há outra partida em andamento.</span>
               <button
