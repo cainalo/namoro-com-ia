@@ -498,8 +498,10 @@ export function playCheckersMove(
   let specialEndgameMoves = state.specialEndgameMoves ?? null;
   if (specialEndgameMoves === null) {
     if (isFiveMoveDrawEndgame(state.board)) {
-      specialEndgameMoves = 0;
+      // A posição já estava em um final regulamentado: este lance conta como o primeiro.
+      specialEndgameMoves = 1;
     } else if (isFiveMoveDrawEndgame(board)) {
+      // O lance atual acabou de criar o final regulamentado; a contagem começa no próximo.
       specialEndgameMoves = 0;
     }
   } else {
