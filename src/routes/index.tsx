@@ -279,6 +279,7 @@ function Index() {
           userId={session.user.id}
           initialName={typeof session.user.user_metadata?.full_name === "string" ? session.user.user_metadata.full_name : ""}
           onNavigate={goToSection}
+          activeSection={activeSection}
         >
         <div
           className={`app-shell min-h-dvh bg-background text-foreground ${activeSection === "messages" ? "is-conversation-mode" : activeSection === "create-post" ? "is-post-composer-mode" : ""}`}
