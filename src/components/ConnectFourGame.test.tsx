@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConnectFourMatch } from "@/lib/connect-four";
 
@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   from: vi.fn(),
   channel: vi.fn(),
   removeChannel: vi.fn(),
+  onRealtime: vi.fn(),
   list: vi.fn(),
   create: vi.fn(),
   play: vi.fn(),
@@ -83,7 +84,10 @@ function configureSupabaseMocks() {
     on: vi.fn(),
     subscribe: vi.fn(),
   };
-  channel.on.mockReturnValue(channel);
+  channel.on.mockImplementation((_event: string, _filter: unknown, callback: (payload: unknown) => void) => {
+    mocks.onRealtime(callback);
+    return channel;
+  });
   channel.subscribe.mockImplementation((callback?: (status: string) => void) => {
     callback?.("SUBSCRIBED");
     return channel;
@@ -118,6 +122,33 @@ describe("ConnectFourGame online result", () => {
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByRole("grid", { name: "Tabuleiro de Lig 4" })).toBeInTheDocument();
+  });
+
+  it("opens the result automatically when Realtime reports a finished match", async () => {
+    const active = makeMatch({
+      id: "match-active",
+      status: "active",
+      winner_id: null,
+      current_turn: "user-2",
+      turn_number: 6,
+      finished_at: null,
+    });
+    const finished = makeMatch({
+      id: "match-active",
+      winner_id: USER_ID,
+      current_turn: "user-2",
+      turn_number: 7,
+    });
+    mocks.list.mockResolvedValue({ data: [active], error: null });
+
+    render(<ConnectFourGame userId={USER_ID} />);
+    await screen.findByRole("grid", { name: "Tabuleiro de Lig 4" });
+    await waitFor(() => expect(mocks.onRealtime).toHaveBeenCalledTimes(1));
+
+    const listener = mocks.onRealtime.mock.calls[0][0] as (payload: { new: ConnectFourMatch }) => void;
+    act(() => listener({ new: finished }));
+
+    expect(await screen.findByRole("dialog", { name: "Você venceu!" })).toHaveAttribute("data-outcome", "victory");
   });
 
   it("reopens an older result from history and can return to the ongoing match", async () => {
@@ -171,7 +202,9 @@ describe("ConnectFourGame online result", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Jogar novamente" }));
 
     await waitFor(() => expect(mocks.create).toHaveBeenCalledWith(COUPLE_ID));
-    const history = await screen.findByRole("region", { name: "Partidas anteriores" });
+    await waitFor(() => expect(mocks.list).toHaveBeenCalledTimes(2));
+    await screen.findByRole("grid", { name: "Tabuleiro de Lig 4" });
+    const history = screen.getByRole("region", { name: "Partidas anteriores" });
     expect(within(history).getByRole("button", { name: /Você venceu/ })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByRole("grid", { name: "Tabuleiro de Lig 4" })).toBeInTheDocument();
