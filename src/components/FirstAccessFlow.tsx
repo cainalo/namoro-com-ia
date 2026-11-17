@@ -6,12 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { uploadUserProfileMedia, removeUserProfileMedia } from "@/lib/profile-media";
 import "./FirstAccessFlow.css";
 
-type AppSection = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile";
+type AppSection = "home" | "messages" | "memories" | "organize" | "universe" | "games" | "profile" | "create-post";
 
 type FirstAccessGateProps = {
   userId: string;
   initialName?: string;
   onNavigate: (section: AppSection) => void;
+  activeSection: AppSection;
   children: ReactNode;
 };
 
@@ -67,7 +68,7 @@ function NativeProfileField({
   );
 }
 
-export function FirstAccessGate({ userId, initialName = "", onNavigate, children }: FirstAccessGateProps) {
+export function FirstAccessGate({ userId, initialName = "", onNavigate, activeSection, children }: FirstAccessGateProps) {
   const [mode, setMode] = useState<FirstRunMode>("loading");
   const [error, setError] = useState("");
 
@@ -141,7 +142,7 @@ export function FirstAccessGate({ userId, initialName = "", onNavigate, children
   return (
     <>
       {children}
-      {mode === "tour" && <AppTour onFinish={finishTour} />}
+      {mode === "tour" && <AppTour onFinish={finishTour} onNavigate={onNavigate} activeSection={activeSection} />}
     </>
   );
 }
@@ -390,29 +391,61 @@ function FirstAccessProfile({
   );
 }
 
-const TOUR_STEPS: Array<{ eyebrow: string; title: string; body: string }> = [
-  { eyebrow: "01 · FEED", title: "O ponto de encontro", body: "Aqui ficam as publicações, fotos e lembranças compartilhadas. Use o botão de criar publicação para registrar um momento ou escrever algo para vocês." },
-  { eyebrow: "02 · PUBLICAR", title: "Registre um momento", body: "O botão com o símbolo de mais abre o editor de publicação. Você pode compartilhar um texto, uma foto ou uma lembrança no Feed." },
-  { eyebrow: "03 · MENU", title: "Atalhos e navegação", body: "O menu reúne acesso rápido a Jogos, Memórias, Planos e Casa, além das opções de instalação e saída da conta." },
-  { eyebrow: "04 · MENSAGENS", title: "Um espaço só de vocês", body: "A conversa reúne as mensagens privadas. Envie textos, áudios e anexos e use a barra superior para voltar ao restante do aplicativo." },
-  { eyebrow: "05 · JOGOS", title: "Brinquem juntos", body: "A área de jogos reúne experiências para jogar em dupla. Abra um jogo para conhecer as regras e iniciar uma partida compartilhada." },
-  { eyebrow: "06 · MEMÓRIAS", title: "Guardem o que importa", body: "Aqui vocês organizam fotos, vídeos, textos e momentos importantes em uma coleção particular." },
-  { eyebrow: "07 · PLANOS", title: "Organizem a vida a dois", body: "Registrem compromissos, ideias, datas especiais e planos para acompanhar o que vem pela frente." },
-  { eyebrow: "08 · CASA", title: "O universo de vocês", body: "A Casa é o espaço visual do casal. Explorem os elementos disponíveis e acompanhem a construção desse ambiente compartilhado." },
-  { eyebrow: "09 · PERFIL", title: "Sua identidade no Morados", body: "Edite sua foto, banner, descrição e preferências. Cada pessoa tem seu próprio perfil e pode personalizá-lo independentemente." },
+type TourStep = { section: AppSection; target: string; eyebrow: string; title: string; body: string };
+
+const TOUR_STEPS: TourStep[] = [
+  { section: "home", target: "feed-filter-bar", eyebrow: "01 · FEED", title: "O ponto de encontro", body: "Os filtros organizam as publicações por tipo. Escolha fotos, vídeos, textos ou áudios e volte para Tudo quando quiser ver o Feed completo." },
+  { section: "create-post", target: "feed-block-toolbox", eyebrow: "02 · PUBLICAR", title: "Registre um momento", body: "Escolha foto, título, texto, música, áudio ou vídeo. Organize os blocos para contar o momento do jeito de vocês." },
+  { section: "home", target: "tour-menu", eyebrow: "03 · MENU", title: "Atalhos e navegação", body: "O menu reúne Jogos, Memórias, Planos e Casa, além das opções de instalação, tutorial e saída da conta." },
+  { section: "messages", target: "conversation-composer", eyebrow: "04 · MENSAGENS", title: "Um espaço só de vocês", body: "Use o campo inferior para enviar mensagens. O botão de anexo reúne fotos, vídeos, áudios e arquivos; o cabeçalho oferece chamadas e configurações." },
+  { section: "games", target: "games-hub-grid", eyebrow: "05 · JOGOS", title: "Brinquem juntos", body: "Explore o catálogo de jogos, conheça as regras e escolha uma experiência para jogar em dupla." },
+  { section: "memories", target: "memory-composer", eyebrow: "06 · MEMÓRIAS", title: "Guardem o que importa", body: "Registrem fotos, vídeos, textos e momentos importantes. Escolham o que fica privado e o que será compartilhado." },
+  { section: "organize", target: "plans-event-composer", eyebrow: "07 · PLANOS", title: "Organizem a vida a dois", body: "Criem compromissos com data, horário e local, acompanhem o calendário e definam a privacidade de cada evento." },
+  { section: "universe", target: "house-map-hotspots", eyebrow: "08 · CASA", title: "O universo de vocês", body: "Explore os ambientes e pontos interativos da Casa. Cada área representa uma parte do espaço que vocês constroem juntos." },
+  { section: "profile", target: "profile-cover", eyebrow: "09 · PERFIL", title: "Sua identidade no Morados", body: "Edite sua foto, banner, apresentação, interesses e preferências. Cada pessoa tem seu próprio perfil." },
 ];
 
-function AppTour({ onFinish }: { onFinish: () => void }) {
+function AppTour({ onFinish, onNavigate, activeSection }: {
+  onFinish: () => void;
+  onNavigate: (section: AppSection) => void;
+  activeSection: AppSection;
+}) {
   const [index, setIndex] = useState(0);
   const step = TOUR_STEPS[index];
 
-  // O tutorial permanece isolado em um único painel leve: trocar a etapa não
-  // navega nem monta/desmonta telas pesadas por baixo do diálogo.
+  useEffect(() => {
+    if (activeSection !== step.section) onNavigate(step.section);
+  }, [activeSection, onNavigate, step.section]);
+
+  useEffect(() => {
+    if (activeSection !== step.section) return;
+    let timer = 0;
+    let frame = 0;
+    let highlighted: HTMLElement | null = null;
+    const locate = () => {
+      highlighted?.classList.remove("morados-tour-target");
+      highlighted = document.querySelector<HTMLElement>('[data-tour-target="' + step.target + '"]');
+      if (!highlighted) return;
+      highlighted.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      highlighted.classList.add("morados-tour-target");
+    };
+    frame = window.requestAnimationFrame(() => { timer = window.setTimeout(locate, 140); });
+    window.addEventListener("resize", locate);
+    window.addEventListener("scroll", locate, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+      window.removeEventListener("resize", locate);
+      window.removeEventListener("scroll", locate, true);
+      highlighted?.classList.remove("morados-tour-target");
+    };
+  }, [activeSection, step.target, step.section]);
+
   return (
     <div className="morados-tour-layer" role="dialog" aria-modal="true" aria-labelledby="morados-tour-title">
       <div className="morados-tour-card">
         <div className="morados-tour-top"><span>{step.eyebrow}</span><span>{index + 1} / {TOUR_STEPS.length}</span></div>
-        <div className="morados-tour-progress"><span style={{ width: `${((index + 1) / TOUR_STEPS.length) * 100}%` }} /></div>
+        <div className="morados-tour-progress"><span style={{ width: (((index + 1) / TOUR_STEPS.length) * 100) + "%" }} /></div>
         <h2 id="morados-tour-title">{step.title}</h2>
         <p>{step.body}</p>
         <div className="morados-tour-actions">
