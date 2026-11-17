@@ -180,3 +180,16 @@ Uma entrega só será considerada concluída quando:
 - o APK for compilado e tiver a assinatura verificada quando houver mudança no aplicativo Android.
 
 **Regra de segurança do processo:** mudanças pequenas, isoladas e reversíveis. Não reescrever o app inteiro, não substituir funcionalidades por protótipos estáticos e não alterar banco de dados sem migration revisada e verificação de aplicação.
+
+
+## Acesso antecipado do criador
+
+O primeiro integrante confirmado não deve esperar a confirmação ou o primeiro acesso da outra pessoa para usar o espaço. A migration `20261116190000_allow_creator_access_before_partner_activation.sql` prepara um casal em estado `pending` com apenas o criador como membro atual.
+
+Enquanto o casal aguarda:
+- O criador pode consultar o Feed, publicar e enviar/consultar mensagens.
+- Anexos continuam no bucket privado e associados ao `couple_id` do espaço.
+- A outra conta não recebe membership nem acesso antecipado ao conteúdo.
+- Quando a conta recíproca confirma o e-mail e entra, `complete_couple_pairing` adiciona o segundo integrante e ativa o casal, preservando publicações e mensagens existentes.
+
+A alteração de código considera `pending` um estado utilizável apenas para Feed e Conversa. Outros módulos mantêm suas próprias regras até serem revisados. A migration precisa ser aplicada no projeto Supabase antes de esta mudança funcionar em produção; publicar o código ou o APK não aplica migrations por si só.

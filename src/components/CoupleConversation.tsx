@@ -41,6 +41,7 @@ import { ConversationAudioPlayer } from "@/components/ConversationAudioPlayer";
 import { MoradosCamera, type MoradosCameraMode } from "@/components/MoradosCamera";
 import { CoupleConversationSettings } from "@/components/CoupleConversationSettings";
 import { MoradosLoadingScreen } from "@/components/MoradosLoadingScreen";
+import { canUseCoupleWorkspace } from "@/lib/couple-access";
 import { MoradosConversationWelcome } from "@/components/MoradosConversationWelcome";
 import { ConversationWallpaperArt } from "@/components/ConversationWallpaperArt";
 import { mapWithConcurrency } from "@/lib/async-pool";
@@ -77,13 +78,13 @@ type ConversationState =
   | { status: "loading" }
   | { status: "error" }
   | { status: "no-couple" }
-  | { status: "pending" }
   | {
       status: "active";
       coupleId: string;
       messages: CoupleMessage[];
       otherName: string;
       otherAvatarUrl: string | null;
+      partnerJoined: boolean;
     };
 
 type ConversationProps = {
@@ -677,8 +678,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           setState({ status: "no-couple" });
           return;
         }
-        if (couple.status !== "active") {
-          setState({ status: "pending" });
+        if (!canUseCoupleWorkspace(couple.status)) {
+          setState({ status: "no-couple" });
           return;
         }
 
@@ -691,6 +692,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           .neq("user_id", userId)
           .is("ended_at", null)
           .maybeSingle();
+        const partnerJoined = Boolean(partner?.user_id);
 
         if (partner?.user_id) {
           const { data: profile } = await supabase
@@ -737,6 +739,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
           messages,
           otherName,
           otherAvatarUrl,
+          partnerJoined,
         });
       } catch (cause) {
         console.error("Não foi possível carregar a conversa.", cause);
@@ -1451,7 +1454,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             className="conversation-call-button conversation-floating-action"
             aria-label="Chamada de voz"
             title="Chamada de voz"
-            disabled={state.status !== "active"}
+            disabled={state.status !== "active" || !state.partnerJoined}
             onClick={() => setCallKind("audio")}
           >
             <Phone aria-hidden="true" />
@@ -1464,7 +1467,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             className="conversation-call-button conversation-floating-action"
             aria-label="Chamada de vídeo"
             title="Chamada de vídeo"
-            disabled={state.status !== "active"}
+            disabled={state.status !== "active" || !state.partnerJoined}
             onClick={() => setCallKind("video")}
           >
             <Video aria-hidden="true" />
@@ -1494,10 +1497,6 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
 
       {state.status === "no-couple" && (
         <p className="conversation-state">Vincule a outra pessoa para começar a conversar.</p>
-      )}
-
-      {state.status === "pending" && (
-        <p className="conversation-state">A conversa será liberada quando a outra pessoa aceitar o convite.</p>
       )}
 
       {state.status === "active" && (

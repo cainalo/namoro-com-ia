@@ -33,9 +33,9 @@ describe("completeCouplePairing", () => {
     mocks.refreshSession.mockResolvedValue({ data: { session: null }, error: null });
   });
 
-  it("keeps an individually verified account usable while the partner has not confirmed", async () => {
+  it("keeps the creator usable while the partner account is still awaiting confirmation", async () => {
     mocks.callCoupleRpc.mockResolvedValue({
-      data: [{ result_status: "waiting_for_partner", couple_id: null }],
+      data: [{ result_status: "waiting_for_partner", couple_id: "pending-couple-123" }],
       error: null,
     });
 

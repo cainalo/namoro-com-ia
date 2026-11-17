@@ -12,7 +12,7 @@ export function validateCoupleCredentials(email: string, partnerEmail: string, p
   return { email: emails[0], partnerEmail: emails[1], password };
 }
 
-export const PAIRING_NOTICE = "Cadastros enviados. Cada pessoa poderá entrar assim que confirmar o próprio e-mail. O espaço compartilhado será conectado automaticamente quando a segunda conta também estiver confirmada e entrar no Morados.";
+export const PAIRING_NOTICE = "Acessos criados. Depois de confirmar seu e-mail, você já poderá publicar e conversar. A outra pessoa encontrará o conteúdo compartilhado quando confirmar o próprio e-mail e entrar no Morados.";
 
 export async function completeCouplePairing() {
   const { data: verified, error } = await supabase.auth.getUser();

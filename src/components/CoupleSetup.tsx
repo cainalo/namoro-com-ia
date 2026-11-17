@@ -60,7 +60,7 @@ export function CoupleSetup({ userId }: { userId: string }) {
         setNotice("As duas contas foram confirmadas e já estão conectadas.");
         window.dispatchEvent(new Event("morados:couple-updated"));
       } else if (result.pending) {
-        setNotice("O vínculo será concluído automaticamente quando os dois e-mails estiverem confirmados e cada pessoa entrar na própria conta.");
+        setNotice("Seu espaço já está liberado. A outra pessoa poderá acessar o conteúdo compartilhado quando confirmar o próprio e-mail e entrar na conta dela.");
       } else {
         setNotice("Não há um pareamento automático pendente nesta conta. Nos novos cadastros, informe os dois e-mails juntos na criação do casal.");
       }
@@ -90,10 +90,10 @@ export function CoupleSetup({ userId }: { userId: string }) {
       ) : (
         <div className="couple-setup-content">
           <p className="couple-setup-copy">
-            O Morados conecta automaticamente os dois acessos quando o cadastro é feito com os dois e-mails e cada pessoa confirma o próprio endereço. Não é necessário gerar nem compartilhar link de convite.
+            Seu espaço já está pronto. Você pode publicar e conversar agora; quando a outra pessoa confirmar o próprio e-mail e entrar na conta dela, encontrará tudo o que você compartilhou.
           </p>
           <button type="button" className="primary-action" onClick={() => void verifyPairing()} disabled={checking}>
-            {checking ? "Verificando…" : "Verificar vínculo automático"}
+            {checking ? "Verificando…" : "Atualizar status do vínculo"}
           </button>
         </div>
       )}
