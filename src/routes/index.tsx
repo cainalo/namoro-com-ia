@@ -22,6 +22,7 @@ import { GameInvitationCenter } from "@/components/GameInvitationCenter";
 import { GameInvitationBoundary } from "@/components/GameInvitationBoundary";
 import type { OnlineGameLaunch } from "@/lib/game-invitations";
 import { FirstAccessGate } from "@/components/FirstAccessFlow";
+import { PairingStatusBanner } from "@/components/PairingStatusBanner";
 import { CoupleSetup } from "@/components/CoupleSetup";
 import { CoupleConversation } from "@/components/CoupleConversation";
 import { CoupleFeed } from "@/components/CoupleFeed";
@@ -342,6 +343,8 @@ function Index() {
               </button>
             </>
           )}
+
+          <PairingStatusBanner userId={session.user.id} />
 
           <main className={activeSection === "messages" ? "app-main app-main-conversation" : activeSection === "create-post" ? "app-main app-main-post-composer" : "app-main"}>
             {activeSection === "messages" ? (
