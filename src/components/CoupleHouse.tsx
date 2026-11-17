@@ -1,6 +1,7 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { House, Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
 import { HouseInterior } from "@/components/HouseInterior";
+import "@/styles/morados-house.css";
 
 const houseLocations = [
   {
@@ -110,18 +111,37 @@ export function CoupleHouse() {
     <section className="house-screen">
       {houseView === "grounds" ? (
         <>
-      <div className="house-page-intro">
-        <span className="section-intro-icon"><House aria-hidden="true" /></span>
-        <div className="section-intro-copy">
-          <span className="section-intro-kicker">Nosso refúgio</span>
+      <header className="morados-house-heading">
+        <div className="morados-house-heading-copy">
+          <p className="morados-house-kicker"><span aria-hidden="true" /> Nosso lugar</p>
           <h1>Casa</h1>
-          <p>Um lugar para explorar, decorar e construir aos poucos.</p>
+          <p className="morados-house-description">
+            Explore o terreno, descubra os ambientes e escolha a iluminação.
+          </p>
+          <p className="morados-house-count">
+            <strong>{String(houseLocations.length).padStart(2, "0")}</strong>
+            <span>áreas disponíveis para explorar</span>
+          </p>
         </div>
-        <div className="section-intro-stat">
-          <strong>{houseLocations.length}</strong>
-          <span>áreas para explorar</span>
+        <div className="morados-house-heading-art" aria-hidden="true">
+          <svg viewBox="0 0 240 144" role="presentation">
+            <path d="M17 108 108 62l116 44-91 30Z" fill="#dce5d0" />
+            <path d="m47 105 67-34 77 32-68 35Z" fill="#c2d1b5" />
+            <path d="m78 78 42-24 43 22-43 25Z" fill="#b96d50" />
+            <path d="m78 78 42 23v32L78 109Z" fill="#e6d7bf" />
+            <path d="m120 101 43-25v33l-43 24Z" fill="#cdbb9f" />
+            <path d="m70 77 50-29 51 28-51 29Z" fill="#9d5c47" />
+            <path d="m86 76 34-19 35 19-35 19Z" fill="#c77d5f" />
+            <path d="m105 106 15 8v23l-15-8Z" fill="#496b54" />
+            <path d="m133 107 15-9v20l-15 9Z" fill="#78916d" />
+            <path d="M40 92V63" stroke="#71583e" strokeWidth="5" strokeLinecap="round" />
+            <path d="M29 65c-8-15 3-30 15-25 15-8 25 9 15 22-5 9-23 13-30 3Z" fill="#78916d" />
+            <path d="M189 91V60" stroke="#71583e" strokeWidth="5" strokeLinecap="round" />
+            <path d="M176 62c-7-15 5-28 17-22 14-9 25 8 15 22-7 10-25 12-32 0Z" fill="#66815a" />
+            <path d="m29 117 30-15m129 23 24-12" stroke="#94a988" strokeWidth="2" strokeLinecap="round" />
+          </svg>
         </div>
-      </div>
+      </header>
       <div className={`house-map-shell is-${lighting}`}>
         <div
           className={[
@@ -151,21 +171,21 @@ export function CoupleHouse() {
 
           <polygon
             points="450,28 852,238 450,448 48,238"
-            fill="#244b3c"
-            stroke="#d5a43b"
+            fill="#496b54"
+            stroke="#c69a59"
             strokeWidth="2"
           />
           <polygon
             points="450,48 827,238 450,428 73,238"
-            fill="#315c48"
-            stroke="#78916f"
+            fill="#78916d"
+            stroke="#c2d1b5"
             strokeWidth="1.5"
           />
 
           <path
             d="M117 245 L260 317 L370 259 L450 300 L542 253 L715 340"
             fill="none"
-            stroke="#b5a27b"
+            stroke="#c6b79b"
             strokeWidth="27"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -173,7 +193,7 @@ export function CoupleHouse() {
           <path
             d="M117 245 L260 317 L370 259 L450 300 L542 253 L715 340"
             fill="none"
-            stroke="#d2c09a"
+            stroke="#eee3c7"
             strokeWidth="2"
             strokeDasharray="5 10"
             strokeLinecap="round"
@@ -181,46 +201,46 @@ export function CoupleHouse() {
           <path
             d="M450 300 L450 378"
             fill="none"
-            stroke="#b5a27b"
+            stroke="#c6b79b"
             strokeWidth="22"
             strokeLinecap="round"
           />
 
-          <polygon points="450,257 570,318 450,381 330,318" fill="#8c8068" />
-          <polygon points="450,268 554,321 450,375 346,321" fill="#c0ad87" />
-          <polygon points="450,283 527,322 450,361 373,322" fill="#a18e6d" />
+          <polygon points="450,257 570,318 450,381 330,318" fill="#948a76" />
+          <polygon points="450,268 554,321 450,375 346,321" fill="#d7c8a9" />
+          <polygon points="450,283 527,322 450,361 373,322" fill="#bca986" />
 
-          <polygon points="410,160 530,220 530,328 410,268" fill="#8d806b" stroke="#514b3e" strokeWidth="2" />
-          <polygon points="410,268 530,208 530,316 410,376" fill="#6d6657" stroke="#514b3e" strokeWidth="2" />
-          <polygon points="290,208 410,268 410,376 290,316" fill="#b7a58a" stroke="#514b3e" strokeWidth="2" />
+          <polygon points="410,160 530,220 530,328 410,268" fill="#d8cbb4" stroke="#746b5c" strokeWidth="2" />
+          <polygon points="410,268 530,208 530,316 410,376" fill="#b7aa92" stroke="#746b5c" strokeWidth="2" />
+          <polygon points="290,208 410,268 410,376 290,316" fill="#eee3ce" stroke="#746b5c" strokeWidth="2" />
 
-          <path d="M300 224 L400 274 M300 246 L400 296 M300 268 L400 318" stroke="#8b7a62" strokeWidth="2" opacity="0.65" />
-          <path d="M420 282 L520 232 M420 304 L520 254 M420 326 L520 276" stroke="#49483e" strokeWidth="2" opacity="0.55" />
+          <path d="M300 224 L400 274 M300 246 L400 296 M300 268 L400 318" stroke="#b8aa91" strokeWidth="2" opacity="0.65" />
+          <path d="M420 282 L520 232 M420 304 L520 254 M420 326 L520 276" stroke="#877d6b" strokeWidth="2" opacity="0.55" />
 
-          <polygon points="410,88 548,158 410,228 272,158" fill="#6d263a" stroke="#3b2028" strokeWidth="3" />
-          <polygon points="410,88 548,158 410,228" fill="#542436" />
-          <path d="M410 88 L410 228" stroke="#d5a43b" strokeWidth="3" opacity="0.65" />
-          <path d="M272 158 L410 228 L548 158" fill="none" stroke="#b9824a" strokeWidth="4" />
+          <polygon points="410,88 548,158 410,228 272,158" fill="#b96d50" stroke="#794a3f" strokeWidth="3" />
+          <polygon points="410,88 548,158 410,228" fill="#9f5a49" />
+          <path d="M410 88 L410 228" stroke="#c69a59" strokeWidth="3" opacity="0.65" />
+          <path d="M272 158 L410 228 L548 158" fill="none" stroke="#d39b67" strokeWidth="4" />
 
-          <polygon points="343,144 410,110 476,144 410,178" fill="#8a3441" stroke="#3b2028" strokeWidth="2" />
-          <polygon points="343,144 410,178 410,236 343,202" fill="#b7a58a" stroke="#514b3e" strokeWidth="2" />
-          <polygon points="410,178 476,144 476,202 410,236" fill="#82745f" stroke="#514b3e" strokeWidth="2" />
-          <polygon points="343,144 410,110 476,144 410,178" fill="#9d4650" stroke="#3b2028" strokeWidth="2" />
+          <polygon points="343,144 410,110 476,144 410,178" fill="#c77c62" stroke="#794a3f" strokeWidth="2" />
+          <polygon points="343,144 410,178 410,236 343,202" fill="#eee3ce" stroke="#746b5c" strokeWidth="2" />
+          <polygon points="410,178 476,144 476,202 410,236" fill="#c7b89f" stroke="#746b5c" strokeWidth="2" />
+          <polygon points="343,144 410,110 476,144 410,178" fill="#d18b72" stroke="#794a3f" strokeWidth="2" />
 
-          <polygon points="344,244 371,258 371,324 344,310" fill="#4d382b" stroke="#d5a43b" strokeWidth="2" />
-          <circle cx="365" cy="282" r="3" fill="#d5a43b" />
-          <polygon points="455,271 480,258 480,286 455,299" fill="#244b3c" stroke="#d5a43b" strokeWidth="2" />
-          <path d="M467 263 L467 295" stroke="#d5a43b" strokeWidth="2" />
-          <polygon points="305,225 324,235 324,258 305,248" fill="#315c48" stroke="#d5a43b" strokeWidth="2" />
-          <polygon points="495,225 514,215 514,238 495,248" fill="#315c48" stroke="#d5a43b" strokeWidth="2" />
+          <polygon points="344,244 371,258 371,324 344,310" fill="#71533f" stroke="#c69a59" strokeWidth="2" />
+          <circle cx="365" cy="282" r="3" fill="#c69a59" />
+          <polygon points="455,271 480,258 480,286 455,299" fill="#496b54" stroke="#c69a59" strokeWidth="2" />
+          <path d="M467 263 L467 295" stroke="#c69a59" strokeWidth="2" />
+          <polygon points="305,225 324,235 324,258 305,248" fill="#78916d" stroke="#c69a59" strokeWidth="2" />
+          <polygon points="495,225 514,215 514,238 495,248" fill="#78916d" stroke="#c69a59" strokeWidth="2" />
 
-          <g stroke="#5c4430" strokeWidth="7" strokeLinecap="round">
+          <g stroke="#72583f" strokeWidth="7" strokeLinecap="round">
             <path d="M184 176 L184 231" />
             <path d="M696 184 L696 238" />
             <path d="M680 335 L680 376" />
             <path d="M230 342 L230 379" />
           </g>
-          <g fill="#527553" stroke="#b7bd83" strokeWidth="2">
+          <g fill="#66815a" stroke="#c4c69d" strokeWidth="2">
             <circle cx="184" cy="155" r="32" />
             <circle cx="163" cy="175" r="22" />
             <circle cx="205" cy="178" r="24" />
@@ -232,23 +252,23 @@ export function CoupleHouse() {
             <circle cx="230" cy="325" r="27" />
             <circle cx="210" cy="340" r="18" />
           </g>
-          <g fill="#d5a43b">
+          <g fill="#c69a59">
             <circle cx="179" cy="151" r="3" />
             <circle cx="690" cy="158" r="3" />
             <circle cx="674" cy="311" r="3" />
           </g>
 
-          <polygon points="590,106 630,126 590,147 550,126" fill="#b7a58a" stroke="#d5a43b" strokeWidth="2" />
-          <polygon points="590,114 615,126 590,139 565,126" fill="#244b3c" />
-          <circle cx="590" cy="126" r="8" fill="#d5a43b" />
-          <path d="M590 102 L590 88 M584 91 L590 84 L596 91" fill="none" stroke="#d5a43b" strokeWidth="3" strokeLinecap="round" />
+          <polygon points="590,106 630,126 590,147 550,126" fill="#eee3ce" stroke="#c69a59" strokeWidth="2" />
+          <polygon points="590,114 615,126 590,139 565,126" fill="#496b54" />
+          <circle cx="590" cy="126" r="8" fill="#c69a59" />
+          <path d="M590 102 L590 88 M584 91 L590 84 L596 91" fill="none" stroke="#c69a59" strokeWidth="3" strokeLinecap="round" />
 
-          <g fill="#d5a43b" stroke="#49392b" strokeWidth="2">
+          <g fill="#c69a59" stroke="#7a5b3f" strokeWidth="2">
             <path d="M262 190 L269 204 L276 190 Z" />
             <path d="M744 248 L751 262 L758 248 Z" />
             <path d="M620 364 L627 378 L634 364 Z" />
           </g>
-          <g fill="#f0dca8">
+          <g fill="#f4e5bc">
             <circle cx="269" cy="186" r="4" />
             <circle cx="751" cy="244" r="4" />
             <circle cx="627" cy="360" r="4" />
