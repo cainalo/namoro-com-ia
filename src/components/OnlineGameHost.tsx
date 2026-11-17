@@ -389,6 +389,7 @@ export function OnlineGameHost({
         <GameVictoryScreen
           won={won}
           outcome={isDraw ? "draw" : won ? "win" : "loss"}
+          theme={isCheckers ? "checkers" : "standard"}
           title={title}
           subtitle={subtitle}
           eyebrow={mode === "cooperative" ? "RESULTADO COOPERATIVO" : "RESULTADO DA PARTIDA"}
