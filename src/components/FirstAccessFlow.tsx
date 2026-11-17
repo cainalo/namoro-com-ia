@@ -423,20 +423,15 @@ function AppTour({ onFinish, onNavigate, activeSection }: {
     let frame = 0;
     let highlighted: HTMLElement | null = null;
     const locate = () => {
-      highlighted?.classList.remove("morados-tour-target");
       highlighted = document.querySelector<HTMLElement>('[data-tour-target="' + step.target + '"]');
       if (!highlighted) return;
       highlighted.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
       highlighted.classList.add("morados-tour-target");
     };
     frame = window.requestAnimationFrame(() => { timer = window.setTimeout(locate, 140); });
-    window.addEventListener("resize", locate);
-    window.addEventListener("scroll", locate, true);
     return () => {
       window.cancelAnimationFrame(frame);
       window.clearTimeout(timer);
-      window.removeEventListener("resize", locate);
-      window.removeEventListener("scroll", locate, true);
       highlighted?.classList.remove("morados-tour-target");
     };
   }, [activeSection, step.target, step.section]);
