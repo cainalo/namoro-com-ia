@@ -14,6 +14,10 @@ type ProfileRecord = {
   avatar_path: string | null;
   banner_path: string | null;
   bio: string | null;
+  headline: string | null;
+  favorite_song: string | null;
+  favorite_place: string | null;
+  personal_phrase: string | null;
   interests: string[] | null;
   hobbies: string | null;
   favorite_food: string | null;
@@ -38,7 +42,7 @@ function withProfileTimeout<T>(request: PromiseLike<T>, message: string): Promis
   });
 }
 
-type ProfileTextField = "name" | "bio" | "interests" | "hobbies" | "favoriteFood" | "favoriteMusic" | "favoriteFilm" | "profileQuote";
+type ProfileTextField = "name" | "headline" | "bio" | "interests" | "hobbies" | "favoriteFood" | "favoriteMusic" | "favoriteSong" | "favoritePlace" | "favoriteFilm" | "personalPhrase" | "profileQuote";
 
 function NativeProfileField({
   label,
@@ -112,11 +116,15 @@ export function CoupleProfile({ userId }: { userId: string }) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [name, setName] = useState("");
+  const [headline, setHeadline] = useState("");
   const [bio, setBio] = useState("");
   const [interests, setInterests] = useState("");
   const [hobbies, setHobbies] = useState("");
   const [favoriteFood, setFavoriteFood] = useState("");
   const [favoriteMusic, setFavoriteMusic] = useState("");
+  const [favoriteSong, setFavoriteSong] = useState("");
+  const [favoritePlace, setFavoritePlace] = useState("");
+  const [personalPhrase, setPersonalPhrase] = useState("");
   const [favoriteFilm, setFavoriteFilm] = useState("");
   const [profileQuote, setProfileQuote] = useState("");
   const [loading, setLoading] = useState(true);
@@ -134,7 +142,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
     try {
       const { data: row, error: profileError } = await withProfileTimeout(
         profileTable()
-          .select("id,display_name,avatar_path,banner_path,bio,interests,hobbies,favorite_food,favorite_music,favorite_film,profile_quote")
+          .select("id,display_name,avatar_path,banner_path,bio,headline,interests,hobbies,favorite_food,favorite_music,favorite_song,favorite_place,personal_phrase,favorite_film,profile_quote")
           .eq("id", userId)
           .maybeSingle(),
         "O perfil está demorando para responder. Verifique sua conexão e tente novamente.",
@@ -146,11 +154,15 @@ export function CoupleProfile({ userId }: { userId: string }) {
       const next = row as ProfileRecord;
       setProfile(next);
       setName(next.display_name ?? "");
+      setHeadline(next.headline ?? "");
       setBio(next.bio ?? "");
       setInterests((next.interests ?? []).join(", "));
       setHobbies(next.hobbies ?? "");
       setFavoriteFood(next.favorite_food ?? "");
       setFavoriteMusic(next.favorite_music ?? "");
+      setFavoriteSong(next.favorite_song ?? "");
+      setFavoritePlace(next.favorite_place ?? "");
+      setPersonalPhrase(next.personal_phrase ?? "");
       setFavoriteFilm(next.favorite_film ?? "");
       setProfileQuote(next.profile_quote ?? "");
 
@@ -202,12 +214,16 @@ export function CoupleProfile({ userId }: { userId: string }) {
 
     const config = {
       name: { title: "Nome exibido", hint: "Como a outra pessoa verá seu nome", value: name, maxLength: 60, singleLine: true },
+      headline: { title: "Frase de apresentação", hint: "Uma frase curta sobre você", value: headline, maxLength: 100, singleLine: true },
       bio: { title: "Sobre mim", hint: "Conte um pouco sobre você…", value: bio, maxLength: 500, singleLine: false },
       interests: { title: "Interesses", hint: "Música, cinema, viagens, leitura…", value: interests, maxLength: 240, singleLine: false },
       hobbies: { title: "Hobbies", hint: "O que você gosta de fazer no tempo livre?", value: hobbies, maxLength: 300, singleLine: false },
       favoriteFood: { title: "Comida favorita", hint: "Um prato ou sabor", value: favoriteFood, maxLength: 80, singleLine: true },
       favoriteMusic: { title: "Música ou artista favorito", hint: "Uma música ou artista", value: favoriteMusic, maxLength: 100, singleLine: true },
+      favoriteSong: { title: "Canção favorita", hint: "Uma música especial", value: favoriteSong, maxLength: 120, singleLine: true },
+      favoritePlace: { title: "Lugar favorito", hint: "Um lugar importante para você", value: favoritePlace, maxLength: 100, singleLine: true },
       favoriteFilm: { title: "Filme ou série favorito", hint: "Um filme ou série", value: favoriteFilm, maxLength: 100, singleLine: true },
+      personalPhrase: { title: "Uma frase pessoal", hint: "Um lema ou lembrança sua", value: personalPhrase, maxLength: 180, singleLine: false },
       profileQuote: { title: "Uma frase sua", hint: "Uma frase que combina com você", value: profileQuote, maxLength: 180, singleLine: false },
     }[field];
 
@@ -228,12 +244,16 @@ export function CoupleProfile({ userId }: { userId: string }) {
       const value = (result.text ?? "").slice(0, config.maxLength);
       switch (field) {
         case "name": setName(value); break;
+        case "headline": setHeadline(value); break;
         case "bio": setBio(value); break;
         case "interests": setInterests(value); break;
         case "hobbies": setHobbies(value); break;
         case "favoriteFood": setFavoriteFood(value); break;
         case "favoriteMusic": setFavoriteMusic(value); break;
+        case "favoriteSong": setFavoriteSong(value); break;
+        case "favoritePlace": setFavoritePlace(value); break;
         case "favoriteFilm": setFavoriteFilm(value); break;
+        case "personalPhrase": setPersonalPhrase(value); break;
         case "profileQuote": setProfileQuote(value); break;
       }
     } catch (cause) {
@@ -262,11 +282,15 @@ export function CoupleProfile({ userId }: { userId: string }) {
       const { error: updateError } = await withProfileTimeout(
         profileTable().update({
           display_name: name.trim() || null,
+          headline: headline.trim() || null,
           bio: bio.trim() || null,
           interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
           hobbies: hobbies.trim() || null,
           favorite_food: favoriteFood.trim() || null,
           favorite_music: favoriteMusic.trim() || null,
+          favorite_song: favoriteSong.trim() || null,
+          favorite_place: favoritePlace.trim() || null,
+          personal_phrase: personalPhrase.trim() || null,
           favorite_film: favoriteFilm.trim() || null,
           profile_quote: profileQuote.trim() || null,
         }).eq("id", userId),
@@ -276,11 +300,15 @@ export function CoupleProfile({ userId }: { userId: string }) {
       setProfile({
         ...profile,
         display_name: name.trim() || null,
+        headline: headline.trim() || null,
         bio: bio.trim() || null,
         interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
         hobbies: hobbies.trim() || null,
         favorite_food: favoriteFood.trim() || null,
         favorite_music: favoriteMusic.trim() || null,
+        favorite_song: favoriteSong.trim() || null,
+        favorite_place: favoritePlace.trim() || null,
+        personal_phrase: personalPhrase.trim() || null,
         favorite_film: favoriteFilm.trim() || null,
         profile_quote: profileQuote.trim() || null,
       });
@@ -401,6 +429,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
               <div className="morados-profile-name-block">
                 <span className="morados-profile-kicker">Retrato pessoal</span>
                 <h1>{name.trim() || "Seu perfil"}</h1>
+                {headline.trim() && <p className="morados-profile-headline">{headline}</p>}
                 <p className="profile-note">Seu espaço pessoal no Morados</p>
               </div>
             </div>
@@ -440,12 +469,16 @@ export function CoupleProfile({ userId }: { userId: string }) {
               {Capacitor.isNativePlatform() ? (
                 <>
                   <NativeProfileField label="Nome exibido" value={name} placeholder="Como a outra pessoa verá seu nome" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("name")} />
+                  <NativeProfileField label="Frase de apresentação" value={headline} placeholder="Uma frase curta sobre você" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("headline")} />
                   <NativeProfileField label="Sobre mim" value={bio} placeholder="Conte um pouco sobre você…" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("bio")} />
                   <NativeProfileField label="Interesses" value={interests} placeholder="Música, cinema, viagens, leitura…" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("interests")} />
                   <NativeProfileField label="Hobbies" value={hobbies} placeholder="O que você gosta de fazer no tempo livre?" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("hobbies")} />
                   <div className="profile-favorites-grid morados-profile-favorites">
                     <NativeProfileField label="Comida favorita" value={favoriteFood} placeholder="Um prato ou sabor" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFood")} />
                     <NativeProfileField label="Música ou artista favorito" value={favoriteMusic} placeholder="Uma música ou artista" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteMusic")} />
+                    <NativeProfileField label="Canção favorita" value={favoriteSong} placeholder="Uma música especial" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteSong")} />
+                    <NativeProfileField label="Lugar favorito" value={favoritePlace} placeholder="Um lugar importante para você" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoritePlace")} />
+                    <NativeProfileField label="Uma frase pessoal" value={personalPhrase} placeholder="Um lema ou lembrança sua" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("personalPhrase")} />
                     <NativeProfileField label="Filme ou série favorito" value={favoriteFilm} placeholder="Um filme ou série" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFilm")} />
                     <NativeProfileField label="Uma frase sua" value={profileQuote} placeholder="Uma frase que combina com você" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("profileQuote")} />
                   </div>
@@ -453,12 +486,16 @@ export function CoupleProfile({ userId }: { userId: string }) {
               ) : (
                 <>
                   <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
+                  <label>Frase de apresentação<input value={headline} onChange={(event) => setHeadline(event.target.value)} maxLength={100} placeholder="Uma frase curta sobre você" /></label>
                   <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={4} placeholder="Conte um pouco sobre você…" /></label>
                   <label>Interesses<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
                   <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={3} placeholder="O que você gosta de fazer no tempo livre?" /></label>
                   <div className="profile-favorites-grid morados-profile-favorites">
                     <label><Utensils aria-hidden="true" /> Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Um prato ou sabor" /></label>
                     <label><Music2 aria-hidden="true" /> Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
+                    <label><Music2 aria-hidden="true" /> Canção favorita<input value={favoriteSong} onChange={(event) => setFavoriteSong(event.target.value)} maxLength={120} placeholder="Uma música especial" /></label>
+                    <label><Heart aria-hidden="true" /> Lugar favorito<input value={favoritePlace} onChange={(event) => setFavoritePlace(event.target.value)} maxLength={100} placeholder="Um lugar importante para você" /></label>
+                    <label><Heart aria-hidden="true" /> Uma frase pessoal<input value={personalPhrase} onChange={(event) => setPersonalPhrase(event.target.value)} maxLength={180} placeholder="Um lema ou lembrança sua" /></label>
                     <label><Film aria-hidden="true" /> Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
                     <label><Heart aria-hidden="true" /> Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
                   </div>
