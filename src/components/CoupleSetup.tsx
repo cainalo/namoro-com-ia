@@ -60,7 +60,7 @@ export function CoupleSetup({ userId }: { userId: string }) {
         setNotice("As duas contas foram confirmadas e já estão conectadas.");
         window.dispatchEvent(new Event("morados:couple-updated"));
       } else if (result.pending) {
-        setNotice("O vínculo será concluído automaticamente quando os dois e-mails estiverem confirmados e cada pessoa entrar na própria conta.");
+        setNotice("Seu espaço já está liberado. A outra pessoa poderá acessar o conteúdo compartilhado quando confirmar o próprio e-mail e entrar na conta dela.");
       } else {
         setNotice("Não há um pareamento automático pendente nesta conta. Nos novos cadastros, informe os dois e-mails juntos na criação do casal.");
       }
