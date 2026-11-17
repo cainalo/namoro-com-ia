@@ -156,11 +156,15 @@ function FirstAccessProfile({
   onComplete: () => void;
 }) {
   const [name, setName] = useState(initialName);
+  const [headline, setHeadline] = useState("");
   const [bio, setBio] = useState("");
   const [hobbies, setHobbies] = useState("");
   const [interests, setInterests] = useState("");
   const [favoriteFood, setFavoriteFood] = useState("");
   const [favoriteMusic, setFavoriteMusic] = useState("");
+  const [favoriteSong, setFavoriteSong] = useState("");
+  const [favoritePlace, setFavoritePlace] = useState("");
+  const [personalPhrase, setPersonalPhrase] = useState("");
   const [favoriteFilm, setFavoriteFilm] = useState("");
   const [profileQuote, setProfileQuote] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
@@ -195,18 +199,22 @@ function FirstAccessProfile({
   }
 
   async function editNativeField(
-    field: "name" | "bio" | "interests" | "hobbies" | "favoriteFood" | "favoriteMusic" | "favoriteFilm" | "profileQuote",
+    field: "name" | "headline" | "bio" | "interests" | "hobbies" | "favoriteFood" | "favoriteMusic" | "favoriteSong" | "favoritePlace" | "favoriteFilm" | "personalPhrase" | "profileQuote",
   ) {
     if (!Capacitor.isNativePlatform() || busy) return;
 
     const config = {
       name: { title: "Como devemos chamar você?", hint: "Seu nome", value: name, maxLength: 60, singleLine: true, allowEmpty: false },
+      headline: { title: "Frase de apresentação", hint: "Uma frase curta sobre você", value: headline, maxLength: 100, singleLine: true, allowEmpty: true },
       bio: { title: "Sobre mim", hint: "Conte um pouco sobre você…", value: bio, maxLength: 500, singleLine: false, allowEmpty: true },
       interests: { title: "Seus interesses", hint: "Música, cinema, viagens, leitura…", value: interests, maxLength: 240, singleLine: false, allowEmpty: true },
       hobbies: { title: "Seus hobbies", hint: "O que você gosta de fazer no tempo livre?", value: hobbies, maxLength: 300, singleLine: false, allowEmpty: true },
       favoriteFood: { title: "Comida favorita", hint: "Sua comida favorita", value: favoriteFood, maxLength: 80, singleLine: true, allowEmpty: true },
       favoriteMusic: { title: "Música ou artista favorito", hint: "Uma música ou artista", value: favoriteMusic, maxLength: 100, singleLine: true, allowEmpty: true },
+      favoriteSong: { title: "Canção favorita", hint: "Uma música especial", value: favoriteSong, maxLength: 120, singleLine: true, allowEmpty: true },
+      favoritePlace: { title: "Lugar favorito", hint: "Um lugar importante para você", value: favoritePlace, maxLength: 100, singleLine: true, allowEmpty: true },
       favoriteFilm: { title: "Filme ou série favorito", hint: "Um filme ou série", value: favoriteFilm, maxLength: 100, singleLine: true, allowEmpty: true },
+      personalPhrase: { title: "Uma frase pessoal", hint: "Um lema ou lembrança sua", value: personalPhrase, maxLength: 180, singleLine: false, allowEmpty: true },
       profileQuote: { title: "Uma frase sua", hint: "Uma frase que combina com você", value: profileQuote, maxLength: 180, singleLine: false, allowEmpty: true },
     }[field];
 
@@ -231,12 +239,16 @@ function FirstAccessProfile({
 
       switch (field) {
         case "name": setName(value); break;
+        case "headline": setHeadline(value); break;
         case "bio": setBio(value); break;
         case "interests": setInterests(value); break;
         case "hobbies": setHobbies(value); break;
         case "favoriteFood": setFavoriteFood(value); break;
         case "favoriteMusic": setFavoriteMusic(value); break;
+        case "favoriteSong": setFavoriteSong(value); break;
+        case "favoritePlace": setFavoritePlace(value); break;
         case "favoriteFilm": setFavoriteFilm(value); break;
+        case "personalPhrase": setPersonalPhrase(value); break;
         case "profileQuote": setProfileQuote(value); break;
       }
       setError("");
@@ -277,11 +289,15 @@ function FirstAccessProfile({
       const { data: updatedProfile, error: updateError } = await withFirstAccessTimeout(
         profileTable().update({
           display_name: name.trim(),
+          headline: headline.trim() || null,
           bio: bio.trim() || null,
           hobbies: hobbies.trim() || null,
           interests: interests.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
           favorite_food: favoriteFood.trim() || null,
           favorite_music: favoriteMusic.trim() || null,
+          favorite_song: favoriteSong.trim() || null,
+          favorite_place: favoritePlace.trim() || null,
+          personal_phrase: personalPhrase.trim() || null,
           favorite_film: favoriteFilm.trim() || null,
           profile_quote: profileQuote.trim() || null,
           ...(avatarPath ? { avatar_path: avatarPath } : {}),
@@ -332,25 +348,33 @@ function FirstAccessProfile({
             {Capacitor.isNativePlatform() ? (
               <>
                 <NativeProfileField label="Como devemos chamar você?" value={name} placeholder="Seu nome" disabled={busy} onEdit={() => void editNativeField("name")} />
+                <NativeProfileField label="Frase de apresentação" value={headline} placeholder="Uma frase curta sobre você" disabled={busy} onEdit={() => void editNativeField("headline")} />
                 <NativeProfileField label="Sobre mim" value={bio} placeholder="Conte um pouco sobre você…" multiline disabled={busy} onEdit={() => void editNativeField("bio")} />
                 <NativeProfileField label="Interesses, separados por vírgula" value={interests} placeholder="Música, cinema, viagens, leitura…" disabled={busy} onEdit={() => void editNativeField("interests")} />
                 <NativeProfileField label="Hobbies" value={hobbies} placeholder="O que você gosta de fazer no tempo livre?" multiline disabled={busy} onEdit={() => void editNativeField("hobbies")} />
                 <div className="first-access-field-grid">
                   <NativeProfileField label="Comida favorita" value={favoriteFood} placeholder="Sua comida favorita" disabled={busy} onEdit={() => void editNativeField("favoriteFood")} />
                   <NativeProfileField label="Música ou artista favorito" value={favoriteMusic} placeholder="Uma música ou artista" disabled={busy} onEdit={() => void editNativeField("favoriteMusic")} />
+                  <NativeProfileField label="Canção favorita" value={favoriteSong} placeholder="Uma música especial" disabled={busy} onEdit={() => void editNativeField("favoriteSong")} />
+                  <NativeProfileField label="Lugar favorito" value={favoritePlace} placeholder="Um lugar importante para você" disabled={busy} onEdit={() => void editNativeField("favoritePlace")} />
                   <NativeProfileField label="Filme ou série favorito" value={favoriteFilm} placeholder="Um filme ou série" disabled={busy} onEdit={() => void editNativeField("favoriteFilm")} />
+                  <NativeProfileField label="Uma frase pessoal" value={personalPhrase} placeholder="Um lema ou lembrança sua" multiline disabled={busy} onEdit={() => void editNativeField("personalPhrase")} />
                   <NativeProfileField label="Uma frase sua" value={profileQuote} placeholder="Uma frase que combina com você" multiline disabled={busy} onEdit={() => void editNativeField("profileQuote")} />
                 </div>
               </>
             ) : (
               <>
                 <label>Como devemos chamar você?<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} autoComplete="nickname" placeholder="Seu nome" required /></label>
+                <label>Frase de apresentação<input value={headline} onChange={(event) => setHeadline(event.target.value)} maxLength={100} placeholder="Uma frase curta sobre você" /></label>
                 <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} placeholder="Conte um pouco sobre você…" rows={3} /></label>
                 <label>Interesses, separados por vírgula<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
                 <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={2} placeholder="O que você gosta de fazer no tempo livre?" /></label>
                 <div className="first-access-field-grid">
                   <label>Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Sua comida favorita" /></label>
                   <label>Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
+                  <label>Canção favorita<input value={favoriteSong} onChange={(event) => setFavoriteSong(event.target.value)} maxLength={120} placeholder="Uma música especial" /></label>
+                  <label>Lugar favorito<input value={favoritePlace} onChange={(event) => setFavoritePlace(event.target.value)} maxLength={100} placeholder="Um lugar importante para você" /></label>
+                  <label>Uma frase pessoal<input value={personalPhrase} onChange={(event) => setPersonalPhrase(event.target.value)} maxLength={180} placeholder="Um lema ou lembrança sua" /></label>
                   <label>Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
                   <label>Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
                 </div>
