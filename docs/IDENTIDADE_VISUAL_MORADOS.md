@@ -106,3 +106,18 @@ Planos recebe uma composição de agenda, diferente do mural, do caderno de Mem�
 - O novo CSS fica isolado em \`src/styles/morados-plans.css\`; nenhuma regra de banco, permissão, consulta, RPC ou sincronização foi alterada.
 
 A revisão visual em navegador e Android continua pendente. É necessário conferir meses com diferentes quantidades de semanas, datas sem compromissos, muitos eventos em um único dia, textos longos, tema claro/escuro e largura real de telefone.
+
+
+## Piloto de Casa — terreno e salão natural
+
+Casa passa a usar uma composição de exploração espacial mais clara e legível, sem transformar o módulo em uma landing page nem sugerir funções que ainda não existem.
+
+- O cabeçalho identifica o espaço e informa as três áreas atualmente disponíveis.
+- A ilustração do terreno mantém a perspectiva isométrica e os três pontos selecionáveis, agora com paleta de vegetação, pedra e telhado em terracota.
+- Os controles de iluminação e aproximação continuam no mapa, com superfícies claras e estados selecionados mais nítidos.
+- A informação da área escolhida permanece junto ao mapa e a ação de entrar continua restrita à residência.
+- O salão de entrada recebe uma paleta mais quente de pedra e madeira; lareira, vitral, tapeçaria e escadaria continuam selecionáveis.
+- A descrição do elemento escolhido passa a ocupar uma faixa de leitura própria, sem ficar sobreposta à ilustração.
+- A folha `src/styles/morados-house.css` fica isolada em `.house-screen`. A alteração não adiciona cômodos, decoração editável, moedas ou conteúdo fictício.
+
+O teste `CoupleHouse.test.tsx` cobre seleção dos locais, entrada no salão, seleção dos quatro elementos por meio do fluxo de interface, retorno ao terreno, iluminação e aproximação. A revisão visual em navegador e Android real permanece necessária antes de considerar o piloto aprovado.
