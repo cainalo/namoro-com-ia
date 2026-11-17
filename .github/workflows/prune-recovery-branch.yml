@@ -1,0 +1,42 @@
+name: Remove temporary recovery branch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/prune-recovery-branch.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  remove-temporary-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete only the recovered temporary branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const branch = "feat/independent-pairing-profile-onboarding-guide";
+
+            await github.rest.git.deleteRef({
+              owner,
+              repo,
+              ref: "heads/" + branch
+            });
+
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner,
+              repo,
+              per_page: 100
+            });
+            const names = branches.map(item => item.name).sort();
+            core.info("Branches restantes: " + names.join(", "));
+
+            if (names.length !== 2 || !names.includes("main") || !names.includes("prod")) {
+              core.setFailed("A limpeza não terminou com exatamente main e prod.");
+            }
