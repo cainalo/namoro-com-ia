@@ -434,7 +434,7 @@
   padding: calc(env(safe-area-inset-top) + 68px) clamp(12px, 3vw, 28px) max(18px, env(safe-area-inset-bottom)) !important;
 }
 
-.morados-game-launch {
+.morados-game-world .game-world-main.stage-cover .morados-game-launch {
   display: grid !important;
   width: min(100%, 1120px) !important;
   min-height: 0 !important;
@@ -446,7 +446,7 @@
   padding: clamp(12px, 2vw, 25px) 0 20px !important;
 }
 
-.morados-game-launch .morados-game-cover-copy {
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-copy {
   grid-column: 1;
   grid-row: 1;
   display: flex;
@@ -469,7 +469,7 @@
   text-transform: uppercase;
 }
 
-.morados-game-cover-copy h1 {
+.morados-game-world .game-world-main.stage-cover .morados-game-cover-copy h1 {
   max-width: 100%;
   margin: 10px 0 8px;
   color: var(--world-ink);
@@ -516,7 +516,7 @@
   font-size: 10px !important;
 }
 
-.morados-game-launch .morados-game-cover-art {
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art {
   grid-column: 2;
   grid-row: 1;
   width: min(100%, 370px);
@@ -531,20 +531,20 @@
   box-shadow: none;
 }
 
-.morados-game-launch .morados-game-cover-art::before {
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art::before {
   width: 71%;
   border: 1px solid color-mix(in srgb, var(--world-accent) 36%, transparent);
   border-radius: 50%;
 }
 
-.morados-game-launch .morados-game-cover-art::after {
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art::after {
   width: 56%;
   border: 1px dashed color-mix(in srgb, var(--world-ink) 25%, transparent);
   border-radius: 18px;
   transform: rotate(32deg);
 }
 
-.morados-game-cover-art .game-cover-emblem {
+.morados-game-world .game-world-main.stage-cover .morados-game-cover-art .game-cover-emblem {
   width: clamp(94px, 16vw, 140px);
   border: 2px solid var(--world-accent-2);
   border-radius: 24px;
@@ -552,7 +552,7 @@
   box-shadow: 0 10px 0 rgb(0 0 0 / 16%);
 }
 
-.morados-game-art-caption {
+.morados-game-world .game-world-main.stage-cover .morados-game-art-caption {
   position: absolute;
   z-index: 3;
   bottom: 15px;
@@ -564,7 +564,7 @@
   text-transform: uppercase;
 }
 
-.morados-game-launch .morados-game-cover-details {
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-details {
   display: grid;
   grid-column: 1 / -1;
   grid-row: 2;
@@ -787,31 +787,31 @@
   .morados-games-library .games-hub-card-footer small { font-size: 7px; }
   .morados-games-library .games-hub-card-footer strong { font-size: 8px; }
   .morados-games-result-count { margin-bottom: 8px; }
-  .morados-game-launch {
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto auto;
     gap: 12px;
     padding-top: 3px !important;
   }
-  .morados-game-launch .morados-game-cover-copy {
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-copy {
     grid-column: 1;
     grid-row: 1;
     padding-top: 0;
   }
-  .morados-game-cover-copy h1 { margin: 6px 0; font-size: clamp(28px, 8vw, 39px); }
+  .morados-game-world .game-world-main.stage-cover .morados-game-cover-copy h1 { margin: 6px 0; font-size: clamp(28px, 8vw, 39px); }
   .morados-game-cover-tagline { font-size: 11px; }
   .morados-game-cover-highlights { margin-top: 9px; }
   .morados-game-cover-highlights span { font-size: 7px; }
   .morados-game-start { width: 100%; min-height: 44px; margin-top: 12px !important; }
-  .morados-game-launch .morados-game-cover-art {
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art {
     grid-column: 1;
     grid-row: 2;
     width: min(64vw, 245px);
     max-height: none;
   }
-  .morados-game-cover-art .game-cover-emblem { width: 105px; }
-  .morados-game-art-caption { bottom: 11px; left: 12px; font-size: 7px; }
-  .morados-game-launch .morados-game-cover-details {
+  .morados-game-world .game-world-main.stage-cover .morados-game-cover-art .game-cover-emblem { width: 105px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-art-caption { bottom: 11px; left: 12px; font-size: 7px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-details {
     grid-column: 1;
     grid-row: 3;
     grid-template-columns: 1fr;
@@ -828,9 +828,9 @@
 }
 
 @media (max-height: 650px) and (min-width: 761px) {
-  .morados-game-launch { grid-template-rows: minmax(190px, auto) auto; gap: 13px; }
-  .morados-game-launch .morados-game-cover-art { width: min(100%, 300px); }
-  .morados-game-cover-copy h1 { font-size: clamp(27px, 4vw, 42px); }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch { grid-template-rows: minmax(190px, auto) auto; gap: 13px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art { width: min(100%, 300px); }
+  .morados-game-world .game-world-main.stage-cover .morados-game-cover-copy h1 { font-size: clamp(27px, 4vw, 42px); }
   .morados-game-cover-details p { font-size: 9px; }
 }
 
