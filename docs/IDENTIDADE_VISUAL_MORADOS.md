@@ -153,3 +153,17 @@ A biblioteca de Jogos passa a funcionar como um índice de experiências, enquan
 - Não foram alteradas mecânicas, tabelas, migrations, políticas, RPCs, sincronização ou permissões online.
 
 Os testes de `CoupleGames` verificam o catálogo e filtros, a apresentação do briefing e suas instruções, a seleção de modalidade e a pausa sem desmontar a partida. A revisão de cada jogo — incluindo partidas completas, finais de vitória/derrota, retomada e sincronização em dois aparelhos — permanece uma etapa separada e necessária.
+
+
+## Lig 4 — encerramento da partida
+
+O primeiro jogo da revisão individual recebe uma tela de resultado de viewport integral para vitória, derrota e empate nos modos individual e local.
+
+- O resultado deixa de ser um painel inserido abaixo do tabuleiro e passa a ocupar a tela inteira.
+- A mensagem distingue vitória, derrota e empate e identifica corretamente a pessoa vencedora ou o Morados no modo individual.
+- O total de jogadas fica visível como resumo da partida.
+- Ações explícitas permitem iniciar nova rodada ou voltar à biblioteca por meio do evento de saída já usado pelo contêiner de jogos.
+- O tabuleiro e as regras de colocação de peças, detecção de sequências, alternância de turnos e resposta do adversário no modo individual não foram alterados.
+- O CSS do resultado está isolado em `.morados-connect-four-result` dentro de `src/components/MoradosGames.css`.
+
+Os testes cobrem vitória da Pessoa 1, vitória da Pessoa 2, reinício com tabuleiro limpo e navegação de volta à biblioteca. A validação de empate e a revisão das telas de resultado do Lig 4 online ainda permanecem pendentes; a revisão individual dos outros jogos não é considerada concluída.
