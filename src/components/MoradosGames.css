@@ -1,0 +1,843 @@
+/* Morados — Jogos: catálogo de experiências e briefings individuais.
+   Escopo isolado para não reestilizar tabuleiros, cenas ou mecânicas internas. */
+
+.morados-games-library {
+  --library-ink: #283b31;
+  --library-muted: #6d786d;
+  --library-paper: #f4f1e7;
+  --library-surface: #fbfaf5;
+  --library-line: #d8d8ca;
+  --library-forest: #4d6c53;
+  --library-clay: #b96d50;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  padding: clamp(14px, 3vw, 32px);
+  color: var(--library-ink);
+}
+
+.dark .morados-games-library {
+  --library-ink: #e8eadf;
+  --library-muted: #b6c0b5;
+  --library-paper: #242e27;
+  --library-surface: #2b352e;
+  --library-line: #485348;
+  --library-forest: #a8c29e;
+  --library-clay: #d18a6d;
+}
+
+.morados-games-intro {
+  display: flex;
+  min-height: 126px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0 0 17px;
+  border-bottom: 1px solid var(--library-line);
+  padding: 4px 0 18px;
+}
+
+.morados-games-heading {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.morados-games-kicker {
+  color: var(--library-clay);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.morados-games-heading h1 {
+  margin: 0;
+  color: var(--library-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(28px, 4vw, 38px);
+  font-weight: 850;
+  letter-spacing: -.065em;
+  line-height: 1.02;
+}
+
+.morados-games-heading p {
+  max-width: 520px;
+  margin: 3px 0 0;
+  color: var(--library-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.morados-games-count {
+  display: grid;
+  min-width: 130px;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 9px;
+  border-left: 1px solid var(--library-line);
+  padding-left: 18px;
+  color: var(--library-muted);
+}
+
+.morados-games-count strong {
+  grid-row: span 2;
+  color: var(--library-forest);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 34px;
+  font-weight: 850;
+  letter-spacing: -.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.morados-games-count span {
+  color: var(--library-ink);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.morados-games-count small {
+  color: var(--library-muted);
+  font-size: 8px;
+}
+
+.morados-games-library .games-hub-filters {
+  gap: 7px;
+  padding: 2px 0 11px;
+}
+
+.morados-games-library .games-hub-filters button {
+  min-height: 34px;
+  border: 1px solid var(--library-line);
+  border-radius: 7px;
+  background: transparent;
+  padding: 0 12px;
+  color: var(--library-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 9px;
+  font-weight: 750;
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+
+.morados-games-library .games-hub-filters button.is-active {
+  border-color: var(--library-forest);
+  background: var(--library-forest);
+  color: #fffdf5;
+}
+
+.morados-games-result-count {
+  margin: 0 0 10px;
+  color: var(--library-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.morados-games-result-count strong {
+  color: var(--library-forest);
+  font-weight: 850;
+}
+
+.morados-games-library .games-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.morados-games-library .games-hub-card {
+  --game-card-bg: #24545a;
+  --game-card-ink: #fff9ed;
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: 108px minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--library-line);
+  border-radius: 10px;
+  background: var(--library-surface);
+  padding: 0;
+  color: var(--library-ink);
+  text-align: left;
+  box-shadow: 0 5px 14px -13px rgb(29 45 36 / 45%);
+  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+.morados-games-library .games-hub-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--game-card-bg) 40%, var(--library-line));
+  box-shadow: 0 12px 22px -18px rgb(29 45 36 / 45%);
+}
+
+.morados-games-library .games-hub-card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--library-forest) 34%, transparent);
+  outline-offset: 3px;
+}
+
+.morados-games-library .games-hub-card.tone-petrol { --game-card-bg: #1d5d64; }
+.morados-games-library .games-hub-card.tone-terracotta { --game-card-bg: #a94e39; }
+.morados-games-library .games-hub-card.tone-olive { --game-card-bg: #596f3f; }
+.morados-games-library .games-hub-card.tone-plum { --game-card-bg: #62496e; }
+.morados-games-library .games-hub-card.tone-noir { --game-card-bg: #354250; }
+
+.morados-games-library .games-hub-card-art {
+  position: relative;
+  display: grid;
+  min-height: 0;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 18% 118%, color-mix(in srgb, var(--game-card-ink) 13%, transparent) 0 38%, transparent 39%),
+    linear-gradient(135deg, color-mix(in srgb, var(--game-card-bg) 85%, #172923), var(--game-card-bg));
+  padding: 12px;
+  isolation: isolate;
+}
+
+.morados-games-library .games-hub-card-art::before,
+.morados-games-library .games-hub-card-art::after {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--game-card-ink) 27%, transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.morados-games-library .games-hub-card-art::before {
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  opacity: .65;
+  transform: translate(28px, 8px);
+}
+
+.morados-games-library .games-hub-card-art::after {
+  width: 110px;
+  height: 48px;
+  border-radius: 50%;
+  opacity: .35;
+  transform: translate(-22px, 25px) rotate(-22deg);
+}
+
+.morados-games-library .games-hub-card-art > svg {
+  z-index: 1;
+  width: 37px;
+  height: 37px;
+  color: var(--game-card-ink);
+  stroke-width: 1.45;
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 18%));
+  opacity: 1;
+}
+
+.morados-games-library .games-hub-card-art > span {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 5px;
+  background: rgb(20 30 25 / 19%);
+  padding: 4px 6px;
+  color: var(--game-card-ink);
+  font-size: 7px;
+  font-weight: 850;
+}
+
+.morados-games-library .games-hub-card-art > span svg { width: 10px; height: 10px; }
+
+.morados-games-library .games-hub-card-art[data-game-id="connect-four"]::before {
+  width: 65px;
+  height: 65px;
+  border: 8px dotted color-mix(in srgb, var(--game-card-ink) 52%, transparent);
+  border-radius: 12px;
+  transform: rotate(13deg) translateX(18px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="checkers"]::before,
+.morados-games-library .games-hub-card-art[data-game-id="chess"]::before {
+  width: 72px;
+  height: 72px;
+  border: 0;
+  border-radius: 0;
+  background: conic-gradient(color-mix(in srgb, var(--game-card-ink) 24%, transparent) 25%, transparent 0 50%, color-mix(in srgb, var(--game-card-ink) 24%, transparent) 0 75%, transparent 0);
+  background-size: 22px 22px;
+  transform: rotate(-12deg) translate(28px, 12px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="this-or-that"]::before {
+  width: 130px;
+  height: 92px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--game-card-ink) 18%, transparent) 0 49%, transparent 50% 100%);
+  transform: rotate(-14deg) translateX(20px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="daily-challenge"]::before {
+  width: 75px;
+  height: 75px;
+  border-width: 8px;
+  border-radius: 50%;
+  transform: translate(35px, 0);
+}
+.morados-games-library .games-hub-card-art[data-game-id="investigation"]::before,
+.morados-games-library .games-hub-card-art[data-game-id="investigation-train"]::before,
+.morados-games-library .games-hub-card-art[data-game-id="escape-room"]::before {
+  width: 63px;
+  height: 78px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(180deg, transparent 0 10px, color-mix(in srgb, var(--game-card-ink) 28%, transparent) 11px 12px);
+  transform: rotate(8deg) translate(34px, 5px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="investigation-train"]::after {
+  width: 130px;
+  height: 2px;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--game-card-ink) 45%, transparent);
+  box-shadow: 0 9px color-mix(in srgb, var(--game-card-ink) 45%, transparent), 0 -9px color-mix(in srgb, var(--game-card-ink) 45%, transparent);
+  transform: rotate(-16deg);
+}
+.morados-games-library .games-hub-card-art[data-game-id="battleship"]::before {
+  width: 150px;
+  height: 40px;
+  border: 0;
+  border-top: 2px solid color-mix(in srgb, var(--game-card-ink) 47%, transparent);
+  border-bottom: 2px solid color-mix(in srgb, var(--game-card-ink) 25%, transparent);
+  border-radius: 50%;
+  transform: rotate(-13deg) translateY(19px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="domino"]::before,
+.morados-games-library .games-hub-card-art[data-game-id="truco"]::before {
+  width: 45px;
+  height: 75px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--game-card-ink) 13%, transparent);
+  box-shadow: 21px 13px 0 -1px color-mix(in srgb, var(--game-card-ink) 12%, transparent);
+  transform: rotate(23deg) translate(33px, 3px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="quiz"]::before {
+  width: 92px;
+  height: 92px;
+  border-width: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 12px color-mix(in srgb, var(--game-card-ink) 13%, transparent);
+  transform: translate(28px, 0);
+}
+.morados-games-library .games-hub-card-art[data-game-id="island-survival"]::before {
+  width: 115px;
+  height: 52px;
+  border: 0;
+  border-radius: 100% 0 100% 0;
+  background: color-mix(in srgb, var(--game-card-ink) 18%, transparent);
+  transform: rotate(-25deg) translate(36px, 8px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="cave-expedition"]::before {
+  width: 85px;
+  height: 90px;
+  border-width: 8px;
+  border-radius: 50% 50% 8px 8px;
+  transform: translate(28px, 17px);
+}
+.morados-games-library .games-hub-card-art[data-game-id="cave-expedition"]::after {
+  width: 140px;
+  height: 3px;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--game-card-ink) 35%, transparent);
+  box-shadow: 0 12px color-mix(in srgb, var(--game-card-ink) 23%, transparent), 0 -12px color-mix(in srgb, var(--game-card-ink) 23%, transparent);
+  transform: rotate(23deg);
+}
+
+.morados-games-library .games-hub-card-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 13px 11px;
+}
+
+.morados-games-library .games-hub-card-copy > span {
+  color: var(--library-clay);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 8px;
+  font-weight: 850;
+  letter-spacing: .095em;
+  text-transform: uppercase;
+}
+
+.morados-games-library .games-hub-card-copy h2 {
+  margin: 0;
+  color: var(--library-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(13px, 1.4vw, 15px);
+  font-weight: 850;
+  letter-spacing: -.035em;
+  line-height: 1.2;
+}
+
+.morados-games-library .games-hub-card-copy p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--library-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 9px;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.morados-games-library .games-hub-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid var(--library-line);
+  padding-top: 8px;
+}
+
+.morados-games-library .games-hub-card-footer small {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--library-muted);
+  font-size: 8px;
+}
+
+.morados-games-library .games-hub-card-footer small svg { width: 12px; height: 12px; }
+.morados-games-library .games-hub-card-footer strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--library-forest);
+  font-size: 9px;
+  font-weight: 850;
+}
+.morados-games-library .games-hub-card-footer strong svg {
+  width: 12px;
+  height: 12px;
+  transform: rotate(180deg);
+}
+
+.morados-game-world {
+  --world-paper: #f5f1e7;
+  --world-line: color-mix(in srgb, var(--world-ink) 21%, transparent);
+}
+
+.morados-game-world .game-world-main.stage-cover {
+  display: block !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: calc(env(safe-area-inset-top) + 68px) clamp(12px, 3vw, 28px) max(18px, env(safe-area-inset-bottom)) !important;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-launch {
+  display: grid !important;
+  width: min(100%, 1120px) !important;
+  min-height: 0 !important;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, .82fr);
+  grid-template-rows: minmax(240px, auto) auto;
+  align-items: center;
+  gap: clamp(16px, 3vw, 30px);
+  margin: 0 auto !important;
+  padding: clamp(12px, 2vw, 25px) 0 20px !important;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-copy {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  padding: 10px 0;
+  text-align: left;
+}
+
+.morados-game-cover-eyebrow {
+  display: inline-block;
+  color: var(--world-accent);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-cover-copy h1 {
+  max-width: 100%;
+  margin: 10px 0 8px;
+  color: var(--world-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(30px, 5vw, 57px);
+  font-weight: 900;
+  letter-spacing: -.065em;
+  line-height: 1.02;
+  overflow-wrap: anywhere;
+}
+
+.morados-game-cover-tagline {
+  max-width: 520px;
+  margin: 0;
+  color: var(--world-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(12px, 1.5vw, 15px);
+  font-weight: 650;
+  line-height: 1.55;
+}
+
+.morados-game-cover-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.morados-game-cover-highlights span {
+  border: 1px solid color-mix(in srgb, var(--world-accent) 32%, transparent);
+  border-radius: 5px;
+  background: var(--world-panel);
+  padding: 5px 8px;
+  color: var(--world-ink);
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.morados-game-start {
+  min-height: 48px;
+  margin-top: 19px !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+  font-size: 10px !important;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art {
+  grid-column: 2;
+  grid-row: 1;
+  width: min(100%, 370px);
+  max-height: 100%;
+  aspect-ratio: 1;
+  justify-self: center;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 45%, var(--world-ink));
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 50% 120%, color-mix(in srgb, var(--world-accent-2) 22%, transparent) 0 34%, transparent 35%),
+    linear-gradient(145deg, var(--world-panel-2), var(--world-panel));
+  box-shadow: none;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art::before {
+  width: 71%;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 36%, transparent);
+  border-radius: 50%;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art::after {
+  width: 56%;
+  border: 1px dashed color-mix(in srgb, var(--world-ink) 25%, transparent);
+  border-radius: 18px;
+  transform: rotate(32deg);
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-cover-art .game-cover-emblem {
+  width: clamp(94px, 16vw, 140px);
+  border: 2px solid var(--world-accent-2);
+  border-radius: 24px;
+  background: var(--world-accent);
+  box-shadow: 0 10px 0 rgb(0 0 0 / 16%);
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-art-caption {
+  position: absolute;
+  z-index: 3;
+  bottom: 15px;
+  left: 16px;
+  color: var(--world-muted);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-details {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+  gap: 12px;
+  border-top: 1px solid var(--world-line);
+  padding-top: 14px;
+}
+
+.morados-game-cover-details > section {
+  min-width: 0;
+  border-left: 2px solid var(--world-accent);
+  padding: 2px 13px;
+}
+
+.morados-game-detail-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--world-accent);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.morados-game-cover-details p {
+  margin: 0;
+  color: var(--world-muted);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.morados-game-howto {
+  margin-top: 10px;
+  border-top: 1px solid var(--world-line);
+  padding-top: 8px;
+}
+
+.morados-game-howto summary {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  color: var(--world-ink);
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 850;
+}
+
+.morados-game-howto ol {
+  display: grid;
+  gap: 7px;
+  margin: 8px 0 2px;
+  padding: 0;
+  list-style: none;
+}
+
+.morados-game-howto li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 7px;
+  color: var(--world-muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.morados-game-howto li > span {
+  color: var(--world-accent);
+  font-size: 8px;
+  font-weight: 950;
+}
+
+.morados-game-mode-stage {
+  max-width: 990px;
+}
+
+.morados-game-mode-stage .game-stage-heading {
+  margin-bottom: 22px;
+  text-align: left;
+}
+
+.morados-game-mode-stage .game-stage-heading h1 {
+  margin-top: 8px;
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(25px, 4.5vw, 40px);
+  font-weight: 900;
+}
+
+.morados-game-mode-stage .game-stage-heading p {
+  color: var(--world-muted);
+  font-size: 11px;
+}
+
+.morados-game-mode-stage .game-world-mode-grid {
+  gap: 10px;
+}
+
+.morados-game-mode-stage .game-world-mode-card {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  align-items: start;
+  gap: 6px 11px;
+  border: 1px solid var(--world-line);
+  border-radius: 10px;
+  background: var(--world-panel);
+  padding: 15px;
+  box-shadow: none;
+}
+
+.morados-game-mode-stage .game-world-mode-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--world-accent);
+}
+
+.morados-game-mode-stage .game-world-mode-card .game-world-mode-icon {
+  width: 44px;
+  height: 44px;
+  grid-row: 1 / 4;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 40%, transparent);
+  border-radius: 9px;
+  background: var(--world-panel-2);
+}
+
+.morados-game-mode-stage .game-world-mode-meta {
+  align-self: end;
+  color: var(--world-accent);
+  font-size: 7px;
+}
+
+.morados-game-mode-stage .game-world-mode-card strong {
+  grid-column: 2;
+  align-self: start;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.morados-game-mode-stage .game-world-mode-card small {
+  grid-column: 2;
+  align-self: start;
+  color: var(--world-muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.morados-game-mode-stage .game-world-mode-enter {
+  grid-column: 1 / -1;
+  min-height: 28px;
+  align-self: end;
+  margin-top: 5px;
+  color: var(--world-accent);
+  font-size: 8px;
+}
+
+.morados-game-mode-stage .game-world-mode-enter svg {
+  transform: none;
+}
+
+.morados-game-invite-waiting {
+  width: min(100% - 32px, 460px);
+  margin: auto;
+  padding: 24px;
+  text-align: center;
+}
+
+.morados-game-invite-waiting .game-invite-waiting-mark {
+  margin-bottom: 16px;
+}
+
+.morados-game-invite-waiting h1 {
+  margin: 8px 0;
+  color: var(--world-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(23px, 5vw, 32px);
+  font-weight: 900;
+  letter-spacing: -.05em;
+}
+
+.morados-game-invite-waiting p {
+  margin: 0;
+  color: var(--world-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.morados-game-pause-dialog {
+  border: 1px solid var(--world-line) !important;
+  border-radius: 14px !important;
+  background: var(--world-panel-2) !important;
+  padding: clamp(20px, 4vw, 28px) !important;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 42%) !important;
+}
+
+.morados-game-pause-dialog h2 {
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  letter-spacing: -.04em;
+}
+
+@media (max-width: 900px) {
+  .morados-games-library .games-hub-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .morados-games-library { padding: 12px; }
+  .morados-games-intro { min-height: 0; gap: 10px; padding-bottom: 14px; }
+  .morados-games-heading h1 { font-size: 29px; }
+  .morados-games-heading p { max-width: 280px; font-size: 10px; }
+  .morados-games-count { min-width: 86px; grid-template-columns: 1fr; gap: 0; justify-items: end; border-left: 0; padding-left: 0; text-align: right; }
+  .morados-games-count strong { grid-row: auto; font-size: 28px; }
+  .morados-games-count span { font-size: 8px; }
+  .morados-games-count small { max-width: 90px; font-size: 7px; }
+  .morados-games-library .games-hub-grid { grid-template-columns: 1fr; gap: 9px; }
+  .morados-games-library .games-hub-card { grid-template-columns: 92px minmax(0, 1fr); grid-template-rows: minmax(128px, auto); }
+  .morados-games-library .games-hub-card-art { min-height: 128px; }
+  .morados-games-library .games-hub-card-art > svg { width: 31px; height: 31px; }
+  .morados-games-library .games-hub-card-copy { gap: 4px; padding: 9px 10px; }
+  .morados-games-library .games-hub-card-copy p { font-size: 8px; -webkit-line-clamp: 2; }
+  .morados-games-library .games-hub-card-copy h2 { font-size: 13px; }
+  .morados-games-library .games-hub-card-footer { padding-top: 6px; }
+  .morados-games-library .games-hub-card-footer small { font-size: 7px; }
+  .morados-games-library .games-hub-card-footer strong { font-size: 8px; }
+  .morados-games-result-count { margin-bottom: 8px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 12px;
+    padding-top: 3px !important;
+  }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-copy {
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: 0;
+  }
+  .morados-game-world .game-world-main.stage-cover .morados-game-cover-copy h1 { margin: 6px 0; font-size: clamp(28px, 8vw, 39px); }
+  .morados-game-cover-tagline { font-size: 11px; }
+  .morados-game-cover-highlights { margin-top: 9px; }
+  .morados-game-cover-highlights span { font-size: 7px; }
+  .morados-game-start { width: 100%; min-height: 44px; margin-top: 12px !important; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art {
+    grid-column: 1;
+    grid-row: 2;
+    width: min(64vw, 245px);
+    max-height: none;
+  }
+  .morados-game-world .game-world-main.stage-cover .morados-game-cover-art .game-cover-emblem { width: 105px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-art-caption { bottom: 11px; left: 12px; font-size: 7px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-details {
+    grid-column: 1;
+    grid-row: 3;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-top: 12px;
+  }
+  .morados-game-cover-details > section { padding-inline: 10px; }
+  .morados-game-cover-details p { font-size: 9px; }
+  .morados-game-mode-stage { padding: 18px 14px 28px; }
+  .morados-game-mode-stage .game-stage-heading { margin-bottom: 14px; }
+  .morados-game-mode-stage .game-world-mode-grid { grid-template-columns: 1fr; }
+  .morados-game-mode-stage .game-world-mode-card { grid-template-columns: 42px minmax(0, 1fr); padding: 11px; }
+  .morados-game-mode-stage .game-world-mode-card .game-world-mode-icon { width: 38px; height: 38px; }
+}
+
+@media (max-height: 650px) and (min-width: 761px) {
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch { grid-template-rows: minmax(190px, auto) auto; gap: 13px; }
+  .morados-game-world .game-world-main.stage-cover .morados-game-launch .morados-game-cover-art { width: min(100%, 300px); }
+  .morados-game-world .game-world-main.stage-cover .morados-game-cover-copy h1 { font-size: clamp(27px, 4vw, 42px); }
+  .morados-game-cover-details p { font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .morados-games-library .games-hub-card,
+  .morados-games-library .games-hub-filters button,
+  .morados-game-mode-stage .game-world-mode-card {
+    transition: none !important;
+  }
+}

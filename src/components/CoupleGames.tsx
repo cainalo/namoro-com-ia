@@ -1,22 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Check,
-  AudioLines,
   Brain,
   CalendarHeart,
   Crown,
-  DoorOpen,
   Gamepad2,
-  Grid2X2,
-  Grid3X3,
-  Heart,
-  Mountain,
   Play,
-  Scale,
   Search,
-  Ship,
-  Spade,
   LockKeyhole,
   LoaderCircle,
   MoreVertical,
@@ -24,9 +14,7 @@ import {
   Sparkles,
   Swords,
   Target,
-  TrainFront,
   Users,
-  Waves,
 } from "lucide-react";
 import { CheckersGame } from "@/components/CheckersGame";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
@@ -42,6 +30,7 @@ import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
 import "./GameCover.css";
+import "./MoradosGames.css";
 import { CaveExpeditionGame } from "@/components/CaveExpeditionGame";
 import { InlineMenu } from "@/components/InlineMenu";
 import { GameAudioProvider, GameAudioToggle, useGameAudio } from "@/components/GameExperience";
@@ -201,12 +190,16 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
 
  const back=()=>{play("tap");if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="waiting")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
  const settings=<InlineMenu label="Configurações do jogo" trigger={<MoreVertical/>} triggerClassName="game-world-float-button" menuClassName="game-world-menu-panel" className="game-world-menu">{close=><><div className="game-world-menu-heading">CONFIGURAÇÕES</div><GameAudioToggle/><button type="button" role="menuitem" onClick={()=>{setStage("mode");setConfirmExit(false);close();play("tap");}}><Users/> Trocar modo</button><button type="button" role="menuitem" onClick={()=>{setConfirmExit(true);close();play("warning");}}><ArrowLeft/> Sair da partida</button></>}</InlineMenu>;
- const choices=[{id:"solo" as const,title:"Jogar sozinho",Icon:Crown},{id:"local" as const,title:"Jogar neste aparelho",Icon:Users},{id:"online" as const,title:"Jogar online",Icon:Shield}];
- return <div className={"games-fullscreen-page game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
+ const choices=[
+   {id:"solo" as const,title:"Jogar sozinho",description:"Entre no jogo no seu ritmo e pratique sem depender de outra pessoa.",meta:"INDIVIDUAL",Icon:Crown},
+   {id:"local" as const,title:"Neste aparelho",description:"Duas pessoas compartilham a tela e alternam as jogadas no mesmo dispositivo.",meta:"PRESENCIAL",Icon:Users},
+   {id:"online" as const,title:"Jogar online",description:"Envie um convite privado para a outra pessoa e joguem em aparelhos separados.",meta:"A DISTÂNCIA",Icon:Shield}
+  ];
+ return <div className={"games-fullscreen-page game-world morados-game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
   <header className="game-world-topbar"><button type="button" className="game-world-float-button" onClick={back} aria-label={stage==="cover"?"Voltar aos jogos":"Voltar uma etapa"}><ArrowLeft/></button><div className="game-world-top-title"><small>MORADOS ORIGINALS</small>{stage!=="cover"&&<strong>{game.name}</strong>}</div>{settings}</header>
   <main className={"game-world-main stage-"+stage}>
-   {stage==="cover"&&<section className="game-launch-cover">
-      <div className={"game-cover-art art-"+gameId} aria-hidden="true">
+   {stage==="cover"&&<section className="game-launch-cover morados-game-launch">
+      <div className={"game-cover-art art-"+gameId+" morados-game-cover-art"} data-game-id={gameId} aria-hidden="true">
         <span className="game-cover-art-watermark">{game.name}</span>
         <span className="game-cover-orbit orbit-one"/><span className="game-cover-orbit orbit-two"/>
         <span className="game-cover-beam beam-one"/><span className="game-cover-beam beam-two"/>
@@ -214,27 +207,49 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
         <span className="game-cover-token token-one"/><span className="game-cover-token token-two"/><span className="game-cover-token token-three"/>
         <div className="game-cover-emblem"><GameIcon/></div>
         <span className="game-cover-art-number">0{catalogue.findIndex(x=>x.id===gameId)+1}</span>
+        <span className="morados-game-art-caption">{game.category}</span>
       </div>
-      <div className="game-cover-copy">
+      <div className="game-cover-copy morados-game-cover-copy">
+        <span className="morados-game-cover-eyebrow">{launchInfo[gameId].eyebrow}</span>
         <h1>{game.name}</h1>
-        <button type="button" className="game-world-primary" onClick={()=>{setStage("mode");play("discovery");}}><Play/> Jogar</button>
+        <p className="morados-game-cover-tagline">{launchInfo[gameId].tagline}</p>
+        <div className="game-cover-highlights morados-game-cover-highlights">
+          {launchInfo[gameId].chips.map((chip)=><span key={chip}>{chip}</span>)}
+        </div>
+        <button type="button" className="game-world-primary morados-game-start" onClick={()=>{setStage("mode");play("discovery");}}><Play/> Começar experiência</button>
+      </div>
+      <div className="morados-game-cover-details">
+        <section className="morados-game-cover-story">
+          <span className="morados-game-detail-kicker">O cenário</span>
+          <p>{launchInfo[gameId].story}</p>
+        </section>
+        <section className="morados-game-cover-objective">
+          <span className="morados-game-detail-kicker">Objetivo</span>
+          <p>{launchInfo[gameId].goal}</p>
+          <details className="morados-game-howto">
+            <summary>Como funciona</summary>
+            <ol>{launchInfo[gameId].steps.map((step,index)=><li key={step}><span>{String(index+1).padStart(2,"0")}</span>{step}</li>)}</ol>
+          </details>
+        </section>
       </div>
     </section>}
-   {stage==="mode"&&<section className="game-mode-stage">
-      <div className="game-stage-heading"><h1>Como você quer jogar?</h1></div>
-      <div className="game-world-mode-grid">{choices.map(({id,title,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setInviteError(null);setMode(id);play("discovery");if(id==="online"){void sendOnlineInvitation();}else{setStage("play");}}} disabled={inviteBusy}>
-        <span className="game-world-mode-icon"><Icon/></span>
-        <strong>{title}</strong>
-        <span className="game-world-mode-enter">{id==="online"&&inviteBusy?<LoaderCircle/>:<Play/>}</span>
-      </button>)}</div>
+   {stage==="mode"&&<section className="game-mode-stage morados-game-mode-stage">
+      <div className="game-stage-heading"><span className="morados-game-cover-eyebrow">ESCOLHA DE PARTIDA</span><h1>Como você quer jogar?</h1><p>O tipo de partida define como a experiência acontece.</p></div>
+      <div className="game-world-mode-grid">{choices.map(({id,title,description,meta,Icon})=><button key={id} type="button" className={"game-world-mode-card is-"+id} onClick={()=>{setInviteError(null);setMode(id);play("discovery");if(id==="online"){void sendOnlineInvitation();}else{setStage("play");}}} disabled={inviteBusy}>
+         <span className="game-world-mode-icon"><Icon/></span>
+         <span className="game-world-mode-meta">{meta}</span>
+         <strong>{title}</strong>
+         <small>{description}</small>
+         <span className="game-world-mode-enter">{id==="online"&&inviteBusy?<LoaderCircle/>:<Play/>}<span>{id==="online"&&inviteBusy?"Enviando convite":"Selecionar modo"}</span></span>
+       </button>)}</div>
       {inviteError&&<p className="couple-game-error" role="alert">{inviteError}</p>}
       <button type="button" className="game-world-text-button" onClick={()=>setStage("cover")}>Voltar à capa</button>
     </section>}
    
-   {stage==="waiting"&&mode==="online"&&<section className="game-invite-waiting"><span className="game-invite-waiting-mark"><Users/></span><h1>Aguardando a outra pessoa</h1><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Voltar aos modos</button></section>}
+   {stage==="waiting"&&mode==="online"&&<section className="game-invite-waiting morados-game-invite-waiting"><span className="game-invite-waiting-mark"><Users/></span><span className="morados-game-cover-eyebrow">CONVITE ENVIADO</span><h1>Aguardando a outra pessoa</h1><p>Assim que o convite for aceito, a partida será aberta neste espaço. Você pode continuar aguardando ou voltar à escolha de modos.</p><button type="button" className="game-world-text-button" onClick={()=>setStage("mode")}>Voltar aos modos</button></section>}
    {stage==="play"&&mode&&<section className="game-session-stage"><div key={mode+"-"+gameId} className="game-play-surface">{mode==="solo"&&renderSoloGame(gameId)}{mode==="local"&&renderLocalGame(gameId)}{mode==="online"&&renderOnlineGame(gameId,userId)}</div></section>}
   </main>
-  {confirmExit&&<div className="game-world-exit-backdrop" role="presentation"><section className="game-world-exit-dialog" role="dialog" aria-modal="true" aria-labelledby="game-exit-title"><span className="game-world-exit-icon"><Shield/></span><small>PAUSAR EXPERIÊNCIA</small><h2 id="game-exit-title">Sair desta partida?</h2><p>Você pode voltar ao jogo depois. O progresso salvo continua disponível quando o modo permitir.</p><button type="button" className="game-world-primary" onClick={()=>{setConfirmExit(false);setStage("cover");setMode(null);}}>Voltar à capa do jogo</button><button type="button" className="game-world-text-button" onClick={()=>{setConfirmExit(false);onBack();}}>Voltar ao catálogo</button><button type="button" className="game-world-exit-cancel" onClick={()=>setConfirmExit(false)}>Continuar jogando</button></section></div>}
+  {confirmExit&&<div className="game-world-exit-backdrop" role="presentation"><section className="game-world-exit-dialog morados-game-pause-dialog" role="dialog" aria-modal="true" aria-labelledby="game-exit-title"><span className="game-world-exit-icon"><Shield/></span><small>PAUSA</small><h2 id="game-exit-title">Partida pausada</h2><p>Escolha se deseja continuar agora ou sair desta experiência. O progresso só permanece disponível quando o próprio jogo oferece salvamento.</p><button type="button" className="game-world-primary" onClick={()=>{setConfirmExit(false);setStage("cover");setMode(null);}}>Voltar à capa do jogo</button><button type="button" className="game-world-text-button" onClick={()=>{setConfirmExit(false);onBack();}}>Voltar ao catálogo</button><button type="button" className="game-world-exit-cancel" onClick={()=>setConfirmExit(false)}>Continuar jogando</button></section></div>}
  </div>;
 }
 
@@ -324,14 +339,17 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
   }
 
   return (
-    <section className="games-hub">
-      <div className="games-hub-intro">
-        <div>
-          <p className="date-kicker">Escolham uma experiência</p>
-          <p>Partidas rápidas, desafios em conjunto e histórias para investigar.</p>
+    <section className="games-hub morados-games-library">
+      <header className="games-hub-intro morados-games-intro">
+        <div className="morados-games-heading">
+          <span className="morados-games-kicker">O espaço de vocês</span>
+          <h1>Jogos</h1>
+          <p>Escolham uma partida, descubram algo novo ou entrem juntos em outra história.</p>
         </div>
-        <span className="games-hub-mark"><Gamepad2 aria-hidden="true" /></span>
-      </div>
+        <div className="morados-games-count" aria-label={catalogue.length+" experiências disponíveis"}>
+          <strong>{catalogue.length}</strong><span>experiências</span><small>para jogar do seu jeito</small>
+        </div>
+      </header>
 
       <nav className="games-hub-filters" aria-label="Filtrar jogos">
         {([
@@ -346,12 +364,13 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
         ))}
       </nav>
 
+      <div className="games-hub-result-count" aria-live="polite"><strong>{visibleGames.length}</strong> {visibleGames.length===1?"experiência disponível":"experiências disponíveis"}</div>
       <div className="games-hub-grid">
         {visibleGames.map((game) => {
           const Icon = game.icon;
           return (
-            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone} onClick={() => setActiveGame(game.id)}>
-              <div className="games-hub-card-art">
+            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone} data-game-id={game.id} onClick={() => setActiveGame(game.id)} aria-label={"Abrir "+game.name}>
+              <div className="games-hub-card-art" data-game-id={game.id}>
                 <Icon aria-hidden="true" />
                 {game.new && <span><Sparkles aria-hidden="true" /> Novo</span>}
               </div>
@@ -361,7 +380,7 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
                 <p>{game.description}</p>
                 <div className="games-hub-card-footer">
                   <small><Users aria-hidden="true" /> {game.players}</small>
-                  <strong>Jogar <ArrowLeft aria-hidden="true" /></strong>
+                  <strong>Abrir jogo <ArrowLeft aria-hidden="true" /></strong>
                 </div>
               </div>
             </button>
@@ -369,28 +388,6 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
         })}
       </div>
 
-      <section className="games-hub-next games-hub-next-classics">
-        <div className="games-hub-next-title">
-          <span><Crown aria-hidden="true" /></span>
-          <div><h2>Clássicos em desenvolvimento</h2><p>Os próximos jogos de mesa que já estavam previstos.</p></div>
-        </div>
-        <div className="games-hub-next-grid">
-          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos, exploração e decisões com consequências</small></div><span>Próximo</span></article>
-          <article><Sparkles aria-hidden="true"/><div><strong>Histórias interativas</strong><small>Mistérios com escolhas, personagens e caminhos diferentes</small></div><span>Próximo</span></article>
-        </div>
-      </section>
-
-      <section className="games-hub-next">
-        <div className="games-hub-next-title">
-          <span><Sparkles aria-hidden="true" /></span>
-          <div><h2>Novos gêneros</h2><p>Jogos que vão além dos tabuleiros.</p></div>
-        </div>
-        <div className="games-hub-next-grid">
-          <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios além do Caso 001</small></div><span>Em produção</span></article>
-          <article><AudioLines aria-hidden="true"/><div><strong>Novas salas de fuga</strong><small>Ambientes, enigmas e mecanismos em sequência</small></div><span>Próximo</span></article>
-          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos e decisões com consequências</small></div><span>Planejado</span></article>
-        </div>
-      </section>
     </section>
   );
 }
