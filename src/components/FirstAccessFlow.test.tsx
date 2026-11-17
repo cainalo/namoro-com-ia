@@ -69,7 +69,7 @@ function setupProfileQuery() {
 
 function renderFirstAccess() {
   return render(
-    <FirstAccessGate userId="user-1" initialName="Nome inicial" onNavigate={mocks.navigate}>
+    <FirstAccessGate userId="user-1" initialName="Nome inicial" onNavigate={mocks.navigate} activeSection="home">
       <p>Área principal</p>
     </FirstAccessGate>,
   );
@@ -158,14 +158,14 @@ describe("FirstAccessGate native profile form", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Próxima etapa" }));
     expect(screen.getByRole("dialog", { name: "Registre um momento" })).toBeInTheDocument();
-    expect(mocks.navigate).not.toHaveBeenCalled();
+    await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith("create-post"));
 
     fireEvent.click(screen.getByRole("button", { name: "Pular tutorial" }));
 
     expect(await screen.findByText("Área principal")).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(mocks.navigate).toHaveBeenCalledTimes(1);
     expect(mocks.navigate).toHaveBeenCalledWith("home");
+    expect(mocks.navigate).toHaveBeenCalledWith("create-post");
   });
 
   it("shows the web text inputs outside the Android app", async () => {
