@@ -365,7 +365,7 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
       </nav>
 
       <div className="games-hub-result-count" aria-live="polite"><strong>{visibleGames.length}</strong> {visibleGames.length===1?"experiência disponível":"experiências disponíveis"}</div>
-      <div className="games-hub-grid">
+      <div className="games-hub-grid" data-tour-target="games-hub-grid">
         {visibleGames.map((game) => {
           const Icon = game.icon;
           return (
