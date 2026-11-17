@@ -121,3 +121,19 @@ Casa passa a usar uma composição de exploração espacial mais clara e legíve
 - A folha `src/styles/morados-house.css` fica isolada em `.house-screen`. A alteração não adiciona cômodos, decoração editável, moedas ou conteúdo fictício.
 
 O teste `CoupleHouse.test.tsx` cobre seleção dos locais, entrada no salão, seleção dos quatro elementos por meio do fluxo de interface, retorno ao terreno, iluminação e aproximação. A revisão visual em navegador e Android real permanece necessária antes de considerar o piloto aprovado.
+
+
+## Piloto de Perfil — retrato pessoal
+
+O Perfil adota uma composição de retrato editorial, centrada na identidade da pessoa e na edição direta das próprias informações.
+
+- O banner é tratado como uma faixa de imagem ampla, com ação de edição discreta e um estado sem imagem que não simula conteúdo real.
+- A foto de perfil recebe maior destaque e passa a formar uma unidade clara com o nome exibido.
+- O indicador de preenchimento deixa de parecer um painel independente e passa a funcionar como uma faixa de progresso compacta.
+- Os campos pessoais são organizados em duas colunas em telas amplas e uma coluna no telefone; favoritos permanecem em um grupo próprio.
+- O texto deixa explícito que as informações são opcionais, sem induzir o preenchimento de dados pessoais.
+- No Android, os campos continuam usando o editor nativo já existente; no navegador, mantêm os inputs e textareas controlados.
+- Atualização de texto, upload privado de avatar/banner, substituição da mídia anterior, feedback de salvamento e tutorial foram preservados.
+- O CSS está isolado em `src/styles/morados-profile.css` e aplicado somente a `.morados-profile`; nenhuma tabela, política, permissão, migration ou fluxo de mídia foi alterado.
+
+Os testes de `CoupleProfile` cobrem a disponibilidade dos campos enquanto as imagens carregam, a edição nativa, o salvamento dos campos e a presença dos controles no novo layout. A revisão visual em navegador e Android físico ainda precisa ser realizada.
