@@ -91,3 +91,18 @@ Conversa adota uma linguagem própria de correspondência, sem copiar a composi�
 - A composição continua imersiva e mobile-first. Os botões superiores permanecem apenas ícones, conforme a decisão anterior de manter a barra superior limpa.
 
 A implementação visual está isolada em `src/styles/morados-conversation.css`, aplicada apenas quando a conversa está em modo imersivo. O estado vazio foi extraído para `MoradosConversationWelcome.tsx` e tem testes próprios. Não foram alteradas tabelas, migrations, políticas, chamadas, RPCs ou fluxos de mensagens.
+
+
+## Piloto de Planos — agenda de convivência
+
+Planos recebe uma composição de agenda, diferente do mural, do caderno de Memórias e da correspondência da Conversa. O foco está em localizar uma data, entender o que acontece nela e registrar um novo compromisso sem percorrer uma sequência longa de cartões.
+
+- A abertura usa uma ilustração vetorial original de calendário e apresenta a contagem real de compromissos do mês que está visível.
+- Em telas largas, o calendário e a lista do dia selecionado ficam lado a lado; em telas estreitas, a composição passa para uma única coluna.
+- Os compromissos são apresentados como lista editorial com horário, título, local, privacidade e ações do próprio autor — sem transformar cada linha em um cartão independente.
+- O formulário permanece completo, com título, descrição, local, dia inteiro, horários, data, privacidade, edição e exclusão.
+- Os filtros Todos, Compartilhados e Privados continuam aplicados apenas aos compromissos da data selecionada.
+- Navegação por teclado no calendário, foco, estados de carregamento, erro, estrutura do banco pendente e sincronização em tempo real são preservados.
+- O novo CSS fica isolado em \`src/styles/morados-plans.css\`; nenhuma regra de banco, permissão, consulta, RPC ou sincronização foi alterada.
+
+A revisão visual em navegador e Android continua pendente. É necessário conferir meses com diferentes quantidades de semanas, datas sem compromissos, muitos eventos em um único dia, textos longos, tema claro/escuro e largura real de telefone.

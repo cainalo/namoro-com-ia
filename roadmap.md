@@ -12,6 +12,7 @@ Atualizado em 16 de novembro de 2026. A auditoria e a direção inicial da trans
 - [ ] Adicionar testes de interface e regressão para Feed, Conversa, Memórias, Planos e Casa.
 - [x] Implementar pilotos visuais próprios para Feed e Memórias, preservando seus fluxos; validação visual no navegador e Android pendente.
 - [x] Implementar o piloto visual próprio da Conversa, preservando o cabeçalho de ícones e as preferências do casal.
+- [x] Implementar o piloto visual de Planos como agenda responsiva, mantendo calendário, filtros, privacidade e operações existentes; validação visual em navegador e Android pendente.
 - [x] Preparar acesso antecipado do criador a Feed e Conversa em casal pendente; a aplicação da migration no Supabase ainda precisa ser confirmada.
 - [ ] Transformar os demais módulos gradualmente, preservando suas funções e dando a cada um uma linguagem própria.
 - [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, RefreshCw, Users } from "lucide-react";
+import { CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, RefreshCw, Users } from "lucide-react";
+import { MoradosPlansHeader } from "./MoradosPlansHeader";
 import { supabase } from "@/integrations/supabase/client";
 import {
   createCouplePlanEvent,
@@ -455,18 +456,10 @@ export function CouplePlans({ userId }: { userId: string }) {
 
   return (
     <section className="plans-screen">
-      <div className="plans-page-intro">
-        <span className="section-intro-icon"><CalendarDays aria-hidden="true" /></span>
-        <div className="section-intro-copy">
-          <span className="section-intro-kicker">Tempo compartilhado</span>
-          <h1>Planos</h1>
-          <p>Organizem encontros, compromissos e pequenos planos para os próximos dias.</p>
-        </div>
-        <div className="section-intro-stat">
-          <strong>{events.length}</strong>
-          <span>{events.length === 1 ? "data guardada" : "datas guardadas"}</span>
-        </div>
-      </div>
+      <MoradosPlansHeader
+        eventCount={eventLoadStatus === "ready" ? events.length : null}
+        monthLabel={monthLabel}
+      />
       <div className="plans-toolbar">
           <span className={coupleId && realtimeStatus === "connected" ? "plans-live-status is-connected" : "plans-live-status"} role="status">
             {!coupleId
@@ -482,7 +475,9 @@ export function CouplePlans({ userId }: { userId: string }) {
         </button>
       </div>
 
-      <section className="plans-calendar" aria-label="Calendário">
+      <div className="morados-plans-workspace">
+        <div className="morados-plans-calendar-column">
+          <section className="plans-calendar" aria-label="Calendário">
         <div className="plans-calendar-toolbar">
           <h2 aria-live="polite">{monthLabel}</h2>
           <div className="plans-calendar-navigation">
@@ -594,7 +589,8 @@ export function CouplePlans({ userId }: { userId: string }) {
         </div>
       )}
 
-      <section className="plans-selected-day" aria-live="polite">
+        </div>
+        <section className="plans-selected-day" aria-live="polite">
         <div className="plans-selected-day-heading">
           <div>
             <p className="date-kicker">Dia selecionado</p>
@@ -693,7 +689,8 @@ export function CouplePlans({ userId }: { userId: string }) {
             ))}
           </div>
         )}
-      </section>
+        </section>
+      </div>
 
       {eventLoadStatus === "ready" && (
         <form className="plans-event-composer" onSubmit={handleSaveEvent}>
