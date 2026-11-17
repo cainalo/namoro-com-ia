@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { createProfileImageUrl, createUserProfileMediaUrl, removeProfileImage, removeUserProfileMedia, uploadUserProfileMedia } from "@/lib/profile-media";
 import { AppGeneralSettings } from "@/components/AppGeneralSettings";
 import "./ProfileExtras.css";
+import "@/styles/morados-profile.css";
 
 type ProfileRecord = {
   id: string;
@@ -365,40 +366,57 @@ export function CoupleProfile({ userId }: { userId: string }) {
     }
   }
 
-  return <section className="profile-page" data-tour-target="tour-profile" aria-busy={loading}>
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+  return <section className="profile-page morados-profile" data-tour-target="tour-profile" aria-busy={loading}>
+    <div className="morados-profile-toolbar">
       <AppGeneralSettings />
-      <button type="button" className="profile-upload-button" onClick={() => window.dispatchEvent(new Event("morados:show-tour"))}><RotateCcw className="h-4 w-4" /> Ver tutorial novamente</button>
+      <button type="button" className="profile-upload-button morados-profile-tour" onClick={() => window.dispatchEvent(new Event("morados:show-tour"))}>
+        <RotateCcw className="h-4 w-4" aria-hidden="true" /> Ver tutorial novamente
+      </button>
     </div>
     {loading ? (
-      <div className="flex min-h-48 items-center justify-center gap-3 text-sm text-muted-foreground"><LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" /> Carregando perfil…</div>
+      <div className="morados-profile-loading" role="status">
+        <LoaderCircle className="h-5 w-5 animate-spin" aria-hidden="true" />
+        <span>Carregando perfil…</span>
+      </div>
     ) : (
       <>
-        <div className="profile-cover">
+        <div className="profile-cover morados-profile-cover">
           {bannerUrl && <img src={bannerUrl} alt="" />}
-          <label className="profile-upload-button profile-edit-cover"><ImagePlus className="h-4 w-4" aria-hidden="true" /> {bannerUrl ? "Alterar banner" : "Adicionar banner"}
+          <label className="profile-upload-button profile-edit-cover morados-profile-banner-action">
+            <ImagePlus className="h-4 w-4" aria-hidden="true" />
+            {bannerUrl ? "Alterar banner" : "Adicionar banner"}
             <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading !== null} onChange={(event) => void uploadProfileImage("banner", event)} />
           </label>
+          {!bannerUrl && <span className="morados-profile-cover-caption" aria-hidden="true">Um lugar para guardar o que faz parte de você.</span>}
         </div>
-        <div className="profile-main-card">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div className="flex min-w-0 items-end gap-3">
-              <div className="profile-avatar-large -mt-12 shrink-0">
-                {avatarUrl ? <img src={avatarUrl} alt="Foto de perfil" /> : <span className="profile-avatar-placeholder"><UserRound className="h-9 w-9" aria-hidden="true" /></span>}
+
+        <div className="profile-main-card morados-profile-sheet">
+          <header className="morados-profile-identity">
+            <div className="morados-profile-person">
+              <div className="profile-avatar-large morados-profile-avatar">
+                {avatarUrl
+                  ? <img src={avatarUrl} alt="Foto de perfil" />
+                  : <span className="profile-avatar-placeholder"><UserRound className="h-9 w-9" aria-hidden="true" /></span>}
               </div>
-              <div className="min-w-0 pb-1">
-                <h1 className="truncate font-display text-xl font-bold">{name.trim() || "Seu perfil"}</h1>
+              <div className="morados-profile-name-block">
+                <span className="morados-profile-kicker">Retrato pessoal</span>
+                <h1>{name.trim() || "Seu perfil"}</h1>
                 <p className="profile-note">Seu espaço pessoal no Morados</p>
               </div>
             </div>
-            <label className="profile-upload-button"><Camera className="h-4 w-4" aria-hidden="true" /> {avatarUrl ? "Alterar foto" : "Adicionar foto"}
+            <label className="profile-upload-button morados-profile-avatar-action">
+              <Camera className="h-4 w-4" aria-hidden="true" />
+              {avatarUrl ? "Alterar foto" : "Adicionar foto"}
               <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" disabled={uploading !== null} onChange={(event) => void uploadProfileImage("avatar", event)} />
             </label>
-          </div>
+          </header>
 
-          <div className="profile-completion-card" aria-label={`Perfil preenchido em ${profileCompletion}%`}>
+          <section className="profile-completion-card morados-profile-progress" aria-label={`Perfil preenchido em ${profileCompletion}%`}>
             <div className="profile-completion-copy">
-              <div><span className="profile-section-kicker">Identidade pessoal</span><strong>Seu perfil</strong></div>
+              <div>
+                <span className="profile-section-kicker">Como está seu retrato</span>
+                <strong>Perfil preenchido</strong>
+              </div>
               <span className="profile-completion-value">{profileCompletion}%</span>
             </div>
             <div className="profile-completion-track" aria-hidden="true"><span style={{ width: `${profileCompletion}%` }} /></div>
@@ -409,51 +427,68 @@ export function CoupleProfile({ userId }: { userId: string }) {
                 </span>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div className="profile-editor-grid">
-            {Capacitor.isNativePlatform() ? (
-              <>
-                <NativeProfileField label="Nome exibido" value={name} placeholder="Como a outra pessoa verá seu nome" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("name")} />
-                <NativeProfileField label="Sobre mim" value={bio} placeholder="Conte um pouco sobre você…" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("bio")} />
-                <NativeProfileField label="Interesses" value={interests} placeholder="Música, cinema, viagens, leitura…" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("interests")} />
-                <NativeProfileField label="Hobbies" value={hobbies} placeholder="O que você gosta de fazer no tempo livre?" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("hobbies")} />
-                <div className="profile-favorites-grid">
-                  <NativeProfileField label="Comida favorita" value={favoriteFood} placeholder="Um prato ou sabor" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFood")} />
-                  <NativeProfileField label="Música ou artista favorito" value={favoriteMusic} placeholder="Uma música ou artista" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteMusic")} />
-                  <NativeProfileField label="Filme ou série favorito" value={favoriteFilm} placeholder="Um filme ou série" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFilm")} />
-                  <NativeProfileField label="Uma frase sua" value={profileQuote} placeholder="Uma frase que combina com você" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("profileQuote")} />
-                </div>
-              </>
-            ) : (
-              <>
-                <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
-                <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={4} placeholder="Conte um pouco sobre você…" /></label>
-                <label>Interesses<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
-                <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={3} placeholder="O que você gosta de fazer no tempo livre?" /></label>
-                <div className="profile-favorites-grid">
-                  <label><Utensils /> Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Um prato ou sabor" /></label>
-                  <label><Music2 /> Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
-                  <label><Film /> Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
-                  <label><Heart /> Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
-                </div>
-              </>
+          <section className="morados-profile-editor" aria-labelledby="morados-profile-editor-title">
+            <header className="morados-profile-editor-heading">
+              <span className="morados-profile-kicker">Informações pessoais</span>
+              <h2 id="morados-profile-editor-title">Detalhes sobre você</h2>
+              <p>Preencha apenas o que quiser compartilhar no seu perfil.</p>
+            </header>
+
+            <div className="profile-editor-grid morados-profile-fields">
+              {Capacitor.isNativePlatform() ? (
+                <>
+                  <NativeProfileField label="Nome exibido" value={name} placeholder="Como a outra pessoa verá seu nome" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("name")} />
+                  <NativeProfileField label="Sobre mim" value={bio} placeholder="Conte um pouco sobre você…" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("bio")} />
+                  <NativeProfileField label="Interesses" value={interests} placeholder="Música, cinema, viagens, leitura…" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("interests")} />
+                  <NativeProfileField label="Hobbies" value={hobbies} placeholder="O que você gosta de fazer no tempo livre?" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("hobbies")} />
+                  <div className="profile-favorites-grid morados-profile-favorites">
+                    <NativeProfileField label="Comida favorita" value={favoriteFood} placeholder="Um prato ou sabor" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFood")} />
+                    <NativeProfileField label="Música ou artista favorito" value={favoriteMusic} placeholder="Uma música ou artista" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteMusic")} />
+                    <NativeProfileField label="Filme ou série favorito" value={favoriteFilm} placeholder="Um filme ou série" disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("favoriteFilm")} />
+                    <NativeProfileField label="Uma frase sua" value={profileQuote} placeholder="Uma frase que combina com você" multiline disabled={saving || uploading !== null || editingField !== null} onEdit={() => void editNativeField("profileQuote")} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <label>Nome exibido<input value={name} onChange={(event) => setName(event.target.value)} maxLength={60} placeholder="Como a outra pessoa verá seu nome" /></label>
+                  <label>Sobre mim<textarea value={bio} onChange={(event) => setBio(event.target.value)} maxLength={500} rows={4} placeholder="Conte um pouco sobre você…" /></label>
+                  <label>Interesses<input value={interests} onChange={(event) => setInterests(event.target.value)} maxLength={240} placeholder="Música, cinema, viagens, leitura…" /></label>
+                  <label>Hobbies<textarea value={hobbies} onChange={(event) => setHobbies(event.target.value)} maxLength={300} rows={3} placeholder="O que você gosta de fazer no tempo livre?" /></label>
+                  <div className="profile-favorites-grid morados-profile-favorites">
+                    <label><Utensils aria-hidden="true" /> Comida favorita<input value={favoriteFood} onChange={(event) => setFavoriteFood(event.target.value)} maxLength={80} placeholder="Um prato ou sabor" /></label>
+                    <label><Music2 aria-hidden="true" /> Música ou artista favorito<input value={favoriteMusic} onChange={(event) => setFavoriteMusic(event.target.value)} maxLength={100} placeholder="Uma música ou artista" /></label>
+                    <label><Film aria-hidden="true" /> Filme ou série favorito<input value={favoriteFilm} onChange={(event) => setFavoriteFilm(event.target.value)} maxLength={100} placeholder="Um filme ou série" /></label>
+                    <label><Heart aria-hidden="true" /> Uma frase sua<input value={profileQuote} onChange={(event) => setProfileQuote(event.target.value)} maxLength={180} placeholder="Uma frase que combina com você" /></label>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {(uploading || error || mediaError || message) && (
+              <div className="morados-profile-feedback" aria-live="polite">
+                {uploading && <p className="profile-note">Enviando {uploading === "avatar" ? "foto de perfil" : "banner"}…</p>}
+                {error && <p className="morados-profile-error" role="alert">{error}</p>}
+                {mediaError && <p className="profile-note" role="status">{mediaError}</p>}
+                {message && <p className="morados-profile-success" role="status">{message}</p>}
+              </div>
             )}
-            {uploading && <p className="profile-note">Enviando {uploading === "avatar" ? "foto de perfil" : "banner"}…</p>}
-            {error && <p className="text-sm text-destructive" role="alert">{error}</p>}
-            {mediaError && <p className="profile-note" role="status">{mediaError}</p>}
-            {message && <p className="text-sm text-primary" role="status">{message}</p>}
-            <div className="flex justify-end"><button type="button" className="profile-save-button" disabled={saving || loading || uploading !== null || editingField !== null} onClick={() => void saveProfile()}>
-              {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />} Salvar perfil
-            </button></div>
-          </div>
+
+            <footer className="morados-profile-save-row">
+              <button type="button" className="profile-save-button" disabled={saving || loading || uploading !== null || editingField !== null} onClick={() => void saveProfile()}>
+                {saving ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Save className="h-4 w-4" aria-hidden="true" />}
+                {saving ? "Salvando…" : "Salvar perfil"}
+              </button>
+            </footer>
+          </section>
         </div>
       </>
     )}
     {error && !profile && !loading && (
-      <div className="profile-note mt-4" role="alert">
+      <div className="morados-profile-load-error" role="alert">
         <p>{error}</p>
-        <button type="button" className="inline-action mt-3" onClick={() => void load()}>Tentar carregar novamente</button>
+        <button type="button" className="inline-action" onClick={() => void load()}>Tentar carregar novamente</button>
       </div>
     )}
   </section>;
