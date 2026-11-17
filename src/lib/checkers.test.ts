@@ -25,14 +25,40 @@ function place(
   board[toCheckersIndex(row, column)] = { player, king };
 }
 
-function stateWith(board: CheckersBoard): CheckersGameState {
+function stateWith(
+  board: CheckersBoard,
+  overrides: Partial<CheckersGameState> = {},
+): CheckersGameState {
+  const key = "white:" + board.map((piece) => {
+    if (!piece) return ".";
+    return (piece.player === "white" ? "W" : "B") + (piece.king ? "D" : "P");
+  }).join("");
+
   return {
     board,
     turn: "white",
     status: "active",
     winner: null,
     turnNumber: 1,
+    positionCounts: { [key]: 1 },
+    quietKingMoves: 0,
+    specialEndgameMoves: null,
+    ...overrides,
   };
+}
+
+function playBetween(
+  state: CheckersGameState,
+  from: [number, number],
+  to: [number, number],
+): CheckersGameState {
+  const fromIndex = toCheckersIndex(from[0], from[1]);
+  const toIndex = toCheckersIndex(to[0], to[1]);
+  const move = getLegalCheckersMoves(state.board, state.turn).find(
+    (candidate) => candidate.from === fromIndex && candidate.path[0] === toIndex,
+  );
+  if (!move) throw new Error("test_move_not_found");
+  return playCheckersMove(state, move);
 }
 
 describe("Damas brasileiras — posição inicial", () => {
@@ -147,6 +173,78 @@ describe("Damas brasileiras — regras de movimento", () => {
     expect(next.status).toBe("finished");
     expect(next.winner).toBe("white");
     expect(next.turn).toBe("black");
+  });
+
+  it("declara empate quando a mesma posição retorna pela terceira vez com o mesmo lado a jogar", () => {
+    const board = emptyBoard();
+    place(board, 5, 0, "white", true);
+    place(board, 2, 7, "black", true);
+    let state = stateWith(board);
+
+    for (let cycle = 0; cycle < 2; cycle += 1) {
+      state = playBetween(state, [5, 0], [4, 1]);
+      state = playBetween(state, [2, 7], [3, 6]);
+      state = playBetween(state, [4, 1], [5, 0]);
+      state = playBetween(state, [3, 6], [2, 7]);
+    }
+
+    expect(state.status).toBe("finished");
+    expect(state.winner).toBeNull();
+    expect(state.drawReason).toBe("threefold-repetition");
+  });
+
+  it("declara empate após vinte lances por lado só com damas e sem captura", () => {
+    const board = emptyBoard();
+    place(board, 5, 0, "white", true);
+    place(board, 2, 7, "black", true);
+    const state = stateWith(board, { quietKingMoves: 39 });
+
+    const next = playBetween(state, [5, 0], [4, 1]);
+
+    expect(next.status).toBe("finished");
+    expect(next.winner).toBeNull();
+    expect(next.quietKingMoves).toBe(40);
+    expect(next.drawReason).toBe("twenty-king-moves");
+  });
+
+  it("zera a contagem de lances tranquilos quando uma pedra se move", () => {
+    const board = emptyBoard();
+    place(board, 5, 0, "white");
+    place(board, 2, 7, "black");
+    const state = stateWith(board, { quietKingMoves: 39 });
+
+    const next = playBetween(state, [5, 0], [4, 1]);
+
+    expect(next.status).toBe("active");
+    expect(next.quietKingMoves).toBe(0);
+  });
+
+  it("zera a contagem de lances tranquilos após uma captura", () => {
+    const board = emptyBoard();
+    place(board, 5, 0, "white", true);
+    place(board, 4, 1, "black");
+    place(board, 2, 7, "black");
+    const state = stateWith(board, { quietKingMoves: 39 });
+
+    const next = playBetween(state, [5, 0], [3, 2]);
+
+    expect(next.status).toBe("active");
+    expect(next.quietKingMoves).toBe(0);
+  });
+
+  it("aplica o limite de cinco lances por lado nos finais regulamentados", () => {
+    const board = emptyBoard();
+    place(board, 5, 0, "white", true);
+    place(board, 5, 2, "white", true);
+    place(board, 2, 7, "black", true);
+    const state = stateWith(board, { specialEndgameMoves: 9 });
+
+    const next = playBetween(state, [5, 0], [4, 1]);
+
+    expect(next.status).toBe("finished");
+    expect(next.winner).toBeNull();
+    expect(next.specialEndgameMoves).toBe(10);
+    expect(next.drawReason).toBe("limited-endgame");
   });
 
   it("rejeita uma jogada que não respeita as opções legais", () => {
