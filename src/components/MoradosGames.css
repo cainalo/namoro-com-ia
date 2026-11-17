@@ -1056,3 +1056,15 @@
 @media (prefers-reduced-motion: reduce) {
   .morados-connect-four-result-actions button { transition: none; }
 }
+
+
+/* O resultado online compartilha a tela final do Lig 4; ações secundárias podem ter rótulos longos. */
+.morados-connect-four-result-actions button {
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.morados-connect-four-result-actions button:disabled {
+  cursor: wait;
+  opacity: .62;
+}
