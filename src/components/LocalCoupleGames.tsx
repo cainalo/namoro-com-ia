@@ -122,12 +122,45 @@ export function LocalConnectFourGame({ solo = false }: { solo?: boolean }) {
         ))}
       </div>
       {(winner || draw) && (
-        <div className="quiz-finish local-game-end-panel" role="status" aria-live="polite">
-          <span><Trophy aria-hidden="true"/></span>
-          <p className="date-kicker">FIM DA PARTIDA</p>
-          <h3>{draw ? "Empate!" : solo ? (winner === 1 ? "Você venceu!" : "Morados venceram!") : `Pessoa ${winner} venceu!`}</h3>
-          <p>{moves} jogadas até o resultado. Uma nova rodada começa com o tabuleiro limpo.</p>
-          <button type="button" className="primary-action" onClick={restart}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
+        <div
+          className={"morados-connect-four-result " + (draw ? "is-draw" : winner === 1 ? "is-victory" : "is-defeat")}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="morados-connect-four-result-title"
+          data-outcome={draw ? "draw" : winner === 1 ? "victory" : "defeat"}
+        >
+          <div className="morados-connect-four-result-inner">
+            <span className="morados-connect-four-result-mark" aria-hidden="true"><Trophy /></span>
+            <span className="morados-connect-four-result-eyebrow">{draw ? "PARTIDA ENCERRADA" : winner === 1 ? "VITÓRIA" : "FIM DE JOGO"}</span>
+            <h2 id="morados-connect-four-result-title">
+              {draw ? "Empate!" : solo ? (winner === 1 ? "Você venceu!" : "Morados venceu!") : `Pessoa ${winner} venceu!`}
+            </h2>
+            <p className="morados-connect-four-result-message">
+              {draw
+                ? "As colunas se completaram sem uma sequência de quatro peças. Uma nova estratégia pode mudar o próximo resultado."
+                : solo
+                  ? winner === 1
+                    ? "Quatro peças alinhadas. Você encontrou o caminho até a vitória."
+                    : "Morados conseguiu completar a sequência desta vez. Tente outra estratégia na próxima rodada."
+                  : `Quatro peças em linha. A Pessoa ${winner} conquistou a partida.`}
+            </p>
+            <div className="morados-connect-four-result-stats" aria-label={`Partida encerrada em ${moves} jogadas`}>
+              <strong>{moves}</strong>
+              <span>jogadas</span>
+            </div>
+            <div className="morados-connect-four-result-actions">
+              <button type="button" className="morados-connect-four-replay" onClick={restart}>
+                <RotateCcw aria-hidden="true" /> Jogar novamente
+              </button>
+              <button
+                type="button"
+                className="morados-connect-four-exit"
+                onClick={() => window.dispatchEvent(new Event("morados:game-exit"))}
+              >
+                Voltar à biblioteca
+              </button>
+            </div>
+          </div>
         </div>
       )}
       <footer className="local-game-footer">
