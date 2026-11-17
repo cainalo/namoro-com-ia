@@ -1,5 +1,5 @@
 import { useRef, useState, type PointerEvent } from "react";
-import { House, Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
+import { Minus, Moon, Plus, RotateCcw, Sun, Sunset } from "lucide-react";
 import { HouseInterior } from "@/components/HouseInterior";
 import "@/styles/morados-house.css";
 
