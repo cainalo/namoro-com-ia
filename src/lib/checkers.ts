@@ -26,12 +26,24 @@ export type CheckersMove = {
   captures: number[];
 };
 
+export type CheckersDrawReason =
+  | "threefold-repetition"
+  | "twenty-king-moves"
+  | "limited-endgame";
+
 export type CheckersGameState = {
   board: CheckersBoard;
   turn: CheckersPlayer;
   status: "active" | "finished";
   winner: CheckersPlayer | null;
   turnNumber: number;
+  /** Repetições por posição + lado que tem o lance; serializável para partidas online. */
+  positionCounts?: Record<string, number>;
+  /** Meios-lances consecutivos apenas com damas, sem captura ou movimento de pedras. */
+  quietKingMoves?: number;
+  /** Meios-lances desde o início de um final com empate regulamentar em cinco lances por lado. */
+  specialEndgameMoves?: number | null;
+  drawReason?: CheckersDrawReason;
 };
 
 type Direction = readonly [row: number, column: number];
@@ -126,13 +138,93 @@ export function createInitialCheckersBoard(): CheckersBoard {
   return board;
 }
 
+function getPositionKey(board: CheckersBoard, turn: CheckersPlayer): string {
+  const pieces = board.map((piece) => {
+    if (!piece) return ".";
+    const side = piece.player === "white" ? "W" : "B";
+    return side + (piece.king ? "D" : "P");
+  }).join("");
+
+  return turn + ":" + pieces;
+}
+
+function countMaterial(board: CheckersBoard, player: CheckersPlayer) {
+  let kings = 0;
+  let men = 0;
+  const kingSquares: number[] = [];
+
+  board.forEach((piece, index) => {
+    if (!piece || piece.player !== player) return;
+    if (piece.king) {
+      kings += 1;
+      kingSquares.push(index);
+    } else {
+      men += 1;
+    }
+  });
+
+  return { kings, men, kingSquares };
+}
+
+function isOnLargeDarkDiagonal(index: number): boolean {
+  const { row, column } = getCheckersCoordinates(index);
+  // No tabuleiro do app, a grande diagonal escura vai de H8 a A1.
+  return row + column === CHECKERS_BOARD_SIZE - 1;
+}
+
+/** Finais que as regras oficiais brasileiras declaram empatados após até cinco lances por lado. */
+function isFiveMoveDrawEndgame(board: CheckersBoard): boolean {
+  const white = countMaterial(board, "white");
+  const black = countMaterial(board, "black");
+
+  const has = (side: typeof white, kings: number, men: number) =>
+    side.kings === kings && side.men === men;
+
+  const ordinaryDrawPairs: Array<[[number, number], [number, number]]> = [
+    [[2, 0], [2, 0]],
+    [[2, 0], [1, 0]],
+    [[2, 0], [1, 1]],
+    [[1, 0], [1, 0]],
+    [[1, 0], [1, 1]],
+  ];
+
+  for (const [first, second] of ordinaryDrawPairs) {
+    if (
+      (has(white, first[0], first[1]) && has(black, second[0], second[1])) ||
+      (has(black, first[0], first[1]) && has(white, second[0], second[1]))
+    ) {
+      return true;
+    }
+  }
+
+  const advancedMaterial = [[3, 0], [2, 1], [1, 2]] as const;
+  const loneKing = white.kings === 1 && white.men === 0
+    ? white
+    : black.kings === 1 && black.men === 0
+      ? black
+      : null;
+  if (!loneKing || loneKing.kingSquares.length !== 1) return false;
+
+  const onLargeDiagonal = isOnLargeDarkDiagonal(loneKing.kingSquares[0]);
+  if (!onLargeDiagonal) return false;
+
+  const opponent = loneKing === white ? black : white;
+  return advancedMaterial.some(
+    ([kings, men]) => opponent.kings === kings && opponent.men === men,
+  );
+}
+
 export function createInitialCheckersGame(): CheckersGameState {
+  const board = createInitialCheckersBoard();
   return {
-    board: createInitialCheckersBoard(),
+    board,
     turn: "white",
     status: "active",
     winner: null,
     turnNumber: 1,
+    positionCounts: { [getPositionKey(board, "white")]: 1 },
+    quietKingMoves: 0,
+    specialEndgameMoves: null,
   };
 }
 
@@ -390,13 +482,52 @@ export function playCheckersMove(
   );
   const nextPlayerCanMove =
     nextPlayerHasPieces && getLegalCheckersMoves(board, nextTurn).length > 0;
-  const finished = !nextPlayerCanMove;
+
+  const currentPositionKey = getPositionKey(state.board, state.turn);
+  const nextPositionKey = getPositionKey(board, nextTurn);
+  const positionCounts = {
+    [currentPositionKey]: 1,
+    ...(state.positionCounts ?? {}),
+  };
+  positionCounts[nextPositionKey] = (positionCounts[nextPositionKey] ?? 0) + 1;
+
+  const quietKingMoves = piece.king && selectedMove.captures.length === 0
+    ? (state.quietKingMoves ?? 0) + 1
+    : 0;
+
+  let specialEndgameMoves = state.specialEndgameMoves ?? null;
+  if (specialEndgameMoves === null) {
+    if (isFiveMoveDrawEndgame(state.board)) {
+      specialEndgameMoves = 0;
+    } else if (isFiveMoveDrawEndgame(board)) {
+      specialEndgameMoves = 0;
+    }
+  } else {
+    // Os regulamentos determinam que captura ou movimento de pedra não zera esta contagem.
+    specialEndgameMoves += 1;
+  }
+
+  const blocked = !nextPlayerCanMove;
+  const drawReason = blocked
+    ? undefined
+    : positionCounts[nextPositionKey] >= 3
+      ? "threefold-repetition"
+      : quietKingMoves >= 40
+        ? "twenty-king-moves"
+        : specialEndgameMoves !== null && specialEndgameMoves >= 10
+          ? "limited-endgame"
+          : undefined;
+  const finished = blocked || drawReason !== undefined;
 
   return {
     board,
     turn: nextTurn,
     status: finished ? "finished" : "active",
-    winner: finished ? state.turn : null,
+    winner: blocked ? state.turn : null,
     turnNumber: state.turnNumber + 1,
+    positionCounts,
+    quietKingMoves,
+    specialEndgameMoves,
+    ...(drawReason ? { drawReason } : {}),
   };
 }
