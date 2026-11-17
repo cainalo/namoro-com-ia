@@ -304,7 +304,7 @@ function renderOnlineGame(gameId: GameId, userId: string) {
     gameId === "truco" ? <OnlineTrucoGame /> :
     renderLocalGame(gameId);
   return (
-    <OnlineGameHost key={gameId} gameKey={gameId} userId={userId} mode={cooperativeGames.includes(gameId) ? "cooperative" : "competitive"}>
+    <OnlineGameHost key={gameId} gameKey={gameId} userId={userId} mode={cooperativeGames.includes(gameId) ? "cooperative" : "competitive"} seatLabels={gameId === "checkers" ? (["Claras", "Verdes"] as [string, string]) : undefined}>
       {game}
     </OnlineGameHost>
   );
