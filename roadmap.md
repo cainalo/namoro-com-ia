@@ -15,7 +15,7 @@ Atualizado em 16 de novembro de 2026. A auditoria e a direção inicial da trans
 - [x] Implementar o piloto visual de Planos como agenda responsiva, mantendo calendário, filtros, privacidade e operações existentes; validação visual em navegador e Android pendente.
 - [x] Preparar acesso antecipado do criador a Feed e Conversa em casal pendente; a aplicação da migration no Supabase ainda precisa ser confirmada.
 - [ ] Transformar os demais módulos gradualmente, preservando suas funções e dando a cada um uma linguagem própria.\n- [x] Implementar o piloto visual de Jogos: biblioteca, briefings individuais, escolha de modalidade e pausa; revisão de cada experiência e suas telas de resultado continua pendente.
-- [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.
+- [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.\n- [x] Iniciar a revisão individual pelo Lig 4 local: resultado em tela inteira, identificação de vitória/derrota, reinício e retorno à biblioteca; empate e resultado online ainda pendentes.
 
 ## Confiabilidade e funcionalidades
 
