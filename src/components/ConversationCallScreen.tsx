@@ -257,8 +257,10 @@ export function ConversationCallScreen({
     if (!remoteStream) return;
     if (remoteHasVideo && remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteStream;
-    } else if (remoteAudioRef.current) {
-      remoteAudioRef.current.srcObject = remoteStream;
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+    } else {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream;
     }
   }, [remoteHasVideo, remoteStream]);
 
