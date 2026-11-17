@@ -49,6 +49,25 @@ bun run cap:sync
 
 A configuração de ambiente deve apontar para o projeto Supabase próprio. Não colocar chaves privadas ou segredos no código do cliente ou no repositório.
 
+## Chamadas WebRTC e TURN
+
+A negociação de chamadas usa Supabase Realtime privado. O áudio e o vídeo são enviados diretamente por WebRTC; o Supabase transporta apenas a sinalização. A função autenticada `get-call-ice-servers` verifica os dois integrantes atuais e entrega credenciais TURN temporárias quando o servidor está configurado.
+
+Para habilitar retransmissão em redes que não aceitam conexão direta, configure no projeto Supabase um servidor TURN compatível com a autenticação REST do Coturn (`--use-auth-secret`). Cadastre os seguintes segredos em **Supabase Edge Function Secrets**; não os coloque no código do aplicativo nem em variáveis `VITE_*`:
+
+- `TURN_URLS`: lista separada por vírgulas de endereços `turn:` ou `turns:` do seu serviço.
+- `TURN_SHARED_SECRET`: segredo compartilhado REST fornecido/configurado no servidor Coturn.
+
+Exemplo de formato (substitua pelo endereço e segredo do seu provedor):
+
+```sh
+supabase secrets set --project-ref jffryzeelzxjqbeagecb \
+  TURN_URLS="turns:turn.exemplo.com:5349?transport=tcp,turn:turn.exemplo.com:3478?transport=udp" \
+  TURN_SHARED_SECRET="SEU_SEGREDO_COTURN"
+```
+
+A função gera usuário e senha temporários HMAC-SHA1 com validade de 12 horas. Sem esses segredos, a chamada continua usando STUN público; isso pode funcionar em conexões diretas, mas não garante conectividade em todas as redes. O projeto não cria nem contrata um servidor TURN automaticamente.
+
 ## Android
 
 O APK é gerado pelo workflow [Build Morados Capacitor Android APK](.github/workflows/build-android.yml), acionado por alterações relevantes na branch principal. O workflow constrói os assets web locais, sincroniza o Capacitor, compila e verifica a assinatura do APK antes de publicar a release.
