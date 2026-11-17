@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { CalendarDays, CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, RefreshCw, Users } from "lucide-react";
+import { CalendarPlus, ChevronLeft, ChevronRight, LockKeyhole, RefreshCw, Users } from "lucide-react";
 import { MoradosPlansHeader } from "./MoradosPlansHeader";
 import { supabase } from "@/integrations/supabase/client";
 import {
