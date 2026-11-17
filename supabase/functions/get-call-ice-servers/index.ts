@@ -7,7 +7,9 @@ const corsHeaders = {
   "Vary": "Origin",
 };
 
-const STUN_SERVERS: RTCIceServer[] = [
+type IceServerConfig = { urls: string | string[]; username?: string; credential?: string };
+
+const STUN_SERVERS: IceServerConfig[] = [
   { urls: "stun:stun.l.google.com:19302" },
   { urls: "stun:stun1.l.google.com:19302" },
 ];
@@ -114,7 +116,7 @@ Deno.serve(async (request: Request) => {
     const username = expiresAt + ":" + authData.user.id;
     const credential = await createTurnCredential(sharedSecret, username);
 
-    const turnServer: RTCIceServer = {
+    const turnServer: IceServerConfig = {
       urls,
       username,
       credential,
