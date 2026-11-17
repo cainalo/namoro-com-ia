@@ -351,14 +351,17 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
   }
 
   return (
-    <section className="games-hub">
-      <div className="games-hub-intro">
-        <div>
-          <p className="date-kicker">Escolham uma experiência</p>
-          <p>Partidas rápidas, desafios em conjunto e histórias para investigar.</p>
+    <section className="games-hub morados-games-library">
+      <header className="games-hub-intro morados-games-intro">
+        <div className="morados-games-heading">
+          <span className="morados-games-kicker">O espaço de vocês</span>
+          <h1>Jogos</h1>
+          <p>Escolham uma partida, descubram algo novo ou entrem juntos em outra história.</p>
         </div>
-        <span className="games-hub-mark"><Gamepad2 aria-hidden="true" /></span>
-      </div>
+        <div className="morados-games-count" aria-label={catalogue.length+" experiências disponíveis"}>
+          <strong>{catalogue.length}</strong><span>experiências</span><small>para jogar do seu jeito</small>
+        </div>
+      </header>
 
       <nav className="games-hub-filters" aria-label="Filtrar jogos">
         {([
@@ -373,12 +376,13 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
         ))}
       </nav>
 
+      <div className="games-hub-result-count" aria-live="polite"><strong>{visibleGames.length}</strong> {visibleGames.length===1?"experiência disponível":"experiências disponíveis"}</div>
       <div className="games-hub-grid">
         {visibleGames.map((game) => {
           const Icon = game.icon;
           return (
-            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone} onClick={() => setActiveGame(game.id)}>
-              <div className="games-hub-card-art">
+            <button key={game.id} type="button" className={"games-hub-card tone-" + game.tone} data-game-id={game.id} onClick={() => setActiveGame(game.id)} aria-label={"Abrir "+game.name}>
+              <div className="games-hub-card-art" data-game-id={game.id}>
                 <Icon aria-hidden="true" />
                 {game.new && <span><Sparkles aria-hidden="true" /> Novo</span>}
               </div>
@@ -388,7 +392,7 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
                 <p>{game.description}</p>
                 <div className="games-hub-card-footer">
                   <small><Users aria-hidden="true" /> {game.players}</small>
-                  <strong>Jogar <ArrowLeft aria-hidden="true" /></strong>
+                  <strong>Abrir jogo <ArrowLeft aria-hidden="true" /></strong>
                 </div>
               </div>
             </button>
@@ -396,28 +400,6 @@ export function CoupleGames({ userId, onlineLaunch, onOnlineLaunchConsumed }: { 
         })}
       </div>
 
-      <section className="games-hub-next games-hub-next-classics">
-        <div className="games-hub-next-title">
-          <span><Crown aria-hidden="true" /></span>
-          <div><h2>Clássicos em desenvolvimento</h2><p>Os próximos jogos de mesa que já estavam previstos.</p></div>
-        </div>
-        <div className="games-hub-next-grid">
-          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos, exploração e decisões com consequências</small></div><span>Próximo</span></article>
-          <article><Sparkles aria-hidden="true"/><div><strong>Histórias interativas</strong><small>Mistérios com escolhas, personagens e caminhos diferentes</small></div><span>Próximo</span></article>
-        </div>
-      </section>
-
-      <section className="games-hub-next">
-        <div className="games-hub-next-title">
-          <span><Sparkles aria-hidden="true" /></span>
-          <div><h2>Novos gêneros</h2><p>Jogos que vão além dos tabuleiros.</p></div>
-        </div>
-        <div className="games-hub-next-grid">
-          <article><Shield aria-hidden="true"/><div><strong>Casos policiais</strong><small>Novos dossiês, suspeitos e mistérios além do Caso 001</small></div><span>Em produção</span></article>
-          <article><AudioLines aria-hidden="true"/><div><strong>Novas salas de fuga</strong><small>Ambientes, enigmas e mecanismos em sequência</small></div><span>Próximo</span></article>
-          <article><Brain aria-hidden="true"/><div><strong>Estratégia e sobrevivência</strong><small>Gestão de recursos e decisões com consequências</small></div><span>Planejado</span></article>
-        </div>
-      </section>
     </section>
   );
 }
