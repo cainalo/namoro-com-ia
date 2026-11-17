@@ -313,7 +313,7 @@ export function ConversationCallScreen({
       sharingStreamRef.current = null;
       setSharingScreen(false);
       if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
-      if (shareTrack && cameraTrack) setCameraEnabled(cameraTrack.enabled);
+      setCameraEnabled(Boolean(cameraTrack?.enabled));
       return;
     }
 
