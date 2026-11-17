@@ -1,22 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
-  Check,
-  AudioLines,
   Brain,
   CalendarHeart,
   Crown,
-  DoorOpen,
   Gamepad2,
-  Grid2X2,
-  Grid3X3,
-  Heart,
-  Mountain,
   Play,
-  Scale,
   Search,
-  Ship,
-  Spade,
   LockKeyhole,
   LoaderCircle,
   MoreVertical,
@@ -24,9 +14,7 @@ import {
   Sparkles,
   Swords,
   Target,
-  TrainFront,
   Users,
-  Waves,
 } from "lucide-react";
 import { CheckersGame } from "@/components/CheckersGame";
 import { ConnectFourGame } from "@/components/ConnectFourGame";
