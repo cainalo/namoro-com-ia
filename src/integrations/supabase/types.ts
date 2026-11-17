@@ -570,34 +570,69 @@ export type Database = {
       }
       profiles: {
         Row: {
+          app_onboarding_completed_at: string | null
+          app_tour_completed_at: string | null
           avatar_path: string | null
           banner_path: string | null
           bio: string | null
           created_at: string
           display_name: string | null
+          favorite_film: string | null
+          favorite_food: string | null
+          favorite_music: string | null
+          favorite_place: string | null
+          favorite_song: string | null
+          headline: string | null
+          hobbies: string | null
           id: string
+          interests: string[]
+          personal_phrase: string | null
+          profile_quote: string | null
           updated_at: string
         }
         Insert: {
+          app_onboarding_completed_at?: string | null
+          app_tour_completed_at?: string | null
           avatar_path?: string | null
           banner_path?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_film?: string | null
+          favorite_food?: string | null
+          favorite_music?: string | null
+          favorite_place?: string | null
+          favorite_song?: string | null
+          headline?: string | null
+          hobbies?: string | null
           id: string
+          interests?: string[]
+          personal_phrase?: string | null
+          profile_quote?: string | null
           updated_at?: string
         }
         Update: {
+          app_onboarding_completed_at?: string | null
+          app_tour_completed_at?: string | null
           avatar_path?: string | null
           banner_path?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_film?: string | null
+          favorite_food?: string | null
+          favorite_music?: string | null
+          favorite_place?: string | null
+          favorite_song?: string | null
+          headline?: string | null
+          hobbies?: string | null
           id?: string
+          interests?: string[]
+          personal_phrase?: string | null
+          profile_quote?: string | null
           updated_at?: string
         }
         Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
