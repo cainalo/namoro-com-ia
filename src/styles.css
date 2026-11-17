@@ -30834,3 +30834,12 @@ body {
 
 .call-screen-remote-video { display: none; }
 .call-screen-stage.has-remote-video .call-screen-remote-video { display: block; }
+
+.call-screen-duration {
+  min-width: 42px;
+  color: color-mix(in srgb, var(--color-background) 88%, transparent);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: center;
+}

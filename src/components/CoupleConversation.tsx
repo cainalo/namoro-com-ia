@@ -1505,6 +1505,7 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   if (activeCall && state.status === "active" && callChannel) {
     return (
       <ConversationCallScreen
+        coupleId={state.coupleId}
         kind={activeCall.kind}
         direction={activeCall.direction}
         callId={activeCall.callId}

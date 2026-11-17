@@ -52,5 +52,8 @@ jobs:
       - name: Deploy account deletion Edge Function
         run: supabase functions deploy delete-couple --remote="$SUPABASE_PROJECT_REF" --use-api --yes
 
-      - name: Confirm deployed function
+      - name: Deploy authenticated call ICE configuration function
+        run: supabase functions deploy get-call-ice-servers --remote="$SUPABASE_PROJECT_REF" --use-api --yes
+
+      - name: Confirm deployed functions
         run: supabase functions list --project-ref "$SUPABASE_PROJECT_REF"

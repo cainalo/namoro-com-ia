@@ -13,6 +13,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
   sendCoupleCallSignal,
   waitForIceGatheringComplete,
+  fetchCoupleCallIceConfiguration,
   type CoupleCallKind,
 } from "@/lib/couple-call-signaling";
 
@@ -23,6 +24,7 @@ type Props = {
   kind: CallKind;
   direction: CallDirection;
   callId: string;
+  coupleId: string;
   userId: string;
   peerUserId: string;
   remoteOffer?: RTCSessionDescriptionInit;
@@ -33,15 +35,21 @@ type Props = {
   onClose: () => void;
 };
 
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
-];
+
+function formatCallDuration(totalSeconds: number): string {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return hours > 0
+    ? String(hours).padStart(2, "0") + ":" + String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0")
+    : String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+}
 
 export function ConversationCallScreen({
   kind,
   direction,
   callId,
+  coupleId,
   userId,
   peerUserId,
   remoteOffer,
@@ -64,6 +72,8 @@ export function ConversationCallScreen({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [callStatus, setCallStatus] = useState(direction === "outgoing" ? "Preparando chamada…" : "Conectando à chamada…");
   const [notice, setNotice] = useState<string | null>(null);
+  const [connectedAt, setConnectedAt] = useState<number | null>(null);
+  const [callElapsedSeconds, setCallElapsedSeconds] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -82,6 +92,12 @@ export function ConversationCallScreen({
       try {
         if (!navigator.mediaDevices?.getUserMedia || typeof RTCPeerConnection === "undefined") {
           throw new Error("Este ambiente não oferece suporte a chamadas WebRTC.");
+        }
+
+        const iceConfiguration = await fetchCoupleCallIceConfiguration(coupleId);
+        if (!alive) return;
+        if (!iceConfiguration.turnConfigured) {
+          setNotice("TURN ainda não está configurado. Algumas redes podem não conseguir completar a chamada.");
         }
 
         try {
@@ -109,29 +125,45 @@ export function ConversationCallScreen({
         setCameraEnabled(Boolean(localStream.getVideoTracks()[0]));
         if (localVideoRef.current) localVideoRef.current.srcObject = localStream;
 
-        peer = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+        peer = new RTCPeerConnection({ iceServers: iceConfiguration.iceServers });
         peerRef.current = peer;
-        localStream.getTracks().forEach((track) => peer?.addTrack(track, localStream!));
+        const audioTrack = localStream.getAudioTracks()[0];
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (audioTrack) peer.addTrack(audioTrack, localStream);
+        if (videoTrack) peer.addTrack(videoTrack, localStream);
+        else peer.addTransceiver("video", { direction: "sendrecv" });
 
         peer.ontrack = (event) => {
           if (!alive) return;
           const stream = event.streams[0] ?? new MediaStream([event.track]);
           setRemoteStream(stream);
-          setRemoteHasVideo(stream.getVideoTracks().some((track) => track.readyState === "live"));
+          const updateRemoteVideoState = () => {
+            if (!alive) return;
+            setRemoteHasVideo(stream.getVideoTracks().some(
+              (track) => track.readyState === "live" && !track.muted,
+            ));
+          };
+          updateRemoteVideoState();
+          event.track.addEventListener("unmute", updateRemoteVideoState);
+          event.track.addEventListener("mute", updateRemoteVideoState);
+          event.track.addEventListener("ended", updateRemoteVideoState);
         };
         peer.onconnectionstatechange = () => {
           if (!alive || !peer) return;
           if (peer.connectionState === "connected") {
             setCallStatus("Conectada");
-            setNotice(null);
+            setConnectedAt((current) => current ?? Date.now());
+            setNotice(iceConfiguration.turnConfigured ? null : "Conexão estabelecida sem TURN. Algumas redes podem precisar de um servidor de retransmissão.");
           } else if (peer.connectionState === "connecting") {
             setCallStatus("Estabelecendo conexão segura…");
           } else if (peer.connectionState === "disconnected") {
             setCallStatus("Conexão instável · tentando reconectar");
           } else if (peer.connectionState === "failed") {
+            setConnectedAt(null);
             setCallStatus("Falha na conexão");
-            setNotice("Esta rede pode exigir um servidor TURN. A versão atual usa servidores STUN públicos.");
+            setNotice("Não foi possível conectar os aparelhos. Verifique a rede ou tente novamente com TURN configurado.");
           } else if (peer.connectionState === "closed") {
+            setConnectedAt(null);
             setCallStatus("Chamada encerrada");
           }
         };
@@ -200,7 +232,7 @@ export function ConversationCallScreen({
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
       if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
     };
-  }, [callId, channel, direction, kind, name, peerUserId, remoteOffer, userId]);
+  }, [callId, channel, coupleId, direction, kind, name, peerUserId, remoteOffer, userId]);
 
   useEffect(() => {
     if (direction !== "outgoing" || !remoteAnswer || !peerRef.current || peerRef.current.remoteDescription) return;
@@ -209,14 +241,28 @@ export function ConversationCallScreen({
       .catch(() => setNotice("A resposta da outra pessoa chegou, mas não foi possível concluir a conexão."));
   }, [direction, remoteAnswer]);
 
+
+  useEffect(() => {
+    if (connectedAt === null) {
+      setCallElapsedSeconds(0);
+      return;
+    }
+    const update = () => setCallElapsedSeconds(Math.max(0, Math.floor((Date.now() - connectedAt) / 1000)));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [connectedAt]);
+
   useEffect(() => {
     if (!remoteStream) return;
-    if (kind === "video" && remoteHasVideo && remoteVideoRef.current) {
+    if (remoteHasVideo && remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = remoteStream;
-    } else if (remoteAudioRef.current) {
-      remoteAudioRef.current.srcObject = remoteStream;
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+    } else {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream;
     }
-  }, [kind, remoteHasVideo, remoteStream]);
+  }, [remoteHasVideo, remoteStream]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -253,7 +299,10 @@ export function ConversationCallScreen({
       const track = cameraStream.getVideoTracks()[0];
       if (track) {
         stream.addTrack(track);
-        peerRef.current?.addTrack(track, stream);
+        const videoSender = peerRef.current?.getTransceivers()
+          .find((transceiver) => transceiver.receiver.track.kind === "video")?.sender;
+        if (!videoSender) throw new Error("O canal de vídeo não foi preparado para esta chamada.");
+        await videoSender.replaceTrack(track);
         if (localVideoRef.current) localVideoRef.current.srcObject = stream;
         setCameraEnabled(true);
         setNotice(null);
@@ -266,15 +315,15 @@ export function ConversationCallScreen({
   async function toggleScreenShare() {
     if (sharingStreamRef.current) {
       const sharing = sharingStreamRef.current;
-      const shareTrack = sharing.getVideoTracks()[0];
       const cameraTrack = localStreamRef.current?.getVideoTracks()[0] ?? null;
-      const sender = peerRef.current?.getSenders().find((item) => item.track?.kind === "video");
+      const sender = peerRef.current?.getTransceivers()
+        .find((transceiver) => transceiver.receiver.track.kind === "video")?.sender;
       if (sender) await sender.replaceTrack(cameraTrack);
       sharing.getTracks().forEach((track) => track.stop());
       sharingStreamRef.current = null;
       setSharingScreen(false);
       if (localVideoRef.current) localVideoRef.current.srcObject = localStreamRef.current;
-      if (shareTrack && cameraTrack) setCameraEnabled(cameraTrack.enabled);
+      setCameraEnabled(Boolean(cameraTrack?.enabled));
       return;
     }
 
@@ -288,7 +337,8 @@ export function ConversationCallScreen({
     try {
       const stream = await mediaDevices.getDisplayMedia({ video: true, audio: false });
       const track = stream.getVideoTracks()[0];
-      const sender = peerRef.current?.getSenders().find((item) => item.track?.kind === "video");
+      const sender = peerRef.current?.getTransceivers()
+        .find((transceiver) => transceiver.receiver.track.kind === "video")?.sender;
       if (track && sender) {
         await sender.replaceTrack(track);
         sharingStreamRef.current = stream;
@@ -300,7 +350,7 @@ export function ConversationCallScreen({
         setNotice(null);
       } else {
         stream.getTracks().forEach((item) => item.stop());
-        setNotice("Ative a câmera antes de compartilhar a tela.");
+        setNotice("Não foi possível preparar o canal de vídeo para compartilhar a tela.");
       }
     } catch {
       setNotice("O compartilhamento de tela foi cancelado ou não recebeu permissão.");
@@ -323,13 +373,12 @@ export function ConversationCallScreen({
           <ArrowLeft aria-hidden="true" />
         </button>
         <span className="call-screen-kind"><KindIcon aria-hidden="true" /> {kind === "video" ? "Chamada de vídeo" : "Chamada de áudio"}</span>
+        {connectedAt !== null && <span className="call-screen-duration">{formatCallDuration(callElapsedSeconds)}</span>}
         <span className="call-screen-secure">Morados · privado</span>
       </header>
 
       <main className={"call-screen-stage" + (remoteHasVideo ? " has-remote-video" : "")}>
-        {kind === "video" && (
-          <video ref={remoteVideoRef} className="call-screen-remote-video" autoPlay playsInline aria-label="Vídeo da outra pessoa" />
-        )}
+        <video ref={remoteVideoRef} className="call-screen-remote-video" autoPlay playsInline aria-label="Vídeo da outra pessoa" />
         <audio ref={remoteAudioRef} autoPlay />
         {!remoteHasVideo && (
           <div className="call-screen-identity">

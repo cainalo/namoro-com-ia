@@ -2,3 +2,6 @@ project_id = "jffryzeelzxjqbeagecb"
 
 [functions.delete-couple]
 verify_jwt = true
+
+[functions.get-call-ice-servers]
+verify_jwt = true
