@@ -324,6 +324,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
         <GameVictoryScreen
           won={solo ? game.winner === "white" : Boolean(game.winner)}
           outcome={!game.winner ? "draw" : solo && game.winner === "black" ? "loss" : "win"}
+          theme="checkers"
           eyebrow="DAMAS BRASILEIRAS · RESULTADO"
           title={
             game.winner
