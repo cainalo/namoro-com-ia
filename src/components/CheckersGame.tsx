@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { RotateCcw, Undo2, Trophy } from "lucide-react";
+import { Undo2 } from "lucide-react";
+import { GameVictoryScreen } from "@/components/GameExperience";
 import { useGameState } from "@/components/OnlineGameHost";
 import {
   createInitialCheckersGame,
@@ -132,7 +133,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
   }
 
   function handleSquareClick(index: number) {
-    if (game.status !== "active") return;
+    if (game.status !== "active" || (sync.online && !sync.canAct)) return;
 
     const clickedPiece = game.board[index];
 
@@ -202,18 +203,21 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
     clearSelection();
   }
 
+  const currentPlayerLabel = solo
+    ? game.turn === "white" ? "você" : "Morados"
+    : playerLabel(game.turn).toLowerCase();
   const statusText =
     game.status === "finished"
       ? game.winner
-        ? `${solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner)} venceu a partida.`
+        ? (solo ? (game.winner === "white" ? "Você" : "Morados") : playerLabel(game.winner)) + " venceu a partida."
         : "Empate. A partida terminou sem vencedor."
       : solo && game.turn === "black"
         ? "Morados estão analisando o tabuleiro…"
         : selectedPath.length > 0
           ? "Continue a sequência de captura."
           : captureRequired
-            ? `Vez das ${playerLabel(game.turn).toLowerCase()}. Captura obrigatória: escolha uma peça que possa capturar.`
-            : `Vez das ${playerLabel(game.turn).toLowerCase()}.`;
+            ? "Vez de " + currentPlayerLabel + ". Captura obrigatória: escolha uma peça que possa capturar."
+            : "Vez de " + currentPlayerLabel + ".";
 
   return (
     <section className={"checkers-game" + (solo ? " is-solo" : "")} aria-labelledby="checkers-title">
@@ -222,7 +226,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
           <p className="date-kicker">Estratégia · {solo ? "contra Morados" : "2 jogadores"}</p>
           <h2 id="checkers-title">Damas brasileiras</h2>
         </div>
-        <span className="checkers-mode-label">{solo ? "Você × Morados" : "Mesmo aparelho"}</span>
+        <span className="checkers-mode-label">{sync.online ? "Online" : solo ? "Você × Morados" : "Mesmo aparelho"}</span>
       </header>
 
       <div className="checkers-match">
@@ -245,6 +249,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
             const isDestination = nextDestinations.has(index);
             const canSelectOwnPiece =
               game.status === "active" &&
+              (!sync.online || sync.canAct) &&
               selectedPath.length === 0 &&
               piece?.player === game.turn &&
               movableSquares.has(index);
@@ -265,7 +270,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
                   canSelectOwnPiece ? "can-select-piece" : "",
                 ].filter(Boolean).join(" ")}
                 onClick={() => handleSquareClick(index)}
-                disabled={!playableSquare || game.status === "finished" || (solo && game.turn === "black") }
+                disabled={!playableSquare || game.status === "finished" || (solo && game.turn === "black") || (sync.online && !sync.canAct)}
                 aria-label={squareLabel + pieceLabel + (isDestination ? ", destino permitido" : "")}
                 aria-pressed={isSelected}
               >
@@ -289,7 +294,7 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
         <div className="checkers-actions">
           <div className="checkers-action-info">
             <p className="checkers-instructions">
-              Toque em uma peça para selecioná-la e depois escolha uma casa marcada. As jogadas permitidas ficam destacadas. {solo ? "Os Morados respondem automaticamente após sua jogada." : "Ao jogar no mesmo aparelho, alternem as vezes."}
+              Toque em uma peça para selecioná-la e depois escolha uma casa marcada. As jogadas permitidas ficam destacadas. {sync.online ? "As jogadas são sincronizadas com a outra conta." : solo ? "Os Morados respondem automaticamente após sua jogada." : "Ao jogar no mesmo aparelho, alternem as vezes."}
             </p>
             <span className="checkers-move-count">
               {history.length} {history.length === 1 ? "jogada concluída" : "jogadas concluídas"}
@@ -316,13 +321,37 @@ export function CheckersGame({ solo = false }: { solo?: boolean }) {
         </div>
       </div>
       {game.status === "finished" && (
-        <div className="quiz-finish game-mode-victory-panel" role="status" aria-live="polite">
-          <span><Trophy aria-hidden="true"/></span>
-          <p className="date-kicker">FIM DA PARTIDA</p>
-          <h3>{game.winner ? (solo ? (game.winner === "white" ? "Você venceu!" : "Morados venceram!") : `${playerLabel(game.winner)} venceram!`) : "Empate!"}</h3>
-          <p>{history.length} jogadas concluídas. As peças e o resultado ficaram registrados nesta tela.</p>
-          <button type="button" className="primary-action" onClick={startNewGame}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
-        </div>
+        <GameVictoryScreen
+          won={solo ? game.winner === "white" : Boolean(game.winner)}
+          outcome={!game.winner ? "draw" : solo && game.winner === "black" ? "loss" : "win"}
+          theme="checkers"
+          eyebrow="DAMAS BRASILEIRAS · RESULTADO"
+          title={
+            game.winner
+              ? solo
+                ? game.winner === "white" ? "Você venceu!" : "Morados venceram!"
+                : playerLabel(game.winner) + " venceram!"
+              : "Empate!"
+          }
+          subtitle={
+            game.drawReason === "threefold-repetition"
+              ? "A mesma posição apareceu pela terceira vez, com a mesma pessoa na vez. A partida terminou empatada."
+              : game.drawReason === "twenty-king-moves"
+                ? "Foram completados vinte lances por lado apenas com damas, sem capturas ou movimentos de pedras."
+                : game.drawReason === "limited-endgame"
+                  ? "Este final de poucas peças atingiu o limite de cinco lances por lado previsto nas regras brasileiras."
+                  : game.winner
+                    ? playerLabel(game.winner) + " venceu ao capturar todas as peças adversárias ou impedir qualquer jogada legal."
+                    : "A partida terminou empatada pelas regras de Damas brasileiras."
+          }
+          stats={[
+            { label: "Jogadas", value: history.length },
+            { label: "Peças claras", value: whiteCount },
+            { label: "Peças verdes", value: blackCount },
+          ]}
+          onReplay={startNewGame}
+          onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
+        />
       )}
     </section>
   );

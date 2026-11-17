@@ -181,3 +181,17 @@ A experiência online passa a encerrar cada partida em uma tela própria, acompa
 - A tela reutiliza os estilos de encerramento do Lig 4 em `src/components/MoradosGames.css`; não foi necessária alteração de tabela, migration, RPC, regra de turno ou sincronização.
 
 Os testes de `ConnectFourGame.test.tsx` cobrem os três resultados, a reabertura de um resultado pelo histórico, o retorno à partida ativa e a criação de uma nova partida preservando o registro anterior. A validação com duas contas em aparelhos físicos ainda é necessária.
+
+
+## Damas brasileiras — experiência de partida e encerramento
+
+Damas recebeu uma revisão conjunta de interface e regras, mantendo o mesmo motor de jogo nos modos individual, presencial e online.
+
+- O resultado deixa de ser um painel inserido abaixo do tabuleiro e passa a ocupar a tela inteira.
+- Vitória, derrota e empate têm tratamento visual e texto próprios; o encerramento apresenta total de jogadas, reinício e retorno ao catálogo.
+- O cabeçalho diferencia corretamente os modos individual, mesmo aparelho e online. Na modalidade online, a barra de partida identifica os lados como Claras e Verdes.
+- O núcleo de regras passou a registrar repetição de posições, sequência de lances somente com damas e finais regulamentares de poucas peças. Esses contadores integram o estado sincronizado para que a decisão de empate seja a mesma nos dois aparelhos.
+- A versão online exibe o motivo do empate e a contagem de jogadas na tela de resultado compartilhada.
+- O CSS do resultado reutiliza a tela de encerramento dos jogos e adiciona uma variante visual específica para empate; o tabuleiro continua com seus próprios estilos e controles.
+
+Os testes de `checkers.test.ts` cobrem movimento, captura, Lei da Maioria, promoção, bloqueio e os três critérios de empate. `CheckersGame.test.tsx` cobre a tela final, a derrota contra Morados, a modalidade online e o reinício. A experiência com duas contas em dois aparelhos reais permanece pendente de validação física.

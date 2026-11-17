@@ -342,7 +342,7 @@ export function OnlineGameHost({
 
   if (!match || mySeat === null) {
     if (finished && (finished.status === "finished" || finished.status === "abandoned")) {
-      const finalData = finished.state?.data as { phase?: string; day?: number; floor?: number } | undefined;
+      const finalData = finished.state?.data as { phase?: string; day?: number; floor?: number; turnNumber?: number; drawReason?: string } | undefined;
       const isDraw = finished.is_draw;
       const cooperativeLost = mode === "cooperative" && finalData?.phase === "lost";
       const won = !isDraw && finished.status === "finished" && !cooperativeLost && (
@@ -355,24 +355,45 @@ export function OnlineGameHost({
           : mode === "cooperative"
             ? cooperativeLost ? "Missão interrompida" : "Missão concluída em conjunto!"
             : won ? "Você venceu!" : "A outra pessoa venceu!";
+      const isCheckers = gameKey === "checkers";
+      const checkersDrawSubtitle = finalData?.drawReason === "threefold-repetition"
+        ? "A mesma posição apareceu pela terceira vez, com a mesma pessoa na vez."
+        : finalData?.drawReason === "twenty-king-moves"
+          ? "Foram completados vinte lances por lado apenas com damas, sem capturas ou movimentos de pedras."
+          : finalData?.drawReason === "limited-endgame"
+            ? "Este final de poucas peças atingiu o limite de cinco lances por lado previsto nas regras brasileiras."
+            : "A partida terminou empatada pelas regras de Damas brasileiras.";
       const subtitle = finished.status === "abandoned"
         ? "A partida foi encerrada antes de chegar ao fim."
         : isDraw
-          ? "As duas pessoas terminaram com o mesmo resultado."
-          : mode === "cooperative"
-            ? cooperativeLost ? "A equipe não conseguiu concluir o objetivo desta expedição." : "O objetivo compartilhado foi alcançado nos dois aparelhos."
-            : won ? "Você levou a melhor nesta partida." : "A outra pessoa levou a melhor nesta partida.";
-      return (
-        <GameVictoryScreen
-          won={won}
-          title={title}
-          subtitle={subtitle}
-          eyebrow={mode === "cooperative" ? "RESULTADO COOPERATIVO" : "RESULTADO DA PARTIDA"}
-          stats={[
+          ? isCheckers ? checkersDrawSubtitle : "As duas pessoas terminaram com o mesmo resultado."
+          : isCheckers
+            ? won
+              ? "Você bloqueou as jogadas legais da outra pessoa e conquistou a partida."
+              : "A outra pessoa bloqueou suas jogadas legais e venceu a partida."
+            : mode === "cooperative"
+              ? cooperativeLost ? "A equipe não conseguiu concluir o objetivo desta expedição." : "O objetivo compartilhado foi alcançado nos dois aparelhos."
+              : won ? "Você levou a melhor nesta partida." : "A outra pessoa levou a melhor nesta partida.";
+      const resultStats = isCheckers
+        ? [
+            { label: "Jogadas", value: typeof finalData?.turnNumber === "number" ? Math.max(0, finalData.turnNumber - 1) : finished.version },
+            { label: "Variante", value: "Brasileiras" },
+            { label: "Tabuleiro", value: "8 × 8" },
+          ]
+        : [
             { label: "Modo", value: mode === "cooperative" ? "Cooperativo" : "Competitivo" },
             { label: "Versão", value: finished.version },
             { label: "Status", value: finished.status === "abandoned" ? "Encerrada" : "Finalizada" },
-          ]}
+          ];
+      return (
+        <GameVictoryScreen
+          won={won}
+          outcome={isDraw ? "draw" : won ? "win" : "loss"}
+          theme={isCheckers ? "checkers" : "standard"}
+          title={title}
+          subtitle={subtitle}
+          eyebrow={mode === "cooperative" ? "RESULTADO COOPERATIVO" : "RESULTADO DA PARTIDA"}
+          stats={resultStats}
           primaryLabel="Jogar novamente"
           onReplay={() => void start()}
           onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
