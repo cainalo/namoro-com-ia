@@ -786,6 +786,11 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
   const callPartnerUserId = state.status === "active" ? state.partnerUserId : null;
   const callPartnerName = state.status === "active" ? state.otherName : "Sua pessoa";
   const callPartnerAvatarUrl = state.status === "active" ? state.otherAvatarUrl : null;
+  const callPartnerProfileRef = useRef({ name: callPartnerName, avatarUrl: callPartnerAvatarUrl });
+
+  useEffect(() => {
+    callPartnerProfileRef.current = { name: callPartnerName, avatarUrl: callPartnerAvatarUrl };
+  }, [callPartnerName, callPartnerAvatarUrl]);
 
   useEffect(() => {
     if (!callCoupleId || !callPartnerUserId) {
@@ -809,8 +814,8 @@ export function CoupleConversation({ userId, onBack, onNavigate }: ConversationP
             kind: signal.kind,
             fromUserId: signal.fromUserId,
             description: signal.description,
-            callerName: callPartnerName,
-            callerAvatarUrl: callPartnerAvatarUrl,
+            callerName: callPartnerProfileRef.current.name,
+            callerAvatarUrl: callPartnerProfileRef.current.avatarUrl,
           });
           return;
         }
