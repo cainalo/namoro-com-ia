@@ -841,3 +841,218 @@
     transition: none !important;
   }
 }
+
+
+/* Lig 4 — encerramento em tela própria, sem painel inserido abaixo do tabuleiro. */
+.morados-connect-four-result {
+  position: fixed;
+  z-index: 800;
+  inset: 0;
+  display: grid;
+  width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  place-items: center;
+  overflow: auto;
+  background: var(--world-bg);
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  isolation: isolate;
+  text-align: center;
+}
+
+.morados-connect-four-result::before,
+.morados-connect-four-result::after {
+  position: absolute;
+  z-index: -1;
+  display: block;
+  border: 1px solid color-mix(in srgb, var(--world-accent) 24%, transparent);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.morados-connect-four-result::before {
+  width: min(85vw, 560px);
+  aspect-ratio: 1;
+  transform: translateY(-11%);
+}
+
+.morados-connect-four-result::after {
+  width: min(108vw, 720px);
+  aspect-ratio: 1;
+  border-color: color-mix(in srgb, var(--world-ink) 10%, transparent);
+  transform: translateY(-11%);
+}
+
+.morados-connect-four-result-inner {
+  display: flex;
+  width: min(100%, 520px);
+  min-height: min(100%, 560px);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 28px 8px;
+  color: var(--world-ink);
+}
+
+.morados-connect-four-result-mark {
+  display: grid;
+  width: 86px;
+  height: 86px;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--world-accent) 74%, var(--world-ink));
+  border-radius: 50%;
+  background: var(--world-panel);
+  color: var(--world-accent);
+  box-shadow: 0 0 0 9px color-mix(in srgb, var(--world-accent) 10%, transparent);
+}
+
+.morados-connect-four-result-mark svg {
+  width: 38px;
+  height: 38px;
+  stroke-width: 1.65;
+}
+
+.morados-connect-four-result.is-defeat .morados-connect-four-result-mark {
+  border-color: color-mix(in srgb, var(--world-accent-2) 72%, var(--world-ink));
+  color: var(--world-accent-2);
+}
+
+.morados-connect-four-result.is-draw .morados-connect-four-result-mark {
+  border-style: dashed;
+  color: var(--world-accent-2);
+}
+
+.morados-connect-four-result-eyebrow {
+  margin-top: 29px;
+  color: var(--world-accent);
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: .2em;
+}
+
+.morados-connect-four-result h2 {
+  margin: 11px 0 0;
+  color: var(--world-ink);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: clamp(34px, 7vw, 58px);
+  font-weight: 950;
+  letter-spacing: -.065em;
+  line-height: .98;
+  text-wrap: balance;
+}
+
+.morados-connect-four-result-message {
+  max-width: 420px;
+  margin: 14px 0 0;
+  color: var(--world-muted);
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 12px;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+
+.morados-connect-four-result-stats {
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  margin-top: 25px;
+  border-top: 1px solid color-mix(in srgb, var(--world-ink) 18%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--world-ink) 18%, transparent);
+  padding: 12px 30px;
+}
+
+.morados-connect-four-result-stats strong {
+  color: var(--world-accent);
+  font-size: 29px;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.04em;
+  line-height: 1;
+}
+
+.morados-connect-four-result-stats span {
+  color: var(--world-muted);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.morados-connect-four-result-actions {
+  display: grid;
+  width: min(100%, 330px);
+  gap: 9px;
+  margin-top: 24px;
+}
+
+.morados-connect-four-result-actions button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9px;
+  padding: 0 17px;
+  font-family: var(--font-sans, "Manrope", sans-serif);
+  font-size: 10px;
+  font-weight: 850;
+  cursor: pointer;
+  transition: filter 140ms ease, transform 140ms ease;
+}
+
+.morados-connect-four-result-actions button:hover {
+  filter: brightness(1.08);
+}
+
+.morados-connect-four-result-actions button:active {
+  transform: translateY(1px);
+}
+
+.morados-connect-four-result-actions button:focus-visible {
+  outline: 3px solid var(--world-ink);
+  outline-offset: 3px;
+}
+
+.morados-connect-four-replay {
+  border: 1px solid var(--world-accent);
+  background: var(--world-accent);
+  color: #28211d;
+}
+
+.morados-connect-four-replay svg {
+  width: 15px;
+  height: 15px;
+}
+
+.morados-connect-four-exit {
+  border: 1px solid color-mix(in srgb, var(--world-ink) 27%, transparent);
+  background: transparent;
+  color: var(--world-ink);
+}
+
+@media (max-width: 420px) {
+  .morados-connect-four-result { padding-inline: 17px; }
+  .morados-connect-four-result-mark { width: 74px; height: 74px; }
+  .morados-connect-four-result-mark svg { width: 32px; height: 32px; }
+  .morados-connect-four-result-eyebrow { margin-top: 24px; }
+  .morados-connect-four-result h2 { font-size: clamp(32px, 9vw, 43px); }
+  .morados-connect-four-result-message { font-size: 11px; }
+}
+
+@media (max-height: 600px) {
+  .morados-connect-four-result-inner { padding-block: 12px; }
+  .morados-connect-four-result-mark { width: 58px; height: 58px; }
+  .morados-connect-four-result-mark svg { width: 27px; height: 27px; }
+  .morados-connect-four-result-eyebrow { margin-top: 18px; }
+  .morados-connect-four-result h2 { font-size: clamp(28px, 6vh, 42px); }
+  .morados-connect-four-result-message { margin-top: 8px; font-size: 10px; }
+  .morados-connect-four-result-stats { margin-top: 12px; padding-block: 8px; }
+  .morados-connect-four-result-actions { gap: 6px; margin-top: 12px; }
+  .morados-connect-four-result-actions button { min-height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .morados-connect-four-result-actions button { transition: none; }
+}
