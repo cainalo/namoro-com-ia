@@ -72,7 +72,6 @@ export function ConversationCallScreen({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [callStatus, setCallStatus] = useState(direction === "outgoing" ? "Preparando chamada…" : "Conectando à chamada…");
   const [notice, setNotice] = useState<string | null>(null);
-  const [turnConfigured, setTurnConfigured] = useState(false);
   const [connectedAt, setConnectedAt] = useState<number | null>(null);
   const [callElapsedSeconds, setCallElapsedSeconds] = useState(0);
 
@@ -97,7 +96,6 @@ export function ConversationCallScreen({
 
         const iceConfiguration = await fetchCoupleCallIceConfiguration(coupleId);
         if (!alive) return;
-        setTurnConfigured(iceConfiguration.turnConfigured);
         if (!iceConfiguration.turnConfigured) {
           setNotice("TURN ainda não está configurado. Algumas redes podem não conseguir completar a chamada.");
         }
@@ -146,7 +144,7 @@ export function ConversationCallScreen({
           if (peer.connectionState === "connected") {
             setCallStatus("Conectada");
             setConnectedAt((current) => current ?? Date.now());
-            setNotice(turnConfigured ? null : "Conexão estabelecida sem TURN. Algumas redes podem precisar de um servidor de retransmissão.");
+            setNotice(iceConfiguration.turnConfigured ? null : "Conexão estabelecida sem TURN. Algumas redes podem precisar de um servidor de retransmissão.");
           } else if (peer.connectionState === "connecting") {
             setCallStatus("Estabelecendo conexão segura…");
           } else if (peer.connectionState === "disconnected") {
