@@ -304,7 +304,6 @@ export function ConversationCallScreen({
   async function toggleScreenShare() {
     if (sharingStreamRef.current) {
       const sharing = sharingStreamRef.current;
-      const shareTrack = sharing.getVideoTracks()[0];
       const cameraTrack = localStreamRef.current?.getVideoTracks()[0] ?? null;
       const sender = peerRef.current?.getTransceivers()
         .find((transceiver) => transceiver.receiver.track.kind === "video")?.sender;
