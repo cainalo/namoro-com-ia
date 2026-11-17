@@ -50,6 +50,7 @@ import { SecondaryPageChrome, type SecondaryPageSection } from "@/components/Sec
 import { mapWithConcurrency } from "@/lib/async-pool";
 import { supabase } from "@/integrations/supabase/client";
 import { createCoupleMediaUrl, removeCoupleMedia, uploadCoupleMedia } from "@/lib/couple-media";
+import { canUseCoupleWorkspace } from "@/lib/couple-access";
 import {
   createCouplePost,
   listCouplePosts,
@@ -86,7 +87,7 @@ type FeedState =
   | { status: "loading" }
   | { status: "error" }
   | { status: "no-couple" }
-  | { status: "ready"; coupleId: string; posts: FeedPostView[] };
+  | { status: "ready"; coupleId: string; posts: FeedPostView[]; partnerPending: boolean };
 
 type FeedFilter = "all" | "photos" | "videos" | "text" | "audio";
 
@@ -391,7 +392,7 @@ export function CoupleFeed({
         .maybeSingle();
 
       if (coupleError) throw coupleError;
-      if (!couple || couple.status !== "active") {
+      if (!couple || !canUseCoupleWorkspace(couple.status)) {
         setState({ status: "no-couple" });
         return;
       }
@@ -470,7 +471,7 @@ export function CoupleFeed({
         };
       });
 
-      setState({ status: "ready", coupleId: couple.id, posts });
+      setState({ status: "ready", coupleId: couple.id, posts, partnerPending: couple.status === "pending" });
     } catch (error) {
       console.error("Não foi possível carregar o feed do casal.", error);
       setState({ status: "error" });
@@ -1294,6 +1295,11 @@ export function CoupleFeed({
     <section className="social-feed">
       <audio ref={feedMusicRef} className="feed-ambient-audio" aria-hidden="true" preload="none" loop />
       <MoradosFeedHeader />
+      {state.partnerPending && (
+        <p className="morados-feed-pending-note" role="status">
+          Seu espaço já está pronto. Tudo o que você publicar ficará aqui para sua pessoa quando ela entrar na própria conta.
+        </p>
+      )}
       <div className="feed-filter-bar" role="group" aria-label="Filtrar publicações">
         {([
           ["all", "Tudo"],
