@@ -20,7 +20,7 @@ describe("LocalConnectFourGame", () => {
     expect(result).toHaveAttribute("data-outcome", "victory");
     expect(result).toHaveClass("morados-connect-four-result");
     expect(result).toHaveTextContent("Quatro peças em linha.");
-    expect(result).toHaveTextContent("7 jogadas");
+    expect(result.querySelector(".morados-connect-four-result-stats")).toHaveTextContent(/7\\s*jogadas/);
     expect(screen.getByRole("button", { name: "Voltar à biblioteca" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Jogar novamente" }));
