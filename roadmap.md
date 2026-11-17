@@ -17,6 +17,7 @@ Atualizado em 16 de novembro de 2026. A auditoria e a direção inicial da trans
 - [ ] Transformar os demais módulos gradualmente, preservando suas funções e dando a cada um uma linguagem própria.\n- [x] Implementar o piloto visual de Jogos: biblioteca, briefings individuais, escolha de modalidade e pausa; revisão de cada experiência e suas telas de resultado continua pendente.
 - [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.\n- [x] Iniciar a revisão individual pelo Lig 4 local: resultado em tela inteira, identificação de vitória/derrota, reinício e retorno à biblioteca; empate no modo local ainda pendente.
 - [x] Concluir o piloto do resultado online do Lig 4: vitória/derrota/empate em tela inteira, revisão do tabuleiro, retorno à partida em andamento e nova partida sem apagar o histórico.
+- [x] Revisar Damas brasileiras nos modos individual, presencial e online: tela integral de resultado, identificação correta de modalidade, histórico do motor sincronizado e empates regulamentares.
 
 ## Confiabilidade e funcionalidades
 
