@@ -176,6 +176,7 @@ export function GameAudioToggle() {
 export function GameVictoryScreen({
   won,
   outcome,
+  theme,
   title,
   subtitle,
   eyebrow = "PARTIDA ENCERRADA",
@@ -186,6 +187,7 @@ export function GameVictoryScreen({
 }: {
   won: boolean;
   outcome?: "win" | "loss" | "draw";
+  theme?: "standard" | "checkers";
   title: string;
   subtitle: string;
   eyebrow?: string;
@@ -201,8 +203,9 @@ export function GameVictoryScreen({
   }, [result, play]);
   const Icon = result === "win" ? Trophy : result === "draw" ? Scale : ShieldAlert;
   const resultClass = result === "win" ? "is-victory" : result === "draw" ? "is-draw" : "is-defeat";
+  const themeClass = theme === "checkers" ? " is-checkers" : "";
   return (
-    <section className={"game-victory-screen " + resultClass} role="dialog" aria-modal="true" aria-labelledby="game-victory-title">
+    <section className={"game-victory-screen " + resultClass + themeClass} role="dialog" aria-modal="true" aria-labelledby="game-victory-title">
       <div className="game-victory-atmosphere" aria-hidden="true">
         <span className="victory-orbit orbit-one"/>
         <span className="victory-orbit orbit-two"/>
