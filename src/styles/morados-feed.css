@@ -415,3 +415,16 @@
     transition: none;
   }
 }
+
+
+/* O criador usa o espaço desde o primeiro acesso; o segundo integrante pode chegar depois. */
+.social-feed .morados-feed-pending-note {
+  margin: 0 0 4px;
+  border-left: 3px solid var(--morados-feed-ochre);
+  background: var(--morados-feed-paper);
+  padding: 10px 13px;
+  color: var(--morados-feed-muted);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 11px;
+  line-height: 1.55;
+}
