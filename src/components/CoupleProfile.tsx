@@ -408,7 +408,7 @@ export function CoupleProfile({ userId }: { userId: string }) {
       </div>
     ) : (
       <>
-        <div className="profile-cover morados-profile-cover">
+        <div className="profile-cover morados-profile-cover" data-tour-target="profile-cover">
           {bannerUrl && <img src={bannerUrl} alt="" />}
           <label className="profile-upload-button profile-edit-cover morados-profile-banner-action">
             <ImagePlus className="h-4 w-4" aria-hidden="true" />
