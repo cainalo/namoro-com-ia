@@ -166,4 +166,18 @@ O primeiro jogo da revisão individual recebe uma tela de resultado de viewport 
 - O tabuleiro e as regras de colocação de peças, detecção de sequências, alternância de turnos e resposta do adversário no modo individual não foram alterados.
 - O CSS do resultado está isolado em `.morados-connect-four-result` dentro de `src/components/MoradosGames.css`.
 
-Os testes cobrem vitória da Pessoa 1, vitória da Pessoa 2, reinício com tabuleiro limpo e navegação de volta à biblioteca. A validação de empate e a revisão das telas de resultado do Lig 4 online ainda permanecem pendentes; a revisão individual dos outros jogos não é considerada concluída.
+Os testes cobrem vitória da Pessoa 1, vitória da Pessoa 2, reinício com tabuleiro limpo e navegação de volta à biblioteca. A validação de empate no modo local permanece pendente. O resultado online recebeu uma tela de viewport integral para vitória, derrota e empate, com ação de revisão do tabuleiro; quando já existe outra partida em andamento, a tela também permite retornar a ela. A revisão individual dos outros jogos não é considerada concluída.
+
+
+## Lig 4 online — resultado sincronizado
+
+A experiência online passa a encerrar cada partida em uma tela própria, acompanhando o mesmo padrão visual definido para o modo local.
+
+- A mudança de estado para `finished`, seja pela jogada realizada no aparelho atual ou recebida pelo canal em tempo real, abre automaticamente a tela de resultado.
+- Vitória, derrota e empate têm identificação própria, com total de jogadas e mensagem correspondente.
+- **Rever tabuleiro** fecha o resultado sem alterar a partida concluída; o tabuleiro final continua disponível para consulta.
+- **Jogar novamente** cria uma nova partida somente quando não há outra partida ativa. O registro anterior não é atualizado nem excluído e passa a aparecer em Partidas anteriores.
+- Ao consultar uma partida antiga enquanto outra está ativa, é possível retornar diretamente à partida em andamento.
+- A tela reutiliza os estilos de encerramento do Lig 4 em `src/components/MoradosGames.css`; não foi necessária alteração de tabela, migration, RPC, regra de turno ou sincronização.
+
+Os testes de `ConnectFourGame.test.tsx` cobrem os três resultados, a reabertura de um resultado pelo histórico, o retorno à partida ativa e a criação de uma nova partida preservando o registro anterior. A validação com duas contas em aparelhos físicos ainda é necessária.
