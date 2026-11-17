@@ -633,6 +633,7 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
