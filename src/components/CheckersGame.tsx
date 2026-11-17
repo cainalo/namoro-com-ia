@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { RotateCcw, Undo2 } from "lucide-react";
+import { Undo2 } from "lucide-react";
 import { GameVictoryScreen } from "@/components/GameExperience";
 import { useGameState } from "@/components/OnlineGameHost";
 import {
