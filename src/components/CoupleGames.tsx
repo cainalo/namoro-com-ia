@@ -42,6 +42,7 @@ import { QuizGame } from "@/components/QuizGame";
 import { EscapeRoomGame } from "@/components/EscapeRoomGame";
 import { IslandSurvivalGame } from "@/components/IslandSurvivalGame";
 import "./GameCover.css";
+import "./MoradosGames.css";
 import { CaveExpeditionGame } from "@/components/CaveExpeditionGame";
 import { InlineMenu } from "@/components/InlineMenu";
 import { GameAudioProvider, GameAudioToggle, useGameAudio } from "@/components/GameExperience";
@@ -202,11 +203,11 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
  const back=()=>{play("tap");if(confirmExit)setConfirmExit(false);else if(stage==="play")setConfirmExit(true);else if(stage==="waiting")setStage("mode");else if(stage==="mode")setStage("cover");else onBack();};
  const settings=<InlineMenu label="Configurações do jogo" trigger={<MoreVertical/>} triggerClassName="game-world-float-button" menuClassName="game-world-menu-panel" className="game-world-menu">{close=><><div className="game-world-menu-heading">CONFIGURAÇÕES</div><GameAudioToggle/><button type="button" role="menuitem" onClick={()=>{setStage("mode");setConfirmExit(false);close();play("tap");}}><Users/> Trocar modo</button><button type="button" role="menuitem" onClick={()=>{setConfirmExit(true);close();play("warning");}}><ArrowLeft/> Sair da partida</button></>}</InlineMenu>;
  const choices=[{id:"solo" as const,title:"Jogar sozinho",Icon:Crown},{id:"local" as const,title:"Jogar neste aparelho",Icon:Users},{id:"online" as const,title:"Jogar online",Icon:Shield}];
- return <div className={"games-fullscreen-page game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
+ return <div className={"games-fullscreen-page game-world morados-game-world world-"+gameId+" tone-"+game.tone} role="dialog" aria-modal="true" aria-label={game.name}>
   <header className="game-world-topbar"><button type="button" className="game-world-float-button" onClick={back} aria-label={stage==="cover"?"Voltar aos jogos":"Voltar uma etapa"}><ArrowLeft/></button><div className="game-world-top-title"><small>MORADOS ORIGINALS</small>{stage!=="cover"&&<strong>{game.name}</strong>}</div>{settings}</header>
   <main className={"game-world-main stage-"+stage}>
-   {stage==="cover"&&<section className="game-launch-cover">
-      <div className={"game-cover-art art-"+gameId} aria-hidden="true">
+   {stage==="cover"&&<section className="game-launch-cover morados-game-launch">
+      <div className={"game-cover-art art-"+gameId+" morados-game-cover-art"} data-game-id={gameId} aria-hidden="true">
         <span className="game-cover-art-watermark">{game.name}</span>
         <span className="game-cover-orbit orbit-one"/><span className="game-cover-orbit orbit-two"/>
         <span className="game-cover-beam beam-one"/><span className="game-cover-beam beam-two"/>
@@ -214,10 +215,30 @@ function GamePage({gameId,userId,onBack,onlineLaunch}:{gameId:GameId;userId:stri
         <span className="game-cover-token token-one"/><span className="game-cover-token token-two"/><span className="game-cover-token token-three"/>
         <div className="game-cover-emblem"><GameIcon/></div>
         <span className="game-cover-art-number">0{catalogue.findIndex(x=>x.id===gameId)+1}</span>
+        <span className="morados-game-art-caption">{game.category}</span>
       </div>
-      <div className="game-cover-copy">
+      <div className="game-cover-copy morados-game-cover-copy">
+        <span className="morados-game-cover-eyebrow">{launchInfo[gameId].eyebrow}</span>
         <h1>{game.name}</h1>
-        <button type="button" className="game-world-primary" onClick={()=>{setStage("mode");play("discovery");}}><Play/> Jogar</button>
+        <p className="morados-game-cover-tagline">{launchInfo[gameId].tagline}</p>
+        <div className="game-cover-highlights morados-game-cover-highlights">
+          {launchInfo[gameId].chips.map((chip)=><span key={chip}>{chip}</span>)}
+        </div>
+        <button type="button" className="game-world-primary morados-game-start" onClick={()=>{setStage("mode");play("discovery");}}><Play/> Começar experiência</button>
+      </div>
+      <div className="morados-game-cover-details">
+        <section className="morados-game-cover-story">
+          <span className="morados-game-detail-kicker">O cenário</span>
+          <p>{launchInfo[gameId].story}</p>
+        </section>
+        <section className="morados-game-cover-objective">
+          <span className="morados-game-detail-kicker">Objetivo</span>
+          <p>{launchInfo[gameId].goal}</p>
+          <details className="morados-game-howto">
+            <summary>Como funciona</summary>
+            <ol>{launchInfo[gameId].steps.map((step,index)=><li key={step}><span>{String(index+1).padStart(2,"0")}</span>{step}</li>)}</ol>
+          </details>
+        </section>
       </div>
     </section>}
    {stage==="mode"&&<section className="game-mode-stage">
