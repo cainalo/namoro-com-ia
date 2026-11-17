@@ -137,7 +137,16 @@ export function ConversationCallScreen({
           if (!alive) return;
           const stream = event.streams[0] ?? new MediaStream([event.track]);
           setRemoteStream(stream);
-          setRemoteHasVideo(stream.getVideoTracks().some((track) => track.readyState === "live"));
+          const updateRemoteVideoState = () => {
+            if (!alive) return;
+            setRemoteHasVideo(stream.getVideoTracks().some(
+              (track) => track.readyState === "live" && !track.muted,
+            ));
+          };
+          updateRemoteVideoState();
+          event.track.addEventListener("unmute", updateRemoteVideoState);
+          event.track.addEventListener("mute", updateRemoteVideoState);
+          event.track.addEventListener("ended", updateRemoteVideoState);
         };
         peer.onconnectionstatechange = () => {
           if (!alive || !peer) return;
