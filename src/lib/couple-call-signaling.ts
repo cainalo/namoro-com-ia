@@ -30,13 +30,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isDescription(value: unknown): value is RTCSessionDescriptionInit {
   if (!isRecord(value)) return false;
-  return (value.type === "offer" || value.type === "answer") && typeof value.sdp === "string";
+  return (value.type === "offer" || value.type === "answer") &&
+    typeof value.sdp === "string" && value.sdp.length > 0 && value.sdp.length <= 100_000;
 }
 
 export function parseCoupleCallSignal(value: unknown): CoupleCallSignal | null {
   if (!isRecord(value)) return null;
-  if (typeof value.callId !== "string" || !value.callId ||
-      typeof value.fromUserId !== "string" || typeof value.toUserId !== "string") return null;
+  if (typeof value.callId !== "string" || value.callId.length < 8 || value.callId.length > 100 ||
+      typeof value.fromUserId !== "string" || !value.fromUserId ||
+      typeof value.toUserId !== "string" || !value.toUserId ||
+      value.fromUserId === value.toUserId) return null;
 
   const base = {
     callId: value.callId,
