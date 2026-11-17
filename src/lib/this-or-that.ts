@@ -109,3 +109,29 @@ export function getFreshThisOrThatRound(recentIds: string[] = [], count = 15) {
   }
   return stableShuffle(available, Math.floor(Math.random() * 0xffffffff)).slice(0, count);
 }
+
+
+export type ThisOrThatChoice = "a" | "b";
+
+/**
+ * Creates one consistent opponent profile for a round.
+ * The profile is balanced so the opponent does not always choose the same side,
+ * and a question's answer never changes after the player responds.
+ */
+export function createMoradosPreferenceProfile(
+  questions: ThisOrThatQuestion[],
+  random: () => number = Math.random,
+): Record<string, ThisOrThatChoice> {
+  const shuffled = [...questions];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(random() * (index + 1));
+    [shuffled[index], shuffled[swap]] = [shuffled[swap], shuffled[index]];
+  }
+
+  const profile: Record<string, ThisOrThatChoice> = {};
+  const split = Math.ceil(shuffled.length / 2);
+  shuffled.forEach((question, index) => {
+    profile[question.id] = index < split ? "a" : "b";
+  });
+  return profile;
+}

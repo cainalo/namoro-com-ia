@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Trophy } from "lucide-react";
-import { getFreshThisOrThatRound } from "@/lib/this-or-that";
+import { createMoradosPreferenceProfile, getFreshThisOrThatRound } from "@/lib/this-or-that";
 
 const CONNECT_WIDTH = 7;
 const CONNECT_HEIGHT = 6;
@@ -176,6 +176,7 @@ type AnswerPair = {first:"a"|"b"|null; second:"a"|"b"|null};
 export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
   const [index,setIndex]=useState(0);
   const [round,setRound]=useState(()=>getFreshThisOrThatRound());
+  const [moradosChoices,setMoradosChoices]=useState(()=>createMoradosPreferenceProfile(round));
   const [recentIds,setRecentIds]=useState<string[]>([]);
   const [answers,setAnswers]=useState<Record<string,AnswerPair>>({});
   const [activePlayer,setActivePlayer]=useState<1|2>(1);
@@ -190,7 +191,7 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
   function choose(value:"a"|"b") {
     setAnswers((current)=>{
       const existing=current[question.id]??{first:null,second:null};
-      if (solo) return {...current,[question.id]:{first:value,second:Math.random()<0.5?"a":"b"}};
+      if (solo) return {...current,[question.id]:{first:value,second:moradosChoices[question.id]}};
       return {...current,[question.id]:activePlayer===1?{...existing,first:value}:{...existing,second:value}};
     });
     if (solo) {
@@ -203,7 +204,9 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
   function restart(){
     const nextRecent=[...recentIds,...round.map((item)=>item.id)].slice(-45);
     setRecentIds(nextRecent);
-    setRound(getFreshThisOrThatRound(nextRecent));
+    const nextRound=getFreshThisOrThatRound(nextRecent);
+    setRound(nextRound);
+    setMoradosChoices(createMoradosPreferenceProfile(nextRound));
     setIndex(0);setAnswers({});setActivePlayer(1);setHandoff(false);setShowResults(false);
   }
 
