@@ -27513,6 +27513,15 @@ body {
   text-align: center;
 }
 .game-victory-screen.is-defeat { background: #292029; }
+.game-victory-screen.is-draw { background: #25302c; }
+.is-draw .game-victory-icon {
+  border-color: #a8c39e;
+  background: #34483b;
+  color: #d5ebc7;
+  box-shadow: 0 0 0 13px rgb(168 195 158 / 10%);
+}
+.is-draw .game-victory-eyebrow { color: #c4d8ab; }
+.is-draw .game-victory-stats strong { color: #d5ebc7; }
 .game-victory-atmosphere {
   position: absolute;
   inset: 0;
