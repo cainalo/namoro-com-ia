@@ -23,7 +23,8 @@ Atualizado em 18 de novembro de 2026. A auditoria e a direção inicial da trans
 - [x] Revisar Damas brasileiras nos modos individual, presencial e online: tela integral de resultado, identificação correta de modalidade, histórico do motor sincronizado e empates regulamentares.
 - [x] Revisar Isto ou aquilo? nas modalidades individual, presencial e online: perfil de preferências solo consistente; resultado em tela inteira com pontuação e revisão das respostas; passagem do aparelho sem revelar a escolha anterior; validação automática para exigir as duas respostas em todas as perguntas.
 - [x] Ampliar o Desafio do dia local/individual para 20 missões com objetivo e duração sugerida, com encerramento em tela inteira; no online, manter histórico/realtime e apresentar resultado integral quando ambos concluem.
-- [ ] Concluir validação automatizada e playtest das três modalidades do Desafio do dia.
+- [x] Validar automaticamente a conclusão do Desafio do dia nas modalidades local, individual e online, incluindo chegada da confirmação do parceiro por realtime.
+- [ ] Executar playtest manual das três modalidades do Desafio do dia em dois aparelhos e avaliar clareza das instruções e ritmo das missões.
 
 ## Confiabilidade e funcionalidades
 
