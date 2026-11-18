@@ -64,6 +64,44 @@ describe("ChessGame draw rules", () => {
     expect(update(mocks.state).drawClaimed).toBe("threefold-repetition");
   });
 
+  it("recognizes a real threefold repetition after two complete knight cycles", () => {
+    setGameState();
+    mocks.setChess.mockImplementation((update: unknown) => {
+      const current = mocks.state as {
+        position: ReturnType<typeof makePosition>;
+        history: Array<ReturnType<typeof makePosition>>;
+        notation: string[];
+        drawClaimed: string | null;
+      };
+      mocks.state = typeof update === "function"
+        ? (update as (value: typeof current) => typeof current)(current)
+        : update;
+    });
+    const { rerender } = render(<ChessGame />);
+
+    const move = (from: string, to: string) => {
+      fireEvent.click(screen.getByRole("gridcell", { name: from }));
+      fireEvent.click(screen.getByRole("gridcell", { name: to }));
+      rerender(<ChessGame />);
+    };
+
+    for (let cycle = 0; cycle < 2; cycle += 1) {
+      move("g1: branca cavalo", "f3: vazia");
+      move("g8: preta cavalo", "f6: vazia");
+      move("f3: branca cavalo", "g1: vazia");
+      move("f6: preta cavalo", "g8: vazia");
+      if (cycle === 0) {
+        expect(screen.queryByRole("button", { name: "Reivindicar empate por repetição" })).not.toBeInTheDocument();
+      }
+    }
+
+    expect(screen.getByRole("button", { name: "Reivindicar empate por repetição" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Reivindicar empate por repetição" }));
+    rerender(<ChessGame />);
+
+    expect(screen.getByRole("dialog", { name: "Empate!" })).toHaveTextContent("a mesma posição apareceu pela terceira vez");
+  });
+
   it("offers the 50-move draw claim at 100 half-moves without making it automatic", () => {
     setGameState(makePosition({ halfMoves: 100 }));
 
