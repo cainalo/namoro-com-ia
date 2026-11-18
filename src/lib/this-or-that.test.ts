@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDailyThisOrThatRound, getFreshThisOrThatRound, thisOrThatQuestions } from "./this-or-that";
+import { createMoradosPreferenceProfile, getDailyThisOrThatRound, getFreshThisOrThatRound, thisOrThatQuestions } from "./this-or-that";
 
 describe("This or That question bank", () => {
   it("contains many unique prompts with two complete choices", () => {
@@ -27,5 +27,29 @@ describe("This or That question bank", () => {
     const second = getFreshThisOrThatRound(first.map((item) => item.id), 15);
     expect(second).toHaveLength(15);
     expect(second.some((item) => first.some((old) => old.id === item.id))).toBe(false);
+  });
+});
+
+
+describe("Morados solo preference profile", () => {
+  it("keeps one balanced and repeatable answer for every question in the round", () => {
+    const questions = thisOrThatQuestions.slice(0, 15);
+    const makeRandom = () => {
+      let value = 0.37;
+      return () => {
+        value = (value * 9301 + 49297) % 233280;
+        return value / 233280;
+      };
+    };
+
+    const first = createMoradosPreferenceProfile(questions, makeRandom());
+    const second = createMoradosPreferenceProfile(questions, makeRandom());
+    const values = Object.values(first);
+
+    expect(first).toEqual(second);
+    expect(Object.keys(first)).toHaveLength(questions.length);
+    expect(values.filter((choice) => choice === "a")).toHaveLength(8);
+    expect(values.filter((choice) => choice === "b")).toHaveLength(7);
+    expect(Object.keys(first).sort()).toEqual(questions.map((question) => question.id).sort());
   });
 });
