@@ -342,7 +342,7 @@ export function OnlineGameHost({
 
   if (!match || mySeat === null) {
     if (finished && (finished.status === "finished" || finished.status === "abandoned")) {
-      const finalData = finished.state?.data as { phase?: string; day?: number; floor?: number; turnNumber?: number; drawReason?: string } | undefined;
+      const finalData = finished.state?.data as { phase?: string; day?: number; floor?: number; turnNumber?: number; drawReason?: string; drawClaimed?: "threefold-repetition" | "fifty-move-rule" | null; position?: { halfMoves?: number } } | undefined;
       const isDraw = finished.is_draw;
       const cooperativeLost = mode === "cooperative" && finalData?.phase === "lost";
       const won = !isDraw && finished.status === "finished" && !cooperativeLost && (
@@ -356,6 +356,14 @@ export function OnlineGameHost({
             ? cooperativeLost ? "Missão interrompida" : "Missão concluída em conjunto!"
             : won ? "Você venceu!" : "A outra pessoa venceu!";
       const isCheckers = gameKey === "checkers";
+      const isChess = gameKey === "chess";
+      const chessDrawSubtitle = finalData?.drawClaimed === "threefold-repetition"
+        ? "Empate reivindicado: a mesma posição apareceu pela terceira vez."
+        : finalData?.drawClaimed === "fifty-move-rule"
+          ? "Empate reivindicado pela regra dos 50 lances sem captura ou movimento de peão."
+          : (finalData?.position?.halfMoves ?? 0) >= 150
+            ? "Empate automático pela regra dos 75 lances sem captura ou movimento de peão."
+            : "A partida terminou empatada pelas regras do xadrez.";
       const checkersDrawSubtitle = finalData?.drawReason === "threefold-repetition"
         ? "A mesma posição apareceu pela terceira vez, com a mesma pessoa na vez."
         : finalData?.drawReason === "twenty-king-moves"
@@ -366,7 +374,7 @@ export function OnlineGameHost({
       const subtitle = finished.status === "abandoned"
         ? "A partida foi encerrada antes de chegar ao fim."
         : isDraw
-          ? isCheckers ? checkersDrawSubtitle : "As duas pessoas terminaram com o mesmo resultado."
+          ? isCheckers ? checkersDrawSubtitle : isChess ? chessDrawSubtitle : "A partida terminou sem vencedor, conforme as regras do jogo."
           : isCheckers
             ? won
               ? "Você bloqueou as jogadas legais da outra pessoa e conquistou a partida."
