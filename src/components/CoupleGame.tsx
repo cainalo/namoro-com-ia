@@ -530,7 +530,7 @@ export function CoupleGame({ userId }: CoupleGameProps) {
                 </ol>
                 <p className="couple-game-summary-note">
                   {gameComplete
-                    ? "Vocês responderam às seis perguntas. O resultado considera apenas as respostas dos dois."
+                    ? `Vocês responderam às ${questions.length} perguntas. O resultado considera apenas as respostas dos dois.`
                     : "As perguntas ainda sem duas respostas não entram nesta contagem."}
                 </p>
               </>
