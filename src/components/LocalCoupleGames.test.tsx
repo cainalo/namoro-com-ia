@@ -113,8 +113,8 @@ describe("LocalDailyChallengeGame", () => {
     render(<LocalDailyChallengeGame solo />);
 
     expect(screen.getByText(/DESAFIO INDIVIDUAL/)).toBeInTheDocument();
-    expect(screen.getByText(/Duração sugerida|[0-9]+ minutos/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Marcar conclusão" })).toBeInTheDocument();
+    expect(screen.getByText(/[0-9]+ minutos/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Marcar conclusão/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Marcar conclusão" }));
 
@@ -132,7 +132,7 @@ describe("LocalDailyChallengeGame", () => {
     const onExit = vi.fn();
     window.addEventListener("morados:game-exit", onExit);
 
-    const buttons = screen.getAllByRole("button", { name: "Marcar conclusão" });
+    const buttons = screen.getAllByRole("button", { name: /Marcar conclusão/ });
     expect(buttons).toHaveLength(2);
     fireEvent.click(buttons[0]);
     expect(screen.queryByRole("dialog", { name: "Vocês conseguiram!" })).not.toBeInTheDocument();
