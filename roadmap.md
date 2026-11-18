@@ -1,6 +1,6 @@
 # Roadmap do Morados
 
-Atualizado em 16 de novembro de 2026. A auditoria e a direção inicial da transformação estão em [docs/TRANSFORMACAO_MORADOS.md](docs/TRANSFORMACAO_MORADOS.md).
+Atualizado em 18 de novembro de 2026. A auditoria e a direção inicial da transformação estão em [docs/TRANSFORMACAO_MORADOS.md](docs/TRANSFORMACAO_MORADOS.md).
 
 ## Transformação do produto
 
@@ -19,7 +19,7 @@ Atualizado em 16 de novembro de 2026. A auditoria e a direção inicial da trans
 - [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.\n- [x] Iniciar a revisão individual pelo Lig 4 local: resultado em tela inteira, identificação de vitória/derrota, reinício e retorno à biblioteca; empate no modo local ainda pendente.
 - [x] Concluir o piloto do resultado online do Lig 4: vitória/derrota/empate em tela inteira, revisão do tabuleiro, retorno à partida em andamento e nova partida sem apagar o histórico.
 - [x] Revisar Damas brasileiras nos modos individual, presencial e online: tela integral de resultado, identificação correta de modalidade, histórico do motor sincronizado e empates regulamentares.
-- [ ] Revisar Isto ou aquilo?: consistência do perfil do oponente solo implementada; resultado dedicado, revisão de UX e validação das modalidades ainda pendentes.
+- [x] Revisar Isto ou aquilo? nas modalidades individual, presencial e online: perfil de preferências solo consistente; resultado em tela inteira com pontuação e revisão das respostas; passagem do aparelho sem revelar a escolha anterior; validação automática para exigir as duas respostas em todas as perguntas.
 
 ## Confiabilidade e funcionalidades
 
