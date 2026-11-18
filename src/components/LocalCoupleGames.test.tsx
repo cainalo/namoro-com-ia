@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LocalConnectFourGame, LocalThisOrThatGame } from "./LocalCoupleGames";
+import { LocalConnectFourGame, LocalDailyChallengeGame, LocalThisOrThatGame } from "./LocalCoupleGames";
 
 function drop(column: number) {
   fireEvent.click(screen.getByRole("button", { name: `Soltar peça na coluna ${column}` }));
@@ -100,6 +100,47 @@ describe("LocalThisOrThatGame", () => {
     expect(result).toHaveAttribute("data-result-mode", "local");
     expect(result.querySelectorAll(".this-or-that-result-list > li.is-matched")).toHaveLength(15);
     expect(result.querySelectorAll(".this-or-that-result-list > li.is-different")).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Voltar aos jogos" }));
+    expect(onExit).toHaveBeenCalledTimes(1);
+    window.removeEventListener("morados:game-exit", onExit);
+  });
+});
+
+
+describe("LocalDailyChallengeGame", () => {
+  it("completes the solo mission with a full-screen result and can retry", () => {
+    render(<LocalDailyChallengeGame solo />);
+
+    expect(screen.getByText(/DESAFIO INDIVIDUAL/)).toBeInTheDocument();
+    expect(screen.getByText(/Duração sugerida|[0-9]+ minutos/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Marcar conclusão" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Marcar conclusão" }));
+
+    const result = screen.getByRole("dialog", { name: "Missão cumprida!" });
+    expect(result).toHaveAttribute("aria-modal", "true");
+    expect(result).toHaveTextContent("1/1");
+
+    fireEvent.click(screen.getByRole("button", { name: "Refazer missão" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Marcar conclusão" })).toBeInTheDocument();
+  });
+
+  it("does not show the shared victory until both local players complete", () => {
+    render(<LocalDailyChallengeGame />);
+    const onExit = vi.fn();
+    window.addEventListener("morados:game-exit", onExit);
+
+    const buttons = screen.getAllByRole("button", { name: "Marcar conclusão" });
+    expect(buttons).toHaveLength(2);
+    fireEvent.click(buttons[0]);
+    expect(screen.queryByRole("dialog", { name: "Vocês conseguiram!" })).not.toBeInTheDocument();
+    expect(screen.getByText(/Uma pessoa já concluiu/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Marcar conclusão" }));
+    const result = screen.getByRole("dialog", { name: "Vocês conseguiram!" });
+    expect(result).toHaveTextContent("2/2");
 
     fireEvent.click(screen.getByRole("button", { name: "Voltar aos jogos" }));
     expect(onExit).toHaveBeenCalledTimes(1);
