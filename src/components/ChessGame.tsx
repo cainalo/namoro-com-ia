@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { GameVictoryScreen } from "@/components/GameExperience";
 import { useGameState } from "@/components/OnlineGameHost";
+import { countChessPositionRepetitions } from "@/lib/chess-repetition";
 import type { GameOutcome } from "@/lib/online-game";
 import { RotateCcw, Undo2 } from "lucide-react";
 
@@ -200,9 +202,6 @@ function legalMovesFor(position:Position,color:Color,from?:number):Move[] {
   return moves;
 }
 
-function positionKey(p:Position) {
-  return p.board.map(x=>x?x.color+x.kind:"--").join("")+"|"+p.turn+"|"+Object.values(p.castling).map(Boolean).join("")+"|"+p.enPassant;
-}
 function insufficientMaterial(p:Position) {
   const pieces=p.board.filter(Boolean) as Piece[];
   if(pieces.some(x=>x.kind==="P"||x.kind==="Q"||x.kind==="R"))return false;
@@ -217,17 +216,19 @@ function moveLabel(position:Position,move:Move) {
   return (piece?.kind==="P"?"":piece?.kind)+squareName(move.from)+(capture?"×":"–")+squareName(move.to)+(move.promotion?"=D":"");
 }
 
-type ChessShared={position:Position;history:Position[];notation:string[]};
+type ChessDrawClaim = "threefold-repetition" | "fifty-move-rule";
+type ChessShared={position:Position;history:Position[];notation:string[];drawClaimed?:ChessDrawClaim|null};
 function chessOutcome(s:ChessShared):GameOutcome|null{
   const p=s.position;
   const moves=legalMovesFor(p,p.turn);
   if(moves.length===0)return inCheck(p,p.turn)?{kind:"win",winnerSeat:p.turn==="w"?1:0}:{kind:"draw"};
-  if(p.halfMoves>=100||insufficientMaterial(p))return {kind:"draw"};
+  const repetitions=countChessPositionRepetitions(s.history,p);
+  if(s.drawClaimed||repetitions>=5||p.halfMoves>=150||insufficientMaterial(p))return {kind:"draw"};
   return null;
 }
 
 export function ChessGame({ solo = false }: { solo?: boolean }) {
-  const [chess,setChess,sync]=useGameState<ChessShared>(()=>({position:initialPosition(),history:[],notation:[]}),{turnSeat:(s)=>s.position.turn==="w"?0:1,outcome:chessOutcome});
+  const [chess,setChess,sync]=useGameState<ChessShared>(()=>({position:initialPosition(),history:[],notation:[],drawClaimed:null}),{turnSeat:(s)=>s.position.turn==="w"?0:1,outcome:chessOutcome});
   const {position,history,notation}=chess;
   const [selected,setSelected]=useState<number|null>(null);
   const [message,setMessage]=useState<string|null>(null);
@@ -235,12 +236,34 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   const available=useMemo(()=>new Set(moves.filter(m=>m.from===selected).map(m=>m.to)),[moves,selected]);
   const check=inCheck(position,position.turn);
   const winner=position.turn==="w"?(solo?"Morados":"Pessoa 2"):(solo?"Você":"Pessoa 1");
-  const finished=moves.length===0||position.halfMoves>=100||insufficientMaterial(position);
-  const status=moves.length===0?(check?`Xeque-mate! ${winner} venceu.`:"Empate por afogamento.") : position.halfMoves>=100?"Empate pela regra dos 50 lances.":insufficientMaterial(position)?"Empate por material insuficiente.":check?"Xeque! Proteja o rei.":solo&&position.turn==="b"?"Morados estão pensando…":`Vez de ${solo?(position.turn==="w"?"você":"Morados"):"Pessoa "+(position.turn==="w"?1:2)}.`;
+  const repetitions=countChessPositionRepetitions(history,position);
+  const checkmate=moves.length===0&&check;
+  const drawReason=chess.drawClaimed==="threefold-repetition"
+    ?"Empate reivindicado porque a mesma posição apareceu pela terceira vez."
+    :chess.drawClaimed==="fifty-move-rule"
+      ?"Empate reivindicado pela regra dos 50 lances sem captura ou movimento de peão."
+      :moves.length===0&&!check
+        ?"Empate por afogamento: não há jogada legal e o rei não está em xeque."
+        :repetitions>=5
+          ?"Empate automático: a mesma posição apareceu cinco vezes."
+          :position.halfMoves>=150
+            ?"Empate automático pela regra dos 75 lances sem captura ou movimento de peão."
+            :insufficientMaterial(position)
+              ?"Empate por material insuficiente."
+              :null;
+  const finished=checkmate||drawReason!==null;
+  const canClaimThreefold=!finished&&repetitions>=3&&(!sync.online||sync.canAct);
+  const canClaimFiftyMove=!finished&&position.halfMoves>=100&&(!sync.online||sync.canAct);
+  const status=checkmate?`Xeque-mate! ${winner} venceu.`:drawReason??(canClaimThreefold?"A mesma posição apareceu três vezes. Você pode reivindicar empate.":canClaimFiftyMove?"A regra dos 50 lances está disponível. Você pode reivindicar empate.":check?"Xeque! Proteja o rei.":solo&&position.turn==="b"?"Morados estão pensando…":`Vez de ${solo?(position.turn==="w"?"você":"Morados"):"Pessoa "+(position.turn==="w"?1:2)}.`);
 
   useEffect(() => {
     if (!solo || sync.online || position.turn !== "b" || finished) return;
     const timer = window.setTimeout(() => {
+      const currentRepetitions=countChessPositionRepetitions(history,position);
+      if(currentRepetitions>=3||position.halfMoves>=100){
+        setChess((current)=>current.position.turn!=="b"?current:{...current,drawClaimed:currentRepetitions>=3?"threefold-repetition":"fifty-move-rule"});
+        return;
+      }
       const candidates = legalMovesFor(position, "b");
       if (!candidates.length) return;
       const values: Record<Kind, number> = { P: 100, N: 320, B: 335, R: 500, Q: 900, K: 20000 };
@@ -271,20 +294,21 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
       if (!best) return;
       setChess((current) => current.position.turn !== "b" ? current : ({
         position: applyMove(current.position, best),
-        history: [...current.history, current.position].slice(-60),
+        history: [...current.history, current.position],
         notation: [...current.notation, moveLabel(current.position, best)],
+        drawClaimed: null,
       }));
     }, 620);
     return () => window.clearTimeout(timer);
-  }, [solo, sync.online, position, finished, setChess]);
+  }, [solo, sync.online, position, history, finished, setChess]);
 
   function clickSquare(square:number){
-    if(finished || (solo && position.turn === "b"))return;
+    if(finished || (sync.online && !sync.canAct) || (solo && position.turn === "b"))return;
     const piece=position.board[square];
     if(selected!==null&&available.has(square)){
       const move=moves.find(m=>m.from===selected&&m.to===square);
       if(!move)return;
-      setChess({position:applyMove(position,move),history:[...history,position].slice(-60),notation:[...notation,moveLabel(position,move)]});
+      setChess({position:applyMove(position,move),history:[...history,position],notation:[...notation,moveLabel(position,move)],drawClaimed:null});
       setSelected(null);
       setMessage(null);
       return;
@@ -292,12 +316,21 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
     if(piece?.color===position.turn){setSelected(square);setMessage(null);}
     else {setSelected(null);setMessage("Selecione uma peça da sua cor.");}
   }
+  function claimDraw(reason:ChessDrawClaim){
+    if(finished||(sync.online&&!sync.canAct))return;
+    setChess((current)=>({...current,drawClaimed:reason}));
+    setSelected(null);setMessage(null);
+  }
   function undo(){
+    if(sync.online)return;
     const steps = solo && history.length >= 2 ? 2 : 1;
     const previous=history[history.length-steps];if(!previous)return;
-    setChess({position:previous,history:history.slice(0,-steps),notation:notation.slice(0,-steps)});setSelected(null);setMessage(null);
+    setChess({position:previous,history:history.slice(0,-steps),notation:notation.slice(0,-steps),drawClaimed:null});setSelected(null);setMessage(null);
   }
-  function restart(){setChess({position:initialPosition(),history:[],notation:[]});setSelected(null);setMessage(null);}
+  function restart(){
+    if(sync.online)return;
+    setChess({position:initialPosition(),history:[],notation:[],drawClaimed:null});setSelected(null);setMessage(null);
+  }
 
   return (
     <section className={"chess-game" + (solo ? " is-solo" : "")} aria-label="Xadrez">
@@ -306,12 +339,16 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
         <span className={position.turn==="b"?"is-active":""}><i className="chess-player-dot is-black"/> {solo ? "Morados · Pretas" : "Pessoa 2 · Pretas"}</span>
       </div>
       <div className={"chess-status"+(check?" is-check":"")} role="status" aria-live="polite">{status}</div>
+      {(canClaimThreefold||canClaimFiftyMove)&&<div className="chess-claim-actions" role="group" aria-label="Reivindicar empate">
+        {canClaimThreefold&&<button type="button" className="inline-action" onClick={()=>claimDraw("threefold-repetition")}>Reivindicar empate por repetição</button>}
+        {canClaimFiftyMove&&<button type="button" className="inline-action" onClick={()=>claimDraw("fifty-move-rule")}>Reivindicar empate pelos 50 lances</button>}
+      </div>}
       <div className="chess-board" role="grid" aria-label="Tabuleiro de xadrez">
         {position.board.map((piece,square)=>{
           const [r,c]=coords(square);
           return <button key={square} type="button" role="gridcell"
             className={["chess-square",(r+c)%2?"is-dark":"is-light",selected===square?"is-selected":"",available.has(square)?"is-legal":"",check&&piece?.kind==="K"&&piece.color===position.turn?"is-king-check":""].filter(Boolean).join(" ")}
-            onClick={()=>clickSquare(square)} disabled={finished || (solo && position.turn === "b")}
+            onClick={()=>clickSquare(square)} disabled={finished || (solo && position.turn === "b") || (sync.online && !sync.canAct)}
             aria-label={`${files[c]}${8-r}: ${piece?(piece.color==="w"?"branca ":"preta ")+({K:"rei",Q:"dama",R:"torre",B:"bispo",N:"cavalo",P:"peão"}[piece.kind]):"vazia"}`}
             aria-pressed={selected===square}>
             {piece&&<span className={"chess-piece "+(piece.color==="w"?"is-white":"is-black")} aria-hidden="true">{glyph[piece.color][piece.kind]}</span>}
@@ -321,15 +358,25 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
       </div>
       <div className="chess-actions">
         <span>{notation.length} lances · {position.fullMoves}ª rodada</span>
-        <div><button type="button" className="inline-action" onClick={undo} disabled={!history.length}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart}><RotateCcw/> Reiniciar</button></div>
+        <div><button type="button" className="inline-action" onClick={undo} disabled={!history.length||sync.online}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart} disabled={sync.online}><RotateCcw/> Reiniciar</button></div>
       </div>
       {message&&<p className="couple-game-error" role="alert">{message}</p>}
       <details className="chess-history">
         <summary>Histórico de lances</summary>
         <ol>{notation.map((move,i)=><li key={i}>{i+1}. {move}</li>)}</ol>
       </details>
-      {finished&&<div className="chess-end-panel"><strong>{status}</strong><button type="button" className="primary-action" onClick={restart}>Nova partida</button></div>}
-      <p className="chess-note">{solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}A promoção de peão é automática para dama.</p>
+      {finished&&!sync.online&&<GameVictoryScreen
+        won={drawReason!==null||(!solo&&checkmate)||position.turn==="b"}
+        outcome={drawReason!==null?"draw":position.turn==="b"?"win":solo?"loss":"win"}
+        eyebrow="XADREZ · RESULTADO"
+        title={drawReason!==null?"Empate!":solo?(position.turn==="b"?"Você venceu!":"Morados venceram!"):position.turn==="b"?"Pessoa 1 venceu!":"Pessoa 2 venceu!"}
+        subtitle={drawReason??`Xeque-mate! ${position.turn==="b"?(solo?"Você":"Pessoa 1"):(solo?"Morados":"Pessoa 2")} venceu a partida.`}
+        stats={[{label:"Lances",value:notation.length},{label:"Rodada",value:position.fullMoves},{label:"Peças no tabuleiro",value:position.board.filter(Boolean).length}]}
+        primaryLabel="Nova partida"
+        onReplay={restart}
+        onExit={()=>window.dispatchEvent(new Event("morados:game-exit"))}
+      />}
+      <p className="chess-note">{solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}A promoção de peão é automática para dama. A repetição tripla e os 50 lances permitem reivindicar empate; a repetição quíntupla e os 75 lances encerram a partida automaticamente.</p>
     </section>
   );
 }
