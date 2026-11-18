@@ -268,7 +268,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   const winner=position.turn==="w"?(solo?"Morados":"Pessoa 2"):(solo?"Você":"Pessoa 1");
   const repetitions=repetitionsInHistory(history,position);
   const checkmate=moves.length===0&&check;
-  const drawReason=chess.drawClaimed==="threefold-repetition"
+  const drawReason=checkmate?null:chess.drawClaimed==="threefold-repetition"
     ?"Empate reivindicado porque a mesma posição apareceu pela terceira vez."
     :chess.drawClaimed==="fifty-move-rule"
       ?"Empate reivindicado pela regra dos 50 lances sem captura ou movimento de peão."
