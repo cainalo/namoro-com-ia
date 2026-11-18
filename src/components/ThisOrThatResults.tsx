@@ -25,6 +25,8 @@ export function ThisOrThatResults({
   const matched = entries.filter((entry) => entry.matched).length;
   const different = total - matched;
   const percentage = total > 0 ? Math.round((matched / total) * 100) : 0;
+  const matchedLabel = matched === 1 ? "igual" : "iguais";
+  const differentLabel = different === 1 ? "diferente" : "diferentes";
   const firstLabel = mode === "local" ? "Pessoa 1" : "Você";
   const secondLabel = mode === "solo" ? "Morados" : mode === "local" ? "Pessoa 2" : "Outra pessoa";
   const title = mode === "solo" ? "Você e Morados" : "O que vocês têm em comum?";
@@ -72,8 +74,8 @@ export function ThisOrThatResults({
             </div>
 
             <div className="this-or-that-result-stats">
-              <div className="is-same"><Heart aria-hidden="true" /><strong>{matched}</strong><span>iguais</span></div>
-              <div className="is-different"><span className="this-or-that-result-different-mark">↔</span><strong>{different}</strong><span>diferentes</span></div>
+              <div className="is-same" aria-label={`${matched} ${matchedLabel}`}><Heart aria-hidden="true" /><strong>{matched}</strong><span>{matchedLabel}</span></div>
+              <div className="is-different" aria-label={`${different} ${differentLabel}`}><span className="this-or-that-result-different-mark">↔</span><strong>{different}</strong><span>{differentLabel}</span></div>
             </div>
           </div>
 
