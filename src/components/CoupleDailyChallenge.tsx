@@ -528,10 +528,10 @@ export function CoupleDailyChallenge({ userId }: { userId: string }) {
             <p className="couple-daily-instruction">{challenge.instruction}</p>
 
             <div className="couple-daily-completion" aria-live="polite">
-              <p className={completedByMe ? "is-complete" : ""}>
+              <p aria-label={"Você: " + (completedByMe ? "Concluído" : "Pendente")} className={completedByMe ? "is-complete" : ""}>
                 Você: <strong>{completedByMe ? "Concluído" : "Pendente"}</strong>
               </p>
-              <p className={completedByPartner ? "is-complete" : ""}>
+              <p aria-label={"Outra pessoa: " + (completedByPartner ? "Concluído" : "Pendente")} className={completedByPartner ? "is-complete" : ""}>
                 Outra pessoa: <strong>{completedByPartner ? "Concluído" : "Pendente"}</strong>
               </p>
               {completedByMe && completedByPartner && (
