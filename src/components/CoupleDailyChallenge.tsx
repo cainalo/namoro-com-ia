@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { GameVictoryScreen } from "@/components/GameExperience";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listDailyChallengeProgress,
@@ -226,6 +227,7 @@ export function CoupleDailyChallenge({ userId }: { userId: string }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [realtimeStatus, setRealtimeStatus] = useState<"connecting" | "connected" | "offline">("connecting");
+  const [showCompletion, setShowCompletion] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -381,6 +383,11 @@ export function CoupleDailyChallenge({ userId }: { userId: string }) {
       : [];
   const completedByMe = todayProgress.some((item) => item.user_id === userId);
   const completedByPartner = todayProgress.some((item) => item.user_id !== userId);
+  useEffect(() => {
+    if (state.status === "active" && challenge && completedByMe && completedByPartner) {
+      setShowCompletion(true);
+    }
+  }, [state.status, challenge?.id, completedByMe, completedByPartner]);
   const previousDates =
     state.status === "active"
       ? [...new Set(
@@ -552,6 +559,22 @@ export function CoupleDailyChallenge({ userId }: { userId: string }) {
             </p>
           </div>
 
+          {showCompletion && challenge && (
+            <GameVictoryScreen
+              won
+              eyebrow="DESAFIO DO DIA"
+              title="Vocês conseguiram!"
+              subtitle={challenge.title + ". A missão foi marcada como concluída pelas duas pessoas."}
+              stats={[
+                { label: "Participantes", value: "2/2" },
+                { label: "Categoria", value: challenge.category },
+                { label: "Data", value: new Intl.DateTimeFormat("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "short" }).format(new Date()) },
+              ]}
+              primaryLabel="Ver desafio"
+              onReplay={() => setShowCompletion(false)}
+              onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
+            />
+          )}
           <section className="couple-daily-history" aria-labelledby="couple-daily-history-title">
             <header>
               <h2 id="couple-daily-history-title">Histórico recente</h2>
