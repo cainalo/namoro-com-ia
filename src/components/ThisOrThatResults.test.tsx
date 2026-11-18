@@ -17,8 +17,8 @@ describe("ThisOrThatResults", () => {
     expect(dialog).toHaveAttribute("data-result-mode", "local");
     expect(dialog).toHaveTextContent("2/3");
     expect(dialog).toHaveTextContent("67%");
-    expect(dialog).toHaveTextContent("2 iguais");
-    expect(dialog).toHaveTextContent("1 diferentes");
+    expect(screen.getByLabelText("2 iguais")).toBeInTheDocument();
+    expect(screen.getByLabelText("1 diferente")).toBeInTheDocument();
     expect(dialog.querySelectorAll(".this-or-that-result-list > li")).toHaveLength(3);
     expect(dialog).toHaveTextContent("Pessoa 1");
     expect(dialog).toHaveTextContent("Pessoa 2");
