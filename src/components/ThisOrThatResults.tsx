@@ -111,7 +111,7 @@ export function ThisOrThatResults({
         </main>
       </div>
 
-      <footer className="this-or-that-result-actions">
+      <footer className="this-or-that-result-actions" data-has-replay={onReplay ? "true" : "false"}>
         {onReplay ? (
           <button type="button" className="this-or-that-result-replay" onClick={onReplay}>
             <RotateCcw aria-hidden="true" /> Jogar outra rodada
