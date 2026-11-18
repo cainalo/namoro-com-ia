@@ -40,6 +40,34 @@ describe("LocalConnectFourGame", () => {
     expect(screen.getByRole("dialog", { name: "Pessoa 2 venceu!" })).toHaveAttribute("data-outcome", "defeat");
   });
 
+  it("recognizes a complete 42-move draw and allows a clean rematch", () => {
+    const { container } = render(<LocalConnectFourGame />);
+
+    // Legal column sequence: both players fill the board without making four in a row.
+    [
+      2, 5, 7, 7, 7, 1, 3, 1, 4, 7, 4, 4, 6, 4,
+      7, 2, 1, 4, 1, 5, 4, 6, 1, 7, 6, 3, 3, 6,
+      2, 3, 3, 1, 3, 6, 5, 6, 5, 5, 5, 2, 2, 2,
+    ].forEach(drop);
+
+    const result = screen.getByRole("dialog", { name: "Empate!" });
+    expect(result).toHaveAttribute("data-outcome", "draw");
+    expect(result).toHaveTextContent("As colunas se completaram sem uma sequência de quatro peças.");
+    expect(result).toHaveTextContent("42");
+    expect(container.querySelectorAll(".connect-four-cell")).toHaveLength(42);
+    expect(screen.getByRole("status")).toHaveTextContent("Deu velha!");
+
+    for (let column = 1; column <= 7; column += 1) {
+      expect(screen.getByRole("button", { name: `Soltar peça na coluna ${column}` })).toBeDisabled();
+    }
+
+    fireEvent.click(screen.getByRole("button", { name: "Jogar novamente" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Vez de Pessoa 1");
+    expect(container.querySelectorAll('.connect-four-cell[aria-label$="vazia"]')).toHaveLength(42);
+  });
+
   it("returns to the game library through the existing game-exit event", () => {
     render(<LocalConnectFourGame />);
     const onExit = vi.fn();
