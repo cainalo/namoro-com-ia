@@ -70,10 +70,10 @@ describe("CoupleDailyChallenge online completion", () => {
     render(<CoupleDailyChallenge userId="user-1" />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Marcar como concluído" }));
-    await waitFor(() => expect(screen.getByText(/Você: Concluído/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByLabelText("Você: Concluído")).toBeInTheDocument());
 
     expect(screen.queryByRole("dialog", { name: "Vocês conseguiram!" })).not.toBeInTheDocument();
-    expect(screen.getByText(/Outra pessoa: Pendente/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Outra pessoa: Pendente")).toBeInTheDocument();
 
     const saved = mocks.saveDailyChallengeCompletion.mock.calls[0][0] as {
       coupleId: string;
