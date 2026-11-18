@@ -262,6 +262,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   const {position,history,notation}=chess;
   const [selected,setSelected]=useState<number|null>(null);
   const [message,setMessage]=useState<string|null>(null);
+  const [promotionPending,setPromotionPending]=useState<Move|null>(null);
   const moves=useMemo(()=>position.turn==="w"?legalMovesFor(position,"w"):legalMovesFor(position,"b"),[position]);
   const available=useMemo(()=>new Set(moves.filter(m=>m.from===selected).map(m=>m.to)),[moves,selected]);
   const check=inCheck(position,position.turn);
@@ -338,15 +339,21 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
     return () => window.clearTimeout(timer);
   }, [solo, sync.online, position, history, finished, setChess]);
 
+  function commitMove(move:Move){
+    setChess({position:applyMove(position,move),history:[...history,position],notation:[...notation,moveLabel(position,move)],drawClaimed:null});
+    setSelected(null);
+    setPromotionPending(null);
+    setMessage(null);
+  }
+
   function clickSquare(square:number){
     if(finished || (sync.online && !sync.canAct) || (solo && position.turn === "b"))return;
     const piece=position.board[square];
     if(selected!==null&&available.has(square)){
       const move=moves.find(m=>m.from===selected&&m.to===square);
       if(!move)return;
-      setChess({position:applyMove(position,move),history:[...history,position],notation:[...notation,moveLabel(position,move)],drawClaimed:null});
-      setSelected(null);
-      setMessage(null);
+      if(move.promotion){setPromotionPending(move);return;}
+      commitMove(move);
       return;
     }
     if(piece?.color===position.turn){setSelected(square);setMessage(null);}
@@ -355,7 +362,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   function claimDraw(reason:ChessDrawClaim){
     if(finished||(sync.online&&!sync.canAct))return;
     setChess((current)=>({...current,drawClaimed:reason}));
-    setSelected(null);setMessage(null);
+    setSelected(null);setPromotionPending(null);setMessage(null);
   }
   function undo(){
     if(sync.online)return;
@@ -397,6 +404,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
         <div><button type="button" className="inline-action" onClick={undo} disabled={!history.length||sync.online}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart} disabled={sync.online}><RotateCcw/> Reiniciar</button></div>
       </div>
       {message&&<p className="couple-game-error" role="alert">{message}</p>}
+      {promotionPending&&<div className="chess-promotion-backdrop" role="presentation"><section className="chess-promotion-dialog" role="dialog" aria-modal="true" aria-labelledby="chess-promotion-title"><p className="date-kicker">PROMOÇÃO DE PEÃO</p><h3 id="chess-promotion-title">Escolha sua nova peça</h3><p>Você pode promover para dama, torre, bispo ou cavalo.</p><div className="chess-promotion-options">{(["Q","R","B","N"] as const).map(kind=><button key={kind} type="button" onClick={()=>commitMove({...promotionPending,promotion:kind})} aria-label={`Promover para ${{Q:"dama",R:"torre",B:"bispo",N:"cavalo"}[kind]}`}><span aria-hidden="true">{glyph[position.turn][kind]}</span><small>{{Q:"Dama",R:"Torre",B:"Bispo",N:"Cavalo"}[kind]}</small></button>)}</div><button type="button" className="inline-action" onClick={()=>setPromotionPending(null)}>Cancelar jogada</button></section></div>}
       <details className="chess-history">
         <summary>Histórico de lances</summary>
         <ol>{notation.map((move,i)=><li key={i}>{i+1}. {move}</li>)}</ol>
@@ -412,7 +420,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
         onReplay={restart}
         onExit={()=>window.dispatchEvent(new Event("morados:game-exit"))}
       />}
-      <p className="chess-note">{sync.online ? "Partida online: as jogadas e os resultados são sincronizados com a outra conta. " : solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}A promoção de peão é automática para dama. A repetição tripla e os 50 lances permitem reivindicar empate; a repetição quíntupla e os 75 lances encerram a partida automaticamente.</p>
+      <p className="chess-note">{sync.online ? "Partida online: as jogadas e os resultados são sincronizados com a outra conta. " : solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}Ao chegar à última fileira, escolha entre dama, torre, bispo ou cavalo. A repetição tripla e os 50 lances permitem reivindicar empate; a repetição quíntupla e os 75 lances encerram a partida automaticamente.</p>
     </section>
   );
 }
