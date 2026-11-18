@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { RotateCcw, Trophy } from "lucide-react";
 import { createMoradosPreferenceProfile, getFreshThisOrThatRound } from "@/lib/this-or-that";
+import { ThisOrThatResults } from "@/components/ThisOrThatResults";
 
 const CONNECT_WIDTH = 7;
 const CONNECT_HEIGHT = 6;
@@ -185,7 +186,6 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
   const question=round[index];
   const firstAnswers=round.filter((item)=>answers[item.id]?.first).length;
   const secondAnswers=round.filter((item)=>answers[item.id]?.second).length;
-  const matched=round.filter((item)=>answers[item.id]?.first&&answers[item.id]?.first===answers[item.id]?.second).length;
   const results=useMemo(()=>round.map((item)=>({question:item,answers:answers[item.id]??{first:null,second:null}})),[round,answers]);
 
   function choose(value:"a"|"b") {
@@ -238,21 +238,20 @@ export function LocalThisOrThatGame({ solo = false }: { solo?: boolean }) {
           <div className="local-choice-counts">{solo ? <span>Suas respostas: {firstAnswers}/{round.length}</span> : <><span>Pessoa 1: {firstAnswers}/{round.length}</span><span>Pessoa 2: {secondAnswers}/{round.length}</span></>}</div>
         </>
       ):(
-        <div className="local-choice-results">
-          <p className="date-kicker">Resultado final</p>
-          <h3>{solo ? "Você combina com Morados?" : "Quantas escolhas combinaram?"}</h3>
-          <div className="local-choice-score"><strong>{matched}</strong><span>de {round.length} em comum</span></div>
-          <ol>
-            {results.map(({question:item,answers:result})=>(
-              <li key={item.id}>
-                <strong>{item.prompt}</strong>
-                <span className={result.first===result.second?"is-match":""}>{solo ? "Você" : "Pessoa 1"}: {result.first==="a"?item.a:item.b}</span>
-                <span className={result.first===result.second?"is-match":""}>{solo ? "Morados" : "Pessoa 2"}: {result.second==="a"?item.a:item.b}</span>
-              </li>
-            ))}
-          </ol>
-          <button type="button" className="primary-action" onClick={restart}><RotateCcw aria-hidden="true"/> Jogar novamente</button>
-        </div>
+        <ThisOrThatResults
+          mode={solo ? "solo" : "local"}
+          entries={results
+            .filter(({ answers:result }) => result.first !== null && result.second !== null)
+            .map(({ question:item, answers:result }) => ({
+              id: item.id,
+              prompt: item.prompt,
+              firstChoice: result.first === "a" ? item.a : item.b,
+              secondChoice: result.second === "a" ? item.a : item.b,
+              matched: result.first === result.second,
+            }))}
+          onReplay={restart}
+          onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
+        />
       )}
     </section>
   );
