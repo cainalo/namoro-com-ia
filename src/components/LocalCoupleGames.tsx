@@ -313,7 +313,7 @@ export function LocalDailyChallengeGame({ solo = false }: { solo?: boolean }) {
           <p>{solo ? challenge.solo : challenge.instruction}</p>
           <div className="local-daily-players">
             {(solo ? [0] as const : [0,1] as const).map((player)=>(
-              <button type="button" key={player} className={done[player]?"is-complete":""} onClick={()=>setDone((current)=>current.map((value,index)=>index===player?!value:value) as [boolean,boolean])}>
+              <button type="button" key={player} aria-label={(done[player] ? "Missão concluída" : "Marcar conclusão") + " — " + (solo ? "Você" : "Pessoa " + (player+1))} className={done[player]?"is-complete":""} onClick={()=>setDone((current)=>current.map((value,index)=>index===player?!value:value) as [boolean,boolean])}>
                 <span className="local-daily-check">{done[player]?"✓":player+1}</span>
                 <strong>{solo ? "Você" : `Pessoa ${player+1}`}</strong>
                 <small>{done[player]?"Missão concluída":"Marcar conclusão"}</small>
