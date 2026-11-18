@@ -108,7 +108,7 @@ describe("ChessGame draw rules", () => {
     render(<ChessGame />);
 
     expect(screen.queryByRole("button", { name: /Reivindicar empate/ })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "g1: branca cavalo" })).toBeDisabled();
+    expect(screen.getByRole("gridcell", { name: "g1: branca cavalo" })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Desfazer/ })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Reiniciar/ })).toBeDisabled();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
