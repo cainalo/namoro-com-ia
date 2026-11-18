@@ -6,7 +6,7 @@ import {
 } from "./chess-repetition";
 
 function position(overrides: Partial<ChessPositionIdentity> = {}): ChessPositionIdentity {
-  const board: ChessPositionIdentity["board"] = Array(64).fill(null);
+  const board: Array<ChessPositionIdentity["board"][number]> = Array(64).fill(null);
   const pieces = [
     [60, { color: "w", kind: "K" }],
     [4, { color: "b", kind: "K" }],
@@ -62,6 +62,6 @@ describe("chess repetition identity", () => {
   it("does not include move counters in the repetition identity", () => {
     const current = position();
 
-    expect(chessPositionKey(current)).toBe(chessPositionKey(position()));
+    expect(chessPositionKey(current)).toBe(chessPositionKey({ ...current, halfMoves: 87 } as ChessPositionIdentity));
   });
 });
