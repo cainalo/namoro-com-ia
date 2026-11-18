@@ -16864,13 +16864,42 @@ h3,
   text-align: center;
 }
 .local-daily-date {
-  margin-bottom: 1.6rem;
+  margin-bottom: 0.8rem;
   color: var(--muted-foreground);
   font-size: 0.67rem;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
-.local-daily-game h3 { margin-bottom: 0.75rem; }
+.local-daily-meta {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.local-daily-meta > span:last-child {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--secondary);
+  padding: 5px 9px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-weight: 800;
+}
+.local-daily-game h3 { margin-bottom: 0.65rem; }
+.local-daily-objective {
+  max-width: 40rem !important;
+  margin: 0 auto 0.8rem !important;
+  border-left: 3px solid var(--primary);
+  border-radius: 0 9px 9px 0;
+  background: color-mix(in srgb, var(--primary) 8%, var(--card));
+  padding: 9px 12px;
+  color: var(--foreground) !important;
+  font-size: 0.8rem !important;
+  font-weight: 750;
+  line-height: 1.5 !important;
+}
 .local-daily-game > p {
   max-width: 38rem;
   margin: 0 auto 1.4rem;
@@ -26449,6 +26478,16 @@ body {
   font-size: 9px;
   font-weight: 900;
 }
+.game-play-surface .local-daily-meta > span:last-child {
+  border-color: var(--game-page-accent);
+  background: var(--game-page-soft);
+  color: var(--game-page-deep);
+}
+.game-play-surface .local-daily-objective {
+  border-left-color: var(--game-page-accent);
+  background: var(--game-page-soft);
+  color: var(--game-page-deep) !important;
+}
 .game-play-surface .local-daily-players button {
   border: 2px solid var(--game-page-accent);
   border-radius: 16px;
@@ -29531,6 +29570,16 @@ html[data-morados-game-open="true"] .app-main,html[data-morados-game-open="true"
   box-shadow:none!important;
 }
 .game-world .game-play-surface .local-game-progress,
+.game-world .game-play-surface .local-daily-meta > span:last-child {
+  border-color: var(--border) !important;
+  background: var(--world-panel-2) !important;
+  color: var(--world-muted) !important;
+}
+.game-world .game-play-surface .local-daily-objective {
+  border-left-color: var(--world-accent) !important;
+  background: var(--world-panel) !important;
+  color: var(--world-ink) !important;
+}
 .game-world .game-play-surface .local-daily-date,
 .game-world .game-play-surface .local-daily-players{color:var(--world-muted)!important}
 .game-world .game-play-surface .local-choice-progress{border:1px solid var(--border)!important;background:var(--world-panel-2)!important}
