@@ -129,7 +129,18 @@ jobs:
           git add android bun.lock
           if ! git diff --cached --quiet; then
             git commit -m "Generate Capacitor Android platform"
-            git push origin HEAD:main
+            # Another workflow or direct main commit may have landed after checkout.
+            # Rebase the generated native-project commit on the latest main before pushing.
+            for attempt in 1 2 3; do
+              git fetch origin main
+              git rebase origin/main
+              if git push origin HEAD:main; then
+                exit 0
+              fi
+              echo "Push rejected because main moved; retrying with the newest main (attempt ${attempt}/3)."
+            done
+            echo "::error::Could not update main with the generated Capacitor Android project after three attempts."
+            exit 1
           fi
 
       - name: Build Android APK
