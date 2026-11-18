@@ -102,6 +102,21 @@ describe("ChessGame draw rules", () => {
     expect(result).toHaveTextContent("Peças no tabuleiro");
   });
 
+  it("keeps checkmate ahead of the automatic 75-move draw", () => {
+    const board: Array<{ color: "w" | "b"; kind: "K" | "Q" | "R" | "B" | "N" | "P" } | null> = Array(64).fill(null);
+    board[63] = { color: "w", kind: "K" };
+    board[45] = { color: "b", kind: "K" };
+    board[54] = { color: "b", kind: "Q" };
+    setGameState(makePosition({ board, turn: "w", halfMoves: 150 }));
+
+    render(<ChessGame solo />);
+
+    const result = screen.getByRole("dialog", { name: "Morados venceram!" });
+    expect(result).toHaveClass("is-defeat");
+    expect(result).toHaveTextContent("Xeque-mate!");
+    expect(screen.queryByRole("dialog", { name: "Empate!" })).not.toBeInTheDocument();
+  });
+
   it("keeps an online board locked when it is not this player's turn", () => {
     mocks.sync = { online: true, mySeat: 1, canAct: false };
 
