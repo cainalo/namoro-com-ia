@@ -166,4 +166,38 @@ describe("ChessGame draw rules", () => {
     expect(screen.getByRole("button", { name: /Reiniciar/ })).toBeDisabled();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
+
+  it("lets the player choose among all four legal promotion pieces", () => {
+    const board: Array<{ color: "w" | "b"; kind: "K" | "Q" | "R" | "B" | "N" | "P" } | null> = Array(64).fill(null);
+    board[60] = { color: "w", kind: "K" };
+    board[4] = { color: "b", kind: "K" };
+    board[8] = { color: "w", kind: "P" };
+    setGameState(makePosition({ board, turn: "w" }));
+    render(<ChessGame />);
+    fireEvent.click(screen.getByRole("gridcell", { name: "a7: branca peão" }));
+    fireEvent.click(screen.getByRole("gridcell", { name: "a8: vazia" }));
+    expect(screen.getByRole("dialog", { name: "Escolha sua nova peça" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Promover para dama" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Promover para torre" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Promover para bispo" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Promover para cavalo" }));
+    const next = mocks.setChess.mock.calls[0][0] as { position: { board: Array<{ color: string; kind: string } | null> } };
+    expect(next.position.board[0]).toEqual({ color: "w", kind: "N" });
+    expect(next.position.board[8]).toBeNull();
+  });
+
+  it("allows cancelling a promotion choice without changing the board", () => {
+    const board: Array<{ color: "w" | "b"; kind: "K" | "Q" | "R" | "B" | "N" | "P" } | null> = Array(64).fill(null);
+    board[60] = { color: "w", kind: "K" };
+    board[4] = { color: "b", kind: "K" };
+    board[8] = { color: "w", kind: "P" };
+    setGameState(makePosition({ board, turn: "w" }));
+    render(<ChessGame />);
+    fireEvent.click(screen.getByRole("gridcell", { name: "a7: branca peão" }));
+    fireEvent.click(screen.getByRole("gridcell", { name: "a8: vazia" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar jogada" }));
+    expect(screen.queryByRole("dialog", { name: "Escolha sua nova peça" })).not.toBeInTheDocument();
+    expect(mocks.setChess).not.toHaveBeenCalled();
+  });
+
 });
