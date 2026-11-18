@@ -18,12 +18,13 @@ Atualizado em 18 de novembro de 2026. A auditoria e a direção inicial da trans
 - [x] Implementar o piloto visual de Jogos: biblioteca, briefings individuais, escolha de modalidade e pausa; revisão de cada experiência e suas telas de resultado continua pendente.
 - [x] Documentar o padrão permanente de qualidade para design, programação, acessibilidade, testes e playtests de todos os jogos em `docs/PADRAO_QUALIDADE_JOGOS.md`.
 - [ ] Fazer uma revisão completa de cada jogo com ficha de design, teste de usabilidade e validação dos modos.
-- [x] Iniciar a revisão individual pelo Lig 4 local: resultado em tela inteira, identificação de vitória/derrota, reinício e retorno à biblioteca; empate no modo local ainda pendente.
+- [x] Concluir a revisão funcional automatizada do Lig 4 local: resultados em tela inteira para vitória, derrota e empate; reinício e retorno à biblioteca; empate validado com uma sequência legal de 42 jogadas sem vencedor. Playtest manual ainda pendente.
 - [x] Concluir o piloto do resultado online do Lig 4: vitória/derrota/empate em tela inteira, revisão do tabuleiro, retorno à partida em andamento e nova partida sem apagar o histórico.
 - [x] Revisar Damas brasileiras nos modos individual, presencial e online: tela integral de resultado, identificação correta de modalidade, histórico do motor sincronizado e empates regulamentares.
 - [x] Revisar Isto ou aquilo? nas modalidades individual, presencial e online: perfil de preferências solo consistente; resultado em tela inteira com pontuação e revisão das respostas; passagem do aparelho sem revelar a escolha anterior; validação automática para exigir as duas respostas em todas as perguntas.
 - [x] Ampliar o Desafio do dia local/individual para 20 missões com objetivo e duração sugerida, com encerramento em tela inteira; no online, manter histórico/realtime e apresentar resultado integral quando ambos concluem.
 - [x] Validar automaticamente a conclusão do Desafio do dia nas modalidades local, individual e online, incluindo chegada da confirmação do parceiro por realtime.
+- [ ] Executar playtest manual do Lig 4 solo e presencial, avaliando clareza, equilíbrio, ritmo e controles em tela pequena.
 - [ ] Executar playtest manual das três modalidades do Desafio do dia em dois aparelhos e avaliar clareza das instruções e ritmo das missões.
 
 ## Confiabilidade e funcionalidades
@@ -42,4 +43,4 @@ Atualizado em 18 de novembro de 2026. A auditoria e a direção inicial da trans
 - [x] Aplicativo React/TypeScript com Supabase próprio e empacotamento Capacitor Android.
 - [x] Navegação principal e módulos Feed, Conversa, Memórias, Planos, Casa, Perfil e Jogos.
 - [x] Catálogo com 14 jogos e fluxo de entrada individual.
-- [x] APK Android build 300 (versão 1.4.4), com assinatura verificada no workflow.
+- [x] APK Android build 358 (versão 1.4.4), com assinatura verificada no workflow.
