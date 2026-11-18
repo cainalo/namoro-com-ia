@@ -243,7 +243,8 @@ function moveLabel(position:Position,move:Move) {
   if(move.castle==="king")return "O-O";
   if(move.castle==="queen")return "O-O-O";
   const capture=Boolean(position.board[move.to]||move.enPassant);
-  return (piece?.kind==="P"?"":piece?.kind)+squareName(move.from)+(capture?"×":"–")+squareName(move.to)+(move.promotion?"=D":"");
+  const promotionNotation:Record<Kind,string>={K:"",Q:"D",R:"T",B:"B",N:"C",P:""};
+  return (piece?.kind==="P"?"":piece?.kind)+squareName(move.from)+(capture?"×":"–")+squareName(move.to)+(move.promotion?"="+promotionNotation[move.promotion]:"");
 }
 
 type ChessDrawClaim = "threefold-repetition" | "fifty-move-rule";
