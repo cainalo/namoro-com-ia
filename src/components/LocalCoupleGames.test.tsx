@@ -116,7 +116,7 @@ describe("LocalDailyChallengeGame", () => {
     expect(screen.getByText(/[0-9]+ minutos/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Marcar conclusão/ })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Marcar conclusão" }));
+    fireEvent.click(screen.getByRole("button", { name: /Marcar conclusão/ }));
 
     const result = screen.getByRole("dialog", { name: "Missão cumprida!" });
     expect(result).toHaveAttribute("aria-modal", "true");
@@ -124,7 +124,7 @@ describe("LocalDailyChallengeGame", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Refazer missão" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Marcar conclusão" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Marcar conclusão/ })).toBeInTheDocument();
   });
 
   it("does not show the shared victory until both local players complete", () => {
@@ -138,7 +138,7 @@ describe("LocalDailyChallengeGame", () => {
     expect(screen.queryByRole("dialog", { name: "Vocês conseguiram!" })).not.toBeInTheDocument();
     expect(screen.getByText(/Uma pessoa já concluiu/)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Marcar conclusão" }));
+    fireEvent.click(screen.getByRole("button", { name: /Marcar conclusão/ }));
     const result = screen.getByRole("dialog", { name: "Vocês conseguiram!" });
     expect(result).toHaveTextContent("2/2");
 
