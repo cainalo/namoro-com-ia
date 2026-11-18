@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { GameVictoryScreen } from "@/components/GameExperience";
 import { useGameState } from "@/components/OnlineGameHost";
-import { countChessPositionRepetitions } from "@/lib/chess-repetition";
+import { countChessPositionRepetitions, type ChessPositionIdentity } from "@/lib/chess-repetition";
 import type { GameOutcome } from "@/lib/online-game";
 import { RotateCcw, Undo2 } from "lucide-react";
 
@@ -202,6 +202,36 @@ function legalMovesFor(position:Position,color:Color,from?:number):Move[] {
   return moves;
 }
 
+function legalEnPassantRight(position:Position):number|null{
+  if(position.enPassant===null)return null;
+  const [targetRow,targetCol]=coords(position.enPassant);
+  const sourceRow=targetRow+(position.turn==="w"?1:-1);
+  const captured=position.board[idx(sourceRow,targetCol)];
+  if(captured?.color!==opposite(position.turn)||captured.kind!=="P")return null;
+  for(const sourceCol of [targetCol-1,targetCol+1]){
+    if(!inside(sourceRow,sourceCol))continue;
+    const from=idx(sourceRow,sourceCol);
+    const pawn=position.board[from];
+    if(pawn?.color!==position.turn||pawn.kind!=="P")continue;
+    const after=applyMove(position,{from,to:position.enPassant,enPassant:true});
+    if(!inCheck(after,position.turn))return position.enPassant;
+  }
+  return null;
+}
+
+function repetitionIdentity(position:Position):ChessPositionIdentity{
+  return {
+    board:position.board,
+    turn:position.turn,
+    castling:position.castling,
+    enPassant:legalEnPassantRight(position),
+  };
+}
+
+function repetitionsInHistory(history:Position[],current:Position):number{
+  return countChessPositionRepetitions(history.map(repetitionIdentity),repetitionIdentity(current));
+}
+
 function insufficientMaterial(p:Position) {
   const pieces=p.board.filter(Boolean) as Piece[];
   if(pieces.some(x=>x.kind==="P"||x.kind==="Q"||x.kind==="R"))return false;
@@ -222,7 +252,7 @@ function chessOutcome(s:ChessShared):GameOutcome|null{
   const p=s.position;
   const moves=legalMovesFor(p,p.turn);
   if(moves.length===0)return inCheck(p,p.turn)?{kind:"win",winnerSeat:p.turn==="w"?1:0}:{kind:"draw"};
-  const repetitions=countChessPositionRepetitions(s.history,p);
+  const repetitions=repetitionsInHistory(s.history,p);
   if(s.drawClaimed||repetitions>=5||p.halfMoves>=150||insufficientMaterial(p))return {kind:"draw"};
   return null;
 }
@@ -236,7 +266,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   const available=useMemo(()=>new Set(moves.filter(m=>m.from===selected).map(m=>m.to)),[moves,selected]);
   const check=inCheck(position,position.turn);
   const winner=position.turn==="w"?(solo?"Morados":"Pessoa 2"):(solo?"Você":"Pessoa 1");
-  const repetitions=countChessPositionRepetitions(history,position);
+  const repetitions=repetitionsInHistory(history,position);
   const checkmate=moves.length===0&&check;
   const drawReason=chess.drawClaimed==="threefold-repetition"
     ?"Empate reivindicado porque a mesma posição apareceu pela terceira vez."
@@ -259,9 +289,15 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   useEffect(() => {
     if (!solo || sync.online || position.turn !== "b" || finished) return;
     const timer = window.setTimeout(() => {
-      const currentRepetitions=countChessPositionRepetitions(history,position);
+      const currentRepetitions=repetitionsInHistory(history,position);
       if(currentRepetitions>=3||position.halfMoves>=100){
-        setChess((current)=>current.position.turn!=="b"?current:{...current,drawClaimed:currentRepetitions>=3?"threefold-repetition":"fifty-move-rule"});
+        setChess((current)=>{
+          if(current.position.turn!=="b")return current;
+          const latestRepetitions=repetitionsInHistory(current.history,current.position);
+          if(latestRepetitions>=3)return {...current,drawClaimed:"threefold-repetition"};
+          if(current.position.halfMoves>=100)return {...current,drawClaimed:"fifty-move-rule"};
+          return current;
+        });
         return;
       }
       const candidates = legalMovesFor(position, "b");
