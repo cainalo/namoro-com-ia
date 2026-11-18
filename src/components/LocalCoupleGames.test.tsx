@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { LocalConnectFourGame } from "./LocalCoupleGames";
+import { LocalConnectFourGame, LocalThisOrThatGame } from "./LocalCoupleGames";
 
 function drop(column: number) {
   fireEvent.click(screen.getByRole("button", { name: `Soltar peça na coluna ${column}` }));
@@ -48,6 +48,60 @@ describe("LocalConnectFourGame", () => {
     [1, 2, 1, 2, 1, 2, 1].forEach(drop);
     fireEvent.click(screen.getByRole("button", { name: "Voltar à biblioteca" }));
 
+    expect(onExit).toHaveBeenCalledTimes(1);
+    window.removeEventListener("morados:game-exit", onExit);
+  });
+});
+
+
+describe("LocalThisOrThatGame", () => {
+  function choose(container: HTMLElement, option: 0 | 1) {
+    const buttons = container.querySelectorAll<HTMLButtonElement>(".local-choice-options > button");
+    const button = buttons[option];
+    if (!button) throw new Error("The current question does not expose both choices.");
+    fireEvent.click(button);
+  }
+
+  it("finishes solo mode with a dedicated result and starts a fresh round", () => {
+    const { container } = render(<LocalThisOrThatGame solo />);
+
+    for (let question = 0; question < 15; question += 1) {
+      choose(container, 0);
+    }
+
+    const result = screen.getByRole("dialog", { name: "Você e Morados" });
+    expect(result).toHaveAttribute("data-result-mode", "solo");
+    expect(result.querySelectorAll(".this-or-that-result-list > li")).toHaveLength(15);
+    expect(result).toHaveTextContent("Você");
+    expect(result).toHaveTextContent("Morados");
+    expect(result).toHaveTextContent("perfil de respostas criado pelo próprio jogo");
+
+    fireEvent.click(screen.getByRole("button", { name: "Jogar outra rodada" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByText("Pergunta 1 de 15")).toBeInTheDocument();
+  });
+
+  it("keeps each player's answers hidden during handoff and reveals the full comparison at the end", () => {
+    const { container } = render(<LocalThisOrThatGame />);
+    const onExit = vi.fn();
+    window.addEventListener("morados:game-exit", onExit);
+
+    for (let question = 0; question < 15; question += 1) {
+      choose(container, 0);
+      expect(screen.getByRole("heading", { name: "Passe o aparelho para a Pessoa 2." })).toBeInTheDocument();
+      expect(container.querySelector(".local-choice-results")).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole("button", { name: "Estou com o aparelho" }));
+      choose(container, 0);
+    }
+
+    const result = screen.getByRole("dialog", { name: "O que vocês têm em comum?" });
+    expect(result).toHaveAttribute("data-result-mode", "local");
+    expect(result.querySelectorAll(".this-or-that-result-list > li.is-matched")).toHaveLength(15);
+    expect(result.querySelectorAll(".this-or-that-result-list > li.is-different")).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Voltar aos jogos" }));
     expect(onExit).toHaveBeenCalledTimes(1);
     window.removeEventListener("morados:game-exit", onExit);
   });
