@@ -6,6 +6,7 @@ import {
   type CoupleGameChoice,
 } from "@/lib/couple-game";
 import { getDailyThisOrThatRound } from "@/lib/this-or-that";
+import { ThisOrThatResults } from "@/components/ThisOrThatResults";
 
 type GameQuestion = {
   id: string;
@@ -536,6 +537,19 @@ export function CoupleGame({ userId }: CoupleGameProps) {
             )}
           </section>
         </>
+      )}
+      {state.status === "active" && gameComplete && (
+        <ThisOrThatResults
+          mode="online"
+          entries={pairedResults.map((result) => ({
+            id: result.question.id,
+            prompt: result.question.prompt,
+            firstChoice: result.ownChoice === "a" ? result.question.optionA : result.question.optionB,
+            secondChoice: result.partnerChoice === "a" ? result.question.optionA : result.question.optionB,
+            matched: result.ownChoice === result.partnerChoice,
+          }))}
+          onExit={() => window.dispatchEvent(new Event("morados:game-exit"))}
+        />
       )}
     </section>
   );
