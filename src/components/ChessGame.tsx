@@ -376,7 +376,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
         onReplay={restart}
         onExit={()=>window.dispatchEvent(new Event("morados:game-exit"))}
       />}
-      <p className="chess-note">{solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}A promoção de peão é automática para dama. A repetição tripla e os 50 lances permitem reivindicar empate; a repetição quíntupla e os 75 lances encerram a partida automaticamente.</p>
+      <p className="chess-note">{sync.online ? "Partida online: as jogadas e os resultados são sincronizados com a outra conta. " : solo ? "Você joga com as brancas contra os Morados. " : "Modo local para duas pessoas no mesmo aparelho. "}A promoção de peão é automática para dama. A repetição tripla e os 50 lances permitem reivindicar empate; a repetição quíntupla e os 75 lances encerram a partida automaticamente.</p>
     </section>
   );
 }
