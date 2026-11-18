@@ -343,29 +343,4 @@ export function LocalDailyChallengeGame({ solo = false }: { solo?: boolean }) {
       )}
     </section>
   );
-}({ solo = false }: { solo?: boolean }) {
-  const challenge=dailyChallenges[localDateSeed()];
-  const [done,setDone]=useState<[boolean,boolean]>([false,false]);
-  const completeCount=Number(done[0])+Number(done[1]);
-  return (
-    <section className={"local-daily-game" + (solo ? " is-solo" : "")}>
-      <div className="local-daily-date">{solo ? "DESAFIO INDIVIDUAL · " : "MISSÃO DO DIA · "} {new Intl.DateTimeFormat("pt-BR",{timeZone:"America/Sao_Paulo",day:"numeric",month:"long"}).format(new Date())}</div>
-      <span className="local-game-category">{challenge.category}</span>
-      <h3>{challenge.title}</h3>
-      <p>{solo ? challenge.solo : challenge.instruction}</p>
-      <div className="local-daily-players">
-        {(solo ? [0] as const : [0,1] as const).map((player)=>(
-          <button type="button" key={player} className={done[player]?"is-complete":""} onClick={()=>setDone((current)=>current.map((value,index)=>index===player?!value:value) as [boolean,boolean])}>
-            <span className="local-daily-check">{done[player]?"✓":player+1}</span>
-            <strong>{solo ? "Você" : `Pessoa ${player+1}`}</strong>
-            <small>{done[player]?"Missão concluída":"Marcar conclusão"}</small>
-          </button>
-        ))}
-      </div>
-      <div className="local-daily-result" role="status" aria-live="polite">
-        {solo ? (completeCount ? "Desafio individual concluído. Boa!" : "Faça a missão e marque quando terminar.") : completeCount===2?"Missão concluída pelos dois. Muito bem!":completeCount===1?"Uma pessoa já concluiu. Falta só mais uma!":"Façam a missão juntos e marquem quando cada um terminar."}
-      </div>
-      <button type="button" className="inline-action" onClick={()=>setDone([false,false])}><RotateCcw aria-hidden="true"/> Limpar marcações</button>
-    </section>
-  );
 }
