@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { GameVictoryScreen } from "@/components/GameExperience";
 import { useGameState } from "@/components/OnlineGameHost";
 import { countChessPositionRepetitions, type ChessPositionIdentity } from "@/lib/chess-repetition";
@@ -264,6 +264,9 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   const [selected,setSelected]=useState<number|null>(null);
   const [message,setMessage]=useState<string|null>(null);
   const [promotionPending,setPromotionPending]=useState<Move|null>(null);
+  const promotionDialogRef=useRef<HTMLElement|null>(null);
+  const promotionFirstOptionRef=useRef<HTMLButtonElement|null>(null);
+  const promotionReturnFocusRef=useRef<HTMLElement|null>(null);
   const moves=useMemo(()=>position.turn==="w"?legalMovesFor(position,"w"):legalMovesFor(position,"b"),[position]);
   const available=useMemo(()=>new Set(moves.filter(m=>m.from===selected).map(m=>m.to)),[moves,selected]);
   const check=inCheck(position,position.turn);
@@ -287,6 +290,39 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
   const canClaimThreefold=!finished&&repetitions>=3&&(!sync.online||sync.canAct);
   const canClaimFiftyMove=!finished&&position.halfMoves>=100&&(!sync.online||sync.canAct);
   const status=checkmate?`Xeque-mate! ${winner} venceu.`:drawReason??(canClaimThreefold?"A mesma posição apareceu três vezes. Você pode reivindicar empate.":canClaimFiftyMove?"A regra dos 50 lances está disponível. Você pode reivindicar empate.":check?"Xeque! Proteja o rei.":solo&&position.turn==="b"?"Morados estão pensando…":`Vez de ${solo?(position.turn==="w"?"você":"Morados"):"Pessoa "+(position.turn==="w"?1:2)}.`);
+
+  useEffect(() => {
+    if (!promotionPending) return;
+    promotionReturnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    promotionFirstOptionRef.current?.focus();
+    const handleDialogKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setPromotionPending(null);
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const dialog = promotionDialogRef.current;
+      if (!dialog) return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>('button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])'));
+      if (focusable.length < 2) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", handleDialogKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleDialogKeyDown);
+      promotionReturnFocusRef.current?.focus();
+      promotionReturnFocusRef.current = null;
+    };
+  }, [promotionPending]);
 
   useEffect(() => {
     if (!solo || sync.online || position.turn !== "b" || finished) return;
@@ -405,7 +441,7 @@ export function ChessGame({ solo = false }: { solo?: boolean }) {
         <div><button type="button" className="inline-action" onClick={undo} disabled={!history.length||sync.online}><Undo2/> Desfazer</button><button type="button" className="inline-action" onClick={restart} disabled={sync.online}><RotateCcw/> Reiniciar</button></div>
       </div>
       {message&&<p className="couple-game-error" role="alert">{message}</p>}
-      {promotionPending&&<div className="chess-promotion-backdrop" role="presentation"><section className="chess-promotion-dialog" role="dialog" aria-modal="true" aria-labelledby="chess-promotion-title"><p className="date-kicker">PROMOÇÃO DE PEÃO</p><h3 id="chess-promotion-title">Escolha sua nova peça</h3><p>Você pode promover para dama, torre, bispo ou cavalo.</p><div className="chess-promotion-options">{(["Q","R","B","N"] as const).map(kind=><button key={kind} type="button" onClick={()=>commitMove({...promotionPending,promotion:kind})} aria-label={`Promover para ${{Q:"dama",R:"torre",B:"bispo",N:"cavalo"}[kind]}`}><span aria-hidden="true">{glyph[position.turn][kind]}</span><small>{{Q:"Dama",R:"Torre",B:"Bispo",N:"Cavalo"}[kind]}</small></button>)}</div><button type="button" className="inline-action" onClick={()=>setPromotionPending(null)}>Cancelar jogada</button></section></div>}
+      {promotionPending&&<div className="chess-promotion-backdrop" role="presentation"><section ref={promotionDialogRef} className="chess-promotion-dialog" role="dialog" aria-modal="true" aria-labelledby="chess-promotion-title" aria-describedby="chess-promotion-description"><p className="date-kicker">PROMOÇÃO DE PEÃO</p><h3 id="chess-promotion-title">Escolha sua nova peça</h3><p id="chess-promotion-description">Você pode promover para dama, torre, bispo ou cavalo. Use Escape para cancelar.</p><div className="chess-promotion-options">{(["Q","R","B","N"] as const).map((kind,index)=><button key={kind} ref={index===0?promotionFirstOptionRef:undefined} type="button" onClick={()=>commitMove({...promotionPending,promotion:kind})} aria-label={`Promover para ${{Q:"dama",R:"torre",B:"bispo",N:"cavalo"}[kind]}`}><span aria-hidden="true">{glyph[position.turn][kind]}</span><small>{{Q:"Dama",R:"Torre",B:"Bispo",N:"Cavalo"}[kind]}</small></button>)}</div><button type="button" className="inline-action" onClick={()=>setPromotionPending(null)}>Cancelar jogada</button></section></div>}
       <details className="chess-history">
         <summary>Histórico de lances</summary>
         <ol>{notation.map((move,i)=><li key={i}>{i+1}. {move}</li>)}</ol>
