@@ -210,6 +210,7 @@ describe("ChessGame draw rules", () => {
     render(<ChessGame />);
     const destination = screen.getByRole("gridcell", { name: "a8: vazia" });
     fireEvent.click(screen.getByRole("gridcell", { name: "a7: branca peão" }));
+    destination.focus();
     fireEvent.click(destination);
 
     const queen = screen.getByRole("button", { name: "Promover para dama" });
