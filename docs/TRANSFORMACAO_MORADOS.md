@@ -67,13 +67,20 @@ Na árvore auditada não foram encontrados testes de componente dedicados para F
 
 **Decisão:** adicionar testes por fluxo e por módulo antes de mudanças extensas; introduzir testes E2E e capturas de referência para os caminhos críticos.
 
-### 3.4 Funcionalidades que precisam de validação própria
+### 3.4 Chamadas WebRTC — implementação e validação pendente
 
-A tela de chamada declara no próprio código que ainda não existe sinalização WebRTC entre os aparelhos. A interface local de câmera/microfone não deve ser confundida com uma chamada real entre duas contas.
+A implementação atual já contém uma tela de chamada com `RTCPeerConnection`, captura de áudio/vídeo, troca de ofertas e respostas SDP por Supabase Realtime, obtenção de servidores ICE por uma Edge Function autenticada e encerramento da chamada. A migration `20261117120000_private_couple_call_signaling.sql` define políticas de leitura/escrita do broadcast para os dois integrantes atuais de um casal ativo. Portanto, a descrição anterior de uma interface apenas local está desatualizada.
 
-O roadmap anterior também registra como pendentes a verificação de uma migration de pareamento/exclusão, o teste com duas contas/aparelhos e a implementação real de chamadas com sinalização, TURN e push.
+Isso **não equivale a declarar o recurso pronto para produção**. Permanecem pendentes:
+- confirmar que a migration foi aplicada no projeto Supabase de produção e que as políticas Realtime foram verificadas;
+- executar chamadas de áudio e vídeo entre duas contas em aparelhos distintos, incluindo recusa, encerramento, permissões negadas, reconexão e redes restritivas;
+- confirmar a configuração real de TURN no ambiente e a conectividade quando STUN direto não basta;
+- validar notificações de chamada quando o aplicativo está em segundo plano ou fechado — push ainda consta como pendente no roadmap;
+- verificar a experiência publicada e documentar os resultados dos testes.
 
-**Decisão:** distinguir claramente recurso visual, recurso funcional local e recurso realmente sincronizado no servidor. Validar cada modo online de cada jogo, individualmente.
+A Edge Function retorna STUN quando TURN não está configurado; o próprio cliente avisa que algumas redes podem não completar a conexão. O README explica que TURN exige um serviço externo Coturn compatível e segredos configurados no Supabase, sem expor o segredo ao cliente.
+
+**Decisão:** tratar a sinalização e a negociação WebRTC como implementadas no código, mas manter chamadas entre aparelhos, configuração de produção, TURN e notificações como validações/entregas pendentes. Não afirmar conectividade real com base apenas na presença dos componentes ou nos testes unitários do parser de sinais.
 
 ### 3.5 Documentação desatualizada
 
